@@ -1,0 +1,2 @@
+﻿app/dashboard/page.tsx(4,34): error TS2305: Module '"@/lib/api"' has no exported member 'getCategories'.
+app/dashboard/page.tsx(4,65): error TS2305: Module '"@/lib/api"' has no exported member 'Category'.

@@ -1,0 +1,493 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════
+   KSP Wines Admin — Dual Theme System
+   Light: "Vintage Estate"  •  Dark: "Wine Cellar"
+   ═══════════════════════════════════════════════════ */
+
+/* ─── Tailwind theme tokens (static, shared) ─── */
+
+@theme inline {
+  /* Primary — Muted Burgundy family */
+  --color-primary: var(--t-primary);
+  --color-primary-dark: var(--t-primary-dark);
+  --color-primary-light: var(--t-primary-light);
+
+  /* Plum accent */
+  --color-plum: var(--t-plum);
+
+  /* Surfaces */
+  --color-sidebar-bg: var(--t-sidebar-bg);
+  --color-sidebar-hover: var(--t-sidebar-hover);
+  --color-sidebar-active: var(--t-sidebar-active);
+  --color-card-bg: var(--t-card-bg);
+  --color-card-bg-elevated: var(--t-card-bg-elevated);
+  --color-page-bg: var(--t-page-bg);
+  --color-border: var(--t-border);
+  --color-border-subtle: var(--t-border-subtle);
+
+  /* Text */
+  --color-text-primary: var(--t-text-primary);
+  --color-text-secondary: var(--t-text-secondary);
+  --color-text-muted: var(--t-text-muted);
+
+  /* Gold accent */
+  --color-gold: var(--t-gold);
+  --color-gold-muted: var(--t-gold-muted);
+  --color-gold-soft: var(--t-gold-soft);
+
+  /* Status — muted, no neons */
+  --color-success: #6F7F5F;
+  --color-warning: #9A7B4F;
+  --color-danger: var(--t-danger);
+  --color-info: #4A5A6A;
+
+  /* Typography */
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
+}
+
+/* ─────────────────────────────────────────────────
+   ☀  LIGHT MODE — "Vintage Estate"  (default)
+   ───────────────────────────────────────────────── */
+
+:root {
+  --t-primary: #6A1F28;
+  --t-primary-dark: #5C1A22;
+  --t-primary-light: #7A2832;
+
+  --t-plum: #5A3D4A;
+
+  --t-sidebar-bg: #ECE3D8;
+  --t-sidebar-hover: #E0D4C6;
+  --t-sidebar-active: #6A1F28;
+
+  --t-card-bg: #FFFFFF;
+  --t-card-bg-elevated: #FFFFFF;
+  --t-page-bg: #F6F1EA;
+  --t-border: #D9CFC4;
+  --t-border-subtle: #E8DFD4;
+
+  --t-text-primary: #2C1B16;
+  --t-text-secondary: #5A4A42;
+  --t-text-muted: #8C7B72;
+
+  --t-gold: #B08D57;
+  --t-gold-muted: #9A7B4F;
+  --t-gold-soft: #6A1F28;
+
+  --t-danger: #6A1F28;
+
+  --background: #F6F1EA;
+  --foreground: #2C1B16;
+
+  /* Light-mode specific surface colors for non-Tailwind usage */
+  --surface-input: #FFFFFF;
+  --surface-scrollbar-track: #EDE6DC;
+  --surface-scrollbar-thumb: #C5B6A5;
+  --surface-scrollbar-thumb-hover: #B08D57;
+  --surface-shimmer-a: #EDE6DC;
+  --surface-shimmer-b: #E0D4C6;
+  --surface-selection-bg: rgba(106, 31, 40, 0.2);
+  --surface-selection-color: #2C1B16;
+  --surface-stock-bg: #FFFFFF;
+  --surface-spinner-bg: rgba(255, 255, 255, 0.85);
+  --surface-grain-opacity: 0.015;
+  --surface-shadow-hover: rgba(106, 31, 40, 0.08);
+}
+
+/* ─────────────────────────────────────────────────
+   🌙  DARK MODE — "Wine Cellar"
+   ───────────────────────────────────────────────── */
+
+.dark {
+  --t-primary: #4B0F1A;
+  --t-primary-dark: #3A0E12;
+  --t-primary-light: #5C1A1B;
+
+  --t-plum: #3B1E2B;
+
+  --t-sidebar-bg: #1A1A1A;
+  --t-sidebar-hover: #2B1E1A;
+  --t-sidebar-active: #4B0F1A;
+
+  --t-card-bg: #1E1A1A;
+  --t-card-bg-elevated: #252020;
+  --t-page-bg: #141111;
+  --t-border: #3A2E2E;
+  --t-border-subtle: #2C2424;
+
+  --t-text-primary: #E8D8B9;
+  --t-text-secondary: #A89880;
+  --t-text-muted: #6B5E52;
+
+  --t-gold: #C5A46D;
+  --t-gold-muted: #B08D57;
+  --t-gold-soft: #E8D8B9;
+
+  --t-danger: #7A2E35;
+
+  --background: #141111;
+  --foreground: #E8D8B9;
+
+  --surface-input: #1A1616;
+  --surface-scrollbar-track: #1A1616;
+  --surface-scrollbar-thumb: #4B0F1A;
+  --surface-scrollbar-thumb-hover: #C5A46D;
+  --surface-shimmer-a: #252020;
+  --surface-shimmer-b: #2C2424;
+  --surface-selection-bg: rgba(75, 15, 26, 0.5);
+  --surface-selection-color: #E8D8B9;
+  --surface-stock-bg: #1A1616;
+  --surface-spinner-bg: rgba(26, 22, 22, 0.85);
+  --surface-grain-opacity: 0.03;
+  --surface-shadow-hover: rgba(0, 0, 0, 0.3);
+}
+
+/* ─── Base ─── */
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  letter-spacing: 0.01em;
+  overflow-x: hidden;
+}
+
+/* ─── Scrollbar ─── */
+
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--surface-scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--surface-scrollbar-thumb);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--surface-scrollbar-thumb-hover);
+}
+
+/* Sidebar scrollbar — thin & hidden until hover */
+aside ::-webkit-scrollbar {
+  width: 3px;
+}
+
+aside ::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 3px;
+}
+
+aside:hover ::-webkit-scrollbar-thumb {
+  background: var(--surface-scrollbar-thumb);
+}
+
+aside:hover ::-webkit-scrollbar-thumb:hover {
+  background: var(--surface-scrollbar-thumb-hover);
+}
+
+/* Modal scrollbar — thin */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 4px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: var(--surface-scrollbar-thumb);
+  border-radius: 3px;
+}
+
+/* ─── Selection ─── */
+
+::selection {
+  background: var(--surface-selection-bg);
+  color: var(--surface-selection-color);
+}
+
+/* ─── Form elements ─── */
+
+input,
+textarea,
+select {
+  color: var(--foreground) !important;
+  background-color: var(--surface-input) !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--t-text-muted) !important;
+}
+
+select option {
+  background: var(--t-card-bg);
+  color: var(--foreground);
+}
+
+/* ─── Animations ─── */
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, var(--surface-shimmer-a) 25%, var(--surface-shimmer-b) 50%, var(--surface-shimmer-a) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes goldPulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-fadeInUp {
+  animation: fadeInUp 0.4s ease-out both;
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out both;
+}
+
+.animate-slideDown {
+  animation: slideDown 0.2s ease-out both;
+}
+
+.animate-slideInLeft {
+  animation: slideInLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ─── Stock Control Component ─── */
+
+.stock-control {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--t-border);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: var(--surface-stock-bg);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stock-control:focus-within {
+  border-color: var(--t-gold);
+  box-shadow: 0 0 0 2px rgba(176, 141, 87, 0.15);
+}
+
+.stock-control--sm {
+  height: 32px;
+}
+
+.stock-control--md {
+  height: 40px;
+}
+
+.stock-control__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--t-text-secondary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.stock-control--sm .stock-control__btn {
+  width: 28px;
+  height: 100%;
+}
+
+.stock-control--md .stock-control__btn {
+  width: 36px;
+  height: 100%;
+}
+
+.stock-control__btn:hover:not(:disabled) {
+  background: rgba(176, 141, 87, 0.1);
+  color: var(--t-gold);
+}
+
+.stock-control__btn:active:not(:disabled) {
+  background: rgba(176, 141, 87, 0.2);
+}
+
+.stock-control__btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.stock-control__btn--dec {
+  border-right: 1px solid var(--t-border);
+}
+
+.stock-control__btn--inc {
+  border-left: 1px solid var(--t-border);
+}
+
+.stock-control__input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.stock-control__input {
+  text-align: center;
+  border: none;
+  outline: none;
+  background: transparent !important;
+  font-weight: 600;
+  color: var(--t-gold) !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.stock-control__input--sm {
+  width: 48px;
+  font-size: 0.75rem;
+  height: 100%;
+}
+
+.stock-control__input--md {
+  width: 64px;
+  font-size: 0.875rem;
+  height: 100%;
+}
+
+.stock-control__input:disabled {
+  opacity: 0.5;
+}
+
+.stock-control__spinner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-spinner-bg);
+  border-radius: 0.25rem;
+}
+
+/* ─── Low stock badge ─── */
+
+.low-stock-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--color-warning);
+  margin-top: 2px;
+}
+
+.low-stock-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-warning);
+  animation: goldPulse 2s ease-in-out infinite;
+}
+
+/* ─── Subtle background grain texture ─── */
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  opacity: var(--surface-grain-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+/* ─── Luxury micro-interactions ─── */
+
+.hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px var(--surface-shadow-hover);
+}
+
+/* Gold glow on hover */
+.gold-glow:hover {
+  box-shadow: 0 0 20px rgba(176, 141, 87, 0.1);
+}
+
+/* ─── Wine label–style section dividers ─── */
+
+.divider-ornate {
+  position: relative;
+  text-align: center;
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg,
+      transparent 0%,
+      var(--t-border) 20%,
+      var(--t-gold-muted) 50%,
+      var(--t-border) 80%,
+      transparent 100%);
+  margin: 1.5rem 0;
+}
