@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -219,13 +219,16 @@ export default function AddProductPage() {
 
     // ÔöÇÔöÇÔöÇ Step 3: Generate N├ùN combinations ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
     const generateCombinations = (): VariantRow[] => {
-        if (volumeValues.length === 0 || packValues.length === 0) return [];
+        if (volumeValues.length === 0 && packValues.length === 0) return [];
         const combos: VariantRow[] = [];
-        for (const pack of packValues) {
-            for (const vol of volumeValues) {
+        const packsToIterate = packValues.length > 0 ? packValues : [''];
+        const volumesToIterate = volumeValues.length > 0 ? volumeValues : [{ value: '', unit: '' }];
+        for (const pack of packsToIterate) {
+            for (const vol of volumesToIterate) {
+                const volumeStr = vol.value ? `${vol.value} ${vol.unit}` : '';
                 combos.push({
                     pack,
-                    volume: `${vol.value} ${vol.unit}`,
+                    volume: volumeStr,
                     variant_name: '',
                     sku: '',
                     price: 0,
@@ -251,7 +254,7 @@ export default function AddProductPage() {
         if (checked) {
             const combos = generateCombinations();
             if (combos.length === 0) {
-                toast.error('Please add at least one Volume and one Pack value in Step 2');
+                toast.error('Please add at least one Volume or Pack value in Step 2');
                 setAutoGenerate(false);
                 return;
             }
@@ -389,10 +392,6 @@ export default function AddProductPage() {
             }
         }
         if (currentStep === 2) {
-            if (volumeValues.length === 0) {
-                toast.error('Please add at least one Volume value');
-                return;
-            }
             // Pre-fill the initial blank row with single-option values
             setVariants(prev => prev.map(v => ({
                 ...v,
@@ -999,7 +998,7 @@ export default function AddProductPage() {
 
                                 {/* ÔöÇÔöÇ Volume Section ÔöÇÔöÇ */}
                                 <div className="bg-white/[0.03] border border-border rounded-xl p-5">
-                                    <h4 className="font-semibold text-gold-soft mb-4 text-sm">Volume <span className="text-danger text-xs">*</span></h4>
+                                    <h4 className="font-semibold text-gold-soft mb-4 text-sm">Volume</h4>
 
                                     {/* Added chips */}
                                     {volumeValues.length > 0 && (
