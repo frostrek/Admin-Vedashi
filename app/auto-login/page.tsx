@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Wine } from 'lucide-react';
+import { Leaf } from 'lucide-react';
 
 /**
  * Auto-Login Page
@@ -68,7 +68,7 @@ function AutoLoginContent() {
         <div className="min-h-screen bg-page-bg flex items-center justify-center px-4">
             <div className="text-center">
                 <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary-light shadow-2xl shadow-primary/30 border border-gold/15 animate-pulse">
-                    <Wine className="h-8 w-8 text-gold" />
+                    <Leaf className="h-8 w-8 text-gold" />
                 </div>
                 <h1 className="font-serif text-xl font-bold text-gold-soft tracking-wide mb-2">
                     Admin Panel
@@ -88,7 +88,7 @@ export default function AutoLoginPage() {
             <div className="min-h-screen bg-page-bg flex items-center justify-center px-4">
                 <div className="text-center">
                     <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary-light shadow-2xl shadow-primary/30 border border-gold/15 animate-pulse">
-                        <Wine className="h-8 w-8 text-gold" />
+                        <Leaf className="h-8 w-8 text-gold" />
                     </div>
                     <h1 className="font-serif text-xl font-bold text-gold-soft tracking-wide mb-2">
                         Admin Panel

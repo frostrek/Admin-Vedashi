@@ -248,7 +248,7 @@ export default function FooterManagementPage() {
                                     className={inputCls}
                                     value={footer.company.tagline}
                                     onChange={e => update('company', { ...footer.company, tagline: e.target.value })}
-                                    placeholder="Premium Global Wines"
+                                    placeholder="Premium Ayurvedic Wellness"
                                 />
                             </Field>
                         </div>
@@ -266,7 +266,7 @@ export default function FooterManagementPage() {
                                 className={inputCls}
                                 value={footer.company.copyright}
                                 onChange={e => update('company', { ...footer.company, copyright: e.target.value })}
-                                placeholder={`© ${new Date().getFullYear()} KSP Wines. All rights reserved.`}
+                                placeholder={`© ${new Date().getFullYear()} Vedashi. All rights reserved.`}
                             />
                         </Field>
                         <div className="flex justify-end"><SaveBtn section="company" /></div>
@@ -569,13 +569,13 @@ export default function FooterManagementPage() {
                 {/* ── 7. Bottom Bar ─────────────────────────────── */}
                 <SectionCard icon={AlignLeft} title="Bottom Bar Text" defaultOpen={false}>
                     <div className="mt-4 space-y-3">
-                        <Field label="Compliance / Disclaimer Text" hint="Shown at the very bottom of the footer, e.g. age restriction notice.">
+                        <Field label="Compliance / Disclaimer Text" hint="Shown at the very bottom of the footer, e.g. wellness disclaimer.">
                             <textarea
                                 className={textareaCls}
                                 rows={2}
                                 value={footer.bottom_bar.text}
                                 onChange={e => update('bottom_bar', { text: e.target.value })}
-                                placeholder="Please enjoy responsibly. Must be of legal drinking age…"
+                                placeholder="Consult with a physician before use. Keep out of reach of children…"
                             />
                         </Field>
                         <div className="flex justify-end"><SaveBtn section="bottom_bar" /></div>

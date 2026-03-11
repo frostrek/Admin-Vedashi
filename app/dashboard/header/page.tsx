@@ -310,7 +310,7 @@ export default function HeaderManagementPage() {
                                 className={inputCls}
                                 value={header.branding.logo_alt}
                                 onChange={e => update('branding', { ...header.branding, logo_alt: e.target.value })}
-                                placeholder="KSP Wines"
+                                placeholder="Vedashi"
                             />
                         </Field>
 
@@ -388,7 +388,7 @@ export default function HeaderManagementPage() {
                             <div className="rounded-xl overflow-hidden border border-neutral-200 shadow-md">
                                 {/* Navbar preview */}
                                 <div className="flex items-center justify-between px-5 py-3" style={{ backgroundColor: header.colors.navbar_bg }}>
-                                    <span className="font-bold text-sm" style={{ color: header.colors.navbar_hover }}>KSP Wines</span>
+                                    <span className="font-bold text-sm" style={{ color: header.colors.navbar_hover }}>Vedashi</span>
                                     <div className="flex items-center gap-4">
                                         {['Home', 'Shop', 'Blog'].map(l => (
                                             <span key={l} className="text-xs font-semibold uppercase tracking-widest" style={{ color: header.colors.navbar_text }}>{l}</span>

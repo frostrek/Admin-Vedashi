@@ -549,7 +549,7 @@ export default function MediaLibraryPage() {
                                             type="text"
                                             value={h.text}
                                             onChange={e => updateHeading(h.id, 'text', e.target.value)}
-                                            placeholder="E.g., The Art of Fine Wine"
+                                            placeholder="E.g., The Art of Ayurvedic Wellness"
                                             className={`${inputCls} flex-1`}
                                         />
                                         <div className="flex items-center gap-2 px-2 py-1 bg-white border border-neutral-200 rounded-md">

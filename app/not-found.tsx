@@ -4,20 +4,20 @@ export default function NotFound() {
     return (
         <div className="flex flex-col items-center justify-center min-h-[calc(100vh-100px)] bg-page-bg text-text-primary overflow-hidden">
             <div className="relative w-48 h-48 md:w-64 md:h-64 mb-8 -mt-16">
-                <img
-                    src="/spilled-wine.png"
-                    alt="Spilled wine glass"
-                    className="w-full h-full object-contain"
-                />
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary-light shadow-2xl shadow-primary/30 border border-gold/15">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                </div>
             </div>
 
             <h1 className="text-7xl md:text-8xl font-serif font-black mb-2 text-gold-soft tracking-tight">
                 404
             </h1>
 
-            <h2 className="text-lg md:text-xl mb-3 font-serif text-text-secondary">
-                Oops! This wine has been spilled
-            </h2>
+                <h2 className="text-lg md:text-xl mb-3 font-serif text-text-secondary">
+                    Oops! This path has faded away
+                </h2>
 
             <p className="text-sm text-text-muted mb-8 text-center max-w-sm leading-relaxed">
                 Sorry, the page you're looking for can't be loaded right now. It may have been moved, removed, or perhaps it never existed.

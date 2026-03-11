@@ -30,12 +30,12 @@ function MultiSelectPills({
             {/* Selected Pills */}
             <div className="flex flex-wrap gap-2">
                 {selectedOptions.map(opt => (
-                    <span key={opt.id} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-wine-gold/10 text-wine-gold border border-wine-gold/20">
+                    <span key={opt.id} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gold/10 text-gold border border-gold/20">
                         {opt.name}
                         <button 
                             type="button" 
                             onClick={(e) => { e.preventDefault(); onChange(selectedIds.filter(id => id !== opt.id)); }}
-                            className="hover:bg-wine-gold/20 rounded-full p-0.5 transition-colors"
+                            className="hover:bg-vedic-gold/20 rounded-full p-0.5 transition-colors"
                         >
                             <X className="w-3 h-3" />
                         </button>
@@ -89,8 +89,8 @@ function WritePostContent() {
     const [slug, setSlug] = useState('');
     const [excerpt, setExcerpt] = useState('');
     const [body, setBody] = useState('');
-    // For legacy support, defaults to 'wine_guides' but we generally won't use it now
-    const [blogType, setBlogType] = useState('wine_guides');
+    // For legacy support, defaults to 'wellness_guides' but we generally won't use it now
+    const [blogType, setBlogType] = useState('wellness_guides');
     const [categoryId, setCategoryId] = useState('');
     
     // Editorial Images
@@ -126,7 +126,7 @@ function WritePostContent() {
                     setSlug(post.slug);
                     setExcerpt(post.excerpt || '');
                     setBody(post.body);
-                    setBlogType(post.blog_type || 'wine_guides');
+                    setBlogType(post.blog_type || 'wellness_guides');
                     setCategoryId(post.category_id || '');
                     setImage(post.featured_image || post.cover_image || '');
                     setIsFeatured(post.is_featured || false);

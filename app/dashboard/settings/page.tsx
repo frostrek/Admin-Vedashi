@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAdminAuth } from '@/context/AdminAuthContext';
-import { Shield, AlertTriangle, Eye, EyeOff, Wine } from 'lucide-react';
+import { Shield, AlertTriangle, Eye, EyeOff, Leaf } from 'lucide-react';
 import ConfirmModal from '@/components/ConfirmModal';
 import toast from 'react-hot-toast';
 
@@ -59,7 +59,7 @@ export default function SettingsPage() {
             <div className="rounded-2xl border border-border bg-gradient-to-br from-card-bg to-card-bg-elevated p-6 shadow-lg shadow-black/10">
                 <div className="flex items-center gap-4 mb-4">
                     <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-light shadow-lg shadow-primary/20 border border-gold/10">
-                        <Wine className="h-6 w-6 text-[#E8D8B9]" />
+                        <Leaf className="h-6 w-6 text-[#E8D8B9]" />
                     </div>
                     <div>
                         <h3 className="font-semibold text-text-primary">{user?.name || 'Admin'}</h3>

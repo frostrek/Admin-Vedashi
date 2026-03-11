@@ -119,7 +119,7 @@ export default function CategoryModal({ isOpen, onClose, onSubmit, editCategory,
                             value={name}
                             onChange={(e) => handleNameChange(e.target.value)}
                             className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
-                            placeholder="e.g. Red Wines"
+                            placeholder="e.g. Herbal Remedies"
                             required
                             autoFocus
                         />

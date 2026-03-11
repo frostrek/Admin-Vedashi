@@ -21,7 +21,7 @@ export default function DashboardHeader({
         <div
             className="relative overflow-hidden rounded-2xl p-6 sm:p-8 border border-[#C5A46D]/15"
             style={{
-                background: 'linear-gradient(to bottom right, #3A0E12, #4B0F1A, #3B1E2B)',
+                background: 'linear-gradient(to bottom right, #2D4F2D, #3B5D3B, #1B3B1B)',
             }}
         >
             {/* Radial vignette overlay */}

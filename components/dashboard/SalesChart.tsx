@@ -24,14 +24,14 @@ const PERIODS = ['Daily', 'Weekly', 'Monthly'];
 // Theme-aware chart color palettes
 const CHART_COLORS = {
     light: {
-        stroke: '#6A1F28',       // Muted burgundy
-        gradientTop: '#6A1F28',
+        stroke: '#3B5D3B',       // Herbal green
+        gradientTop: '#3B5D3B',
         grid: '#D9CFC4',         // Soft beige
         axis: '#8C7B72',         // Muted text
         tooltipBg: '#F6F1EA',    // Warm ivory
         tooltipBorder: '#D9CFC4',
         tooltipText: '#2C1B16',  // Dark brown text
-        tooltipLabel: '#6A1F28', // Burgundy
+        tooltipLabel: '#3B5D3B', // Herbal green
         dotFill: '#FFFFFF',
     },
     dark: {

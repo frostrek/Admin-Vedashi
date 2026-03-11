@@ -8,7 +8,7 @@ import { getToken } from '@/lib/auth';
 import toast from 'react-hot-toast';
 import {
     ArrowLeft, Send, Clock, Users, Loader2, Eye, EyeOff,
-    Wine, ChevronDown, X as XIcon,
+    Leaf, ChevronDown, X as XIcon,
 } from 'lucide-react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
@@ -224,7 +224,7 @@ function CreateCampaignForm() {
         { value: 'all', label: 'All Customers', desc: 'Every registered customer with an email', icon: Users },
         { value: 'subscribed_only', label: 'Subscribed Only', desc: 'Only customers who opted in to promotions', icon: Users },
         { value: 'repeat_buyers', label: 'Repeat Buyers', desc: 'Customers with 2+ completed orders', icon: Users },
-        { value: 'category_buyers', label: 'Alcohol Type Buyers', desc: 'Customers who bought from selected categories', icon: Wine },
+        { value: 'category_buyers', label: 'Ayurvedic Buyers', desc: 'Customers who bought from selected categories', icon: Leaf },
     ];
 
     const selectedCatNames = categories.filter(c => selectedCategoryIds.includes(c.category_id)).map(c => c.name);
@@ -267,7 +267,7 @@ function CreateCampaignForm() {
                         </label>
                         <input
                             type="text" required
-                            placeholder="e.g. 🍷 Exclusive Summer Sale — Up to 25% Off!"
+                            placeholder="e.g. 🌿 Seasonal Wellness Sale — Up to 25% Off!"
                             value={form.subject}
                             onChange={e => setForm({ ...form, subject: e.target.value })}
                             className="w-full rounded-lg border border-border bg-page-bg px-4 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40"
@@ -426,7 +426,7 @@ function CreateCampaignForm() {
                         <textarea
                             rows={12}
                             required
-                            placeholder={`<p>🍷 Our biggest sale of the year is here!</p>\n<p>Get up to <strong>25% off</strong> on all wines this summer.</p>\n<p>Use code: <strong>SUMMER25</strong></p>`}
+                            placeholder={`<p>🌿 Our biggest wellness sale of the year is here!</p>\n<p>Get up to <strong>25% off</strong> on all supplements this summer.</p>\n<p>Use code: <strong>SUMMER25</strong></p>`}
                             value={form.body_html}
                             onChange={e => setForm({ ...form, body_html: e.target.value })}
                             className="w-full rounded-lg border border-border bg-page-bg px-4 py-3 text-sm font-mono text-text-primary placeholder:text-text-muted focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40 resize-y"

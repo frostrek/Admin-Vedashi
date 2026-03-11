@@ -95,18 +95,18 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
         const data = [
             {
                 // ── Variant identifier ──────────────────────────
-                SKU: "WINE-001",
-                Variant_Name: "750ml Single",
+                SKU: "VED-001",
+                Variant_Name: "60 Capsules Single",
                 // ── General / Product-level ─────────────────────
-                Product_Name: "Cabernet Sauvignon",
-                Brand: "Chateau Margaux",
-                Category: "Red Wine",
-                Sub_Category: "Dry",
-                Country_of_Origin: "France",
-                Vintage_Year: "2020",
-                Alcohol_Percentage: "13.5",
-                Intended_Use: "For gifting",
-                Description: "A rich, full-bodied red wine with notes of blackcurrant.",
+                Product_Name: "Ashwagandha Prowess",
+                Brand: "Vedashi",
+                Category: "Wellness",
+                Sub_Category: "Capsules",
+                Country_of_Origin: "India",
+                Vintage_Year: "",
+                Alcohol_Percentage: "0",
+                Intended_Use: "Daily wellness",
+                Description: "A premium ayurvedic supplement for vitality and stress relief.",
                 Available_From: "",        // e.g. 2025-01-01
                 Available_Until: "",       // e.g. 2025-12-31
                 // ── Variant-level ───────────────────────────────

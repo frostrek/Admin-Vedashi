@@ -1020,7 +1020,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                             value={form.product_name}
                                             onChange={e => update('product_name', e.target.value)}
                                             className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 transition-all"
-                                            placeholder="e.g. VinoViet Classic Red"
+                                            placeholder="e.g. Ashwagandha Prowess"
                                             required
                                         />
                                     </div>
@@ -1033,7 +1033,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                             value={form.brand}
                                             onChange={e => update('brand', e.target.value)}
                                             className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 transition-all"
-                                            placeholder="KSP Wines"
+                                            placeholder="Vedashi"
                                         />
                                     </div>
 
@@ -1109,7 +1109,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                             value={form.intended_use}
                                             onChange={e => update('intended_use', e.target.value)}
                                             className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 transition-all"
-                                            placeholder="Pairs well with grilled meats..."
+                                            placeholder="A daily supplement for stress relief..."
                                         />
                                     </div>
 
@@ -1121,7 +1121,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                             onChange={e => update('description', e.target.value)}
                                             rows={4}
                                             className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 resize-none transition-all"
-                                            placeholder="Describe the product's flavor profile, origin, and characteristics..."
+                                            placeholder="Describe the product's health benefits, ingredients, and usage instructions..."
                                         />
                                     </div>
 
@@ -1466,7 +1466,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                                                         type="text"
                                                                         value={variant.variant_name}
                                                                         onChange={e => updateVariant(vIdx, 'variant_name', e.target.value)}
-                                                                        placeholder="e.g. Classic Red 750ml"
+                                                                        placeholder="e.g. Ashwagandha 60 Capsules"
                                                                         className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
                                                                     />
                                                                 </td>
@@ -1847,7 +1847,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                             value={newCatForm.name}
                                             onChange={e => setNewCatForm({ ...newCatForm, name: e.target.value, slug: autoSlug(e.target.value) })}
                                             className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm focus:border-[#D4A847]/40 focus:outline-none focus:ring-1 focus:ring-[#D4A847]/20 text-gray-900"
-                                            placeholder="e.g. Red Wines"
+                                            placeholder="e.g. Wellness"
                                             autoFocus
                                         />
                                     </div>

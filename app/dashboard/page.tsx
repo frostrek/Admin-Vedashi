@@ -90,7 +90,7 @@ export default function DashboardPage() {
     const chartData = salesData.map(d => ({ label: d.label, value: d.total_sales }));
 
     // ─── Revenue Breakdown (map to component format) ────────────────
-    const breakdownColors = ['bg-gold', 'bg-primary-light', 'bg-plum', 'bg-info'];
+    const breakdownColors = ['bg-[#828B5C]', 'bg-[#3B5D3B]', 'bg-[#A89880]', 'bg-info'];
     const revenueItems = paymentData
         ? paymentData.items.map((item, i) => ({
             label: item.label,
@@ -209,7 +209,7 @@ export default function DashboardPage() {
                                                 className="h-10 w-10 rounded-xl object-cover"
                                             />
                                         ) : (
-                                            <span className="text-lg">🍷</span>
+                                            <span className="text-lg">🌿</span>
                                         )}
                                     </div>
                                     <div className="flex-1 min-w-0">

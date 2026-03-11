@@ -18,8 +18,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "KSP Wines — Admin Panel",
-  description: "Manage products, orders, and categories for KSP Wines",
+  title: "Vedashi — Admin Panel",
+  description: "Manage products, orders, and categories for Vedashi",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

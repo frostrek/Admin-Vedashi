@@ -406,7 +406,7 @@ export default function ProductsListPage() {
                                                 {draft.images && draft.images.length > 0 ? (
                                                     <img src={draft.images[0]} alt={draft.product_name} className="h-12 w-12 object-cover" />
                                                 ) : (
-                                                    <span className="text-xl">🍷</span>
+                                                    <span className="text-xl">🌿</span>
                                                 )}
                                             </div>
 
@@ -547,7 +547,7 @@ export default function ProductsListPage() {
                                                                     className="h-10 w-10 rounded-lg object-cover"
                                                                 />
                                                             ) : (
-                                                                <span className="text-lg">🍷</span>
+                                                                <span className="text-lg">🌿</span>
                                                             )}
                                                         </div>
                                                         <div>

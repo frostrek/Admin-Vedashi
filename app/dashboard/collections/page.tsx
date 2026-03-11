@@ -377,7 +377,7 @@ export default function CollectionsPage() {
                                             type="text" required
                                             value={formData.name}
                                             onChange={e => setFormData(p => ({ ...p, name: e.target.value }))}
-                                            placeholder="Summer Wines 2026"
+                                            placeholder="Herbal Remedies 2026"
                                             className="w-full rounded-lg border border-border bg-page-bg px-4 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40"
                                         />
                                     </div>
@@ -389,7 +389,7 @@ export default function CollectionsPage() {
                                             value={formData.description}
                                             onChange={e => setFormData(p => ({ ...p, description: e.target.value }))}
                                             rows={2}
-                                            placeholder="A curated selection of refreshing wines for summer..."
+                                            placeholder="A curated selection of refreshing herbal teas for summer..."
                                             className="w-full rounded-lg border border-border bg-page-bg px-4 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40 resize-none"
                                         />
                                     </div>
@@ -410,7 +410,7 @@ export default function CollectionsPage() {
                                             <input
                                                 type="text" value={formData.icon}
                                                 onChange={e => setFormData(p => ({ ...p, icon: e.target.value }))}
-                                                placeholder="Wine, Sparkles..."
+                                                placeholder="Herbal, Wellness..."
                                                 className="w-full rounded-lg border border-border bg-page-bg px-4 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40"
                                             />
                                         </div>

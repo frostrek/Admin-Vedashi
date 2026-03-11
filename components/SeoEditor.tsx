@@ -100,11 +100,11 @@ export default function SeoEditor({
     const autoGenerate = () => {
         const title = entityType === 'product'
             ? `${entityName}${entityBrand ? ` | ${entityBrand}` : ''} | Buy Online`
-            : `Buy ${entityName} Online | Premium Imported Spirits`;
+            : `Buy ${entityName} Online | Premium Ayurvedic Wellness`;
 
         const desc = entityType === 'product'
-            ? `Buy ${entityName}${entityBrand ? ` by ${entityBrand}` : ''}.${entityCategory ? ` Premium imported ${entityCategory}.` : ''} Fast delivery and secure checkout.`
-            : entityDescription || `Explore our collection of premium ${entityName}. Discover world-class spirits, wines, and liquors with competitive pricing.`;
+            ? `Buy ${entityName}${entityBrand ? ` by ${entityBrand}` : ''}.${entityCategory ? ` Premium ${entityCategory}.` : ''} Fast delivery and secure checkout.`
+            : entityDescription || `Explore our collection of premium ${entityName}. Discover authentic ayurvedic and herbal wellness products with competitive pricing.`;
 
         onChange({
             ...value,
@@ -121,7 +121,7 @@ export default function SeoEditor({
     // Google Search Preview values
     const previewTitle = value.meta_title || entityName || 'Page Title';
     const previewDesc = value.meta_description || entityDescription || 'Page description will appear here...';
-    const previewUrl = value.canonical_url || `kspwines.com/${entityType}s/${value.slug || entitySlug || entityId}`;
+    const previewUrl = value.canonical_url || `vedashi.com/${entityType}s/${value.slug || entitySlug || entityId}`;
 
     if (loading) {
         return (
@@ -216,7 +216,7 @@ export default function SeoEditor({
                         type="text"
                         value={value.meta_keywords || ''}
                         onChange={e => update('meta_keywords', e.target.value)}
-                        placeholder="wine, premium spirits, KSP..."
+                        placeholder="ayurvedic, herbal, wellness, Vedashi..."
                         className="w-full px-3 py-2.5 rounded-lg border border-border bg-card-bg text-text-primary text-sm placeholder:text-text-muted focus:border-gold focus:ring-1 focus:ring-gold/30 outline-none transition-colors"
                     />
                 </div>
@@ -242,7 +242,7 @@ export default function SeoEditor({
                         type="url"
                         value={value.canonical_url || ''}
                         onChange={e => update('canonical_url', e.target.value)}
-                        placeholder="https://kspwines.com/products/..."
+                        placeholder="https://vedashi.com/products/..."
                         className="w-full px-3 py-2.5 rounded-lg border border-border bg-card-bg text-text-primary text-sm placeholder:text-text-muted focus:border-gold focus:ring-1 focus:ring-gold/30 outline-none transition-colors"
                     />
                 </div>

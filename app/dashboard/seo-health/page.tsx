@@ -114,7 +114,7 @@ export default function SeoHealthCheck() {
         <div className="p-8 max-w-7xl mx-auto space-y-8">
             <div>
                 <h1 className="text-2xl font-bold flex items-center gap-3">
-                    <ShieldAlert className="text-burgundy" />
+                    <ShieldAlert className="text-primary" />
                     SEO Health Check
                 </h1>
                 <p className="text-gray-500 mt-2">Audit your product catalog for missing or suboptimal SEO metadata.</p>
@@ -179,7 +179,7 @@ export default function SeoHealthCheck() {
                                         <td className="px-6 py-4 text-right">
                                             <Link
                                                 href={`/dashboard/products/edit/${p.slug || p.id}?step=4`}
-                                                className="inline-flex items-center gap-1 text-burgundy hover:text-burgundy/80 font-medium bg-burgundy/5 px-3 py-1.5 rounded-lg transition-colors"
+                                                className="inline-flex items-center gap-1 text-primary hover:text-primary/80 font-medium bg-primary/5 px-3 py-1.5 rounded-lg transition-colors"
                                             >
                                                 Edit <ArrowRight size={14} />
                                             </Link>

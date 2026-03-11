@@ -93,15 +93,15 @@ export default function BulkExportModal({ isOpen, onClose, products }: BulkExpor
             let currentY = 25;
 
             // Brand Colors
-            const burgundy = [107, 39, 55]; // #6B2737
+            const herbalGreen = [59, 93, 59]; // #3B5D3B
             const gold = [197, 164, 78];     // #C5A44E
             const charcoal = [50, 50, 50];
 
             // Header - Brand Title
             doc.setFontSize(22);
-            doc.setTextColor(burgundy[0], burgundy[1], burgundy[2]);
+            doc.setTextColor(herbalGreen[0], herbalGreen[1], herbalGreen[2]);
             doc.setFont('helvetica', 'bold');
-            doc.text('KSP INVENTORY REPORT', margin, currentY);
+            doc.text('VEDASHI INVENTORY REPORT', margin, currentY);
 
             currentY += 10;
             doc.setFontSize(10);
@@ -111,7 +111,7 @@ export default function BulkExportModal({ isOpen, onClose, products }: BulkExpor
             doc.text(`Generated: ${new Date().toLocaleString()}`, pageWidth - margin - 50, currentY, { align: 'right' });
 
             currentY += 8;
-            doc.setDrawColor(burgundy[0], burgundy[1], burgundy[2]);
+            doc.setDrawColor(herbalGreen[0], herbalGreen[1], herbalGreen[2]);
             doc.setLineWidth(0.5);
             doc.line(margin, currentY, pageWidth - margin, currentY);
             currentY += 12;
@@ -151,11 +151,11 @@ export default function BulkExportModal({ isOpen, onClose, products }: BulkExpor
                     }
                 } else {
                     doc.setFontSize(12);
-                    doc.text('🍷', margin + 8, currentY + 15);
+                    doc.text('🌿', margin + 8, currentY + 15);
                 }
 
                 // Product Text
-                doc.setTextColor(burgundy[0], burgundy[1], burgundy[2]);
+                doc.setTextColor(herbalGreen[0], herbalGreen[1], herbalGreen[2]);
                 doc.setFont('helvetica', 'bold');
                 doc.setFontSize(13);
                 doc.text(fullProduct.product_name, margin + 26, currentY + 9);
@@ -269,14 +269,14 @@ export default function BulkExportModal({ isOpen, onClose, products }: BulkExpor
                 doc.setFontSize(8);
                 doc.setTextColor(150, 150, 150);
                 doc.text(
-                    `Page ${i} of ${pageCount} • KSP Premium Inventory Report`,
+                    `Page ${i} of ${pageCount} • Vedashi Premium Inventory Report`,
                     pageWidth / 2,
                     doc.internal.pageSize.getHeight() - 10,
                     { align: 'center' }
                 );
             }
 
-            doc.save(`KSP_Inventory_${targetValue || 'All'}_${new Date().toISOString().slice(0, 10)}.pdf`);
+            doc.save(`Vedashi_Inventory_${targetValue || 'All'}_${new Date().toISOString().slice(0, 10)}.pdf`);
             toast.success('Premium PDF generated successfully!');
             onClose();
 

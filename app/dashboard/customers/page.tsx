@@ -205,6 +205,7 @@ export default function CustomersPage() {
                             </div>
 
                             <div className="grid grid-cols-2 gap-3 text-sm">
+                                <DetailField icon={<Users className="h-4 w-4" />} label="Customer ID" value={selectedCustomer.customer_id.toString()} />
                                 <DetailField icon={<Mail className="h-4 w-4" />} label="Email Address" value={selectedCustomer.email} />
                                 <DetailField icon={<Phone className="h-4 w-4" />} label="Phone Number" value={selectedCustomer.phone || 'Not provided'} />
                                 <DetailField icon={<Calendar className="h-4 w-4" />} label="Date of Birth" value={selectedCustomer.date_of_birth ? new Date(selectedCustomer.date_of_birth).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'Not provided'} />
@@ -237,7 +238,7 @@ function DetailField({ icon, label, value }: { icon: React.ReactNode; label: str
                 {icon}
                 <span className="text-[10px] font-semibold uppercase tracking-wider">{label}</span>
             </div>
-            <p className="text-sm text-text-primary font-medium truncate">{value}</p>
+            <p className="text-sm text-text-primary font-medium break-all">{value}</p>
         </div>
     );
 }
