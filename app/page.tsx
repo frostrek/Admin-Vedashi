@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAdminAuth } from '@/context/AdminAuthContext';
 import { reactivateAccount } from '@/lib/api';
-import { Wine, RefreshCw, Eye, EyeOff } from 'lucide-react';
+import { Leaf, RefreshCw, Eye, EyeOff } from 'lucide-react';
 import ConfirmModal from '@/components/ConfirmModal';
 import toast from 'react-hot-toast';
 
@@ -89,7 +89,7 @@ export default function AdminLoginPage() {
       <div className="w-full max-w-sm relative z-10">
         <div className="text-center mb-8">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary-light shadow-2xl shadow-primary/30 border border-gold/15">
-            <Wine className="h-8 w-8 text-gold" />
+            <Leaf className="h-8 w-8 text-gold" />
           </div>
           <h1 className="font-serif text-2xl font-bold text-gold-soft tracking-wide">Admin Panel</h1>
           <p className="mt-1 text-sm text-text-secondary">Sign in to manage your store</p>
@@ -106,7 +106,7 @@ export default function AdminLoginPage() {
               value={email}
               onChange={e => setEmail(e.target.value)}
               className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/15 transition-all duration-300"
-              placeholder="admin@kspwines.com"
+               placeholder="admin@vedashi.com"
               required
             />
           </div>

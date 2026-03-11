@@ -14,7 +14,7 @@ import SeoEditor from '@/components/SeoEditor';
 import type { SeoData } from '@/lib/api/seo';
 
 // ÔöÇÔöÇÔöÇ Constants ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
-type AttributeType = 'Volume' | 'Pack' | 'Flavor' | 'ABV' | 'Vintage';
+type AttributeType = 'Volume' | 'Pack' | 'Flavor' | 'Vintage';
 const PREDEFINED_PACKS = ['Single', 'Pack of 2', 'Pack of 4', 'Pack of 6', 'Pack of 12', 'Case'];
 const PREDEFINED_UNITS = ['ml', 'L'];
 
@@ -100,8 +100,8 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
         category: '',
         sub_category: '',
         country_of_origin: '',
-        vintage_year: '',
-        abv: '',
+
+
         intended_use: '',
         description: '',
         available_from_date: '',
@@ -169,8 +169,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                 category: product.category || '',
                 sub_category: product.sub_category || '',
                 country_of_origin: product.country_of_origin || (product as any).specifications?.country_of_origin || '',
-                vintage_year: (product as any).vintage_year != null ? String((product as any).vintage_year) : '',
-                abv: product.alcohol_percentage != null ? String(product.alcohol_percentage) : '',
+
                 intended_use: product.intended_use || '',
                 description: product.description || '',
                 available_from_date: (product as any).available_from ? new Date((product as any).available_from).toISOString().split('T')[0] : '',
@@ -634,8 +633,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
             sub_category: form.sub_category || undefined,
             description: form.description.trim() || undefined,
             intended_use: form.intended_use.trim() || undefined,
-            vintage_year: form.vintage_year ? parseInt(form.vintage_year, 10) : undefined,
-            alcohol_percentage: form.abv ? parseFloat(parseFloat(form.abv).toFixed(1)) : undefined,
+
             sku: draftSku,
             status: 'draft',
             specifications: form.country_of_origin ? { country_of_origin: form.country_of_origin } : undefined,
@@ -706,8 +704,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
             sub_category: form.sub_category || undefined,
             description: form.description.trim() || undefined,
             intended_use: form.intended_use.trim() || undefined,
-            vintage_year: form.vintage_year ? parseInt(form.vintage_year, 10) : undefined,
-            alcohol_percentage: form.abv ? parseFloat(parseFloat(form.abv).toFixed(1)) : undefined,
+
 
             // SKU from the default variant (required by products table unique constraint)
             sku: (variants.find(v => v.isDefault) ?? variants[0]).sku.trim(),
@@ -1102,40 +1099,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                         />
                                     </div>
 
-                                    {/* Vintage Year */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-text-primary mb-1.5">Vintage Year</label>
-                                        <input
-                                            type="number"
-                                            min="1900"
-                                            max={new Date().getFullYear() + 1}
-                                            value={form.vintage_year}
-                                            onChange={e => update('vintage_year', e.target.value)}
-                                            onWheel={e => (e.target as HTMLInputElement).blur()}
-                                            className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 transition-all"
-                                            placeholder="e.g. 2022"
-                                        />
-                                    </div>
 
-                                    {/* ABV */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-text-primary mb-1.5">ABV (%)</label>
-                                        <div className="relative">
-                                            <input
-                                                type="number"
-                                                step="0.1"
-                                                min="0"
-                                                max="100"
-                                                value={form.abv}
-                                                onChange={e => update('abv', e.target.value)}
-                                                onWheel={e => (e.target as HTMLInputElement).blur()}
-                                                className="w-full rounded-lg border border-border pl-4 pr-16 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 transition-all"
-                                                placeholder="e.g. 13.5"
-                                            />
-                                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-text-muted">% ABV</span>
-                                        </div>
-                                        <p className="text-xs text-text-muted mt-1">Alcohol by Volume (0ÔÇô100)</p>
-                                    </div>
 
                                     {/* Intended Use - full width */}
                                     <div className="sm:col-span-2">

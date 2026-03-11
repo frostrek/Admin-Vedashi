@@ -142,7 +142,7 @@ export interface Product {
     intended_use?: string;
     price?: number;
     quantity?: number; // request-only: sets default variant stock (not returned in responses)
-    alcohol_percentage?: number;
+
     stock_quantity?: number;
     country_of_origin?: string;
     images?: string[];
@@ -222,7 +222,7 @@ export async function getProducts(status = 'active'): Promise<Product[]> {
         return products.map((p: any) => ({
             ...p,
             quantity: p.stock_quantity ?? p.quantity ?? 0,
-            alcohol_percentage: p.alcohol_percentage ?? null,
+
             images: p.thumbnail_url ? [p.thumbnail_url] : (p.thumbnail_base64 ? [p.thumbnail_base64] : [])
         }));
     } catch (error) {
@@ -249,7 +249,7 @@ export async function getDraftProducts(): Promise<Product[]> {
         return products.map((p: any) => ({
             ...p,
             quantity: p.stock_quantity ?? p.quantity ?? 0,
-            alcohol_percentage: p.alcohol_percentage ?? null,
+
             images: p.thumbnail_url ? [p.thumbnail_url] : (p.thumbnail_base64 ? [p.thumbnail_base64] : [])
         }));
     } catch (error) {
@@ -270,7 +270,7 @@ export async function searchProductsAdmin(query: string): Promise<Product[]> {
         return products.map((p: any) => ({
             ...p,
             quantity: p.stock_quantity ?? p.quantity ?? 0,
-            alcohol_percentage: p.alcohol_percentage ?? null,
+
             images: p.thumbnail_url ? [p.thumbnail_url] : (p.thumbnail_base64 ? [p.thumbnail_base64] : [])
         }));
     } catch (e) {
@@ -317,7 +317,7 @@ export async function getProduct(id: string, skipCache: boolean = false): Promis
                 sale_end,
                 quantity: stockQty,
                 stock_quantity: stockQty,
-                alcohol_percentage: abv,
+
                 images
             };
         }
