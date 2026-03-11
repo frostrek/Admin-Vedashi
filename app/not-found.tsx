@@ -15,9 +15,9 @@ export default function NotFound() {
                 404
             </h1>
 
-                <h2 className="text-lg md:text-xl mb-3 font-serif text-text-secondary">
-                    Oops! This path has faded away
-                </h2>
+            <h2 className="text-lg md:text-xl mb-3 font-serif text-text-secondary">
+                Oops! This path has faded away
+            </h2>
 
             <p className="text-sm text-text-muted mb-8 text-center max-w-sm leading-relaxed">
                 Sorry, the page you're looking for can't be loaded right now. It may have been moved, removed, or perhaps it never existed.
@@ -33,7 +33,7 @@ export default function NotFound() {
                 Back to Dashboard
             </Link>
 
-            {/* Ornamental divider */}
+            {/* Ornamental-divider */}
             <div className="mt-12 flex items-center gap-3">
                 <div className="h-px w-12 bg-gradient-to-r from-transparent to-gold/40" />
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gold/40" viewBox="0 0 24 24" fill="currentColor">
