@@ -4,50 +4,68 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAdminAuth } from '@/context/AdminAuthContext';
 import {
-    LayoutDashboard, Package, ShoppingCart, Tag, LogOut, Wine,
+    LayoutDashboard, Package, ShoppingCart, Tag, LogOut, Leaf,
     ChevronLeft, Menu, Truck, Megaphone, BarChart, Settings, Users, X, Shield, Search, Ticket,
-    FileText, MessageSquare, Star, ShieldAlert, LayoutTemplate, Images, HelpCircle, BookOpen, Send, MonitorSmartphone, Activity, Layers
+    FileText, MessageSquare, Star, ShieldAlert, LayoutTemplate, Images, HelpCircle, BookOpen, Send, MonitorSmartphone, Activity, Layers, DollarSign
 } from 'lucide-react';
 const useState = require('react').useState;
 const useEffect = require('react').useEffect;
 
-const mainNav = [
+const overviewNav = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+];
+
+const catalogNav = [
     { href: '/dashboard/products', label: 'Inventory', icon: Package },
-    { href: '/dashboard/collections', label: 'Collections', icon: Layers },
-    { href: '/dashboard/orders', label: 'Orders', icon: ShoppingCart },
     { href: '/dashboard/categories', label: 'Categories', icon: Tag },
+    { href: '/dashboard/collections', label: 'Collections', icon: Layers },
 ];
 
-const secondaryNav = [
-    { href: '/dashboard/seo-health', label: 'SEO Health', icon: ShieldAlert },
-    { href: '/dashboard/customers', label: 'Customers', icon: Users },
-    { href: '/dashboard/coupons', label: 'Coupons', icon: Ticket },
-    { href: '#', label: 'Delivery', icon: Truck },
-    { href: '/dashboard/notifications', label: 'Promotions', icon: Megaphone },
-    { href: '/dashboard/search/analytics', label: 'Search Analytics', icon: BarChart },
-];
-
-const contentNav = [
-    { href: '/dashboard/promo-banners', label: 'Promotion Banners', icon: Megaphone },
-    { href: '/dashboard/header', label: 'Header Management', icon: MonitorSmartphone },
-    { href: '/dashboard/footer', label: 'Footer Management', icon: LayoutTemplate },
-    { href: '/dashboard/media', label: 'Media Library', icon: Images },
+const engagementNav = [
     { href: '/dashboard/reviews', label: 'Product Reviews', icon: Star },
-    { href: '/dashboard/blog', label: 'Blog Posts', icon: FileText },
+    { href: '/dashboard/blog', label: 'Blog', icon: FileText },
     { href: '/dashboard/blog/comments', label: 'Blog Comments', icon: MessageSquare, isSubItem: true },
-    { href: '/dashboard/support/tickets', label: 'Support Tickets', icon: MessageSquare },
-    { href: '/dashboard/support/faqs', label: 'FAQ Management', icon: HelpCircle },
-    { href: '/dashboard/support/help-articles', label: 'Help Articles', icon: BookOpen },
-    { href: '/dashboard/support/knowledge-base', label: 'Knowledge Base', icon: FileText },
+];
+
+const salesNav = [
+    { href: '/dashboard/orders', label: 'Orders', icon: ShoppingCart },
+    { href: '/dashboard/payments/logs', label: 'Payment Logs', icon: DollarSign },
+    { href: '#', label: 'Delivery', icon: Truck },
+];
+
+const usersNav = [
+    { href: '/dashboard/customers', label: 'Customers', icon: Users },
     { href: '/dashboard/support/customer-enquiry', label: 'Customer Enquiry', icon: Send },
 ];
 
-const bottomNav = [
-    { href: '/dashboard/security', label: 'Security & Ops', icon: ShieldAlert },
-    { href: '/dashboard/analytics/products', label: 'Analytics', icon: BarChart },
-    { href: '/dashboard/payments/logs', label: 'Payment Logs', icon: FileText },
+const marketingNav = [
+    { href: '/dashboard/coupons', label: 'Coupons', icon: Ticket },
+    { href: '/dashboard/notifications', label: 'Promotions', icon: Megaphone },
+];
+
+const siteContentNav = [
+    { href: '/dashboard/promo-banners', label: 'Banner Promotion', icon: Images },
+    { href: '/dashboard/media', label: 'Media Library', icon: Images },
+    { href: '/dashboard/header', label: 'Header Management', icon: MonitorSmartphone },
+    { href: '/dashboard/footer', label: 'Footer', icon: LayoutTemplate },
+];
+
+const optimizationNav = [
+    { href: '/dashboard/search/analytics', label: 'Search Analytics', icon: Search },
+    { href: '/dashboard/seo-health', label: 'SEO Health', icon: ShieldAlert },
+    { href: '/dashboard/analytics/products', label: 'Product Analytics', icon: BarChart },
     { href: '/dashboard/activity-logs', label: 'Activity Logs', icon: Activity },
+];
+
+const supportNav = [
+    { href: '/dashboard/support/faqs', label: 'FAQ', icon: HelpCircle },
+    { href: '/dashboard/support/help-articles', label: 'Help Articles', icon: BookOpen },
+    { href: '/dashboard/support/tickets', label: 'Support Tickets', icon: MessageSquare },
+    { href: '/dashboard/support/knowledge-base', label: 'Knowledge Base', icon: FileText },
+];
+
+const systemNav = [
+    { href: '/dashboard/security', label: 'Security & Ops', icon: Shield },
     { href: '/dashboard/settings', label: 'Settings', icon: Settings },
     { href: '/dashboard/gdpr', label: 'GDPR', icon: Shield },
 ];
@@ -84,21 +102,13 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
             <Link
                 key={item.label}
                 href={item.href}
-                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-300 relative ${isActive
-                    ? 'text-gold bg-gold/[0.08]'
-                    : 'text-text-muted hover:text-gold-soft hover:bg-gold/[0.04]'
-                    } ${isCollapsed ? 'justify-center' : ''} ${item.isSubItem ? 'ml-6 border-l border-border rounded-l-none pl-4 py-2 text-xs' : ''}`}
+                className={`flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-300 relative ${isActive
+                    ? 'text-white bg-[#828B5C]'
+                    : 'text-[#A0A691] hover:text-white hover:bg-white/5'
+                    } ${isCollapsed ? 'justify-center' : ''} ${item.isSubItem ? 'ml-6 border-l border-white/10 rounded-l-none pl-4 py-2 text-xs' : ''}`}
                 title={isCollapsed ? item.label : undefined}
             >
-                {/* Gold left border indicator for active state */}
-                {isActive && !isCollapsed && !item.isSubItem && (
-                    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-gold rounded-r-full" />
-                )}
-                {/* For subitems active state */}
-                {isActive && !isCollapsed && item.isSubItem && (
-                    <span className="absolute -left-[1px] top-1/2 -translate-y-1/2 w-[2px] h-full bg-gold" />
-                )}
-                <Icon className={`${item.isSubItem ? 'h-3.5 w-3.5' : 'h-[18px] w-[18px]'} flex-shrink-0 ${isActive ? 'text-gold' : ''}`} />
+                <Icon className={`${item.isSubItem ? 'h-3.5 w-3.5' : 'h-[18px] w-[18px]'} flex-shrink-0 ${isActive ? 'text-white' : ''}`} />
                 {!isCollapsed && <span>{item.label}</span>}
             </Link>
         );
@@ -110,82 +120,93 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
             <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} px-4 py-5 border-b border-border-subtle`}>
                 {!isCollapsed && (
                     <Link href="/dashboard" className="flex items-center gap-2.5">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-light shadow-lg shadow-primary/30">
-                            <Wine className="h-4.5 w-4.5 text-[#E8D8B9]" />
+                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#828B5C]">
+                            <Leaf className="h-5 w-5 text-white" />
                         </div>
                         <div>
-                            <span className="font-serif text-lg font-bold text-[#E8D8B9] tracking-wide">KSP</span>
-                            <span className="block text-[9px] uppercase tracking-[0.3em] text-text-muted font-medium -mt-0.5">Wines Admin</span>
+                            <span className="font-sans text-lg font-bold text-white tracking-tight">Vedashi Admin</span>
                         </div>
                     </Link>
                 )}
                 {isCollapsed && (
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-light shadow-lg shadow-primary/30">
-                        <Wine className="h-4.5 w-4.5 text-[#E8D8B9]" />
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#828B5C]">
+                        <Leaf className="h-5 w-5 text-white" />
                     </div>
                 )}
             </div>
 
-            {/* Main nav */}
-            <nav className="flex-1 min-h-0 px-3 py-4 pb-12 space-y-1 overflow-y-auto">
-                {!isCollapsed && (
-                    <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-gold-muted/40">
-                        Main
-                    </p>
-                )}
-                {mainNav.map(item => renderNavItem(item, isCollapsed))}
-
-                <div className="my-3 border-t border-border-subtle" />
-
-                {!isCollapsed && (
-                    <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-gold-muted/40">
-                        Management
-                    </p>
-                )}
-                {secondaryNav.map(item => renderNavItem(item, isCollapsed))}
-
-                <div className="my-3 border-t border-border-subtle" />
-
-                {!isCollapsed && (
-                    <button
-                        onClick={() => setContentOpen(!contentOpen)}
-                        className="w-full flex items-center justify-between px-3 mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-gold-muted/40 cursor-pointer hover:text-gold-muted transition-colors"
-                    >
-                        <span>CONTENT MANAGEMENT</span>
-                        <ChevronLeft className={`h-3 w-3 transition-transform duration-200 ${contentOpen ? '-rotate-90' : ''}`} />
-                    </button>
-                )}
-                {isCollapsed && (
-                    <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-gold-muted/40 text-center">
-                        CONTENT MGT
-                    </p>
-                )}
-
-                <div className={`space-y-1 overflow-hidden transition-all duration-300 ${!isCollapsed && !contentOpen ? 'max-h-0 opacity-0' : 'max-h-[1000px] opacity-100'}`}>
-                    {contentNav.map(item => renderNavItem(item, isCollapsed))}
+            {/* Dashboard Link (Optional but kept for functionality if not in reference) */}
+            <nav className="flex-1 min-h-0 px-3 py-4 pb-12 space-y-5 overflow-y-auto">
+                <div>
+                    {!isCollapsed && <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-white/30">Overview</p>}
+                    {overviewNav.map(item => renderNavItem(item, isCollapsed))}
                 </div>
 
-                <div className="my-3 border-t border-white/[0.05]" />
+                <div>
+                    {!isCollapsed && <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-white/30">Catalog</p>}
+                    {catalogNav.map(item => renderNavItem(item, isCollapsed))}
+                </div>
 
-                {!isCollapsed && (
-                    <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-gold-muted/40">
-                        System
-                    </p>
-                )}
-                {bottomNav.map(item => renderNavItem(item, isCollapsed))}
+                <div>
+                    {!isCollapsed && <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-white/30">Engagement</p>}
+                    {engagementNav.map(item => renderNavItem(item, isCollapsed))}
+                </div>
+
+                <div>
+                    {!isCollapsed && <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-white/30">Sales</p>}
+                    {salesNav.map(item => renderNavItem(item, isCollapsed))}
+                </div>
+
+                <div>
+                    {!isCollapsed && <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-white/30">Users</p>}
+                    {usersNav.map(item => renderNavItem(item, isCollapsed))}
+                </div>
+
+                <div>
+                    {!isCollapsed && <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-white/30">Marketing</p>}
+                    {marketingNav.map(item => renderNavItem(item, isCollapsed))}
+                </div>
+
+                <div>
+                    {!isCollapsed && <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-white/30">Site Content</p>}
+                    {siteContentNav.map(item => renderNavItem(item, isCollapsed))}
+                </div>
+
+                <div>
+                    {!isCollapsed && <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-white/30">Optimization</p>}
+                    {optimizationNav.map(item => renderNavItem(item, isCollapsed))}
+                </div>
+
+                <div>
+                    {!isCollapsed && <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-white/30">Support</p>}
+                    {supportNav.map(item => renderNavItem(item, isCollapsed))}
+                </div>
+
+                <div>
+                    {!isCollapsed && <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-white/30">System</p>}
+                    {systemNav.map(item => renderNavItem(item, isCollapsed))}
+                </div>
             </nav>
 
             {/* Footer */}
-            <div className="border-t border-border-subtle px-3 py-4">
+            <div className="border-t border-white/10 px-4 py-6">
                 {!isCollapsed && user && (
-                    <div className="mb-3 px-3">
-                        <p className="text-sm font-medium text-gold-soft/80 truncate">{user.name}</p>
-                        <p className="text-[11px] text-text-muted/60 truncate">{user.email}</p>
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="relative">
+                            <div className="h-10 w-10 rounded-full bg-[#828B5C] flex items-center justify-center text-white font-bold border border-white/20">
+                                {user.name?.[0]?.toUpperCase()}
+                            </div>
+                            <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-[#313622]"></span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-sm font-bold text-white truncate">{user.name}</p>
+                            <p className="text-[11px] text-white/50 truncate">Administrator</p>
+                        </div>
                     </div>
                 )}
                 <button
                     onClick={logout}
-                    className={`flex items-center gap-3 w-full rounded-xl px-3 py-2.5 text-sm font-medium text-text-muted hover:text-danger hover:bg-danger/[0.08] transition-all duration-300 ${isCollapsed ? 'justify-center' : ''}`}
+                    className={`flex items-center gap-3 w-full rounded-xl px-3 py-2.5 text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all duration-300 ${isCollapsed ? 'justify-center' : ''}`}
                     title="Sign Out"
                 >
                     <LogOut className="h-[18px] w-[18px] flex-shrink-0" />
@@ -200,7 +221,7 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
             {/* Mobile toggle */}
             <button
                 onClick={() => setMobileOpen(true)}
-                className="fixed top-3.5 left-4 z-50 rounded-xl bg-sidebar-bg p-2 text-gold-soft shadow-lg md:hidden border border-border-subtle"
+                className="fixed top-3.5 left-4 z-50 rounded-xl bg-[#313622] p-2 text-white shadow-lg md:hidden border border-white/10"
             >
                 <Menu className="h-5 w-5" />
             </button>
@@ -209,10 +230,10 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
             {mobileOpen && (
                 <div className="fixed inset-0 z-40 md:hidden">
                     <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
-                    <aside className="absolute inset-y-0 left-0 w-64 flex flex-col bg-sidebar-bg animate-slideInLeft z-50 border-r border-border-subtle">
+                    <aside className="absolute inset-y-0 left-0 w-64 flex flex-col bg-[#313622] animate-slideInLeft z-50 border-r border-white/5">
                         <button
                             onClick={() => setMobileOpen(false)}
-                            className="absolute top-4 right-4 rounded-lg p-1 text-text-muted hover:text-gold-soft"
+                            className="absolute top-4 right-4 rounded-lg p-1 text-white/50 hover:text-white"
                         >
                             <X className="h-5 w-5" />
                         </button>
@@ -223,7 +244,7 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
 
             {/* Desktop sidebar */}
             <aside
-                className={`hidden md:flex fixed inset-y-0 left-0 z-40 flex-col bg-sidebar-bg transition-all duration-300 ease-in-out border-r border-border-subtle ${collapsed ? 'w-[68px]' : 'w-64'
+                className={`hidden md:flex fixed inset-y-0 left-0 z-40 flex-col bg-[#313622] transition-all duration-300 ease-in-out border-r border-white/5 ${collapsed ? 'w-[68px]' : 'w-72'
                     }`}
             >
                 {sidebarContent(collapsed)}
