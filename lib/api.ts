@@ -1383,10 +1383,16 @@ export interface BlogPost {
     category_id?: string;
     author_id?: string;
     tags?: { tag_id: string; name: string; slug: string }[];
+    featured_image?: string;
+    display_order?: number;
+    is_trending?: boolean;
+    is_editor_pick?: boolean;
+    content_type?: string;
+    difficulty_level?: string;
+    compliance_checked?: boolean;
     meta_title?: string;
     meta_description?: string;
 }
-
 export interface BlogCategory {
     category_id: string;
     name: string;
@@ -1526,6 +1532,21 @@ export async function getPendingBlogComments(): Promise<BlogComment[]> {
         const json = await res.json();
         return json.success ? json.data?.comments || json.data || [] : [];
     } catch { return []; }
+}
+
+export async function getAdminAllComments(params?: { status?: string, cursor?: string, limit?: number }): Promise<{ comments: BlogComment[]; nextCursor: string | null; hasMore: boolean }> {
+    try {
+        const q = new URLSearchParams();
+        if (params?.status) q.append('status', params.status);
+        if (params?.cursor) q.append('cursor', params.cursor);
+        if (params?.limit) q.append('limit', params.limit.toString());
+        
+        const res = await authFetch(`${API_URL}/api/blog/admin/comments?${q.toString()}`, { headers: authHeaders() });
+        const json = await res.json();
+        return json.success ? json.data : { comments: [], nextCursor: null, hasMore: false };
+    } catch {
+        return { comments: [], nextCursor: null, hasMore: false };
+    }
 }
 
 export async function moderateBlogComment(commentId: string, action: 'approved' | 'rejected'): Promise<boolean> {

@@ -1,24 +1,25 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getPendingBlogComments, moderateBlogComment, deleteBlogComment, BlogComment } from '@/lib/api';
-import { MessageSquare, CheckCircle, XCircle, Trash2, Search, ExternalLink } from 'lucide-react';
+import { getAdminAllComments, moderateBlogComment, deleteBlogComment, BlogComment } from '@/lib/api';
+import { MessageSquare, CheckCircle, XCircle, Trash2, Filter } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function CommentsModerationPage() {
     const [comments, setComments] = useState<BlogComment[]>([]);
     const [loading, setLoading] = useState(true);
+    const [statusFilter, setStatusFilter] = useState<'all' | 'approved' | 'rejected'>('all');
 
-    const loadComments = async () => {
+    const loadComments = async (status: 'all' | 'approved' | 'rejected') => {
         setLoading(true);
-        const res = await getPendingBlogComments();
-        setComments(res);
+        const res = await getAdminAllComments({ status });
+        setComments(res.comments || []);
         setLoading(false);
     };
 
     useEffect(() => {
-        loadComments();
-    }, []);
+        loadComments(statusFilter);
+    }, [statusFilter]);
 
     const handleModerate = async (id: string, action: 'approved' | 'rejected') => {
         const success = await moderateBlogComment(id, action);
@@ -45,16 +46,32 @@ export default function CommentsModerationPage() {
         <div>
             <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
                 <div>
-                    <h1 className="font-serif text-2xl font-bold text-gold-soft">Comments Moderation</h1>
-                    <p className="text-sm text-text-secondary">{comments.length} pending comments require review</p>
+                    <h1 className="font-serif text-2xl font-bold text-gold-soft">Comments Management</h1>
+                    <p className="text-sm text-text-secondary">View and moderate blog comments</p>
                 </div>
+            </div>
+
+            <div className="flex gap-2 mb-6 border-b border-border pb-2 overflow-x-auto">
+                {(['all', 'approved', 'rejected'] as const).map(status => (
+                    <button
+                        key={status}
+                        onClick={() => setStatusFilter(status)}
+                        className={`px-4 py-2 text-sm font-medium rounded-t-lg capitalize transition-colors ${
+                            statusFilter === status 
+                            ? 'text-gold border-b-2 border-gold bg-gold/[0.05]' 
+                            : 'text-text-muted hover:text-text-primary hover:bg-page-bg'
+                        }`}
+                    >
+                        {status}
+                    </button>
+                ))}
             </div>
 
             <div className="rounded-xl border border-border bg-card-bg overflow-hidden shadow-sm">
                 <div className="px-5 py-4 border-b border-border bg-page-bg/50">
-                    <h2 className="font-semibold text-text-primary flex items-center gap-2">
+                    <h2 className="font-semibold text-text-primary flex items-center gap-2 capitalize">
                         <MessageSquare className="w-4 h-4 text-gold" />
-                        Pending Review
+                        {statusFilter} Comments
                     </h2>
                 </div>
 
@@ -66,8 +83,8 @@ export default function CommentsModerationPage() {
                 ) : comments.length === 0 ? (
                     <div className="p-16 text-center text-text-muted">
                         <CheckCircle className="w-12 h-12 mx-auto mb-3 text-green-500/50" />
-                        <h3 className="text-lg font-medium text-text-primary mb-1">You're all caught up!</h3>
-                        <p>No pending comments in the queue.</p>
+                        <h3 className="text-lg font-medium text-text-primary mb-1">No comments found!</h3>
+                        <p>There are no comments matching this filter.</p>
                     </div>
                 ) : (
                     <div className="divide-y divide-border-subtle">
@@ -84,7 +101,8 @@ export default function CommentsModerationPage() {
                                                 {comment.commenter_email && (
                                                     <span className="text-xs text-text-muted">&lt;{comment.commenter_email}&gt;</span>
                                                 )}
-                                                <span className="text-xs px-2 py-0.5 rounded bg-amber-500/10 text-amber-500 font-medium">PENDING</span>
+                                                {comment.status === 'approved' && <span className="text-xs px-2 py-0.5 rounded bg-green-500/10 text-green-500 font-medium">APPROVED</span>}
+                                                {comment.status === 'rejected' && <span className="text-xs px-2 py-0.5 rounded bg-red-500/10 text-red-500 font-medium">REJECTED</span>}
                                             </div>
                                             <span className="text-xs text-text-muted">
                                                 {new Date(comment.created_at).toLocaleString()}
@@ -102,18 +120,22 @@ export default function CommentsModerationPage() {
                                         </div>
 
                                         <div className="flex items-center gap-3">
-                                            <button
-                                                onClick={() => handleModerate(comment.comment_id, 'approved')}
-                                                className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white rounded text-xs font-semibold transition-colors"
-                                            >
-                                                <CheckCircle className="w-3.5 h-3.5" /> Approve
-                                            </button>
-                                            <button
-                                                onClick={() => handleModerate(comment.comment_id, 'rejected')}
-                                                className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-white rounded text-xs font-semibold transition-colors"
-                                            >
-                                                <XCircle className="w-3.5 h-3.5" /> Reject (Hide)
-                                            </button>
+                                            {comment.status !== 'approved' && (
+                                                <button
+                                                    onClick={() => handleModerate(comment.comment_id, 'approved')}
+                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white rounded text-xs font-semibold transition-colors"
+                                                >
+                                                    <CheckCircle className="w-3.5 h-3.5" /> Approve
+                                                </button>
+                                            )}
+                                            {comment.status !== 'rejected' && (
+                                                <button
+                                                    onClick={() => handleModerate(comment.comment_id, 'rejected')}
+                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-white rounded text-xs font-semibold transition-colors"
+                                                >
+                                                    <XCircle className="w-3.5 h-3.5" /> Reject
+                                                </button>
+                                            )}
                                             <button
                                                 onClick={() => handleDelete(comment.comment_id)}
                                                 className="flex items-center gap-1.5 px-3 py-1.5 text-danger hover:bg-danger/10 rounded text-xs font-medium ml-auto transition-colors"

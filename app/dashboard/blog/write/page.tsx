@@ -7,8 +7,71 @@ import {
     getAdminBlogPost, createBlogPost, updateBlogPost, getAdminBlogCategories, getAdminBlogTags,
     BlogPost, BlogCategory, BlogTag
 } from '@/lib/api';
-import { ChevronLeft, Save, Globe, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { ChevronLeft, Save, Globe, Image as ImageIcon, Loader2, X, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
+
+// Helper component for multi-select pills
+function MultiSelectPills({ 
+    options, 
+    selectedIds, 
+    onChange, 
+    placeholder = "Select items..." 
+}: { 
+    options: { id: string, name: string }[], 
+    selectedIds: string[], 
+    onChange: (ids: string[]) => void,
+    placeholder?: string
+}) {
+    const availableOptions = options.filter(opt => !selectedIds.includes(opt.id));
+    const selectedOptions = options.filter(opt => selectedIds.includes(opt.id));
+
+    return (
+        <div className="space-y-2">
+            {/* Selected Pills */}
+            <div className="flex flex-wrap gap-2">
+                {selectedOptions.map(opt => (
+                    <span key={opt.id} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-wine-gold/10 text-wine-gold border border-wine-gold/20">
+                        {opt.name}
+                        <button 
+                            type="button" 
+                            onClick={(e) => { e.preventDefault(); onChange(selectedIds.filter(id => id !== opt.id)); }}
+                            className="hover:bg-wine-gold/20 rounded-full p-0.5 transition-colors"
+                        >
+                            <X className="w-3 h-3" />
+                        </button>
+                    </span>
+                ))}
+                {selectedOptions.length === 0 && (
+                    <span className="text-xs text-text-muted italic py-1">None selected</span>
+                )}
+            </div>
+            
+            {/* Add Dropdown */}
+            {availableOptions.length > 0 && (
+                <div className="relative mt-2">
+                    <select
+                        className="w-full appearance-none rounded-md border border-border bg-page-bg px-3 py-2 text-sm text-text-primary focus:border-gold/50 focus:outline-none"
+                        onChange={(e) => {
+                            if (e.target.value) {
+                                onChange([...selectedIds, e.target.value]);
+                                e.target.value = ""; // Reset after selection
+                            }
+                        }}
+                        defaultValue=""
+                    >
+                        <option value="" disabled>{placeholder}</option>
+                        {availableOptions.map(opt => (
+                            <option key={opt.id} value={opt.id}>{opt.name}</option>
+                        ))}
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-text-muted">
+                        <Plus className="w-4 h-4" />
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
 
 function WritePostContent() {
     const router = useRouter();
@@ -26,15 +89,33 @@ function WritePostContent() {
     const [slug, setSlug] = useState('');
     const [excerpt, setExcerpt] = useState('');
     const [body, setBody] = useState('');
+    // For legacy support, defaults to 'wine_guides' but we generally won't use it now
     const [blogType, setBlogType] = useState('wine_guides');
     const [categoryId, setCategoryId] = useState('');
-    const [coverImage, setCoverImage] = useState('');
-    const [selectedTags, setSelectedTags] = useState<string[]>([]);
+    
+    // Editorial Images
+    const [image, setImage] = useState('');
+
+    // CMS Flags
     const [isFeatured, setIsFeatured] = useState(false);
+    const [isTrending, setIsTrending] = useState(false);
+    const [isEditorPick, setIsEditorPick] = useState(false);
+    const [complianceChecked, setComplianceChecked] = useState(false);
+    const [displayOrder, setDisplayOrder] = useState(0);
+
+    // Layout
+    const [contentType, setContentType] = useState('Article');
+    const [difficultyLevel, setDifficultyLevel] = useState('Beginner');
+
+    // M2M Relations
+    const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
     useEffect(() => {
         (async () => {
-            const [cats, tags] = await Promise.all([getAdminBlogCategories(), getAdminBlogTags()]);
+            const [cats, tags] = await Promise.all([
+                getAdminBlogCategories(),
+                getAdminBlogTags()
+            ]);
             setCategories(cats);
             setTagsList(tags);
 
@@ -47,8 +128,15 @@ function WritePostContent() {
                     setBody(post.body);
                     setBlogType(post.blog_type || 'wine_guides');
                     setCategoryId(post.category_id || '');
-                    setCoverImage(post.cover_image || '');
+                    setImage(post.featured_image || post.cover_image || '');
                     setIsFeatured(post.is_featured || false);
+                    setIsTrending(post.is_trending || false);
+                    setIsEditorPick(post.is_editor_pick || false);
+                    setComplianceChecked(post.compliance_checked || false);
+                    setDisplayOrder(post.display_order || 0);
+                    setContentType(post.content_type || 'Article');
+                    setDifficultyLevel(post.difficulty_level || 'Beginner');
+
                     setSelectedTags(post.tags?.map(t => t.tag_id) || []);
                 } else {
                     toast.error('Post not found');
@@ -66,25 +154,32 @@ function WritePostContent() {
         }
 
         setSaving(true);
-        // We omit the conflicting `tags` property from Partial<BlogPost> here and pass our own.
-        const data: Omit<Partial<BlogPost>, 'tags'> & { tags?: string[] } = {
+        // We omit the conflicting `tags`, `doshas`, `ingredients` property from Partial<BlogPost> here and pass our own.
+        const data: any = {
             title,
             slug: slug || undefined,
             excerpt,
             body,
             blog_type: blogType,
             category_id: categoryId || undefined,
-            cover_image: coverImage || undefined,
+            cover_image: image || undefined,
+            featured_image: image || undefined,
             is_featured: isFeatured,
+            is_trending: isTrending,
+            is_editor_pick: isEditorPick,
+            compliance_checked: complianceChecked,
+            display_order: displayOrder,
+            content_type: contentType,
+            difficulty_level: difficultyLevel,
             tags: selectedTags,
             status: (publish ? 'published' : 'draft') as BlogPost['status'],
         };
 
         let res;
         if (isEditing && postId) {
-            res = await updateBlogPost(postId, data as any);
+            res = await updateBlogPost(postId, data);
         } else {
-            res = await createBlogPost(data as any);
+            res = await createBlogPost(data);
         }
 
         if (res.success) {
@@ -165,7 +260,7 @@ function WritePostContent() {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-text-secondary mb-1">Post Body * (HTML/Markdown supported in future, generic text for now)</label>
+                            <label className="block text-sm font-medium text-text-secondary mb-1">Post Body *</label>
                             <textarea
                                 value={body}
                                 onChange={e => setBody(e.target.value)}
@@ -181,22 +276,7 @@ function WritePostContent() {
                 <div className="space-y-6">
                     {/* Organization */}
                     <div className="rounded-xl border border-border bg-card-bg p-5 shadow-sm space-y-4">
-                        <h3 className="font-semibold text-text-primary border-b border-border pb-2">Organization</h3>
-
-                        <div>
-                            <label className="block text-xs font-medium text-text-secondary mb-1">Blog Type</label>
-                            <select
-                                value={blogType}
-                                onChange={e => setBlogType(e.target.value)}
-                                className="w-full rounded-md border border-border bg-page-bg px-3 py-2 text-sm text-text-primary focus:border-gold/50 focus:outline-none"
-                            >
-                                <option value="wine_guides">Wine Guides</option>
-                                <option value="food_pairing">Food Pairing</option>
-                                <option value="vineyard_stories">Vineyard Stories</option>
-                                <option value="legal_compliance">Legal & Compliance</option>
-                                <option value="tasting_notes">Tasting Notes</option>
-                            </select>
-                        </div>
+                        <h3 className="font-semibold text-text-primary border-b border-border pb-2">Organization & Layout</h3>
 
                         <div>
                             <label className="block text-xs font-medium text-text-secondary mb-1">Category</label>
@@ -211,57 +291,119 @@ function WritePostContent() {
                                 ))}
                             </select>
                         </div>
+                        
+                        <div>
+                            <label className="block text-xs font-medium text-text-secondary mb-1">Content Type</label>
+                            <select
+                                value={contentType}
+                                onChange={e => setContentType(e.target.value)}
+                                className="w-full rounded-md border border-border bg-page-bg px-3 py-2 text-sm text-text-primary focus:border-gold/50 focus:outline-none"
+                            >
+                                <option value="Article">Article</option>
+                                <option value="Ritual">Ritual</option>
+                                <option value="Ingredient Guide">Ingredient Guide</option>
+                                <option value="Wellness Guide">Wellness Guide</option>
+                                <option value="News">News</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label className="block text-xs font-medium text-text-secondary mb-1">Difficulty Level</label>
+                            <select
+                                value={difficultyLevel}
+                                onChange={e => setDifficultyLevel(e.target.value)}
+                                className="w-full rounded-md border border-border bg-page-bg px-3 py-2 text-sm text-text-primary focus:border-gold/50 focus:outline-none"
+                            >
+                                <option value="Beginner">Beginner</option>
+                                <option value="Intermediate">Intermediate</option>
+                                <option value="Advanced">Advanced</option>
+                            </select>
+                        </div>
 
                         <div>
-                            <label className="block text-xs font-medium text-text-secondary mb-1">Tags (Multiple)</label>
-                            <select
-                                multiple
-                                value={selectedTags}
-                                onChange={e => setSelectedTags(Array.from(e.target.selectedOptions, option => option.value))}
-                                className="w-full rounded-md border border-border bg-page-bg px-3 py-2 text-sm text-text-primary focus:border-gold/50 focus:outline-none min-h-[100px]"
-                            >
-                                {tagsList.map(t => (
-                                    <option key={t.tag_id} value={t.tag_id}>{t.name}</option>
-                                ))}
-                            </select>
-                            <p className="text-[10px] text-text-muted mt-1">Hold Ctrl/Cmd to select multiple</p>
+                            <label className="block text-xs font-medium text-text-secondary mb-1">Tags</label>
+                            <MultiSelectPills 
+                                options={tagsList.map(t => ({ id: t.tag_id, name: t.name }))}
+                                selectedIds={selectedTags}
+                                onChange={setSelectedTags}
+                                placeholder="Add Tag..."
+                            />
                         </div>
 
-                        <div className="pt-2 border-t border-border">
-                            <label className="flex items-center gap-2 cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    checked={isFeatured}
-                                    onChange={e => setIsFeatured(e.target.checked)}
-                                    className="rounded border-border bg-page-bg text-gold focus:ring-gold"
-                                />
-                                <span className="text-sm font-medium text-text-primary">Featured Post</span>
-                            </label>
-                            <p className="text-[10px] text-text-muted ml-6 mt-0.5">Show this post in the featured hero section.</p>
+                    </div>
+
+                    {/* Editorial Flags */}
+                    <div className="rounded-xl border border-border bg-card-bg p-5 shadow-sm space-y-3">
+                        <h3 className="font-semibold text-text-primary border-b border-border pb-2">Editorial Flags</h3>
+
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={isFeatured}
+                                onChange={e => setIsFeatured(e.target.checked)}
+                                className="rounded border-border bg-page-bg text-gold focus:ring-gold"
+                            />
+                            <span className="text-sm font-medium text-text-primary">Featured Post</span>
+                        </label>
+                        <p className="text-[10px] text-text-muted ml-6 -mt-2">Replaces current featured post.</p>
+
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={isTrending}
+                                onChange={e => setIsTrending(e.target.checked)}
+                                className="rounded border-border bg-page-bg text-gold focus:ring-gold"
+                            />
+                            <span className="text-sm font-medium text-text-primary">Is Trending</span>
+                        </label>
+
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={isEditorPick}
+                                onChange={e => setIsEditorPick(e.target.checked)}
+                                className="rounded border-border bg-page-bg text-gold focus:ring-gold"
+                            />
+                            <span className="text-sm font-medium text-text-primary">Editor's Pick</span>
+                        </label>
+
+                        <label className="flex items-center gap-2 cursor-pointer mt-4 pt-4 border-t border-border">
+                            <input
+                                type="checkbox"
+                                checked={complianceChecked}
+                                onChange={e => setComplianceChecked(e.target.checked)}
+                                className="rounded border-border bg-page-bg text-emerald-500 focus:ring-emerald-500"
+                            />
+                            <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">Compliance Checked</span>
+                        </label>
+                        <p className="text-[10px] text-text-muted ml-6 -mt-2">Required before the post is visible publicly.</p>
+                        
+                        <div className="mt-2">
+                            <label className="block text-xs font-medium text-text-secondary mb-1">Display Order</label>
+                            <input
+                                type="number"
+                                value={displayOrder}
+                                onChange={e => setDisplayOrder(parseInt(e.target.value) || 0)}
+                                className="w-full rounded-md border border-border bg-page-bg px-3 py-2 text-sm text-text-primary focus:border-gold/50 focus:outline-none"
+                            />
                         </div>
+
                     </div>
 
                     {/* Media */}
                     <div className="rounded-xl border border-border bg-card-bg p-5 shadow-sm space-y-4">
                         <h3 className="font-semibold text-text-primary border-b border-border pb-2">Media</h3>
+                        
                         <div>
-                            <label className="block text-xs font-medium text-text-secondary mb-1">Cover Image URL</label>
+                            <label className="block text-xs font-medium text-text-secondary mb-1">Post Image URL</label>
                             <input
                                 type="url"
-                                value={coverImage}
-                                onChange={e => setCoverImage(e.target.value)}
+                                value={image}
+                                onChange={e => setImage(e.target.value)}
                                 className="w-full rounded-md border border-border bg-page-bg px-3 py-2 text-sm text-text-primary focus:border-gold/50 focus:outline-none"
                                 placeholder="https://..."
                             />
                         </div>
-                        {coverImage ? (
-                            <img src={coverImage} alt="Cover Preview" className="w-full h-32 object-cover rounded-lg border border-border" />
-                        ) : (
-                            <div className="w-full h-32 rounded-lg border border-dashed border-border flex flex-col items-center justify-center text-text-muted">
-                                <ImageIcon className="w-8 h-8 opacity-20 mb-2" />
-                                <span className="text-xs">No image provided</span>
-                            </div>
-                        )}
                     </div>
                 </div>
             </div>

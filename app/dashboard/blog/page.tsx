@@ -142,8 +142,8 @@ export default function AdminBlogPostsPage() {
                                         <td className="px-5 py-3">
                                             <div className="flex items-center gap-3">
                                                 <div className="h-10 w-12 rounded bg-border/50 flex-shrink-0 overflow-hidden">
-                                                    {post.cover_image ? (
-                                                        <img src={post.cover_image} alt="" className="w-full h-full object-cover" />
+                                                    {(post.featured_image || post.cover_image) ? (
+                                                        <img src={post.featured_image || post.cover_image} alt="" className="w-full h-full object-cover" />
                                                     ) : (
                                                         <FileText className="w-5 h-5 mx-auto mt-2.5 text-text-muted" />
                                                     )}

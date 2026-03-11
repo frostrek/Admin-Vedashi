@@ -35,7 +35,7 @@ const contentNav = [
     { href: '/dashboard/media', label: 'Media Library', icon: Images },
     { href: '/dashboard/reviews', label: 'Product Reviews', icon: Star },
     { href: '/dashboard/blog', label: 'Blog Posts', icon: FileText },
-    { href: '/dashboard/blog/comments', label: 'Blog Comments', icon: MessageSquare },
+    { href: '/dashboard/blog/comments', label: 'Blog Comments', icon: MessageSquare, isSubItem: true },
     { href: '/dashboard/support/tickets', label: 'Support Tickets', icon: MessageSquare },
     { href: '/dashboard/support/faqs', label: 'FAQ Management', icon: HelpCircle },
     { href: '/dashboard/support/help-articles', label: 'Help Articles', icon: BookOpen },
@@ -74,7 +74,7 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
         return () => { document.body.style.overflow = ''; };
     }, [mobileOpen]);
 
-    const renderNavItem = (item: { href: string; label: string; icon: typeof LayoutDashboard }, isCollapsed: boolean) => {
+    const renderNavItem = (item: { href: string; label: string; icon: any; isSubItem?: boolean }, isCollapsed: boolean) => {
         const isActive = item.href === '/dashboard'
             ? pathname === '/dashboard'
             : pathname.startsWith(item.href) && item.href !== '#';
@@ -87,14 +87,18 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
                 className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-300 relative ${isActive
                     ? 'text-gold bg-gold/[0.08]'
                     : 'text-text-muted hover:text-gold-soft hover:bg-gold/[0.04]'
-                    } ${isCollapsed ? 'justify-center' : ''}`}
+                    } ${isCollapsed ? 'justify-center' : ''} ${item.isSubItem ? 'ml-6 border-l border-border rounded-l-none pl-4 py-2 text-xs' : ''}`}
                 title={isCollapsed ? item.label : undefined}
             >
                 {/* Gold left border indicator for active state */}
-                {isActive && !isCollapsed && (
+                {isActive && !isCollapsed && !item.isSubItem && (
                     <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-gold rounded-r-full" />
                 )}
-                <Icon className={`h-[18px] w-[18px] flex-shrink-0 ${isActive ? 'text-gold' : ''}`} />
+                {/* For subitems active state */}
+                {isActive && !isCollapsed && item.isSubItem && (
+                    <span className="absolute -left-[1px] top-1/2 -translate-y-1/2 w-[2px] h-full bg-gold" />
+                )}
+                <Icon className={`${item.isSubItem ? 'h-3.5 w-3.5' : 'h-[18px] w-[18px]'} flex-shrink-0 ${isActive ? 'text-gold' : ''}`} />
                 {!isCollapsed && <span>{item.label}</span>}
             </Link>
         );
