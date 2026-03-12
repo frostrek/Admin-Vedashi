@@ -117,7 +117,7 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
     const sidebarContent = (isCollapsed: boolean) => (
         <>
             {/* Logo */}
-            <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} px-4 py-5 border-b border-border-subtle`}>
+            <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} px-4 py-2 border-b border-border-subtle`}>
                 {!isCollapsed && (
                     <Link href="/dashboard" className="flex items-center gap-2.5">
                         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#828B5C]">

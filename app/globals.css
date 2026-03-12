@@ -148,7 +148,7 @@
 
 body {
   background: var(--background);
-  background-image: url('/leaf-bg.png');
+  /* background-image: url('/leaf-bg.png'); */
   background-attachment: fixed;
   background-position: center;
   background-repeat: no-repeat;

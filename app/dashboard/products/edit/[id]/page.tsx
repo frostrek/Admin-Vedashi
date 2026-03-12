@@ -6,7 +6,7 @@ import { getCategories, createCategory } from '@/lib/api/category';
 import { updateProduct } from '@/lib/api/product';
 import { getProduct, uploadProductImage, deleteProductImage, updateProductImage } from '@/lib/api';
 import { Category } from '@/types/category';
-import { ArrowLeft, ArrowRight, Check, X, Plus, Trash2, ChevronDown, ChevronUp, AlertCircle, Info, Package, Layers, Star, ImageIcon, Maximize2, Loader2, Film, Search } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, X, Plus, Trash2, ChevronDown, ChevronUp, AlertCircle, Info, Package, Layers, Star, ImageIcon, Maximize2, Loader2, Film, Search, Weight, Droplets, Hash, Zap, Utensils } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import CountryPicker from '@/components/CountryPicker';
@@ -40,8 +40,13 @@ const STEPS = [
 // ÔöÇÔöÇÔöÇ Types ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 interface VariantRow {
     variant_id?: string;
-    pack: string;
-    volume: string;
+    weight?: string;
+    volume?: string;
+    count?: string;
+    strength?: string;
+    flavor?: string;
+    pack?: string;
+    combo?: string;
     variant_name: string;
     sku: string;
     price: number;
@@ -111,12 +116,20 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
     });
 
     // ÔöÇÔöÇÔöÇ Step 2: Define Variants State ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
-    const [volumeValues, setVolumeValues] = useState<{ value: string; unit: string }[]>([]);
-    const [packValues, setPackValues] = useState<string[]>([]);
-    const [volInput, setVolInput] = useState('');
+    const [dimConfigs, setDimConfigs] = useState({
+        weight: { active: false, values: [] as string[] },
+        volume: { active: false, values: [] as string[] },
+        count: { active: false, values: [] as string[] },
+        strength: { active: false, values: [] as string[] },
+        flavor: { active: false, values: [] as string[] },
+        pack: { active: false, values: [] as string[] },
+        combo: { active: false, values: [] as string[] },
+    });
+    const [dimInputs, setDimInputs] = useState({
+        weight: '', volume: '', count: '', strength: '', flavor: '', pack: '', combo: ''
+    });
+    const [weightUnit, setWeightUnit] = useState('g');
     const [volUnit, setVolUnit] = useState('ml');
-    const [customPackInput, setCustomPackInput] = useState('');
-    const [showCustomPackInput, setShowCustomPackInput] = useState(false);
 
     // ÔöÇÔöÇÔöÇ Step 3: Variants Table State ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
     const [autoGenerate, setAutoGenerate] = useState(false);
@@ -183,47 +196,27 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
 
             // ── Step 2 & 3: Variants ──
             if (Array.isArray(product.variants) && product.variants.length > 0) {
-                // Extract unique volumes and packs from existing variants for Step 2 display
-                const uniqueVolumes: { value: string; unit: string }[] = [];
-                const uniquePacks: string[] = [];
+                const newDimConfigs = {
+                    weight: { active: false, values: [] as string[] },
+                    volume: { active: false, values: [] as string[] },
+                    count: { active: false, values: [] as string[] },
+                    strength: { active: false, values: [] as string[] },
+                    flavor: { active: false, values: [] as string[] },
+                    pack: { active: false, values: [] as string[] },
+                    combo: { active: false, values: [] as string[] },
+                };
 
                 const mappedVariants: VariantRow[] = product.variants.map((v: any, index: number) => {
-                    // Parse volume string e.g. "750 ml" or "1 L"
-                    let volumeStr = '';
-                    if (v.size_label) {
-                        volumeStr = v.size_label;
-                    } else if (v.volume_ml) {
-                        volumeStr = v.volume_ml >= 1000
-                            ? `${v.volume_ml / 1000} L`
-                            : `${v.volume_ml} ml`;
-                    } else if (v.volume) {
-                        volumeStr = v.volume;
+                    // Legacy field mapping
+                    let volStr = v.volume || '';
+                    if (!volStr && v.size_label) volStr = v.size_label;
+                    if (!volStr && v.volume_ml) {
+                        volStr = v.volume_ml >= 1000 ? `${v.volume_ml / 1000} L` : `${v.volume_ml} ml`;
                     }
 
-                    // Derive pack string
-                    let packStr = '';
-                    if (v.pack) {
-                        packStr = v.pack;
-                    } else if (v.pack_quantity && v.pack_quantity > 1) {
-                        packStr = `Pack of ${v.pack_quantity}`;
-                    } else if (v.pack_quantity === 1) {
-                        packStr = 'Single';
-                    }
-
-                    // Accumulate unique volumes
-                    if (volumeStr) {
-                        const parts = volumeStr.trim().split(' ');
-                        const val = parts[0] || '';
-                        const unit = parts[1] || 'ml';
-                        if (val && !uniqueVolumes.some(uv => uv.value === val && uv.unit === unit)) {
-                            uniqueVolumes.push({ value: val, unit });
-                        }
-                    }
-
-                    // Accumulate unique packs
-                    if (packStr && !uniquePacks.includes(packStr)) {
-                        uniquePacks.push(packStr);
-                    }
+                    let pkStr = v.pack || '';
+                    if (!pkStr && v.pack_quantity && v.pack_quantity > 1) pkStr = `Pack of ${v.pack_quantity}`;
+                    else if (!pkStr && v.pack_quantity === 1) pkStr = 'Single';
 
                     // Parse sale date/time
                     let sale_start_date = '';
@@ -241,33 +234,50 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                         sale_end_time = d.toISOString().slice(11, 16);
                     }
 
-                    // Separate images and videos from product.assets using media_type / mime_type
+                    // Metadata mapping for all dimensions
+                    const dims: (keyof typeof newDimConfigs)[] = ['weight', 'volume', 'count', 'strength', 'flavor', 'pack', 'combo'];
+                    dims.forEach(d => {
+                        let val = '';
+                        if (d === 'volume') val = volStr;
+                        else if (d === 'pack') val = pkStr;
+                        else val = v[d] || '';
+
+                        if (val) {
+                            newDimConfigs[d].active = true;
+                            if (!newDimConfigs[d].values.includes(val)) newDimConfigs[d].values.push(val);
+                        }
+                    });
+
+                    const vName = v.variant_name || '';
+
+                    // Assets
                     const allAssets: any[] = (product as any).assets || [];
-                    const existingImages: { preview: string; file?: File; asset_id?: string }[] = allAssets
+                    const existingImages = allAssets
                         .filter((a: any) => {
                             const mt = (a.media_type || a.mime_type || '').toLowerCase();
-                            const isImage = !mt.startsWith('video');
-                            const belongsToVariant = a.variant_id === v.variant_id || (!a.variant_id && index === 0);
-                            return isImage && belongsToVariant;
+                            return !mt.startsWith('video') && (a.variant_id === v.variant_id || (!a.variant_id && index === 0));
                         })
                         .map((a: any) => ({ preview: a.base64_data || a.asset_url, asset_id: a.asset_id, alt_text: a.alt_text || '' }))
-                        .filter((img: any) => img.preview);
+                        .filter(img => img.preview);
 
-                    const existingVideos: { preview: string; file?: File; asset_id?: string; alt_text?: string }[] = allAssets
+                    const existingVideos = allAssets
                         .filter((a: any) => {
                             const mt = (a.media_type || a.mime_type || '').toLowerCase();
-                            const isVideo = mt.startsWith('video');
-                            const belongsToVariant = a.variant_id === v.variant_id || (!a.variant_id && index === 0);
-                            return isVideo && belongsToVariant;
+                            return mt.startsWith('video') && (a.variant_id === v.variant_id || (!a.variant_id && index === 0));
                         })
                         .map((a: any) => ({ preview: a.base64_data || a.asset_url, asset_id: a.asset_id }))
-                        .filter((vid: any) => vid.preview);
+                        .filter(vid => vid.preview);
 
                     return {
                         variant_id: v.variant_id || undefined,
-                        pack: packStr,
-                        volume: volumeStr,
-                        variant_name: v.variant_name || '',
+                        weight: v.weight || '',
+                        volume: volStr,
+                        count: v.count || '',
+                        strength: v.strength || '',
+                        flavor: v.flavor || '',
+                        pack: pkStr,
+                        combo: v.combo || '',
+                        variant_name: vName,
                         sku: v.variant_sku || v.sku || '',
                         price: Number(v.price) || 0,
                         cost_price: Number(v.cost_price) || 0,
@@ -291,8 +301,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                 });
 
                 setVariants(mappedVariants);
-                if (uniqueVolumes.length > 0) setVolumeValues(uniqueVolumes);
-                if (uniquePacks.length > 0) setPackValues(uniquePacks);
+                setDimConfigs(newDimConfigs);
             }
 
             setLoading(false);
@@ -368,77 +377,76 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
     };
 
     // ÔöÇÔöÇÔöÇ Step 2: Volume helpers ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
-    const addVolume = () => {
-        if (!volInput) return;
-        if (volumeValues.some(v => v.value === volInput && v.unit === volUnit)) {
-            toast.error('This volume already exists');
+    const toggleDimensionActive = (dim: keyof typeof dimConfigs) => {
+        setDimConfigs(prev => ({
+            ...prev,
+            [dim]: { ...prev[dim], active: !prev[dim].active }
+        }));
+    };
+
+    const addDimensionValue = (dim: keyof typeof dimConfigs) => {
+        const val = dimInputs[dim].trim();
+        if (!val) return;
+        
+        let finalVal = val;
+        if (dim === 'weight') finalVal = `${val} ${weightUnit}`;
+        if (dim === 'volume') finalVal = `${val} ${volUnit}`;
+
+        if (!dimConfigs[dim].values.includes(finalVal)) {
+            setDimConfigs(prev => ({
+                ...prev,
+                [dim]: { ...prev[dim], values: [...prev[dim].values, finalVal] }
+            }));
+        }
+        setDimInputs(prev => ({ ...prev, [dim]: '' }));
+    };
+
+    const removeDimensionValue = (dim: keyof typeof dimConfigs, val: string) => {
+        setDimConfigs(prev => ({
+            ...prev,
+            [dim]: { ...prev[dim], values: prev[dim].values.filter(v => v !== val) }
+        }));
+    };
+
+    const generateCombinations = () => {
+        const activeDims = Object.entries(dimConfigs).filter(([_, c]) => c.active);
+        if (activeDims.length === 0) {
+            toast.error('Please select at least one dimension');
             return;
         }
-        setVolumeValues(prev => [...prev, { value: volInput, unit: volUnit }]);
-        setVolInput('');
-    };
 
-    const removeVolume = (index: number) => {
-        setVolumeValues(prev => prev.filter((_, i) => i !== index));
-    };
-
-    // ÔöÇÔöÇÔöÇ Step 2: Pack helpers ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
-    const togglePack = (pack: string) => {
-        setPackValues(prev =>
-            prev.includes(pack) ? prev.filter(p => p !== pack) : [...prev, pack]
-        );
-    };
-
-    const removePack = (index: number) => {
-        setPackValues(prev => prev.filter((_, i) => i !== index));
-    };
-
-    // ÔöÇÔöÇÔöÇ Step 3: Generate N├ùN combinations ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
-    const generateCombinations = (): VariantRow[] => {
-        if (volumeValues.length === 0 && packValues.length === 0) return [];
-        const combos: VariantRow[] = [];
-        const packsToIterate = packValues.length > 0 ? packValues : [''];
-        const volumesToIterate = volumeValues.length > 0 ? volumeValues : [{ value: '', unit: '' }];
-        for (const pack of packsToIterate) {
-            for (const vol of volumesToIterate) {
-                const volumeStr = vol.value ? `${vol.value} ${vol.unit}` : '';
-                combos.push({
-                    pack,
-                    volume: volumeStr,
-                    variant_name: '',
-                    sku: '',
-                    price: 0,
-                    cost_price: 0,
-                    stock: 0,
-                    shelf_life: '',
-                    length_cm: '', width_cm: '', height_cm: '', weight_kg: '',
-                    images: [],
-                    videos: [],
-                    defaultImageIndex: 0,
-                    sale_price: '', sale_start_date: '', sale_start_time: '', sale_end_date: '', sale_end_time: '',
-                    isDefault: false,
-                    isActive: true,
+        let configs = [{}];
+        activeDims.forEach(([id, config]) => {
+            const nextConfigs: any[] = [];
+            configs.forEach(existing => {
+                config.values.forEach(val => {
+                    nextConfigs.push({ ...existing, [id]: val });
                 });
-            }
-        }
-        return combos;
+            });
+            configs = nextConfigs;
+        });
+
+        const newVariants: VariantRow[] = configs.map(config => {
+            const nameParts = activeDims.map(([id]) => (config as any)[id]).filter(Boolean);
+            return {
+                ...variants[0], // Copy first variant's shared properties
+                ...config,
+                variant_name: nameParts.join(' / '),
+                sku: '',
+                variant_id: undefined,
+                images: sharedImages ? variants[0].images : [],
+                videos: sharedImages ? variants[0].videos : [],
+                isDefault: false
+            };
+        });
+
+        setVariants(newVariants);
+        toast.success(`Generated ${newVariants.length} variants`);
     };
 
-    // ÔöÇÔöÇÔöÇ Auto-generate toggle handler ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
-    const handleAutoGenerateToggle = (checked: boolean) => {
-        setAutoGenerate(checked);
-        if (checked) {
-            const combos = generateCombinations();
-            if (combos.length === 0) {
-                toast.error('Please add at least one Volume or Pack value in Step 2');
-                setAutoGenerate(false);
-                return;
-            }
-            setVariants(combos);
-            toast.success(`Generated ${combos.length} variant combinations`);
-        } else {
-            setVariants([{ pack: '', volume: '', variant_name: '', sku: '', price: 0, cost_price: 0, stock: 0, shelf_life: '', length_cm: '', width_cm: '', height_cm: '', weight_kg: '', images: [], videos: [], defaultImageIndex: 0, sale_price: '', sale_start_date: '', sale_start_time: '', sale_end_date: '', sale_end_time: '', isDefault: false, isActive: true }]);
-        }
+    const handleAutoGenerateToggle = (val: boolean) => {
+        setAutoGenerate(val);
+        if (val) generateCombinations();
     };
 
     // ÔöÇÔöÇÔöÇ Variant table helpers ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
@@ -451,16 +459,28 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
     };
 
     const addVariantRow = () => {
-        setVariants(prev => [...prev, {
-            pack: packValues.length === 1 ? packValues[0] : '',
-            volume: volumeValues.length === 1 ? `${volumeValues[0].value} ${volumeValues[0].unit}` : '',
+        const anyActiveDim = Object.values(dimConfigs).some(d => d.active);
+        const newVariant: any = {
             variant_name: '', sku: '', price: 0, cost_price: 0, stock: 0,
             shelf_life: '', length_cm: '', width_cm: '', height_cm: '', weight_kg: '',
             images: [], videos: [], defaultImageIndex: 0,
             sale_price: '', sale_start_date: '', sale_start_time: '', sale_end_date: '', sale_end_time: '',
             isDefault: false,
             isActive: true
-        }]);
+        };
+
+        // Pre-fill fields that only have ONE value
+        if (anyActiveDim) {
+            Object.entries(dimConfigs).forEach(([key, config]) => {
+                if (config.active && config.values.length === 1) {
+                    newVariant[key] = config.values[0];
+                } else {
+                    newVariant[key] = '';
+                }
+            });
+        }
+
+        setVariants(prev => [...prev, newVariant as VariantRow]);
     };
 
     const setDefaultVariant = (index: number) => {
@@ -600,14 +620,21 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
             }
         }
         if (currentStep === 2) {
+            const anyActiveDim = Object.values(dimConfigs).some(d => d.active);
+            if (!anyActiveDim) {
+                toast.error('Please select at least one variant dimension');
+                return;
+            }
             // Pre-fill the initial blank row with single-option values
-            setVariants(prev => prev.map(v => ({
-                ...v,
-                pack: packValues.length === 1 && !v.pack ? packValues[0] : v.pack,
-                volume: volumeValues.length === 1 && !v.volume
-                    ? `${volumeValues[0].value} ${volumeValues[0].unit}`
-                    : v.volume,
-            })));
+            setVariants(prev => prev.map(v => {
+                const updated = { ...v };
+                Object.entries(dimConfigs).forEach(([key, config]) => {
+                    if (config.active && config.values.length === 1 && !(updated as any)[key]) {
+                        (updated as any)[key] = config.values[0];
+                    }
+                });
+                return updated;
+            }));
         }
         if (currentStep < STEPS.length) setCurrentStep(prev => prev + 1);
     };
@@ -638,17 +665,25 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
             specifications: form.country_of_origin ? { country_of_origin: form.country_of_origin } : undefined,
             variants: variants
                 .filter(v => v.sku.trim() || v.variant_name.trim())
-                .map(v => ({
-                    sku: v.sku.trim() || `${draftSku}-V${Math.random().toString(36).slice(2, 6)}`,
-                    variant_name: v.variant_name.trim() || 'Draft Variant',
-                    price: Number(v.price) || 0,
-                    stock: Number(v.stock) || 0,
-                    cost_price: v.cost_price ? Number(v.cost_price) : null,
-                    volume: v.volume || undefined,
-                    pack: v.pack || undefined,
-                    isDefault: v.isDefault,
-                    sale_price: v.sale_price || null,
-                })),
+                .map(v => {
+                    const activeDimensions = Object.entries(dimConfigs)
+                        .filter(([_, config]) => config.active)
+                        .map(([id]) => (v as any)[id])
+                        .filter(Boolean);
+                    const combinedName = v.variant_name || activeDimensions.join(' ');
+
+                    return {
+                        sku: v.sku.trim() || `${draftSku}-V${Math.random().toString(36).slice(2, 6)}`,
+                        variant_name: combinedName || 'Draft Variant',
+                        price: Number(v.price) || 0,
+                        stock: Number(v.stock) || 0,
+                        cost_price: v.cost_price ? Number(v.cost_price) : null,
+                        volume: v.volume || undefined,
+                        pack: v.pack || undefined,
+                        isDefault: v.isDefault,
+                        sale_price: v.sale_price || null,
+                    };
+                }),
             available_from: form.available_from_date ? new Date(`${form.available_from_date}T${form.available_from_time || '00:00'}`).toISOString() : null,
             available_until: form.available_until_date ? new Date(`${form.available_until_date}T${form.available_until_time || '23:59'}`).toISOString() : null,
         };
@@ -678,11 +713,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
             toast.error('Product Name is required');
             return;
         }
-        const hasEmptyVariantName = variants.some(v => !v.variant_name.trim());
-        if (hasEmptyVariantName) {
-            toast.error('All variants must have a Variant Name');
-            return;
-        }
+        // (Auto-generate name if blank)
         const hasEmptySku = variants.some(v => !v.sku.trim());
         if (hasEmptySku) {
             toast.error('All variants must have a SKU');
@@ -714,30 +745,38 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                 : undefined,
 
             // Full variants array ÔÇö backend maps these to product_variants rows
-            variants: variants.map(v => ({
-                variant_id: v.variant_id || undefined,
-                sku: v.sku.trim(),
-                variant_name: v.variant_name.trim(),
-                price: Number(v.price) || 0,
-                stock: Number(v.stock) || 0,
-                cost_price: v.cost_price ? Number(v.cost_price) : null,
-                volume: v.volume || undefined,
-                pack: v.pack || undefined,
-                isDefault: v.isDefault,
-                isActive: v.isActive,
-                // Sale Management
-                sale_price: v.sale_price || null,
-                sale_start_date: v.sale_start_date || undefined,
-                sale_start_time: v.sale_start_time || undefined,
-                sale_end_date: v.sale_end_date || undefined,
-                sale_end_time: v.sale_end_time || undefined,
-                // Dimensions + shelf life
-                length_cm: v.length_cm || undefined,
-                width_cm: v.width_cm || undefined,
-                height_cm: v.height_cm || undefined,
-                weight_kg: v.weight_kg || undefined,
-                shelf_life: v.shelf_life || undefined,
-            })),
+            variants: variants.map(v => {
+                const activeDimensions = Object.entries(dimConfigs)
+                    .filter(([_, config]) => config.active)
+                    .map(([id]) => (v as any)[id])
+                    .filter(Boolean);
+                const combinedName = v.variant_name || activeDimensions.join(' ');
+
+                return {
+                    variant_id: v.variant_id || undefined,
+                    sku: v.sku.trim(),
+                    variant_name: combinedName.trim(),
+                    price: Number(v.price) || 0,
+                    stock: Number(v.stock) || 0,
+                    cost_price: v.cost_price ? Number(v.cost_price) : null,
+                    volume: v.volume || undefined,
+                    pack: v.pack || undefined,
+                    isDefault: v.isDefault,
+                    isActive: v.isActive,
+                    // Sale Management
+                    sale_price: v.sale_price || null,
+                    sale_start_date: v.sale_start_date || undefined,
+                    sale_start_time: v.sale_start_time || undefined,
+                    sale_end_date: v.sale_end_date || undefined,
+                    sale_end_time: v.sale_end_time || undefined,
+                    // Dimensions + shelf life
+                    length_cm: v.length_cm || undefined,
+                    width_cm: v.width_cm || undefined,
+                    height_cm: v.height_cm || undefined,
+                    weight_kg: v.weight_kg || undefined,
+                    shelf_life: v.shelf_life || undefined,
+                };
+            }),
             available_from: form.available_from_date ? new Date(`${form.available_from_date}T${form.available_from_time || '00:00'}`).toISOString() : null,
             available_until: form.available_until_date ? new Date(`${form.available_until_date}T${form.available_until_time || '23:59'}`).toISOString() : null,
 
@@ -903,8 +942,9 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                                         toast.error('Product Name is required');
                                                         return;
                                                     }
-                                                    if (currentStep === 2 && volumeValues.length === 0 && step.id > 2) {
-                                                        toast.error('Please add at least one Volume value');
+                                                    const anyActiveDim = Object.values(dimConfigs).some(d => d.active);
+                                                    if (currentStep === 2 && !anyActiveDim && step.id > 2) {
+                                                        toast.error('Please select at least one variant dimension');
                                                         return;
                                                     }
                                                     setCurrentStep(step.id);
@@ -952,45 +992,51 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                         type="button"
                                         onClick={handleSaveAsDraft}
                                         disabled={loading}
-                                        className="flex w-full items-center justify-center gap-2 rounded-lg border border-gold/20 px-4 py-2.5 text-sm font-semibold text-gold-soft hover:bg-gold/[0.06] transition-all duration-300 disabled:opacity-50"
+                                        className="w-full h-10 flex items-center justify-center gap-2 border border-gold/40 text-gold-soft hover:bg-gold/[0.06] rounded-lg text-sm font-medium transition-all duration-300 disabled:opacity-50"
                                     >
-                                        {loading ? 'Saving...' : 'Save as Draft'}
+                                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Layers className="h-4 w-4" />}
+                                        Save as Draft
                                     </button>
                                 )}
-                                {currentStep < STEPS.length ? (
-                                    <button
-                                        type="button"
-                                        onClick={goNext}
-                                        className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-[#E8D8B9] hover:bg-primary-light border border-gold/10 transition-all duration-300 shadow-lg shadow-primary/10"
-                                    >
-                                        Next
-                                        <ArrowRight className="h-4 w-4" />
-                                    </button>
-                                ) : currentStep !== 5 ? (
-                                    <button
-                                        type="button"
-                                        onClick={handleSubmit}
-                                        disabled={loading}
-                                        className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-[#E8D8B9] hover:bg-primary-light border border-gold/10 transition-all duration-300 shadow-lg shadow-primary/10 disabled:opacity-50"
-                                    >
-                                        <Check className="h-4 w-4" />
-                                        {loading ? 'Saving...' : 'Save Changes'}
-                                    </button>
-                                ) : null}
 
-                                {currentStep > 1 ? (
+                                <div className="flex items-center gap-3">
+                                    {currentStep > 1 && (
+                                        <button
+                                            type="button"
+                                            onClick={goBack}
+                                            className="flex-1 h-11 flex items-center justify-center gap-2 border border-border text-text-secondary hover:bg-white/[0.04] rounded-xl text-sm font-medium transition-all duration-300"
+                                        >
+                                            <ArrowLeft className="h-4 w-4" />
+                                            Back
+                                        </button>
+                                    )}
                                     <button
                                         type="button"
-                                        onClick={goBack}
-                                        className="flex w-full items-center justify-center gap-2 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-text-secondary hover:text-gold hover:border-gold/30 transition-all duration-300"
+                                        onClick={currentStep === STEPS.length ? handleSubmit : goNext}
+                                        disabled={loading}
+                                        className={`flex-[2] h-11 flex items-center justify-center gap-2 rounded-xl text-sm font-bold transition-all duration-300 shadow-lg shadow-gold/10 ${loading ? 'opacity-50 cursor-not-allowed' : ''
+                                            } bg-gradient-to-r from-gold to-[#D4A847] text-white hover:scale-[1.02] active:scale-[0.98]`}
                                     >
-                                        <ArrowLeft className="h-4 w-4" />
-                                        Back
+                                        {loading ? (
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : currentStep === STEPS.length ? (
+                                            <>
+                                                <Check className="h-4 w-4" />
+                                                Save Changes
+                                            </>
+                                        ) : (
+                                            <>
+                                                Next
+                                                <ArrowRight className="h-4 w-4" />
+                                            </>
+                                        )}
                                     </button>
-                                ) : (
+                                </div>
+
+                                {currentStep === 1 && (
                                     <Link
                                         href="/dashboard/products"
-                                        className="flex w-full items-center justify-center rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-text-secondary hover:text-gold hover:border-gold/30 transition-all duration-300"
+                                        className="w-full h-10 flex items-center justify-center rounded-lg border border-border text-sm font-medium text-text-secondary hover:text-gold hover:border-gold/30 transition-all duration-300"
                                     >
                                         Cancel
                                     </Link>
@@ -1203,155 +1249,120 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                             <div className="space-y-6 animate-fade-in-up">
                                 <div className="border-b border-border pb-3">
                                     <h3 className="font-serif text-lg font-semibold text-gold-soft">Define Variants</h3>
-                                    <p className="text-xs text-text-secondary mt-1">Configure volume and pack options for this product</p>
+                                    <p className="text-xs text-text-secondary mt-1">Select variant types and add their values</p>
                                 </div>
 
-                                {/* ÔöÇÔöÇ Volume Section ÔöÇÔöÇ */}
-                                <div className="bg-white/[0.03] border border-border rounded-xl p-5">
-                                    <h4 className="font-semibold text-gold-soft mb-4 text-sm">Volume</h4>
-
-                                    {/* Added chips */}
-                                    {volumeValues.length > 0 && (
-                                        <div className="flex flex-wrap gap-2 mb-4">
-                                            {volumeValues.map((v, i) => (
-                                                <div key={i} className="flex items-center gap-1.5 bg-gold/[0.08] border border-gold/20 text-text-primary px-3 py-1.5 rounded-full text-sm">
-                                                    <span>{v.value} {v.unit}</span>
-                                                    <button type="button" onClick={() => removeVolume(i)} className="text-text-muted hover:text-danger rounded-full hover:bg-white/10 p-0.5 transition-colors">
-                                                        <X className="h-3 w-3" />
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {/* Dimension Selection */}
+                                    <div className="space-y-4">
+                                        <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider">Select Variant Types</p>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            {Object.entries(dimConfigs).map(([key, config]) => {
+                                                const Icon = key === 'weight' ? Weight : key === 'volume' ? Droplets : key === 'count' ? Hash : key === 'strength' ? Zap : key === 'flavor' ? Utensils : key === 'pack' ? Package : Layers;
+                                                return (
+                                                    <button
+                                                        key={key}
+                                                        type="button"
+                                                        onClick={() => toggleDimensionActive(key as keyof typeof dimConfigs)}
+                                                        className={`flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 text-left ${config.active
+                                                            ? 'bg-gold/[0.08] border-gold/40 text-gold-soft shadow-sm shadow-gold/10'
+                                                            : 'bg-white/[0.02] border-border text-text-secondary hover:border-gold/20 hover:text-text-primary'
+                                                            }`}
+                                                    >
+                                                        <Icon className={`h-4 w-4 ${config.active ? 'text-gold' : 'text-text-muted'}`} />
+                                                        <span className="text-sm font-medium capitalize">{key}</span>
+                                                        {config.active && <Check className="h-3.5 w-3.5 ml-auto text-gold" />}
                                                     </button>
-                                                </div>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
-                                    )}
-
-                                    {/* Input row */}
-                                    <div className="flex gap-2 max-w-md">
-                                        <input
-                                            type="number"
-                                            step="0.1"
-                                            min="0"
-                                            placeholder="Value"
-                                            value={volInput}
-                                            onChange={e => setVolInput(e.target.value)}
-                                            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addVolume(); } }}
-                                            className="w-1/2 rounded-lg border border-border px-3 py-2 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 bg-transparent transition-all"
-                                        />
-                                        <select
-                                            value={volUnit}
-                                            onChange={e => setVolUnit(e.target.value)}
-                                            className="w-1/4 rounded-lg border border-border px-3 py-2 text-sm focus:border-gold/40 focus:outline-none bg-white text-gray-900 transition-all"
-                                        >
-                                            {PREDEFINED_UNITS.map(u => <option key={u} value={u}>{u}</option>)}
-                                        </select>
-                                        <button
-                                            type="button"
-                                            onClick={addVolume}
-                                            className="rounded-lg border border-border bg-white/5 px-5 py-2 text-sm font-medium hover:bg-white/10 hover:text-gold hover:border-gold/30 transition-all"
-                                        >
-                                            Add
-                                        </button>
                                     </div>
-                                </div>
 
-                                {/* ÔöÇÔöÇ Pack Section ÔöÇÔöÇ */}
-                                <div className="bg-white/[0.03] border border-border rounded-xl p-5">
-                                    <h4 className="font-semibold text-gold-soft mb-4 text-sm">Pack</h4>
+                                    {/* Active Dimension Values */}
+                                    <div className="space-y-6">
+                                        {Object.entries(dimConfigs).filter(([_, c]) => c.active).map(([key, config]) => (
+                                            <div key={key} className="bg-white/[0.03] border border-border rounded-xl p-4 space-y-3">
+                                                <div className="flex items-center justify-between">
+                                                    <h4 className="text-sm font-semibold text-text-primary capitalize">BY {key}</h4>
+                                                    <span className="text-[10px] text-text-muted bg-white/5 px-2 py-0.5 rounded-full">{config.values.length} values</span>
+                                                </div>
 
-                                    {/* Selected pack chips */}
-                                    {packValues.length > 0 && (
-                                        <div className="flex flex-wrap gap-2 mb-4">
-                                            {packValues.map((p, i) => (
-                                                <div key={i} className="flex items-center gap-1.5 bg-gold/[0.08] border border-gold/20 text-text-primary px-3 py-1.5 rounded-full text-sm">
-                                                    <span>{p}</span>
-                                                    <button type="button" onClick={() => removePack(i)} className="text-text-muted hover:text-danger rounded-full hover:bg-white/10 p-0.5 transition-colors">
-                                                        <X className="h-3 w-3" />
+                                                <div className="flex flex-wrap gap-2">
+                                                    {config.values.map(val => (
+                                                        <div key={val} className="flex items-center gap-1.5 bg-gold/[0.08] border border-gold/20 text-gold-soft px-2.5 py-1 rounded-lg text-xs font-medium">
+                                                            {val}
+                                                            <button type="button" onClick={() => removeDimensionValue(key as keyof typeof dimConfigs, val)} className="p-0.5 hover:bg-gold/20 rounded transition-colors">
+                                                                <X className="h-3 w-3" />
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+
+                                                <div className="flex gap-2">
+                                                    {key === 'weight' ? (
+                                                        <div className="flex flex-1 gap-2">
+                                                            <input
+                                                                type="text"
+                                                                placeholder="e.g. 500"
+                                                                value={dimInputs.weight}
+                                                                onChange={e => setDimInputs(prev => ({ ...prev, weight: e.target.value }))}
+                                                                onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addDimensionValue('weight'))}
+                                                                className="flex-1 bg-transparent border border-border rounded-lg px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none transition-colors"
+                                                            />
+                                                            <select
+                                                                value={weightUnit}
+                                                                onChange={e => setWeightUnit(e.target.value)}
+                                                                className="bg-card-bg border border-border rounded-lg px-2 py-1.5 text-xs focus:border-gold/40 focus:outline-none"
+                                                            >
+                                                                {['g', 'kg', 'mg'].map(u => <option key={u} value={u}>{u}</option>)}
+                                                            </select>
+                                                        </div>
+                                                    ) : key === 'volume' ? (
+                                                        <div className="flex flex-1 gap-2">
+                                                            <input
+                                                                type="text"
+                                                                placeholder="e.g. 750"
+                                                                value={dimInputs.volume}
+                                                                onChange={e => setDimInputs(prev => ({ ...prev, volume: e.target.value }))}
+                                                                onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addDimensionValue('volume'))}
+                                                                className="flex-1 bg-transparent border border-border rounded-lg px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none transition-colors"
+                                                            />
+                                                            <select
+                                                                value={volUnit}
+                                                                onChange={e => setVolUnit(e.target.value)}
+                                                                className="bg-card-bg border border-border rounded-lg px-2 py-1.5 text-xs focus:border-gold/40 focus:outline-none"
+                                                            >
+                                                                {['ml', 'L', 'fl oz'].map(u => <option key={u} value={u}>{u}</option>)}
+                                                            </select>
+                                                        </div>
+                                                    ) : (
+                                                        <input
+                                                            type="text"
+                                                            placeholder={`Add ${key} value...`}
+                                                            value={dimInputs[key as keyof typeof dimInputs]}
+                                                            onChange={e => setDimInputs(prev => ({ ...prev, [key]: e.target.value }))}
+                                                            onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addDimensionValue(key as keyof typeof dimConfigs))}
+                                                            className="flex-1 bg-transparent border border-border rounded-lg px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none transition-colors"
+                                                        />
+                                                    )}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => addDimensionValue(key as keyof typeof dimConfigs)}
+                                                        className="px-4 py-1.5 bg-gold/10 text-gold hover:bg-gold/20 rounded-lg text-sm font-medium transition-colors"
+                                                    >
+                                                        Add
                                                     </button>
                                                 </div>
-                                            ))}
-                                        </div>
-                                    )}
+                                            </div>
+                                        ))}
 
-                                    {/* Preset buttons */}
-                                    <div className="flex flex-wrap gap-2">
-                                        {PREDEFINED_PACKS.map(pack => {
-                                            const isSelected = packValues.includes(pack);
-                                            return (
-                                                <button
-                                                    key={pack}
-                                                    type="button"
-                                                    onClick={() => togglePack(pack)}
-                                                    className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200 ${isSelected
-                                                        ? 'bg-gold/[0.12] border-gold/30 text-gold-soft shadow-sm'
-                                                        : 'border-border text-text-secondary hover:bg-white/5 hover:text-gold-soft hover:border-gold/20'
-                                                        }`}
-                                                >
-                                                    {pack}
-                                                </button>
-                                            );
-                                        })}
-
-                                        {/* Add Custom pill */}
-                                        {!showCustomPackInput ? (
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowCustomPackInput(true)}
-                                                className="px-4 py-2 rounded-lg text-sm font-medium border border-dashed border-border text-text-muted hover:border-gold/30 hover:text-gold-soft transition-all duration-200 flex items-center gap-1.5"
-                                            >
-                                                <Plus className="h-3.5 w-3.5" />
-                                                Add Custom
-                                            </button>
-                                        ) : (
-                                            <div className="flex items-center gap-1.5">
-                                                <input
-                                                    type="text"
-                                                    value={customPackInput}
-                                                    onChange={e => setCustomPackInput(e.target.value)}
-                                                    onKeyDown={e => {
-                                                        if (e.key === 'Enter') {
-                                                            e.preventDefault();
-                                                            if (customPackInput.trim()) {
-                                                                if (packValues.includes(customPackInput.trim())) {
-                                                                    toast.error('This pack already exists');
-                                                                } else {
-                                                                    setPackValues(prev => [...prev, customPackInput.trim()]);
-                                                                    setCustomPackInput('');
-                                                                    setShowCustomPackInput(false);
-                                                                }
-                                                            }
-                                                        }
-                                                        if (e.key === 'Escape') {
-                                                            setCustomPackInput('');
-                                                            setShowCustomPackInput(false);
-                                                        }
-                                                    }}
-                                                    placeholder="Custom pack name"
-                                                    autoFocus
-                                                    className="w-36 rounded-lg border border-gold/30 px-3 py-1.5 text-sm focus:border-gold/50 focus:outline-none focus:ring-1 focus:ring-gold/20 bg-transparent transition-all"
-                                                />
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        if (customPackInput.trim()) {
-                                                            if (packValues.includes(customPackInput.trim())) {
-                                                                toast.error('This pack already exists');
-                                                            } else {
-                                                                setPackValues(prev => [...prev, customPackInput.trim()]);
-                                                                setCustomPackInput('');
-                                                                setShowCustomPackInput(false);
-                                                            }
-                                                        }
-                                                    }}
-                                                    className="p-1.5 rounded-lg bg-gold/10 text-gold hover:bg-gold/20 transition-colors"
-                                                >
-                                                    <Check className="h-4 w-4" />
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => { setCustomPackInput(''); setShowCustomPackInput(false); }}
-                                                    className="p-1.5 rounded-lg hover:bg-white/10 text-text-muted hover:text-danger transition-colors"
-                                                >
-                                                    <X className="h-4 w-4" />
-                                                </button>
+                                        {Object.values(dimConfigs).every(d => !d.active) && (
+                                            <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-border rounded-2xl bg-white/[0.01]">
+                                                <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-4">
+                                                    <Plus className="h-6 w-6 text-text-muted" />
+                                                </div>
+                                                <p className="text-sm font-medium text-text-secondary">No variant types selected</p>
+                                                <p className="text-xs text-text-muted mt-1 text-center max-w-[200px]">Select dimensions from the left to start configuring your product variants</p>
                                             </div>
                                         )}
                                     </div>
@@ -1367,7 +1378,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                     <p className="text-xs text-text-secondary mt-1">Configure individual variant SKUs, pricing and stock</p>
                                 </div>
 
-                                {/* Auto-generate checkbox */}
+                                {/* Auto-generate toggle */}
                                 <div className="bg-white/[0.03] border border-border rounded-xl p-4">
                                     <label className="flex items-center gap-3 cursor-pointer group">
                                         <div className="relative">
@@ -1387,7 +1398,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                         <div>
                                             <span className="text-sm font-medium text-text-primary">Auto-generate all combinations</span>
                                             <p className="text-xs text-text-secondary mt-0.5">
-                                                Creates all Pack ├ù Volume permutations ({packValues.length} ├ù {volumeValues.length} = {packValues.length * volumeValues.length} variants)
+                                                Creates permutations for: {Object.entries(dimConfigs).filter(([_, c]) => c.active).map(([k]) => k).join(', ')}
                                             </p>
                                         </div>
                                     </label>
@@ -1400,8 +1411,9 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                             <thead className="bg-white/5 border-b border-border">
                                                 <tr>
                                                     <th className="px-4 py-4 w-10"></th>
-                                                    {packValues.length > 0 && <th className="px-4 py-4 font-medium text-text-secondary">Pack</th>}
-                                                    <th className="px-4 py-4 font-medium text-text-secondary">Volume</th>
+                                                    {Object.entries(dimConfigs).filter(([_, c]) => c.active).map(([key]) => (
+                                                        <th key={key} className="px-4 py-4 font-medium text-text-secondary capitalize">{key}</th>
+                                                    ))}
                                                     <th className="px-4 py-4 font-medium text-text-secondary">Variant Name <span className="text-danger text-xs">*</span></th>
                                                     <th className="px-4 py-4 font-medium text-text-secondary">SKU *</th>
                                                     <th className="px-4 py-4 font-medium text-text-secondary">Price ($) *</th>
@@ -1413,6 +1425,8 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                                 {variants.map((variant, vIdx) => {
                                                     const isDuplicate = variant.sku && duplicateSkus.includes(variant.sku);
                                                     const isExpanded = expandedVariantIndex === vIdx;
+                                                    const activeDims = Object.entries(dimConfigs).filter(([_, c]) => c.active);
+
                                                     return (
                                                         <React.Fragment key={vIdx}>
                                                             <tr className={`transition-colors ${isExpanded ? 'bg-white/[0.04]' : 'hover:bg-white/[0.02]'}`}>
@@ -1425,47 +1439,36 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                                                         {isExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
                                                                     </button>
                                                                 </td>
-                                                                {packValues.length > 0 && (
-                                                                    <td className="px-4 py-3 align-top">
-                                                                        {autoGenerate || packValues.length <= 1 ? (
-                                                                            <span className="bg-white/5 border border-border px-3 py-1.5 rounded text-xs font-medium text-text-primary">{variant.pack || (packValues[0] ?? 'ÔÇö')}</span>
+
+                                                                {/* Dynamic Dimensions Columns */}
+                                                                {activeDims.map(([key, config]) => (
+                                                                    <td key={key} className="px-4 py-3 align-top">
+                                                                        {autoGenerate ? (
+                                                                            <span className="bg-white/5 border border-border px-3 py-1.5 rounded text-xs font-medium text-text-primary">
+                                                                                {(variant as any)[key] || '—'}
+                                                                            </span>
                                                                         ) : (
                                                                             <select
-                                                                                value={variant.pack}
-                                                                                onChange={e => updateVariant(vIdx, 'pack', e.target.value)}
+                                                                                value={(variant as any)[key] || ''}
+                                                                                onChange={e => updateVariant(vIdx, key as keyof VariantRow, e.target.value)}
                                                                                 className="w-full min-w-[120px] rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
                                                                             >
                                                                                 <option value="">Select</option>
-                                                                                {packValues.map(p => <option key={p} value={p}>{p}</option>)}
+                                                                                {config.values.map(val => (
+                                                                                    <option key={val} value={val}>{val}</option>
+                                                                                ))}
                                                                             </select>
                                                                         )}
                                                                     </td>
-                                                                )}
+                                                                ))}
 
-                                                                <td className="px-4 py-3 align-top">
-                                                                    {autoGenerate || volumeValues.length <= 1 ? (
-                                                                        <span className="bg-white/5 border border-border px-3 py-1.5 rounded text-xs font-medium text-text-primary">{variant.volume || (volumeValues[0] ? `${volumeValues[0].value} ${volumeValues[0].unit}` : 'ÔÇö')}</span>
-                                                                    ) : (
-                                                                        <select
-                                                                            value={variant.volume}
-                                                                            onChange={e => updateVariant(vIdx, 'volume', e.target.value)}
-                                                                            className="w-full min-w-[120px] rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
-                                                                        >
-                                                                            <option value="">Select</option>
-                                                                            {volumeValues.map(v => {
-                                                                                const label = `${v.value} ${v.unit}`;
-                                                                                return <option key={label} value={label}>{label}</option>;
-                                                                            })}
-                                                                        </select>
-                                                                    )}
-                                                                </td>
                                                                 {/* Variant Name */}
-                                                                <td className="px-4 py-3 align-top min-w-[150px]">
+                                                                <td className="px-4 py-3 align-top min-w-[180px]">
                                                                     <input
                                                                         type="text"
                                                                         value={variant.variant_name}
                                                                         onChange={e => updateVariant(vIdx, 'variant_name', e.target.value)}
-                                                                        placeholder="e.g. Ashwagandha 60 Capsules"
+                                                                        placeholder="Leave blank to use selected dimensions"
                                                                         className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
                                                                     />
                                                                 </td>
@@ -1524,10 +1527,10 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                                                 </td>
                                                             </tr>
 
-                                                            {/* Expanded row */}
+                                                            {/* Expanded row (Legacy structure updated colSpan) */}
                                                             {isExpanded && (
                                                                 <tr className="bg-white/[0.01] border-b border-border">
-                                                                    <td colSpan={packValues.length > 0 ? 8 : 7} className="p-5">
+                                                                    <td colSpan={5 + activeDims.length} className="p-5">
                                                                         <div className="animate-fade-in-up space-y-6">
 
                                                                             {/* ÔöÇÔöÇ Extra fields row ÔöÇÔöÇ */}

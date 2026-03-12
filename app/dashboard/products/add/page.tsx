@@ -39,8 +39,13 @@ const STEPS = [
 
 // ÔöÇÔöÇÔöÇ Types ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 interface VariantRow {
-    pack: string;
+    weight: string;
     volume: string;
+    count: string;
+    strength: string;
+    flavor: string;
+    pack: string;
+    combo: string;
     variant_name: string;
     sku: string;
     price: number;
@@ -88,18 +93,32 @@ export default function AddProductPage() {
         available_until_time: '',
     });
 
-    // ÔöÇÔöÇÔöÇ Step 2: Define Variants State ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
-    const [volumeValues, setVolumeValues] = useState<{ value: string; unit: string }[]>([]);
-    const [packValues, setPackValues] = useState<string[]>([]);
-    const [volInput, setVolInput] = useState('');
+    // ÔöÇÔöÇÔöÇ Step 2: Define Variants State ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    const [dimConfigs, setDimConfigs] = useState({
+        weight: { active: false, values: [] as string[] },
+        volume: { active: false, values: [] as string[] },
+        count: { active: false, values: [] as string[] },
+        strength: { active: false, values: [] as string[] },
+        flavor: { active: false, values: [] as string[] },
+        pack: { active: false, values: [] as string[] },
+        combo: { active: false, values: [] as string[] },
+    });
+    const [dimInputs, setDimInputs] = useState({
+        weight: '',
+        volume: '',
+        count: '',
+        strength: '',
+        flavor: '',
+        pack: '',
+        combo: '',
+    });
     const [volUnit, setVolUnit] = useState('ml');
-    const [customPackInput, setCustomPackInput] = useState('');
-    const [showCustomPackInput, setShowCustomPackInput] = useState(false);
+    const [weightUnit, setWeightUnit] = useState('g');
 
     // ÔöÇÔöÇÔöÇ Step 3: Variants Table State ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
     const [autoGenerate, setAutoGenerate] = useState(false);
     const [variants, setVariants] = useState<VariantRow[]>([
-        { pack: '', volume: '', variant_name: '', sku: '', price: 0, cost_price: 0, stock: 0, shelf_life: '', length_cm: '', width_cm: '', height_cm: '', weight_kg: '', images: [], videos: [], defaultImageIndex: 0, sale_price: '', sale_start_date: '', sale_start_time: '', sale_end_date: '', sale_end_time: '', isDefault: false, isActive: true }
+        { weight: '', volume: '', count: '', strength: '', flavor: '', pack: '', combo: '', variant_name: '', sku: '', price: 0, cost_price: 0, stock: 0, shelf_life: '', length_cm: '', width_cm: '', height_cm: '', weight_kg: '', images: [], videos: [], defaultImageIndex: 0, sale_price: '', sale_start_date: '', sale_start_time: '', sale_end_date: '', sale_end_time: '', isDefault: false, isActive: true }
     ]);
     const [expandedVariantIndex, setExpandedVariantIndex] = useState<number | null>(null);
     const [sharedImages, setSharedImages] = useState(false);
@@ -191,61 +210,74 @@ export default function AddProductPage() {
         } catch { toast.error('Network error'); } finally { setSubCatCreating(false); }
     };
 
-    // ÔöÇÔöÇÔöÇ Step 2: Volume helpers ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
-    const addVolume = () => {
-        if (!volInput) return;
-        if (volumeValues.some(v => v.value === volInput && v.unit === volUnit)) {
-            toast.error('This volume already exists');
+    // ÔöÇÔöÇÔöÇ Step 2: Dimension helpers
+    const addDimensionValue = (dim: keyof typeof dimConfigs) => {
+        const val = dimInputs[dim].trim();
+        if (!val) return;
+
+        let finalVal = val;
+        if (dim === 'weight') finalVal = `${val} ${weightUnit}`;
+        if (dim === 'volume') finalVal = `${val} ${volUnit}`;
+
+        if (dimConfigs[dim].values.includes(finalVal)) {
+            toast.error(`This ${dim} already exists`);
             return;
         }
-        setVolumeValues(prev => [...prev, { value: volInput, unit: volUnit }]);
-        setVolInput('');
+
+        setDimConfigs(prev => ({
+            ...prev,
+            [dim]: { ...prev[dim], values: [...prev[dim].values, finalVal] }
+        }));
+        setDimInputs(prev => ({ ...prev, [dim]: '' }));
     };
 
-    const removeVolume = (index: number) => {
-        setVolumeValues(prev => prev.filter((_, i) => i !== index));
+    const removeDimensionValue = (dim: keyof typeof dimConfigs, index: number) => {
+        setDimConfigs(prev => ({
+            ...prev,
+            [dim]: { ...prev[dim], values: prev[dim].values.filter((_, i) => i !== index) }
+        }));
     };
 
-    // ÔöÇÔöÇÔöÇ Step 2: Pack helpers ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
-    const togglePack = (pack: string) => {
-        setPackValues(prev =>
-            prev.includes(pack) ? prev.filter(p => p !== pack) : [...prev, pack]
-        );
+    const toggleDimensionActive = (dim: keyof typeof dimConfigs) => {
+        setDimConfigs(prev => ({
+            ...prev,
+            [dim]: { ...prev[dim], active: !prev[dim].active }
+        }));
     };
 
-    const removePack = (index: number) => {
-        setPackValues(prev => prev.filter((_, i) => i !== index));
-    };
-
-    // ÔöÇÔöÇÔöÇ Step 3: Generate N├ùN combinations ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // ÔöÇÔöÇÔöÇ Step 3: Generate Combinations
     const generateCombinations = (): VariantRow[] => {
-        if (volumeValues.length === 0 && packValues.length === 0) return [];
-        const combos: VariantRow[] = [];
-        const packsToIterate = packValues.length > 0 ? packValues : [''];
-        const volumesToIterate = volumeValues.length > 0 ? volumeValues : [{ value: '', unit: '' }];
-        for (const pack of packsToIterate) {
-            for (const vol of volumesToIterate) {
-                const volumeStr = vol.value ? `${vol.value} ${vol.unit}` : '';
-                combos.push({
-                    pack,
-                    volume: volumeStr,
-                    variant_name: '',
-                    sku: '',
-                    price: 0,
-                    cost_price: 0,
-                    stock: 0,
-                    shelf_life: '',
-                    length_cm: '', width_cm: '', height_cm: '', weight_kg: '',
-                    images: [],
-                    videos: [],
-                    defaultImageIndex: 0,
-                    sale_price: '', sale_start_date: '', sale_start_time: '', sale_end_date: '', sale_end_time: '',
-                    isDefault: false,
-                    isActive: true,
-                });
-            }
-        }
-        return combos;
+        const activeDimensions = Object.entries(dimConfigs)
+            .filter(([_, config]) => config.active && config.values.length > 0)
+            .map(([dim, config]) => ({ dim, values: config.values }));
+
+        if (activeDimensions.length === 0) return [];
+
+        const cartesian = (arrays: string[][]) => {
+            return arrays.reduce((a, b) => a.flatMap(d => b.map(e => [d, e].flat())), [[]] as string[][]);
+        };
+
+        const dimensionValues = activeDimensions.map(d => d.values);
+        const products = cartesian(dimensionValues);
+
+        return products.map(product => {
+            const variant: VariantRow = {
+                weight: '', volume: '', count: '', strength: '', flavor: '', pack: '', combo: '',
+                variant_name: '', sku: '', price: 0, cost_price: 0, stock: 0,
+                shelf_life: '', length_cm: '', width_cm: '', height_cm: '', weight_kg: '',
+                images: [], videos: [], defaultImageIndex: 0,
+                sale_price: '', sale_start_date: '', sale_start_time: '', sale_end_date: '', sale_end_time: '',
+                isDefault: false, isActive: true
+            };
+
+            product.forEach((val, i) => {
+                const dimName = activeDimensions[i].dim as keyof VariantRow;
+                (variant as any)[dimName] = val;
+            });
+
+            variant.variant_name = product.join(' ');
+            return variant;
+        });
     };
 
     // ÔöÇÔöÇÔöÇ Auto-generate toggle handler ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
@@ -254,14 +286,14 @@ export default function AddProductPage() {
         if (checked) {
             const combos = generateCombinations();
             if (combos.length === 0) {
-                toast.error('Please add at least one Volume or Pack value in Step 2');
+                toast.error('Please add at least one active dimension in Step 2');
                 setAutoGenerate(false);
                 return;
             }
             setVariants(combos);
             toast.success(`Generated ${combos.length} variant combinations`);
         } else {
-            setVariants([{ pack: '', volume: '', variant_name: '', sku: '', price: 0, cost_price: 0, stock: 0, shelf_life: '', length_cm: '', width_cm: '', height_cm: '', weight_kg: '', images: [], videos: [], defaultImageIndex: 0, sale_price: '', sale_start_date: '', sale_start_time: '', sale_end_date: '', sale_end_time: '', isDefault: false, isActive: true }]);
+            setVariants([{ weight: '', volume: '', count: '', strength: '', flavor: '', pack: '', combo: '', variant_name: '', sku: '', price: 0, cost_price: 0, stock: 0, shelf_life: '', length_cm: '', width_cm: '', height_cm: '', weight_kg: '', images: [], videos: [], defaultImageIndex: 0, sale_price: '', sale_start_date: '', sale_start_time: '', sale_end_date: '', sale_end_time: '', isDefault: false, isActive: true }]);
         }
     };
 
@@ -276,8 +308,7 @@ export default function AddProductPage() {
 
     const addVariantRow = () => {
         setVariants(prev => [...prev, {
-            pack: packValues.length === 1 ? packValues[0] : '',
-            volume: volumeValues.length === 1 ? `${volumeValues[0].value} ${volumeValues[0].unit}` : '',
+            weight: '', volume: '', count: '', strength: '', flavor: '', pack: '', combo: '',
             variant_name: '', sku: '', price: 0, cost_price: 0, stock: 0,
             shelf_life: '', length_cm: '', width_cm: '', height_cm: '', weight_kg: '',
             images: [], videos: [], defaultImageIndex: 0,
@@ -392,14 +423,15 @@ export default function AddProductPage() {
             }
         }
         if (currentStep === 2) {
-            // Pre-fill the initial blank row with single-option values
-            setVariants(prev => prev.map(v => ({
-                ...v,
-                pack: packValues.length === 1 && !v.pack ? packValues[0] : v.pack,
-                volume: volumeValues.length === 1 && !v.volume
-                    ? `${volumeValues[0].value} ${volumeValues[0].unit}`
-                    : v.volume,
-            })));
+            const activeDims = Object.entries(dimConfigs).filter(([_, c]) => c.active);
+            if (activeDims.length === 0) {
+                toast.error('Please select at least one variant dimension');
+                return;
+            }
+            if (activeDims.some(([_, c]) => c.values.length === 0)) {
+                toast.error('Please add at least one value for each selected dimension');
+                return;
+            }
         }
         if (currentStep < 3) setCurrentStep(prev => prev + 1);
     };
@@ -507,29 +539,39 @@ export default function AddProductPage() {
                 ? { country_of_origin: form.country_of_origin }
                 : undefined,
 
-            // Full variants array ÔÇö backend maps these to product_variants rows
-            variants: variants.map(v => ({
-                sku: v.sku.trim(),
-                variant_name: v.variant_name.trim(),
-                price: Number(v.price) || 0,
-                stock: Number(v.stock) || 0,
-                cost_price: v.cost_price ? Number(v.cost_price) : null,
-                volume: v.volume || undefined,    // ÔÇ£750 mlÔÇØ ÔåÆ parsed to volume_ml by backend
-                pack: v.pack || undefined,    // ÔÇ£Pack of 2ÔÇØ ÔåÆ pack_quantity=2 by backend
-                isDefault: v.isDefault,
-                // Sale Management
-                sale_price: v.sale_price || null,
-                sale_start_date: v.sale_start_date || undefined,
-                sale_start_time: v.sale_start_time || undefined,
-                sale_end_date: v.sale_end_date || undefined,
-                sale_end_time: v.sale_end_time || undefined,
-                // Dimensions + shelf life ÔåÆ product_specifications
-                length_cm: v.length_cm || undefined,
-                width_cm: v.width_cm || undefined,
-                height_cm: v.height_cm || undefined,
-                weight_kg: v.weight_kg || undefined,
-                shelf_life: v.shelf_life || undefined,      // ÔåÆ shelf_life_months by backend
-            })),
+            // Full variants array — backend maps these to product_variants rows
+            variants: variants.map(v => {
+                // Concatenate all active dimensions into variant_name for display/backend fallback
+                const activeDimensions = Object.entries(dimConfigs)
+                    .filter(([_, config]) => config.active)
+                    .map(([id]) => v[id as keyof VariantRow])
+                    .filter(Boolean);
+                
+                const combinedName = v.variant_name || activeDimensions.join(' ');
+
+                return {
+                    sku: v.sku.trim(),
+                    variant_name: combinedName,
+                    price: Number(v.price) || 0,
+                    stock: Number(v.stock) || 0,
+                    cost_price: v.cost_price ? Number(v.cost_price) : null,
+                    volume: v.volume || undefined,    // “750 ml” → parsed to volume_ml by backend
+                    pack: v.pack || undefined,        // “Pack of 2” → pack_quantity=2 by backend
+                    isDefault: v.isDefault,
+                    // Sale Management
+                    sale_price: v.sale_price || null,
+                    sale_start_date: v.sale_start_date || undefined,
+                    sale_start_time: v.sale_start_time || undefined,
+                    sale_end_date: v.sale_end_date || undefined,
+                    sale_end_time: v.sale_end_time || undefined,
+                    // Dimensions + shelf life → product_specifications
+                    length_cm: v.length_cm || undefined,
+                    width_cm: v.width_cm || undefined,
+                    height_cm: v.height_cm || undefined,
+                    weight_kg: v.weight_kg || undefined,
+                    shelf_life: v.shelf_life || undefined,      // → shelf_life_months by backend
+                };
+            }),
             available_from: form.available_from_date ? new Date(`${form.available_from_date}T${form.available_from_time || '00:00'}`).toISOString() : undefined,
             available_until: form.available_until_date ? new Date(`${form.available_until_date}T${form.available_until_time || '23:59'}`).toISOString() : undefined,
 
@@ -661,8 +703,9 @@ export default function AddProductPage() {
                                                         toast.error('Product Name is required');
                                                         return;
                                                     }
-                                                    if (currentStep === 2 && volumeValues.length === 0 && step.id > 2) {
-                                                        toast.error('Please add at least one Volume value');
+                                                    const anyActiveDim = Object.values(dimConfigs).some(d => d.active);
+                                                    if (currentStep === 2 && !anyActiveDim && step.id > 2) {
+                                                        toast.error('Please select at least one variant dimension');
                                                         return;
                                                     }
                                                     setCurrentStep(step.id);
@@ -960,158 +1003,91 @@ export default function AddProductPage() {
                             <div className="space-y-6 animate-fade-in-up">
                                 <div className="border-b border-border pb-3">
                                     <h3 className="font-serif text-lg font-semibold text-gold-soft">Define Variants</h3>
-                                    <p className="text-xs text-text-secondary mt-1">Configure volume and pack options for this product</p>
+                                    <p className="text-xs text-text-secondary mt-1">Select variant dimensions and add their possible values</p>
                                 </div>
 
-                                {/* ÔöÇÔöÇ Volume Section ÔöÇÔöÇ */}
-                                <div className="bg-white/[0.03] border border-border rounded-xl p-5">
-                                    <h4 className="font-semibold text-gold-soft mb-4 text-sm">Volume</h4>
-
-                                    {/* Added chips */}
-                                    {volumeValues.length > 0 && (
-                                        <div className="flex flex-wrap gap-2 mb-4">
-                                            {volumeValues.map((v, i) => (
-                                                <div key={i} className="flex items-center gap-1.5 bg-gold/[0.08] border border-gold/20 text-text-primary px-3 py-1.5 rounded-full text-sm">
-                                                    <span>{v.value} {v.unit}</span>
-                                                    <button type="button" onClick={() => removeVolume(i)} className="text-text-muted hover:text-danger rounded-full hover:bg-white/10 p-0.5 transition-colors">
-                                                        <X className="h-3 w-3" />
-                                                    </button>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {[
+                                        { id: 'weight', label: 'By Weight', placeholder: 'e.g. 500, 1', unit: true },
+                                        { id: 'volume', label: 'By Volume', placeholder: 'e.g. 100, 750', unit: true },
+                                        { id: 'count', label: 'By Count', placeholder: 'e.g. 60 Capsules, 10 Sachets' },
+                                        { id: 'strength', label: 'By Strength', placeholder: 'e.g. 1000 IU, 500 mg' },
+                                        { id: 'flavor', label: 'By Flavor', placeholder: 'e.g. Chocolate, Vanilla' },
+                                        { id: 'pack', label: 'Pack Size', placeholder: 'e.g. Pack of 1, Pack of 3' },
+                                        { id: 'combo', label: 'Combo', placeholder: 'e.g. Starter Kit, Family Pack' },
+                                    ].map((dim) => (
+                                        <div key={dim.id} className={`bg-white/[0.03] border rounded-xl p-5 transition-all duration-300 ${dimConfigs[dim.id as keyof typeof dimConfigs].active ? 'border-gold/30 ring-1 ring-gold/10' : 'border-border'}`}>
+                                            <label className="flex items-center gap-3 mb-4 cursor-pointer group">
+                                                <div className="relative">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={dimConfigs[dim.id as keyof typeof dimConfigs].active}
+                                                        onChange={() => toggleDimensionActive(dim.id as keyof typeof dimConfigs)}
+                                                        className="peer sr-only"
+                                                    />
+                                                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-200 ${dimConfigs[dim.id as keyof typeof dimConfigs].active ? 'bg-gold border-gold' : 'border-border group-hover:border-gold/40'}`}>
+                                                        {dimConfigs[dim.id as keyof typeof dimConfigs].active && <Check className="w-3.5 h-3.5 text-white" />}
+                                                    </div>
                                                 </div>
-                                            ))}
-                                        </div>
-                                    )}
+                                                <span className={`font-semibold text-sm transition-colors ${dimConfigs[dim.id as keyof typeof dimConfigs].active ? 'text-gold-soft' : 'text-text-secondary'}`}>{dim.label}</span>
+                                            </label>
 
-                                    {/* Input row */}
-                                    <div className="flex gap-2 max-w-md">
-                                        <input
-                                            type="number"
-                                            step="0.1"
-                                            min="0"
-                                            placeholder="Value"
-                                            value={volInput}
-                                            onChange={e => setVolInput(e.target.value)}
-                                            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addVolume(); } }}
-                                            className="w-1/2 rounded-lg border border-border px-3 py-2 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 bg-transparent transition-all"
-                                        />
-                                        <select
-                                            value={volUnit}
-                                            onChange={e => setVolUnit(e.target.value)}
-                                            className="w-1/4 rounded-lg border border-border px-3 py-2 text-sm focus:border-gold/40 focus:outline-none bg-white text-gray-900 transition-all"
-                                        >
-                                            {PREDEFINED_UNITS.map(u => <option key={u} value={u}>{u}</option>)}
-                                        </select>
-                                        <button
-                                            type="button"
-                                            onClick={addVolume}
-                                            className="rounded-lg border border-border bg-white/5 px-5 py-2 text-sm font-medium hover:bg-white/10 hover:text-gold hover:border-gold/30 transition-all"
-                                        >
-                                            Add
-                                        </button>
-                                    </div>
-                                </div>
+                                            {dimConfigs[dim.id as keyof typeof dimConfigs].active && (
+                                                <div className="space-y-4 animate-fade-in-down">
+                                                    {/* Added chips */}
+                                                    {dimConfigs[dim.id as keyof typeof dimConfigs].values.length > 0 && (
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {dimConfigs[dim.id as keyof typeof dimConfigs].values.map((v, i) => (
+                                                                <div key={i} className="flex items-center gap-1.5 bg-gold/[0.08] border border-gold/20 text-text-primary px-3 py-1.5 rounded-full text-sm">
+                                                                    <span>{v}</span>
+                                                                    <button type="button" onClick={() => removeDimensionValue(dim.id as keyof typeof dimConfigs, i)} className="text-text-muted hover:text-danger rounded-full hover:bg-white/10 p-0.5 transition-colors">
+                                                                        <X className="h-3 w-3" />
+                                                                    </button>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
 
-                                {/* ÔöÇÔöÇ Pack Section ÔöÇÔöÇ */}
-                                <div className="bg-white/[0.03] border border-border rounded-xl p-5">
-                                    <h4 className="font-semibold text-gold-soft mb-4 text-sm">Pack</h4>
-
-                                    {/* Selected pack chips */}
-                                    {packValues.length > 0 && (
-                                        <div className="flex flex-wrap gap-2 mb-4">
-                                            {packValues.map((p, i) => (
-                                                <div key={i} className="flex items-center gap-1.5 bg-gold/[0.08] border border-gold/20 text-text-primary px-3 py-1.5 rounded-full text-sm">
-                                                    <span>{p}</span>
-                                                    <button type="button" onClick={() => removePack(i)} className="text-text-muted hover:text-danger rounded-full hover:bg-white/10 p-0.5 transition-colors">
-                                                        <X className="h-3 w-3" />
-                                                    </button>
+                                                    {/* Input row */}
+                                                    <div className="flex gap-2">
+                                                        <input
+                                                            type={dim.id === 'weight' || dim.id === 'volume' ? 'number' : 'text'}
+                                                            placeholder={dim.placeholder}
+                                                            value={dimInputs[dim.id as keyof typeof dimInputs]}
+                                                            onChange={e => setDimInputs(prev => ({ ...prev, [dim.id]: e.target.value }))}
+                                                            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addDimensionValue(dim.id as keyof typeof dimConfigs); } }}
+                                                            className="flex-1 rounded-lg border border-border px-3 py-2 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 bg-transparent transition-all"
+                                                        />
+                                                        {dim.id === 'weight' && (
+                                                            <select
+                                                                value={weightUnit}
+                                                                onChange={e => setWeightUnit(e.target.value)}
+                                                                className="w-20 rounded-lg border border-border px-2 py-2 text-sm focus:border-gold/40 focus:outline-none bg-white text-gray-900 transition-all font-medium"
+                                                            >
+                                                                {['g', 'kg', 'mg'].map(u => <option key={u} value={u}>{u}</option>)}
+                                                            </select>
+                                                        )}
+                                                        {dim.id === 'volume' && (
+                                                            <select
+                                                                value={volUnit}
+                                                                onChange={e => setVolUnit(e.target.value)}
+                                                                className="w-20 rounded-lg border border-border px-2 py-2 text-sm focus:border-gold/40 focus:outline-none bg-white text-gray-900 transition-all font-medium"
+                                                            >
+                                                                {PREDEFINED_UNITS.map(u => <option key={u} value={u}>{u}</option>)}
+                                                            </select>
+                                                        )}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => addDimensionValue(dim.id as keyof typeof dimConfigs)}
+                                                            className="rounded-lg border border-border bg-white/5 px-4 py-2 text-sm font-medium hover:bg-white/10 hover:text-gold hover:border-gold/30 transition-all"
+                                                        >
+                                                            Add
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                            ))}
+                                            )}
                                         </div>
-                                    )}
-
-                                    {/* Preset buttons */}
-                                    <div className="flex flex-wrap gap-2">
-                                        {PREDEFINED_PACKS.map(pack => {
-                                            const isSelected = packValues.includes(pack);
-                                            return (
-                                                <button
-                                                    key={pack}
-                                                    type="button"
-                                                    onClick={() => togglePack(pack)}
-                                                    className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200 ${isSelected
-                                                        ? 'bg-gold/[0.12] border-gold/30 text-gold-soft shadow-sm'
-                                                        : 'border-border text-text-secondary hover:bg-white/5 hover:text-gold-soft hover:border-gold/20'
-                                                        }`}
-                                                >
-                                                    {pack}
-                                                </button>
-                                            );
-                                        })}
-
-                                        {/* Add Custom pill */}
-                                        {!showCustomPackInput ? (
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowCustomPackInput(true)}
-                                                className="px-4 py-2 rounded-lg text-sm font-medium border border-dashed border-border text-text-muted hover:border-gold/30 hover:text-gold-soft transition-all duration-200 flex items-center gap-1.5"
-                                            >
-                                                <Plus className="h-3.5 w-3.5" />
-                                                Add Custom
-                                            </button>
-                                        ) : (
-                                            <div className="flex items-center gap-1.5">
-                                                <input
-                                                    type="text"
-                                                    value={customPackInput}
-                                                    onChange={e => setCustomPackInput(e.target.value)}
-                                                    onKeyDown={e => {
-                                                        if (e.key === 'Enter') {
-                                                            e.preventDefault();
-                                                            if (customPackInput.trim()) {
-                                                                if (packValues.includes(customPackInput.trim())) {
-                                                                    toast.error('This pack already exists');
-                                                                } else {
-                                                                    setPackValues(prev => [...prev, customPackInput.trim()]);
-                                                                    setCustomPackInput('');
-                                                                    setShowCustomPackInput(false);
-                                                                }
-                                                            }
-                                                        }
-                                                        if (e.key === 'Escape') {
-                                                            setCustomPackInput('');
-                                                            setShowCustomPackInput(false);
-                                                        }
-                                                    }}
-                                                    placeholder="Custom pack name"
-                                                    autoFocus
-                                                    className="w-36 rounded-lg border border-gold/30 px-3 py-1.5 text-sm focus:border-gold/50 focus:outline-none focus:ring-1 focus:ring-gold/20 bg-transparent transition-all"
-                                                />
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        if (customPackInput.trim()) {
-                                                            if (packValues.includes(customPackInput.trim())) {
-                                                                toast.error('This pack already exists');
-                                                            } else {
-                                                                setPackValues(prev => [...prev, customPackInput.trim()]);
-                                                                setCustomPackInput('');
-                                                                setShowCustomPackInput(false);
-                                                            }
-                                                        }
-                                                    }}
-                                                    className="p-1.5 rounded-lg bg-gold/10 text-gold hover:bg-gold/20 transition-colors"
-                                                >
-                                                    <Check className="h-4 w-4" />
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => { setCustomPackInput(''); setShowCustomPackInput(false); }}
-                                                    className="p-1.5 rounded-lg hover:bg-white/10 text-text-muted hover:text-danger transition-colors"
-                                                >
-                                                    <X className="h-4 w-4" />
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
+                                    ))}
                                 </div>
                             </div>
                         )}
@@ -1144,148 +1120,137 @@ export default function AddProductPage() {
                                         <div>
                                             <span className="text-sm font-medium text-text-primary">Auto-generate all combinations</span>
                                             <p className="text-xs text-text-secondary mt-0.5">
-                                                Creates all Pack ├ù Volume permutations ({packValues.length} ├ù {volumeValues.length} = {packValues.length * volumeValues.length} variants)
+                                                Creates permutations of all selected dimensions below
                                             </p>
                                         </div>
                                     </label>
                                 </div>
 
-                                {/* Variants Table */}
-                                <div className="border border-border rounded-xl bg-card-bg overflow-hidden shadow-sm">
-                                    <div className="overflow-x-auto">
-                                        <table className="w-full text-left text-sm whitespace-nowrap">
-                                            <thead className="bg-white/5 border-b border-border">
-                                                <tr>
-                                                    <th className="px-4 py-4 w-10"></th>
-                                                    {packValues.length > 0 && <th className="px-4 py-4 font-medium text-text-secondary">Pack</th>}
-                                                    <th className="px-4 py-4 font-medium text-text-secondary">Volume</th>
-                                                    <th className="px-4 py-4 font-medium text-text-secondary">Variant Name <span className="text-danger text-xs">*</span></th>
-                                                    <th className="px-4 py-4 font-medium text-text-secondary">SKU *</th>
-                                                    <th className="px-4 py-4 font-medium text-text-secondary">Price ($) *</th>
-                                                    <th className="px-4 py-4 font-medium text-text-secondary">Stock</th>
-                                                    <th className="px-4 py-4 font-medium text-text-secondary w-10"></th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-border/50">
-                                                {variants.map((variant, vIdx) => {
-                                                    const isDuplicate = variant.sku && duplicateSkus.includes(variant.sku);
-                                                    const isExpanded = expandedVariantIndex === vIdx;
-                                                    return (
-                                                        <React.Fragment key={vIdx}>
-                                                            <tr className={`transition-colors ${isExpanded ? 'bg-white/[0.04]' : 'hover:bg-white/[0.02]'}`}>
-                                                                <td className="px-4 py-3 align-top pt-4">
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => toggleExpandVariant(vIdx)}
-                                                                        className="text-text-muted hover:text-gold transition-colors"
-                                                                    >
-                                                                        {isExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-                                                                    </button>
-                                                                </td>
-                                                                {packValues.length > 0 && (
-                                                                    <td className="px-4 py-3 align-top">
-                                                                        {autoGenerate || packValues.length <= 1 ? (
-                                                                            <span className="bg-white/5 border border-border px-3 py-1.5 rounded text-xs font-medium text-text-primary">{variant.pack || (packValues[0] ?? 'ÔÇö')}</span>
-                                                                        ) : (
-                                                                            <select
-                                                                                value={variant.pack}
-                                                                                onChange={e => updateVariant(vIdx, 'pack', e.target.value)}
-                                                                                className="w-full min-w-[120px] rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
+                                {(() => {
+                                    const activeDims = Object.entries(dimConfigs).filter(([_, c]) => c.active);
+                                    return (
+                                        <div className="border border-border rounded-xl bg-card-bg overflow-hidden shadow-sm">
+                                            <div className="overflow-x-auto">
+                                                <table className="w-full text-left text-sm whitespace-nowrap">
+                                                    <thead className="bg-white/5 border-b border-border">
+                                                        <tr>
+                                                            <th className="px-4 py-4 w-10"></th>
+                                                            {activeDims.map(([id]) => (
+                                                                <th key={id} className="px-4 py-4 font-medium text-text-secondary capitalize">{id}</th>
+                                                            ))}
+                                                            <th className="px-4 py-4 font-medium text-text-secondary">Variant Name <span className="text-danger text-xs">*</span></th>
+                                                            <th className="px-4 py-4 font-medium text-text-secondary">SKU *</th>
+                                                            <th className="px-4 py-4 font-medium text-text-secondary">Price ($) *</th>
+                                                            <th className="px-4 py-4 font-medium text-text-secondary">Stock</th>
+                                                            <th className="px-4 py-4 font-medium text-text-secondary w-10"></th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-border/50">
+                                                        {variants.map((variant, vIdx) => {
+                                                            const isDuplicate = variant.sku && duplicateSkus.includes(variant.sku);
+                                                            const isExpanded = expandedVariantIndex === vIdx;
+                                                            return (
+                                                                <React.Fragment key={vIdx}>
+                                                                    <tr className={`transition-colors ${isExpanded ? 'bg-white/[0.04]' : 'hover:bg-white/[0.02]'}`}>
+                                                                        <td className="px-4 py-3 align-top pt-4">
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() => toggleExpandVariant(vIdx)}
+                                                                                className="text-text-muted hover:text-gold transition-colors"
                                                                             >
-                                                                                <option value="">Select</option>
-                                                                                {packValues.map(p => <option key={p} value={p}>{p}</option>)}
-                                                                            </select>
-                                                                        )}
-                                                                    </td>
-                                                                )}
+                                                                                {isExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                                                                            </button>
+                                                                        </td>
 
-                                                                <td className="px-4 py-3 align-top">
-                                                                    {autoGenerate || volumeValues.length <= 1 ? (
-                                                                        <span className="bg-white/5 border border-border px-3 py-1.5 rounded text-xs font-medium text-text-primary">{variant.volume || (volumeValues[0] ? `${volumeValues[0].value} ${volumeValues[0].unit}` : 'ÔÇö')}</span>
-                                                                    ) : (
-                                                                        <select
-                                                                            value={variant.volume}
-                                                                            onChange={e => updateVariant(vIdx, 'volume', e.target.value)}
-                                                                            className="w-full min-w-[120px] rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
-                                                                        >
-                                                                            <option value="">Select</option>
-                                                                            {volumeValues.map(v => {
-                                                                                const label = `${v.value} ${v.unit}`;
-                                                                                return <option key={label} value={label}>{label}</option>;
-                                                                            })}
-                                                                        </select>
-                                                                    )}
-                                                                </td>
-                                                                {/* Variant Name */}
-                                                                <td className="px-4 py-3 align-top min-w-[150px]">
-                                                                    <input
-                                                                        type="text"
-                                                                        value={variant.variant_name}
-                                                                        onChange={e => updateVariant(vIdx, 'variant_name', e.target.value)}
-                                                                        placeholder="e.g. Ashwagandha 60 Capsules"
-                                                                        className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
-                                                                    />
-                                                                </td>
-                                                                {/* SKU */}
-                                                                <td className="px-4 py-3 align-top min-w-[150px]">
-                                                                    <div className="relative">
-                                                                        <input
-                                                                            type="text"
-                                                                            value={variant.sku}
-                                                                            onChange={e => updateVariant(vIdx, 'sku', e.target.value)}
-                                                                            placeholder="Variant SKU"
-                                                                            className={`w-full rounded-md border px-3 py-1.5 text-sm focus:outline-none bg-transparent transition-colors ${isDuplicate ? 'border-danger focus:border-danger text-danger pr-8' : 'border-border focus:border-gold/40'
-                                                                                }`}
-                                                                        />
-                                                                        {isDuplicate && <AlertCircle className="h-4 w-4 text-danger absolute right-2 top-2" />}
-                                                                    </div>
-                                                                </td>
-                                                                <td className="px-4 py-3 align-top">
-                                                                    <input
-                                                                        type="number"
-                                                                        step="0.01"
-                                                                        value={variant.price}
-                                                                        onChange={e => updateVariant(vIdx, 'price', e.target.value ? parseFloat(e.target.value) : 0)}
-                                                                        placeholder="0"
-                                                                        className="w-24 rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
-                                                                    />
-                                                                </td>
-                                                                <td className="px-4 py-3 align-top">
-                                                                    <input
-                                                                        type="number"
-                                                                        min="0"
-                                                                        value={variant.stock}
-                                                                        onChange={e => updateVariant(vIdx, 'stock', e.target.value ? parseInt(e.target.value) : 0)}
-                                                                        className="w-24 rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
-                                                                    />
-                                                                </td>
-                                                                <td className="px-4 py-3 text-center align-top pt-3">
-                                                                    <div className="flex items-center justify-center gap-1">
-                                                                        <button
-                                                                            type="button"
-                                                                            onClick={() => setDefaultVariant(vIdx)}
-                                                                            title={variant.isDefault ? 'Default variant' : 'Set as default'}
-                                                                            className={`p-1.5 rounded-lg transition-colors hover:bg-white/5 ${variant.isDefault ? 'text-gold' : 'text-text-muted hover:text-gold'
-                                                                                }`}
-                                                                        >
-                                                                            <Star className={`h-4 w-4 ${variant.isDefault ? 'fill-gold' : ''}`} />
-                                                                        </button>
-                                                                        <button
-                                                                            type="button"
-                                                                            onClick={() => removeVariantRow(vIdx)}
-                                                                            className="text-text-muted hover:text-danger p-1.5 rounded-lg transition-colors hover:bg-white/5"
-                                                                        >
-                                                                            <Trash2 className="h-4 w-4" />
-                                                                        </button>
-                                                                    </div>
-                                                                </td>
-                                                            </tr>
+                                                                        {activeDims.map(([id, config]) => (
+                                                                            <td key={id} className="px-4 py-3 align-top">
+                                                                                {autoGenerate || config.values.length <= 1 ? (
+                                                                                    <span className="bg-white/5 border border-border px-3 py-1.5 rounded text-xs font-medium text-text-primary">
+                                                                                        {(variant[id as keyof VariantRow] as string) || (config.values[0] ?? '—')}
+                                                                                    </span>
+                                                                                ) : (
+                                                                                    <select
+                                                                                        value={variant[id as keyof VariantRow] as string}
+                                                                                        onChange={e => updateVariant(vIdx, id as keyof VariantRow, e.target.value)}
+                                                                                        className="w-full min-w-[120px] rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
+                                                                                    >
+                                                                                        <option value="">Select</option>
+                                                                                        {config.values.map(v => <option key={v} value={v}>{v}</option>)}
+                                                                                    </select>
+                                                                                )}
+                                                                            </td>
+                                                                        ))}
 
-                                                            {/* Expanded row */}
-                                                            {isExpanded && (
-                                                                <tr className="bg-white/[0.01] border-b border-border">
-                                                                    <td colSpan={packValues.length > 0 ? 8 : 7} className="p-5">
-                                                                        <div className="animate-fade-in-up space-y-6">
+                                                                        {/* Variant Name */}
+                                                                        <td className="px-4 py-3 align-top min-w-[150px]">
+                                                                            <input
+                                                                                type="text"
+                                                                                value={variant.variant_name}
+                                                                                onChange={e => updateVariant(vIdx, 'variant_name', e.target.value)}
+                                                                                placeholder="Leave blank to use selected dimensions"
+                                                                                className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
+                                                                            />
+                                                                        </td>
+                                                                        {/* SKU */}
+                                                                        <td className="px-4 py-3 align-top min-w-[150px]">
+                                                                            <div className="relative">
+                                                                                <input
+                                                                                    type="text"
+                                                                                    value={variant.sku}
+                                                                                    onChange={e => updateVariant(vIdx, 'sku', e.target.value)}
+                                                                                    placeholder="Variant SKU"
+                                                                                    className={`w-full rounded-md border px-3 py-1.5 text-sm focus:outline-none bg-transparent transition-colors ${isDuplicate ? 'border-danger focus:border-danger text-danger pr-8' : 'border-border focus:border-gold/40'
+                                                                                        }`}
+                                                                                />
+                                                                                {isDuplicate && <AlertCircle className="h-4 w-4 text-danger absolute right-2 top-2" />}
+                                                                            </div>
+                                                                        </td>
+                                                                        <td className="px-4 py-3 align-top">
+                                                                            <input
+                                                                                type="number"
+                                                                                step="0.01"
+                                                                                value={variant.price}
+                                                                                onChange={e => updateVariant(vIdx, 'price', e.target.value ? parseFloat(e.target.value) : 0)}
+                                                                                placeholder="0"
+                                                                                className="w-24 rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
+                                                                            />
+                                                                        </td>
+                                                                        <td className="px-4 py-3 align-top">
+                                                                            <input
+                                                                                type="number"
+                                                                                min="0"
+                                                                                value={variant.stock}
+                                                                                onChange={e => updateVariant(vIdx, 'stock', e.target.value ? parseInt(e.target.value) : 0)}
+                                                                                className="w-24 rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
+                                                                            />
+                                                                        </td>
+                                                                        <td className="px-4 py-3 text-center align-top pt-3">
+                                                                            <div className="flex items-center justify-center gap-1">
+                                                                                <button
+                                                                                    type="button"
+                                                                                    onClick={() => setDefaultVariant(vIdx)}
+                                                                                    title={variant.isDefault ? 'Default variant' : 'Set as default'}
+                                                                                    className={`p-1.5 rounded-lg transition-colors hover:bg-white/5 ${variant.isDefault ? 'text-gold' : 'text-text-muted hover:text-gold'
+                                                                                        }`}
+                                                                                >
+                                                                                    <Star className={`h-4 w-4 ${variant.isDefault ? 'fill-gold' : ''}`} />
+                                                                                </button>
+                                                                                <button
+                                                                                    type="button"
+                                                                                    onClick={() => removeVariantRow(vIdx)}
+                                                                                    className="text-text-muted hover:text-danger p-1.5 rounded-lg transition-colors hover:bg-white/5"
+                                                                                >
+                                                                                    <Trash2 className="h-4 w-4" />
+                                                                                </button>
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
+
+                                                                    {/* Expanded row */}
+                                                                    {isExpanded && (
+                                                                        <tr className="bg-white/[0.01] border-b border-border">
+                                                                            <td colSpan={activeDims.length + 6} className="p-5">
+                                                                                <div className="animate-fade-in-up space-y-6">
 
                                                                             {/* ÔöÇÔöÇ Extra fields row ÔöÇÔöÇ */}
                                                                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -1521,7 +1486,9 @@ export default function AddProductPage() {
                                             </button>
                                         )}
                                     </div>
-                                </div>
+                                        </div>
+                                    );
+                                })()}
                             </div>
                         )}
 
