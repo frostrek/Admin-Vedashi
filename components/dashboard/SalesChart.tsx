@@ -62,20 +62,20 @@ export default function SalesChart({
     };
 
     return (
-        <div className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-md p-5 sm:p-6 shadow-2xl shadow-emerald-900/10 transition-all duration-300">
+        <div className="rounded-2xl border border-border bg-gradient-to-br from-card-bg to-card-bg-elevated p-5 sm:p-6 shadow-xl backdrop-blur-sm transition-all duration-300">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
                 <div>
-                    <h3 className="font-serif text-base font-bold text-white tracking-wide uppercase">{title}</h3>
-                    <p className="text-[11px] font-bold text-gold-soft opacity-60 uppercase tracking-widest mt-0.5">Monthly yield vs established wellness targets</p>
+                    <h3 className="font-serif text-base font-bold text-gold tracking-wide uppercase">{title}</h3>
+                    <p className="text-[11px] font-bold text-text-muted uppercase tracking-widest mt-0.5">Monthly yield vs established wellness targets</p>
                 </div>
-                <div className="flex items-center gap-1 rounded-xl bg-black/20 p-1 border border-white/5">
+                <div className="flex items-center gap-1 rounded-xl bg-primary/20 p-1 border border-border">
                     {PERIODS.map(p => (
                         <button
                             key={p}
                             onClick={() => handlePeriodChange(p)}
                             className={`rounded-lg px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all duration-300 ${activePeriod === p
-                                ? 'bg-[#828B5C] text-white shadow-lg'
-                                : 'text-white/40 hover:text-white/70 hover:bg-white/5'
+                                ? 'bg-primary text-gold border border-gold/20 shadow-lg'
+                                : 'text-text-muted hover:text-gold-soft hover:bg-primary/10'
                                 }`}
                         >
                             {p}
@@ -85,9 +85,9 @@ export default function SalesChart({
             </div>
 
             {loading ? (
-                <div className="h-[280px] rounded-xl bg-white/5 animate-pulse" />
+                <div className="h-[280px] rounded-xl bg-primary/5 animate-pulse" />
             ) : data.length === 0 ? (
-                <div className="h-[280px] flex items-center justify-center text-sm text-white/30 italic">
+                <div className="h-[280px] flex items-center justify-center text-sm text-text-muted italic">
                     Waiting for synthesis data...
                 </div>
             ) : (
@@ -95,28 +95,28 @@ export default function SalesChart({
                     <AreaChart data={data} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
                         <defs>
                             <linearGradient id="salesGradient" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#828B5C" stopOpacity={0.4} />
-                                <stop offset="95%" stopColor="#828B5C" stopOpacity={0} />
+                                <stop offset="5%" stopColor="#8B7A3D" stopOpacity={0.4} />
+                                <stop offset="95%" stopColor="#8B7A3D" stopOpacity={0} />
                             </linearGradient>
                         </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(168, 146, 80, 0.05)" vertical={false} />
                         <XAxis
                             dataKey="label"
                             axisLine={false}
                             tickLine={false}
-                            tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.3)', fontWeight: 600 }}
+                            tick={{ fontSize: 10, fill: '#556B55', fontWeight: 600 }}
                             dy={10}
                         />
                         <YAxis
                             axisLine={false}
                             tickLine={false}
-                            tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.3)', fontWeight: 600 }}
+                            tick={{ fontSize: 10, fill: '#556B55', fontWeight: 600 }}
                             tickFormatter={(v: number) => `₹${(v / 1000).toFixed(0)}k`}
                         />
                         <Tooltip
                             contentStyle={{
-                                background: 'rgba(20, 30, 20, 0.95)',
-                                border: '1px solid rgba(130, 139, 92, 0.3)',
+                                background: 'rgba(15, 22, 15, 0.95)',
+                                border: '1px solid rgba(168, 146, 80, 0.2)',
                                 borderRadius: '12px',
                                 color: '#E8D8B9',
                                 fontSize: '12px',
@@ -124,22 +124,22 @@ export default function SalesChart({
                                 backdropFilter: 'blur(10px)',
                                 boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
                             }}
-                            itemStyle={{ color: '#828B5C', fontWeight: 700 }}
+                            itemStyle={{ color: '#A89250', fontWeight: 700 }}
                             labelStyle={{ color: '#E8D8B9', fontWeight: 800, marginBottom: 4, letterSpacing: '0.05em', textTransform: 'uppercase', fontSize: '10px' }}
                             formatter={(val: number | undefined) => [`₹${(val ?? 0).toLocaleString('en-IN')}`, 'Synthesis Total']}
                         />
                         <Area
                             type="monotone"
                             dataKey="value"
-                            stroke="#828B5C"
+                            stroke="#A89250"
                             strokeWidth={3}
                             fill="url(#salesGradient)"
                             dot={false}
                             activeDot={{
                                 r: 6,
-                                stroke: '#828B5C',
+                                stroke: '#A89250',
                                 strokeWidth: 3,
-                                fill: '#FFFFFF',
+                                fill: '#141C14',
                             }}
                         />
                     </AreaChart>

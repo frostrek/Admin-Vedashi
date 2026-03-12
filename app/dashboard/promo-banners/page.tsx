@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { getToken } from '@/lib/auth';
 import { authFetch, authHeaders } from '@/lib/api';
 import toast from 'react-hot-toast';
-import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, X, Loader2, Megaphone } from 'lucide-react';
+import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, X, Loader2, Megaphone, Leaf, Save, AlertCircle } from 'lucide-react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
@@ -122,92 +122,115 @@ export default function PromoBannersPage() {
         } catch { toast.error('Error toggling banner'); }
     };
 
+    const inputCls = "w-full rounded-2xl border border-border bg-black/40 px-5 py-3 text-sm text-gold-soft placeholder:text-text-muted/40 focus:border-gold/30 focus:outline-none focus:ring-1 focus:ring-gold/20 transition-all duration-300 shadow-inner";
+
     return (
-        <div className="p-8">
-            {/* Header */}
-            <div className="flex justify-between items-end mb-8">
-                <div>
-                    <h1 className="text-2xl font-serif text-neutral-900 mb-2">Promo Banners</h1>
-                    <p className="text-neutral-500 text-sm">Manage global storefront promotional banners.</p>
+        <div className="p-10 space-y-10 animate-fadeIn">
+            {/* Page Header */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+                <div className="space-y-2">
+                    <div className="flex items-center gap-3">
+                        <div className="p-3 bg-gold/10 rounded-2xl border border-gold/20">
+                            <Megaphone className="w-8 h-8 text-gold" />
+                        </div>
+                        <h1 className="text-4xl font-serif font-bold text-gold tracking-tighter">
+                            Aura Announcements
+                        </h1>
+                    </div>
+                    <p className="text-gold-soft/60 text-[10px] font-bold uppercase tracking-[0.3em] pl-16">
+                        Orchestrate global promotional vibrations across the storefront.
+                    </p>
                 </div>
                 <button
                     onClick={openCreate}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-[#C5A46D] hover:bg-[#B3935C] text-white text-sm font-semibold rounded-lg transition-colors"
+                    className="flex items-center gap-3 px-8 py-3 bg-primary border border-gold/20 text-gold text-[10px] font-bold uppercase tracking-[0.2em] rounded-2xl hover:shadow-[0_0_20px_rgba(197,164,109,0.2)] transition-all duration-300 group"
                 >
-                    <Plus className="w-4 h-4" />
-                    Create Banner
+                    <div className="p-1 bg-gold/20 rounded-lg group-hover:scale-110 transition-transform">
+                        <Plus className="w-4 h-4" />
+                    </div>
+                    Commence New Campaign
                 </button>
             </div>
 
-            {/* Content Area */}
-            <div className="bg-white border border-neutral-200 rounded-lg shadow-sm">
+            {/* Content Data Repository */}
+            <div className="bg-black/20 border border-border rounded-[2.5rem] shadow-2xl overflow-hidden backdrop-blur-md animate-fadeIn transition-all duration-500">
                 {loading ? (
-                    <div className="flex items-center justify-center p-12">
-                        <Loader2 className="w-6 h-6 animate-spin text-[#C5A46D]" />
+                    <div className="flex flex-col items-center justify-center p-32 space-y-4 animate-pulse">
+                        <div className="w-16 h-16 rounded-full border-t-2 border-l-2 border-gold animate-spin" />
+                        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gold/60 text-center">Calibrating Promotional Vibrations...</p>
                     </div>
                 ) : banners.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center p-12 text-neutral-400">
-                        <Megaphone className="w-12 h-12 mb-3 opacity-30" />
-                        <p className="text-sm">No promo banners created yet.</p>
+                    <div className="flex flex-col items-center justify-center p-40 border-2 border-dashed border-border/40 rounded-[2.5rem] m-6 bg-black/10 text-text-muted">
+                        <Megaphone className="w-20 h-20 mb-8 opacity-20 text-gold" />
+                        <p className="text-xl font-serif font-bold text-gold-soft mb-2">Silent Frequencies</p>
+                        <p className="text-[10px] uppercase tracking-widest opacity-60">No promotional announcements have been manifested yet.</p>
+                        <button onClick={openCreate} className="mt-10 px-8 py-3 bg-primary border border-gold/20 text-gold text-[10px] font-bold uppercase tracking-widest rounded-xl hover:shadow-[0_0_20px_rgba(197,164,109,0.2)] transition-all duration-300">
+                            Manifest First Aura
+                        </button>
                     </div>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
+                    <div className="overflow-x-auto custom-scrollbar">
+                        <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="border-b border-neutral-200 bg-neutral-50 text-neutral-500 uppercase tracking-wide text-xs">
-                                    <th className="text-left px-5 py-3 font-semibold w-1/3">Message</th>
-                                    <th className="text-left px-5 py-3 font-semibold w-1/5">Status & Flow</th>
-                                    <th className="text-left px-5 py-3 font-semibold">Settings</th>
-                                    <th className="text-left px-5 py-3 font-semibold">Created</th>
-                                    <th className="text-right px-5 py-3 font-semibold">Actions</th>
+                                <tr className="border-b border-border bg-black/40 text-[10px] font-bold uppercase tracking-[0.2em] text-gold/40">
+                                    <th className="px-8 py-6">Vibration Essence</th>
+                                    <th className="px-8 py-6">State & Flow</th>
+                                    <th className="px-8 py-6">Parameters</th>
+                                    <th className="px-8 py-6">Origin</th>
+                                    <th className="px-8 py-6 text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-neutral-100">
+                            <tbody className="divide-y divide-white/5">
                                 {banners.map((b) => (
-                                    <tr key={b.id} className="hover:bg-neutral-50 transition-colors">
-                                        <td className="px-5 py-4">
-                                            <p className="text-neutral-800 font-medium line-clamp-2">{b.message}</p>
+                                    <tr key={b.id} className="group hover:bg-white/[0.02] transition-all duration-300">
+                                        <td className="px-8 py-10">
+                                            <p className="text-gold-soft font-serif text-lg leading-relaxed max-w-md line-clamp-2 italic drop-shadow-md group-hover:text-gold transition-colors">
+                                                "{b.message}"
+                                            </p>
                                         </td>
-                                        <td className="px-5 py-4">
-                                            <div className="flex flex-col gap-1.5 items-start">
-                                                <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${b.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-neutral-100 text-neutral-600'}`}>
-                                                    {b.is_active ? 'Active' : 'Inactive'}
+                                        <td className="px-8 py-10">
+                                            <div className="flex flex-col gap-2.5 items-start">
+                                                <span className={`inline-flex px-4 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest shadow-lg border ${b.is_active ? 'bg-gold/10 text-gold border-gold/30' : 'bg-black/40 text-text-muted/60 border-border/40'}`}>
+                                                    {b.is_active ? 'Manifested' : 'Latent'}
                                                 </span>
-                                                <span className="text-xs text-neutral-500 capitalize flex items-center gap-1">
-                                                    {b.flow.replace('-', ' ')}
+                                                <span className="text-[10px] text-text-muted uppercase tracking-wider font-bold opacity-60 flex items-center gap-2">
+                                                    <div className={`w-1.5 h-1.5 rounded-full ${b.flow === 'blink' ? 'bg-gold animate-pulse shadow-[0_0_5px_rgba(197,164,109,0.8)]' : 'bg-border'}`} />
+                                                    {b.flow.replace('-', ' ')} oscillation
                                                 </span>
                                             </div>
                                         </td>
-                                        <td className="px-5 py-4">
-                                            <div className="flex flex-col gap-1.5 text-xs text-neutral-600">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="flex items-center gap-1 min-w-[50%]">
-                                                        <div className="w-3 h-3 rounded border border-neutral-200" style={{ backgroundColor: b.background_color || '#000000' }} title="Background Color" />
-                                                        <span>{b.background_color || '#000000'}</span>
+                                        <td className="px-8 py-10">
+                                            <div className="flex flex-col gap-3">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="group/color relative">
+                                                        <div className="w-8 h-8 rounded-xl border border-border shadow-2xl transition-transform group-hover/color:scale-110" style={{ backgroundColor: b.background_color || '#000000' }} />
+                                                        <span className="absolute -bottom-6 left-0 text-[8px] font-bold text-text-muted opacity-0 group-hover/color:opacity-100 transition-opacity">BG</span>
                                                     </div>
-                                                    <div className="flex items-center gap-1 min-w-[50%]">
-                                                        <div className="w-3 h-3 rounded border border-neutral-200" style={{ backgroundColor: b.text_color || '#FFFFFF' }} title="Text Color" />
-                                                        <span>{b.text_color || '#FFFFFF'}</span>
+                                                    <div className="group/color relative">
+                                                        <div className="w-8 h-8 rounded-xl border border-border shadow-2xl transition-transform group-hover/color:scale-110" style={{ backgroundColor: b.text_color || '#FFFFFF' }} />
+                                                        <span className="absolute -bottom-6 left-0 text-[8px] font-bold text-text-muted opacity-0 group-hover/color:opacity-100 transition-opacity">TEXT</span>
                                                     </div>
                                                 </div>
-                                                <div>
-                                                    Count: <span className="font-medium">{b.total_count || 0}</span>
+                                                <div className="text-[10px] font-bold text-text-muted uppercase tracking-widest opacity-60">
+                                                    Cycle Count: <span className="text-gold-soft">{b.total_count || 0}</span>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-5 py-4 text-neutral-500 text-xs">
-                                            {new Date(b.created_at).toLocaleDateString()}
+                                        <td className="px-8 py-10">
+                                            <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest opacity-40">
+                                                {new Date(b.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                                            </p>
                                         </td>
-                                        <td className="px-5 py-4">
-                                            <div className="flex items-center justify-end gap-2">
-                                                <button onClick={() => toggleActive(b)} title={b.is_active ? "Deactivate" : "Set Active"} className="p-1.5 rounded-lg hover:bg-neutral-100 text-neutral-400 hover:text-emerald-600 transition-colors">
-                                                    {b.is_active ? <ToggleRight className="w-5 h-5 text-emerald-500" /> : <ToggleLeft className="w-5 h-5 text-neutral-400" />}
+                                        <td className="px-8 py-10">
+                                            <div className="flex items-center justify-end gap-3">
+                                                <button onClick={() => toggleActive(b)} title={b.is_active ? "Retract Vibration" : "Induce Vibration"} className={`p-3 rounded-2xl border transition-all duration-300 ${b.is_active ? 'bg-gold/10 border-gold/20 text-gold hover:bg-gold/20' : 'bg-black/40 border-border text-text-muted hover:text-gold-soft'}`}>
+                                                    {b.is_active ? <ToggleRight className="w-6 h-6" /> : <ToggleLeft className="w-6 h-6" />}
                                                 </button>
-                                                <button onClick={() => openEdit(b)} className="p-1.5 rounded-lg hover:bg-neutral-100 text-neutral-400 hover:text-[#C5A46D] transition-colors">
-                                                    <Pencil className="w-4 h-4" />
+                                                <button onClick={() => openEdit(b)} className="p-3 rounded-2xl bg-black/40 border border-border text-text-muted hover:text-gold hover:border-gold/30 transition-all duration-300">
+                                                    <Pencil className="w-5 h-5" />
                                                 </button>
-                                                <button onClick={() => handleDelete(b.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-neutral-400 hover:text-red-500 transition-colors">
-                                                    <Trash2 className="w-4 h-4" />
+                                                <button onClick={() => handleDelete(b.id)} className="p-3 rounded-2xl bg-danger/10 border border-danger/20 text-danger hover:bg-danger/20 transition-all duration-300">
+                                                    <Trash2 className="w-5 h-5" />
                                                 </button>
                                             </div>
                                         </td>
@@ -219,91 +242,100 @@ export default function PromoBannersPage() {
                 )}
             </div>
 
-            {/* Modal */}
+            {/* Configuration Modal */}
             {modalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/40 backdrop-blur-sm p-4">
-                    <div className="bg-white border border-neutral-200 rounded-xl shadow-xl w-full max-w-lg">
-                        <div className="flex items-center justify-between p-5 border-b border-neutral-100">
-                            <h2 className="text-lg font-semibold text-neutral-800">
-                                {editing ? 'Edit Promo Banner' : 'Create Promo Banner'}
-                            </h2>
-                            <button onClick={() => setModalOpen(false)} className="text-neutral-400 hover:text-neutral-600 transition-colors"><X className="w-5 h-5" /></button>
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-fadeIn">
+                    <div className="bg-gradient-to-br from-card-bg to-card-bg-elevated border border-border rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden animate-scaleIn">
+                        <div className="flex items-center justify-between p-8 border-b border-border bg-black/40 backdrop-blur-sm sticky top-0 z-10">
+                            <div>
+                                <h2 className="text-2xl font-serif font-bold text-gold tracking-tight">
+                                    {editing ? 'Refine Aura' : 'Manifest New Aura'}
+                                </h2>
+                                <p className="text-[10px] text-gold/40 font-bold uppercase tracking-[0.2em] mt-1">Campaign Configuration</p>
+                            </div>
+                            <button onClick={() => setModalOpen(false)} className="p-3 rounded-full hover:bg-white/5 text-gold-soft hover:text-gold transition-all">
+                                <X className="w-6 h-6" />
+                            </button>
                         </div>
 
-                        <form onSubmit={handleSave} className="p-5 space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-neutral-700 mb-1">Message <span className="text-red-500">*</span></label>
+                        <form onSubmit={handleSave} className="p-8 space-y-8">
+                            <div className="space-y-3">
+                                <label className="block text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] px-1">Annunciation <span className="text-danger">*</span></label>
                                 <textarea
                                     required
                                     rows={3}
                                     value={form.message}
                                     onChange={e => setForm({ ...form, message: e.target.value })}
                                     placeholder="e.g. ✦ Free Shipping on orders over ₹5,000 ✦"
-                                    className="w-full rounded-lg border border-neutral-300 px-4 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-[#C5A46D] focus:outline-none focus:ring-1 focus:ring-[#C5A46D] resize-none"
+                                    className={`${inputCls} resize-none min-h-[120px] leading-relaxed italic`}
                                 />
+                                <div className="flex items-center gap-2 text-[10px] text-text-muted/40 px-1">
+                                    <AlertCircle className="w-3.5 h-3.5" />
+                                    <span>Use special characters to enhance the spiritual resonance of the message.</span>
+                                </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-neutral-700 mb-1">Flow</label>
+                            <div className="grid grid-cols-2 gap-6">
+                                <div className="space-y-6">
+                                    <div className="space-y-3">
+                                        <label className="block text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] px-1">Oscillation</label>
                                         <select
                                             value={form.flow}
                                             onChange={e => setForm({ ...form, flow: e.target.value as typeof form.flow })}
-                                            className="w-full rounded-lg border border-neutral-300 px-4 py-2.5 text-sm text-neutral-900 focus:border-[#C5A46D] focus:outline-none focus:ring-1 focus:ring-[#C5A46D]"
+                                            className={inputCls}
                                         >
-                                            <option value="static">Static (No Animation)</option>
-                                            <option value="blink">Blinking Text</option>
+                                            <option value="static">Static (Constant)</option>
+                                            <option value="blink">Blink (Pulsating)</option>
                                         </select>
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-neutral-700 mb-1">Total Count</label>
+                                    <div className="space-y-3">
+                                        <label className="block text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] px-1">Cycle Count</label>
                                         <input
                                             type="number"
                                             value={form.total_count}
                                             onChange={e => setForm({ ...form, total_count: Number(e.target.value) })}
-                                            className="w-full rounded-lg border border-neutral-300 px-4 py-2.5 text-sm text-neutral-900 focus:border-[#C5A46D] focus:outline-none focus:ring-1 focus:ring-[#C5A46D]"
+                                            className={inputCls}
                                             min={0}
                                         />
                                     </div>
                                 </div>
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-neutral-700 mb-1">Background Color</label>
-                                        <div className="relative">
+                                <div className="space-y-6">
+                                    <div className="space-y-3">
+                                        <label className="block text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] px-1">Background Essence</label>
+                                        <div className="relative group/color">
                                             <input
                                                 type="text"
                                                 value={form.background_color}
                                                 onChange={e => setForm({ ...form, background_color: e.target.value })}
-                                                className="w-full rounded-lg border border-neutral-300 pl-4 pr-12 py-2.5 text-sm text-neutral-900 focus:border-[#C5A46D] focus:outline-none focus:ring-1 focus:ring-[#C5A46D]"
+                                                className={`${inputCls} pr-14`}
                                                 placeholder="#000000"
                                             />
-                                            <div className="absolute inset-y-0 right-1.5 flex items-center">
+                                            <div className="absolute right-3 top-1/2 -translate-y-1/2 h-8 w-8 rounded-xl border border-border shadow-inner overflow-hidden cursor-pointer">
                                                 <input
                                                     type="color"
                                                     value={form.background_color}
                                                     onChange={e => setForm({ ...form, background_color: e.target.value })}
-                                                    className="h-7 w-7 cursor-pointer appearance-none rounded border-0 bg-transparent p-0 [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded [&::-webkit-color-swatch]:border [&::-webkit-color-swatch]:border-neutral-200"
+                                                    className="absolute inset-0 w-[150%] h-[150%] -translate-x-1/4 -translate-y-1/4 cursor-pointer p-0 border-0"
                                                 />
                                             </div>
                                         </div>
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-neutral-700 mb-1">Text Color</label>
-                                        <div className="relative">
+                                    <div className="space-y-3">
+                                        <label className="block text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] px-1">Typographic Color</label>
+                                        <div className="relative group/color">
                                             <input
                                                 type="text"
                                                 value={form.text_color}
                                                 onChange={e => setForm({ ...form, text_color: e.target.value })}
-                                                className="w-full rounded-lg border border-neutral-300 pl-4 pr-12 py-2.5 text-sm text-neutral-900 focus:border-[#C5A46D] focus:outline-none focus:ring-1 focus:ring-[#C5A46D]"
+                                                className={`${inputCls} pr-14`}
                                                 placeholder="#FFFFFF"
                                             />
-                                            <div className="absolute inset-y-0 right-1.5 flex items-center">
+                                            <div className="absolute right-3 top-1/2 -translate-y-1/2 h-8 w-8 rounded-xl border border-border shadow-inner overflow-hidden cursor-pointer">
                                                 <input
                                                     type="color"
                                                     value={form.text_color}
                                                     onChange={e => setForm({ ...form, text_color: e.target.value })}
-                                                    className="h-7 w-7 cursor-pointer appearance-none rounded border-0 bg-transparent p-0 [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded [&::-webkit-color-swatch]:border [&::-webkit-color-swatch]:border-neutral-200"
+                                                    className="absolute inset-0 w-[150%] h-[150%] -translate-x-1/4 -translate-y-1/4 cursor-pointer p-0 border-0"
                                                 />
                                             </div>
                                         </div>
@@ -311,14 +343,14 @@ export default function PromoBannersPage() {
                                 </div>
                             </div>
 
-                            <div className="flex justify-end gap-3 pt-4 border-t border-neutral-100 mt-6">
+                            <div className="flex justify-end gap-3 pt-8 border-t border-border mt-10">
                                 <button type="button" onClick={() => setModalOpen(false)} disabled={saving}
-                                    className="px-4 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100 transition-colors rounded-lg">
-                                    Cancel
+                                    className="px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest text-text-muted hover:text-gold hover:bg-white/5 transition-all rounded-xl">
+                                    Abort
                                 </button>
                                 <button type="submit" disabled={saving}
-                                    className="flex items-center gap-2 px-5 py-2.5 bg-[#C5A46D] hover:bg-[#B3935C] text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50">
-                                    {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : editing ? 'Update Banner' : 'Create Banner'}
+                                    className="flex items-center gap-2 px-8 py-3 bg-primary border border-gold/20 text-gold text-[10px] font-bold uppercase tracking-widest rounded-xl hover:shadow-[0_0_20px_rgba(197,164,109,0.3)] transition-all duration-300 disabled:opacity-50">
+                                    {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Finalizing Vibration…</> : <><Save className="w-4 h-4" /> {editing ? 'Commit Changes' : 'Manifest Aura'}</>}
                                 </button>
                             </div>
                         </form>

@@ -233,66 +233,49 @@ export default function SecurityDashboard() {
     return (
         <div className="space-y-8">
             {/* Page Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-fadeInUp" style={{ animationDelay: '0ms' }}>
                 <div>
-                    <h1 className="text-3xl font-serif font-bold text-gold-soft flex items-center gap-3">
-                        <div className="p-2.5 bg-gradient-to-br from-gold/20 to-gold/5 rounded-xl border border-gold/20">
+                    <h1 className="text-3xl font-serif font-bold text-gold flex items-center gap-3">
+                        <div className="p-2.5 bg-primary/20 rounded-2xl border border-border shadow-lg">
                             <ShieldAlert className="h-6 w-6 text-gold" />
                         </div>
                         Security & Operations
                     </h1>
-                    <p className="text-text-muted mt-2 text-sm">Monitor active defenses, manage backups, and control disaster recovery</p>
+                    <p className="text-text-muted mt-2 text-[10px] font-bold uppercase tracking-widest">Monitor active defenses, manage backups, and control disaster recovery</p>
                 </div>
                 <button
                     onClick={fetchData}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-surface border border-border-subtle rounded-xl text-text-primary hover:bg-surface-hover transition-all duration-200 hover:border-gold/30 text-sm font-medium"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-primary/20 border border-gold/10 rounded-xl text-gold-soft hover:text-gold hover:bg-primary/40 transition-all duration-300 text-[11px] font-bold uppercase tracking-widest"
                 >
                     <RefreshCw className="h-4 w-4" />
-                    Refresh All
+                    Refresh Protocol
                 </button>
             </div>
 
             {/* Active Defenses Grid */}
-            <div>
-                <h2 className="text-sm font-semibold text-text-muted uppercase tracking-wider mb-4 flex items-center gap-2">
+            <div className="animate-fadeInUp" style={{ animationDelay: '100ms' }}>
+                <h2 className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
                     <Activity className="h-4 w-4 text-gold" />
-                    Active Defenses
+                    Protocol Guardians
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {defenses.map((defense) => (
+                    {defenses.map((defense, idx) => (
                         <div
                             key={defense.name}
-                            className="group bg-surface border border-border-subtle rounded-2xl p-5 hover:border-gold/20 transition-all duration-300"
+                            className="group bg-gradient-to-br from-card-bg to-card-bg-elevated border border-border rounded-2xl p-5 hover:shadow-xl hover:-translate-y-1 transition-all duration-500 backdrop-blur-sm"
+                            style={{ animationDelay: `${150 + (idx * 50)}ms` }}
                         >
-                            <div className="flex items-start justify-between mb-3">
-                                <div className={`p-2.5 rounded-xl bg-${defense.color}-500/10 border border-${defense.color}-500/20`}
-                                    style={{
-                                        backgroundColor: defense.color === 'emerald' ? 'rgba(16,185,129,0.1)' :
-                                            defense.color === 'blue' ? 'rgba(59,130,246,0.1)' :
-                                                defense.color === 'violet' ? 'rgba(139,92,246,0.1)' :
-                                                    'rgba(245,158,11,0.1)',
-                                        borderColor: defense.color === 'emerald' ? 'rgba(16,185,129,0.2)' :
-                                            defense.color === 'blue' ? 'rgba(59,130,246,0.2)' :
-                                                defense.color === 'violet' ? 'rgba(139,92,246,0.2)' :
-                                                    'rgba(245,158,11,0.2)',
-                                    }}
-                                >
-                                    <defense.icon className="h-5 w-5"
-                                        style={{
-                                            color: defense.color === 'emerald' ? '#10B981' :
-                                                defense.color === 'blue' ? '#3B82F6' :
-                                                    defense.color === 'violet' ? '#8B5CF6' :
-                                                        '#F59E0B'
-                                        }}
-                                    />
+                            <div className="flex items-start justify-between mb-4">
+                                <div className="p-3 rounded-2xl bg-primary/20 border border-border group-hover:bg-primary/30 transition-all duration-500">
+                                    <defense.icon className="h-5 w-5 text-gold" />
                                 </div>
-                                <span className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-emerald-500">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                <span className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-success bg-success/15 px-2 py-1 rounded-lg border border-success/20">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse"></span>
                                     Active
                                 </span>
                             </div>
-                            <h3 className="text-text-primary font-semibold text-sm">{defense.name}</h3>
-                            <p className="text-text-muted text-xs mt-1">{defense.desc}</p>
+                            <h3 className="text-gold font-serif font-bold text-sm tracking-wide">{defense.name}</h3>
+                            <p className="text-text-muted text-[10px] mt-1 font-medium uppercase tracking-tight">{defense.desc}</p>
                         </div>
                     ))}
                 </div>
@@ -300,29 +283,29 @@ export default function SecurityDashboard() {
 
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
                 {/* Disaster Recovery Panel - Takes 2/5 */}
-                <div className="lg:col-span-2 bg-surface border border-border-subtle rounded-2xl overflow-hidden">
-                    <div className="p-6 border-b border-border-subtle bg-gradient-to-r from-surface to-surface-hover">
-                        <h2 className="text-lg font-semibold text-text-primary flex items-center gap-2.5">
-                            <AlertTriangle className="h-5 w-5 text-orange-500" />
-                            Disaster Recovery
+                <div className="lg:col-span-2 bg-gradient-to-br from-card-bg to-card-bg-elevated border border-border rounded-2xl overflow-hidden shadow-xl backdrop-blur-sm animate-fadeInUp" style={{ animationDelay: '400ms' }}>
+                    <div className="p-6 border-b border-border bg-primary/10">
+                        <h2 className="text-base font-serif font-bold text-gold tracking-widest uppercase flex items-center gap-2.5">
+                            <AlertTriangle className="h-5 w-5 text-warning" />
+                            Disaster Protocol
                         </h2>
-                        <p className="text-text-muted text-xs mt-1">Toggle maintenance mode and emergency controls</p>
+                        <p className="text-text-muted text-[10px] font-bold uppercase tracking-widest mt-1">Maintenance mode and emergency controls</p>
                     </div>
 
                     <div className="p-6">
                         {/* Maintenance Mode Toggle */}
-                        <div className={`rounded-xl border p-5 transition-all duration-300 ${maintenanceEnabled
-                            ? 'border-red-500/30 bg-red-500/5'
-                            : 'border-border-subtle bg-background'
+                        <div className={`rounded-2xl border p-5 transition-all duration-500 ${maintenanceEnabled
+                            ? 'border-danger/30 bg-danger/5'
+                            : 'border-border bg-black/20'
                             }`}>
 
                             <div className="flex items-center justify-between mb-4">
                                 <div className="flex items-center gap-3">
-                                    <Server className={`h-5 w-5 ${maintenanceEnabled ? 'text-red-500' : 'text-text-muted'}`} />
+                                    <Server className={`h-5 w-5 ${maintenanceEnabled ? 'text-danger' : 'text-gold'}`} />
                                     <div>
-                                        <h3 className="text-text-primary font-medium text-sm">Maintenance Mode</h3>
-                                        <p className={`text-xs mt-0.5 ${maintenanceEnabled ? 'text-red-500' : 'text-text-muted'}`}>
-                                            {maintenanceEnabled ? '⚠ Public traffic blocked (503)' : 'All systems operational'}
+                                        <h3 className="text-gold font-serif font-bold text-sm">Lockdown Mode</h3>
+                                        <p className={`text-[10px] font-bold uppercase tracking-wider mt-0.5 ${maintenanceEnabled ? 'text-danger' : 'text-text-muted'}`}>
+                                            {maintenanceEnabled ? '⚠ Traffic redirection active' : 'All systems operational'}
                                         </p>
                                     </div>
                                 </div>
@@ -339,9 +322,9 @@ export default function SecurityDashboard() {
                                         {togglingMaintenance ? (
                                             <Loader2 className="h-7 w-7 animate-spin text-gold" />
                                         ) : maintenanceEnabled ? (
-                                            <ToggleRight className="h-10 w-10 text-red-500 hover:text-red-300" />
+                                            <ToggleRight className="h-10 w-10 text-danger hover:text-danger/70 transition-colors" />
                                         ) : (
-                                            <ToggleLeft className="h-10 w-10 text-text-muted hover:text-gold" />
+                                            <ToggleLeft className="h-10 w-10 text-text-muted hover:text-gold transition-colors" />
                                         )}
                                     </button>
                                 )}
@@ -355,8 +338,8 @@ export default function SecurityDashboard() {
                                 <textarea
                                     value={maintenanceMessage}
                                     onChange={(e) => setMaintenanceMessage(e.target.value)}
-                                    className="w-full bg-surface border border-border-subtle rounded-lg p-3 text-text-primary text-sm focus:outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/20 transition-all h-[72px] resize-none"
-                                    placeholder="Enter maintenance message for customers..."
+                                    className="w-full bg-black/20 border border-border rounded-xl p-4 text-gold-soft text-sm font-medium focus:outline-none focus:border-gold/30 focus:ring-1 focus:ring-gold/10 transition-all h-[100px] resize-none"
+                                    placeholder="Enter maintenance directive for entities..."
                                 />
                                 {maintenanceEnabled && (
                                     <button
@@ -371,41 +354,41 @@ export default function SecurityDashboard() {
 
                         {/* Quick Info */}
                         <div className="mt-4 grid grid-cols-2 gap-3">
-                            <div className="bg-background rounded-lg border border-border-subtle p-3">
-                                <p className="text-[11px] text-text-muted uppercase tracking-wider font-medium">Emergency Backup</p>
-                                <p className="text-text-primary text-sm font-semibold mt-1">On Shutdown</p>
+                            <div className="bg-black/20 rounded-xl border border-border p-3">
+                                <p className="text-[9px] text-text-muted uppercase tracking-[0.2em] font-bold">Emergency Seal</p>
+                                <p className="text-gold font-serif text-sm font-bold mt-1">On Shutdown</p>
                             </div>
-                            <div className="bg-background rounded-lg border border-border-subtle p-3">
-                                <p className="text-[11px] text-text-muted uppercase tracking-wider font-medium">Auto Backup</p>
-                                <p className="text-text-primary text-sm font-semibold mt-1">Daily 2 AM</p>
+                            <div className="bg-black/20 rounded-xl border border-border p-3">
+                                <p className="text-[9px] text-text-muted uppercase tracking-[0.2em] font-bold">Auto Synthesis</p>
+                                <p className="text-gold font-serif text-sm font-bold mt-1">Daily 02:00</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Backups Panel - Takes 3/5 */}
-                <div className="lg:col-span-3 bg-surface border border-border-subtle rounded-2xl overflow-hidden">
-                    <div className="p-6 border-b border-border-subtle bg-gradient-to-r from-surface to-surface-hover flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="lg:col-span-3 bg-gradient-to-br from-card-bg to-card-bg-elevated border border-border rounded-2xl overflow-hidden shadow-xl backdrop-blur-sm animate-fadeInUp" style={{ animationDelay: '500ms' }}>
+                    <div className="p-6 border-b border-border bg-primary/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
-                            <h2 className="text-lg font-semibold text-text-primary flex items-center gap-2.5">
-                                <HardDrive className="h-5 w-5 text-blue-500" />
-                                Database Backups
+                            <h2 className="text-base font-serif font-bold text-gold tracking-widest uppercase flex items-center gap-2.5">
+                                <HardDrive className="h-5 w-5 text-gold" />
+                                Database Archives
                             </h2>
-                            <p className="text-text-muted text-xs mt-1">
-                                {backups.length} backup{backups.length !== 1 ? 's' : ''} stored · AES-256-GCM encrypted · 7-day retention
+                            <p className="text-text-muted text-[10px] font-bold uppercase tracking-widest mt-1">
+                                {backups.length} archives stored · AES-256-GCM encrypted
                             </p>
                         </div>
                         <button
                             onClick={handleCreateBackup}
                             disabled={creatingBackup}
-                            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-gold to-[#C5A44E] hover:from-[#C5A44E] hover:to-gold text-black font-semibold rounded-xl transition-all duration-200 disabled:opacity-50 text-sm shadow-lg shadow-gold/10"
+                            className="flex items-center gap-2 px-6 py-2.5 bg-primary text-gold border border-gold/20 font-bold uppercase tracking-widest text-[11px] rounded-xl hover:bg-primary/80 transition-all duration-300 disabled:opacity-50 shadow-lg shadow-black/40"
                         >
                             {creatingBackup ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />
                             ) : (
                                 <Download className="h-4 w-4" />
                             )}
-                            {creatingBackup ? 'Creating...' : 'New Backup'}
+                            {creatingBackup ? 'Synthesizing...' : 'New Archive'}
                         </button>
                     </div>
 
@@ -426,22 +409,22 @@ export default function SecurityDashboard() {
                                 {backups.map((backup, i) => (
                                     <div
                                         key={backup.filename}
-                                        className="flex items-center justify-between p-4 px-6 hover:bg-surface-hover/50 transition-colors group"
+                                        className="flex items-center justify-between p-4 px-6 hover:bg-primary/5 transition-all duration-300 group"
                                     >
                                         <div className="flex items-center gap-4 min-w-0 flex-1">
-                                            <div className="p-2 bg-blue-500/10 border border-blue-500/20 rounded-lg flex-shrink-0">
-                                                <Database className="h-4 w-4 text-blue-500" />
+                                            <div className="p-3 bg-primary/20 border border-border rounded-2xl group-hover:bg-primary/30 transition-all duration-500">
+                                                <Database className="h-4 w-4 text-gold" />
                                             </div>
                                             <div className="min-w-0">
-                                                <p className="text-text-primary text-sm font-mono truncate">
+                                                <p className="text-gold font-mono text-sm truncate group-hover:text-gold-soft transition-colors">
                                                     {backup.filename}
                                                 </p>
                                                 <div className="flex items-center gap-3 mt-1">
-                                                    <span className="text-text-muted text-xs flex items-center gap-1">
+                                                    <span className="text-text-muted text-[10px] font-bold uppercase tracking-tight flex items-center gap-1">
                                                         <Clock className="h-3 w-3" />
                                                         {new Date(backup.created_at).toLocaleString()}
                                                     </span>
-                                                    <span className="text-text-muted text-xs">
+                                                    <span className="text-text-muted text-[10px] font-bold uppercase tracking-tight bg-primary/10 px-2 py-0.5 rounded-md">
                                                         {formatRelativeTime(backup.created_at)}
                                                     </span>
                                                 </div>
@@ -449,21 +432,21 @@ export default function SecurityDashboard() {
                                         </div>
 
                                         <div className="flex items-center gap-4 flex-shrink-0">
-                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-mono font-medium bg-blue-500/10 text-blue-500 border border-blue-500/20">
+                                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-mono font-bold bg-primary/20 text-gold-soft border border-border shadow-md">
                                                 <Lock className="h-3 w-3" />
                                                 {formatSize(backup.size)}
                                             </span>
                                             <button
                                                 onClick={() => openDecryptModal(backup.filename)}
-                                                className="p-2 text-text-muted hover:text-gold hover:bg-gold/10 rounded-lg transition-all duration-200 opacity-0 group-hover:opacity-100"
-                                                title="Decrypt & view backup"
+                                                className="p-2.5 text-text-muted hover:text-gold hover:bg-primary/20 rounded-xl transition-all duration-300 opacity-0 group-hover:opacity-100"
+                                                title="Decrypt & view archive"
                                             >
                                                 <Unlock className="h-4 w-4" />
                                             </button>
                                             <button
                                                 onClick={() => confirmDelete(backup.filename)}
-                                                className="p-2 text-text-muted hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all duration-200 opacity-0 group-hover:opacity-100"
-                                                title="Delete backup"
+                                                className="p-2.5 text-text-muted hover:text-danger hover:bg-danger/10 rounded-xl transition-all duration-300 opacity-0 group-hover:opacity-100"
+                                                title="Delete archive"
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                             </button>

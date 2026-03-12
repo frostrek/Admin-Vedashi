@@ -445,7 +445,7 @@ export default function TopNavbar({ sidebarCollapsed }: TopNavbarProps) {
                                     <p className="text-xs text-text-muted truncate">{user?.email}</p>
                                 </div>
                                 <Link
-                                    href="/dashboard/settings"
+                                    href="/dashboard/profile"
                                     className="flex w-full items-center gap-2 px-3 py-2 text-sm text-text-secondary hover:text-gold hover:bg-gold/[0.06] transition-all duration-300"
                                     onClick={() => setProfileOpen(false)}
                                 >

@@ -239,6 +239,21 @@ export async function getCustomerDetail(id: string): Promise<Customer | null> {
     }
 }
 
+export async function updateCustomerStatus(id: string, updates: Partial<Pick<Customer, 'is_suspended' | 'is_banned'>>): Promise<boolean> {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/customers/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updates),
+        });
+        const json: ApiResponse<any> = await res.json();
+        return json.success;
+    } catch (error) {
+        console.error('[Admin API] Failed to update customer status:', error);
+        return false;
+    }
+}
+
 /* ─── Products ─── */
 
 export async function getProducts(status = 'active'): Promise<Product[]> {
@@ -1919,6 +1934,17 @@ export async function updateFeedbackStatus(id: string, status: string) {
     } catch { return { success: false }; }
 }
 
+export async function replyToFeedback(id: string, body: string, type: 'reply' | 'note' = 'reply') {
+    try {
+        const res = await authFetch(`${API_URL}/api/customer-enquiry/admin/${id}/reply`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ body, type }),
+        });
+        return (await res.json());
+    } catch { return { success: false, message: 'Network error' }; }
+}
+
 export async function getFeedbackAnalytics() {
     try {
         const res = await fetch(`${API_URL}/api/feedback/admin/analytics`, { headers: authHeaders() });
@@ -2206,3 +2232,24 @@ export async function reorderCollectionProducts(collectionId: string, productIds
     }
 }
 
+
+/** Fetch administrative activity logs (Interaction Chronicles). */
+export async function getActivityLogs(params?: Record<string, string>): Promise<{ logs: any[]; pagination: any }> {
+    try {
+        const queryParams = params ? new URLSearchParams(params).toString() : '';
+        const res = await authFetch(`${API_URL}/api/admin/activity-logs?${queryParams}`, {
+            headers: authHeaders(),
+        });
+        const json = await res.json();
+        if (json.success && json.data) {
+            return {
+                logs: json.data.logs || [],
+                pagination: json.data.pagination || {}
+            };
+        }
+        return { logs: [], pagination: {} };
+    } catch (error) {
+        console.error('[Admin API] getActivityLogs failed:', error);
+        return { logs: [], pagination: {} };
+    }
+}

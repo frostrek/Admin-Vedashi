@@ -55,7 +55,7 @@ interface HeroSettings {
     slideshow_type: 'fade' | 'slide_right_to_left' | 'slide_left_to_right';
 }
 
-const inputCls = "w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm text-neutral-800 placeholder:text-neutral-400 focus:border-[#C5A46D] focus:outline-none focus:ring-1 focus:ring-[#C5A46D] transition-colors";
+const inputCls = "w-full rounded-xl border border-border bg-black/20 px-4 py-2.5 text-sm text-gold-soft placeholder:text-text-muted/40 focus:border-gold/30 focus:outline-none focus:ring-1 focus:ring-gold/10 transition-all duration-300 font-medium";
 
 export default function MediaLibraryPage() {
     const [slides, setSlides] = useState<HeroSlide[]>([]);
@@ -236,126 +236,126 @@ export default function MediaLibraryPage() {
     const updateButton = (id: string, field: string, value: string) => setForm(f => ({ ...f, buttons: f.buttons.map(b => b.id === id ? { ...b, [field]: value } : b) }));
 
     return (
-        <div className="p-8 max-w-6xl mx-auto">
+        <div className="p-8 max-w-6xl mx-auto space-y-10 min-h-screen">
             {/* Header */}
-            <div className="flex items-start justify-between mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 animate-fadeInUp" style={{ animationDelay: '0ms' }}>
                 <div>
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#C5A46D]/10">
-                            <Images className="w-5 h-5 text-[#C5A46D]" />
+                    <div className="flex items-center gap-4 mb-3">
+                        <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/20 border border-border shadow-lg">
+                            <Images className="w-6 h-6 text-gold" />
                         </div>
-                        <h1 className="text-2xl font-serif text-neutral-900">Media Library</h1>
+                        <h1 className="text-3xl font-serif font-bold text-gold tracking-tight">Visual Repository</h1>
                     </div>
-                    <p className="text-sm text-neutral-500 ml-[52px]">
-                        Manage hero carousel slides for the storefront landing page.
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-muted">
+                        Manage hero carousel slides for the storefront landing gallery.
                     </p>
                 </div>
                 <button
                     onClick={openCreate}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-[#C5A46D] hover:bg-[#B3935C] text-white text-sm font-semibold rounded-lg transition-colors shadow-sm"
+                    className="flex items-center gap-2 px-6 py-2.5 bg-primary border border-gold/20 text-gold text-[11px] font-bold uppercase tracking-widest rounded-xl hover:shadow-[0_0_20px_rgba(197,164,109,0.3)] transition-all duration-300 shadow-lg shadow-black/40"
                 >
-                    <Plus className="w-4 h-4" /> Add Slide
+                    <Plus className="w-4 h-4" /> Manifest Slide
                 </button>
             </div>
 
             {/* Settings Bar */}
-            <div className="mb-6 bg-white border border-neutral-100 rounded-xl p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-2 text-neutral-700 font-medium text-sm">
-                    <Settings className="w-4 h-4 text-[#C5A46D]" /> Slider Settings
+            <div className="bg-gradient-to-br from-card-bg to-card-bg-elevated border border-border rounded-2xl p-5 shadow-xl backdrop-blur-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-fadeInUp" style={{ animationDelay: '100ms' }}>
+                <div className="flex items-center gap-2 text-gold font-serif font-bold text-sm tracking-widest uppercase">
+                    <Settings className="w-4 h-4 text-gold" /> System Dynamics
                 </div>
 
                 <div className="flex flex-col sm:flex-row sm:items-center gap-6">
                     {/* Speed Config */}
                     <div className="flex items-center gap-3">
-                        <label className="text-xs font-semibold text-neutral-500 uppercase flex items-center gap-1.5 whitespace-nowrap">
-                            <Clock className="w-3.5 h-3.5" /> Speed
+                        <label className="text-[9px] font-bold text-text-muted uppercase tracking-[0.2em] flex items-center gap-2 whitespace-nowrap">
+                            <Clock className="w-3.5 h-3.5 text-gold-soft" /> Temporal Flow
                         </label>
                         <select
                             value={settings.slider_speed}
                             disabled={savingSettings}
                             onChange={(e) => saveSettings({ ...settings, slider_speed: parseInt(e.target.value) })}
-                            className="bg-neutral-50 border border-neutral-200 text-sm rounded-lg px-3 py-1.5 focus:border-[#C5A46D] focus:ring-1 focus:ring-[#C5A46D] disabled:opacity-50"
+                            className="bg-black/20 border border-border text-gold-soft text-[10px] font-bold uppercase tracking-widest rounded-lg px-3 py-1.5 focus:border-gold/30 focus:ring-1 focus:ring-gold/10 disabled:opacity-50 transition-all"
                         >
                             <option value={3000}>Fast (3s)</option>
                             <option value={5000}>Normal (5s)</option>
                             <option value={7000}>Slow (7s)</option>
-                            <option value={10000}>Very Slow (10s)</option>
+                            <option value={10000}>Stagnant (10s)</option>
                         </select>
                     </div>
 
                     {/* Arrow Config */}
                     <div className="flex items-center gap-3">
-                        <label className="text-xs font-semibold text-neutral-500 uppercase flex items-center gap-1.5 whitespace-nowrap">
-                            <MousePointer2 className="w-3.5 h-3.5" /> Arrows
+                        <label className="text-[9px] font-bold text-text-muted uppercase tracking-[0.2em] flex items-center gap-2 whitespace-nowrap">
+                            <MousePointer2 className="w-3.5 h-3.5 text-gold-soft" /> Navigation
                         </label>
                         <select
                             value={settings.arrow_visibility}
                             disabled={savingSettings}
                             onChange={(e) => saveSettings({ ...settings, arrow_visibility: e.target.value as any })}
-                            className="bg-neutral-50 border border-neutral-200 text-sm rounded-lg px-3 py-1.5 focus:border-[#C5A46D] focus:ring-1 focus:ring-[#C5A46D] disabled:opacity-50"
+                            className="bg-black/20 border border-border text-gold-soft text-[10px] font-bold uppercase tracking-widest rounded-lg px-3 py-1.5 focus:border-gold/30 focus:ring-1 focus:ring-gold/10 disabled:opacity-50 transition-all"
                         >
-                            <option value="hover">Show on Hover</option>
-                            <option value="visible">Always Visible</option>
-                            <option value="hidden">Hidden</option>
+                            <option value="hover">On Presence</option>
+                            <option value="visible">Omnipresent</option>
+                            <option value="hidden">Ethereal</option>
                         </select>
                     </div>
 
                     {/* Loop Config */}
                     <div className="flex items-center gap-3">
-                        <label className="text-xs font-semibold text-neutral-500 uppercase flex items-center gap-1.5 whitespace-nowrap">
-                            <Repeat className="w-3.5 h-3.5" /> Loop
+                        <label className="text-[9px] font-bold text-text-muted uppercase tracking-[0.2em] flex items-center gap-2 whitespace-nowrap">
+                            <Repeat className="w-3.5 h-3.5 text-gold-soft" /> Cycle
                         </label>
                         <select
                             value={settings.loop ? 'true' : 'false'}
                             disabled={savingSettings}
                             onChange={(e) => saveSettings({ ...settings, loop: e.target.value === 'true' })}
-                            className="bg-neutral-50 border border-neutral-200 text-sm rounded-lg px-3 py-1.5 focus:border-[#C5A46D] focus:ring-1 focus:ring-[#C5A46D] disabled:opacity-50"
+                            className="bg-black/20 border border-border text-gold-soft text-[10px] font-bold uppercase tracking-widest rounded-lg px-3 py-1.5 focus:border-gold/30 focus:ring-1 focus:ring-gold/10 disabled:opacity-50 transition-all"
                         >
-                            <option value="true">Enabled</option>
-                            <option value="false">Disabled</option>
+                            <option value="true">Infinite</option>
+                            <option value="false">Finite</option>
                         </select>
                     </div>
 
                     {/* Transition Config */}
                     <div className="flex items-center gap-3">
-                        <label className="text-xs font-semibold text-neutral-500 uppercase flex items-center gap-1.5 whitespace-nowrap">
-                            <MonitorPlay className="w-3.5 h-3.5" /> Effect
+                        <label className="text-[9px] font-bold text-text-muted uppercase tracking-[0.2em] flex items-center gap-2 whitespace-nowrap">
+                            <MonitorPlay className="w-3.5 h-3.5 text-gold-soft" /> Effect
                         </label>
                         <select
                             value={settings.slideshow_type}
                             disabled={savingSettings}
                             onChange={(e) => saveSettings({ ...settings, slideshow_type: e.target.value as any })}
-                            className="bg-neutral-50 border border-neutral-200 text-sm rounded-lg px-3 py-1.5 focus:border-[#C5A46D] focus:ring-1 focus:ring-[#C5A46D] disabled:opacity-50"
+                            className="bg-black/20 border border-border text-gold-soft text-[10px] font-bold uppercase tracking-widest rounded-lg px-3 py-1.5 focus:border-gold/30 focus:ring-1 focus:ring-gold/10 disabled:opacity-50 transition-all"
                         >
-                            <option value="fade">Fade (Default)</option>
-                            <option value="slide_right_to_left">Slide Right-to-Left</option>
-                            <option value="slide_left_to_right">Slide Left-to-Right</option>
+                            <option value="fade">Dissolve</option>
+                            <option value="slide_right_to_left">Transversal Link</option>
+                            <option value="slide_left_to_right">Transversal Reverse</option>
                         </select>
                     </div>
                 </div>
             </div>
 
             {/* Live preview bar */}
-            <div className="mb-6 flex items-center gap-3 p-3 bg-neutral-50 border border-neutral-200 rounded-xl text-xs text-neutral-500">
-                <Eye className="w-4 h-4 text-[#C5A46D] flex-shrink-0" />
+            <div className="bg-primary/5 border border-border/40 rounded-2xl p-4 text-[10px] font-bold uppercase tracking-[0.1em] text-text-muted flex items-center gap-3 animate-fadeInUp shadow-inner" style={{ animationDelay: '200ms' }}>
+                <Eye className="w-4 h-4 text-gold flex-shrink-0" />
                 <span>
-                    <span className="font-semibold text-neutral-700">{slides.filter(s => s.is_active).length}</span> active slide{slides.filter(s => s.is_active).length !== 1 ? 's' : ''} showing on the storefront.
-                    Inactive slides are hidden from visitors.
+                    <span className="text-gold font-serif">{slides.filter(s => s.is_active).length}</span> Manifested slides currently active in the visual stratum.
                 </span>
             </div>
 
             {/* Slides Grid */}
             {loading ? (
-                <div className="flex items-center justify-center p-20">
-                    <Loader2 className="w-8 h-8 animate-spin text-[#C5A46D]" />
+                <div className="flex flex-col items-center justify-center p-32 space-y-4 animate-pulse">
+                    <div className="w-16 h-16 rounded-full border-t-2 border-l-2 border-gold animate-spin" />
+                    <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gold/60">Synchronizing Visual Assets...</p>
                 </div>
             ) : slides.length === 0 ? (
-                <div className="flex flex-col items-center justify-center p-20 border-2 border-dashed border-neutral-200 rounded-xl bg-neutral-50/50 text-neutral-400">
-                    <Images className="w-16 h-16 mb-4 opacity-30 text-[#C5A46D]" />
-                    <p className="text-base font-medium text-neutral-600 mb-1">No hero slides found</p>
-                    <p className="text-sm mb-6">Upload your first image to get started.</p>
-                    <button onClick={openCreate} className="px-5 py-2.5 bg-neutral-800 text-white rounded-lg text-sm font-medium hover:bg-neutral-900 transition-colors">
-                        Upload Image
+                <div className="flex flex-col items-center justify-center p-32 border-2 border-dashed border-border/40 rounded-3xl bg-black/10 text-text-muted animate-fadeIn">
+                    <Images className="w-20 h-20 mb-6 opacity-20 text-gold" />
+                    <p className="text-lg font-serif font-bold text-gold-soft mb-2">No Visual Essences Found</p>
+                    <p className="text-[10px] uppercase tracking-widest opacity-60 mb-8">Begin by manifesting your first storefront visual asset.</p>
+                    <button onClick={openCreate} className="px-8 py-3 bg-primary border border-gold/20 text-gold text-[10px] font-bold uppercase tracking-widest rounded-xl hover:shadow-[0_0_20px_rgba(197,164,109,0.2)] transition-all duration-300">
+                        Upload Essence
                     </button>
                 </div>
             ) : (
@@ -363,14 +363,14 @@ export default function MediaLibraryPage() {
                     {slides.map((slide, index) => (
                         <div
                             key={slide.id}
-                            className={`group relative rounded-xl overflow-hidden border border-neutral-200 bg-neutral-100 aspect-[16/10] shadow-sm transition-all hover:shadow-md ${!slide.is_active ? 'opacity-60 grayscale-[30%]' : ''}`}
+                            className={`group relative rounded-2xl overflow-hidden border border-border bg-black/40 aspect-[16/10] shadow-2xl transition-all duration-500 hover:border-gold/30 hover:-translate-y-1 ${!slide.is_active ? 'opacity-40 grayscale-[50%]' : ''}`}
                         >
                             {/* The Image */}
                             <img
                                 src={slide.image_url}
                                 alt={slide.headings[0]?.text || 'Hero slide'}
-                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                                onError={e => { (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxMDAgMTAwIiBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJub25lIiBmaWxsPSIjZjNmNGY2Ij48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIi8+PC9zdmc+'; }}
+                                className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                                onError={e => { (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxMDAgMTAwIiBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJub25lIiBmaWxsPSIjMDcwYTA4Ij48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIi8+PC9zdmc+'; }}
                             />
 
                             {/* Overlay simulating storefront */}
@@ -380,38 +380,38 @@ export default function MediaLibraryPage() {
                             />
 
                             {/* Static overlay text (visible normally) */}
-                            <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none">
-                                <p className="text-white font-serif font-bold text-lg truncate drop-shadow-md">
-                                    {slide.headings[0]?.text || <span className="italic opacity-50">Untitled</span>}
+                            <div className="absolute inset-x-0 bottom-0 p-5 bg-gradient-to-t from-black via-black/40 to-transparent pointer-events-none">
+                                <p className="text-gold font-serif font-bold text-xl truncate drop-shadow-2xl mb-1">
+                                    {slide.headings[0]?.text || <span className="italic opacity-30">Unnamed Essence</span>}
                                 </p>
-                                <div className="flex items-center justify-between mt-1">
-                                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${slide.is_active ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-neutral-500/30 text-neutral-300 border border-neutral-500/30'}`}>
-                                        {slide.is_active ? 'Active' : 'Hidden'}
+                                <div className="flex items-center justify-between">
+                                    <span className={`px-3 py-1 rounded-lg text-[9px] font-bold uppercase tracking-[0.2em] shadow-lg ${slide.is_active ? 'bg-gold/10 text-gold border border-gold/30' : 'bg-black/40 text-text-muted border border-border/30'}`}>
+                                        {slide.is_active ? 'Manifested' : 'Latent'}
                                     </span>
                                 </div>
                             </div>
 
                             {/* Hover Actions Overlay */}
-                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center gap-3 backdrop-blur-[2px]">
+                            <div className="absolute inset-0 bg-primary/40 opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col items-center justify-center gap-4 backdrop-blur-sm">
                                 <button
                                     onClick={() => openEdit(slide)}
-                                    className="flex items-center gap-2 px-6 py-2 bg-white text-neutral-900 text-sm font-semibold rounded-full hover:scale-105 transition-transform shadow-lg"
+                                    className="flex items-center gap-2 px-8 py-3 bg-gold text-primary text-[10px] font-bold uppercase tracking-[0.2em] rounded-full hover:scale-105 transition-all shadow-2xl border border-white/20"
                                 >
-                                    <Edit2 className="w-4 h-4" /> Edit Slide
+                                    <Edit2 className="w-4 h-4" /> Reconfigure
                                 </button>
 
-                                <div className="flex items-center gap-3 mt-2">
+                                <div className="flex items-center gap-4 scale-90 group-hover:scale-100 transition-transform duration-500">
                                     <button
                                         onClick={(e) => handleToggle(slide, e)}
-                                        className={`p-2.5 rounded-full text-white backdrop-blur-md transition-colors ${slide.is_active ? 'bg-neutral-600/50 hover:bg-neutral-500/80' : 'bg-emerald-600/60 hover:bg-emerald-500/80'}`}
-                                        title={slide.is_active ? 'Hide from storefront' : 'Show on storefront'}
+                                        className={`p-3 rounded-full text-gold backdrop-blur-md border border-gold/20 transition-all duration-300 ${slide.is_active ? 'bg-black/40 hover:bg-black/60' : 'bg-gold/40 hover:bg-gold/60'}`}
+                                        title={slide.is_active ? 'Deactivate Essence' : 'Manifest Essence'}
                                     >
                                         {slide.is_active ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                     </button>
                                     <button
                                         onClick={(e) => handleDelete(slide.id, e)}
-                                        className="p-2.5 rounded-full bg-red-600/60 text-white backdrop-blur-md hover:bg-red-500/80 transition-colors"
-                                        title="Delete forever"
+                                        className="p-3 rounded-full bg-danger/20 text-danger border border-danger/40 backdrop-blur-md hover:bg-danger/40 transition-all duration-300"
+                                        title="Purge Essence"
                                     >
                                         <Trash2 className="w-4 h-4" />
                                     </button>
@@ -424,23 +424,24 @@ export default function MediaLibraryPage() {
 
             {/* Edit / Create Modal */}
             {modalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/60 backdrop-blur-sm p-4">
-                    <div className="bg-white border border-neutral-200 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                        <div className="flex items-center justify-between p-5 border-b border-neutral-100 sticky top-0 bg-white z-10">
-                            <h2 className="text-xl font-serif font-semibold text-neutral-800">
-                                {editing ? 'Edit Hero Slide' : 'Upload Hero Image'}
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-fadeIn">
+                    <div className="bg-gradient-to-br from-card-bg to-card-bg-elevated border border-border rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col animate-scaleIn">
+                        <div className="flex items-center justify-between p-6 border-b border-border bg-black/40 backdrop-blur-sm sticky top-0 z-10">
+                            <h2 className="text-xl font-serif font-bold text-gold tracking-tight lowercase">
+                                <span className="text-[10px] uppercase block tracking-[0.3em] font-bold text-gold/40 mb-1">Visual Configuration</span>
+                                {editing ? 'Refine Essence' : 'Manifest New Essence'}
                             </h2>
-                            <button onClick={() => setModalOpen(false)} className="p-2 rounded-full hover:bg-neutral-100 text-neutral-400 hover:text-neutral-600 transition-colors">
+                            <button onClick={() => setModalOpen(false)} className="p-3 rounded-full hover:bg-white/5 text-gold-soft hover:text-gold transition-all">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
-                        <form onSubmit={handleSave} className="p-6 space-y-6">
+                        <form onSubmit={handleSave} className="p-6 space-y-8 overflow-y-auto flex-1 custom-scrollbar">
 
                             {/* File Upload Area */}
-                            <div>
-                                <label className="block text-xs font-semibold text-neutral-600 uppercase tracking-wide mb-2">
-                                    Hero Image <span className="text-red-500">*</span>
+                            <div className="space-y-3">
+                                <label className="block text-[10px] font-bold text-text-muted uppercase tracking-[0.2em]">
+                                    Prime Visual Asset <span className="text-danger">*</span>
                                 </label>
 
                                 <input
@@ -452,12 +453,12 @@ export default function MediaLibraryPage() {
                                 />
 
                                 {form.image_url ? (
-                                    <div className="relative rounded-xl overflow-hidden border border-neutral-200 aspect-[16/7] bg-neutral-100 group">
+                                    <div className="relative rounded-2xl overflow-hidden border border-border aspect-[16/7] bg-black/40 group shadow-2xl">
                                         <img
                                             src={form.image_url}
                                             alt="Preview"
                                             className="w-full h-full object-cover"
-                                            onError={e => { (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxMDAgMTAwIiBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJub25lIiBmaWxsPSIjZjNmNGY2Ij48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIi8+PC9zdmc+'; }}
+                                            onError={e => { (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIHZpZXdCb3g9IjAgMCAxMDAgMTAwIiBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJub25lIiBmaWxsPSIjMDcwYTA4Ij48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIi8+PC9zdmc+'; }}
                                         />
 
                                         {/* Storefront appearance simulation */}
@@ -466,11 +467,11 @@ export default function MediaLibraryPage() {
                                         </div>
                                         <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white pointer-events-none px-6">
                                             {/* Headings */}
-                                            <div className="space-y-2 mb-4">
+                                            <div className="space-y-1 mb-4">
                                                 {form.headings.map(h => {
                                                     const isNum = !isNaN(Number(h.fontSize)) && h.fontSize !== '';
                                                     return (
-                                                        <h1 key={h.id} style={{ color: h.color, fontSize: isNum ? `${h.fontSize}px` : undefined }} className={`font-serif font-bold leading-tight drop-shadow-lg ${!isNum ? `text-${h.fontSize}` : ''}`}>
+                                                        <h1 key={h.id} style={{ color: h.color, fontSize: isNum ? `${parseInt(h.fontSize) / 2}px` : undefined }} className={`font-serif font-bold leading-tight drop-shadow-2xl ${!isNum ? `text-${h.fontSize}` : ''}`}>
                                                             {h.text || 'Heading Preview'}
                                                         </h1>
                                                     )
@@ -478,11 +479,11 @@ export default function MediaLibraryPage() {
                                             </div>
 
                                             {/* Subheadings */}
-                                            <div className="space-y-2 mb-8">
+                                            <div className="space-y-1 mb-6">
                                                 {form.subheadings.map(s => {
                                                     const isNum = !isNaN(Number(s.fontSize)) && s.fontSize !== '';
                                                     return (
-                                                        <p key={s.id} style={{ color: s.color, fontSize: isNum ? `${s.fontSize}px` : undefined }} className={`max-w-xl leading-relaxed drop-shadow-md ${!isNum ? `text-${s.fontSize}` : ''}`}>
+                                                        <p key={s.id} style={{ color: s.color, fontSize: isNum ? `${parseInt(s.fontSize) / 2}px` : undefined }} className={`max-w-xl leading-relaxed drop-shadow-md opacity-90 ${!isNum ? `text-${s.fontSize}` : ''}`}>
                                                             {s.text || 'Subheading Preview'}
                                                         </p>
                                                     )
@@ -490,155 +491,159 @@ export default function MediaLibraryPage() {
                                             </div>
 
                                             {/* Buttons */}
-                                            <div className="flex flex-wrap gap-4">
+                                            <div className="flex flex-wrap gap-3">
                                                 {form.buttons.map(b => (
                                                     <span
                                                         key={b.id}
                                                         style={{ backgroundColor: b.bgColor, color: b.textColor }}
-                                                        className="inline-flex items-center gap-2 rounded-lg px-8 py-3.5 text-sm font-semibold shadow-lg transition-transform hover:-translate-y-0.5"
+                                                        className="inline-flex items-center gap-2 rounded-lg px-6 py-2 text-[8px] font-bold uppercase tracking-widest shadow-2xl"
                                                     >
-                                                        {b.label || 'Button'}
-                                                        <ArrowRight className="h-4 w-4" />
+                                                        {b.label || 'Action'}
+                                                        <ArrowRight className="h-2.5 w-2.5" />
                                                     </span>
                                                 ))}
                                             </div></div>
 
                                         {/* Change Image Overlay */}
-                                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                        <div className="absolute inset-0 bg-primary/40 opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center backdrop-blur-sm">
                                             <button
                                                 type="button"
                                                 onClick={() => fileInputRef.current?.click()}
-                                                className="px-4 py-2 bg-white text-neutral-900 rounded-lg text-sm font-medium shadow-lg hover:scale-105 transition-transform flex items-center gap-2"
+                                                className="px-6 py-2.5 bg-gold text-primary rounded-full text-[10px] font-bold uppercase tracking-widest shadow-2xl hover:scale-110 transition-transform flex items-center gap-2"
                                             >
-                                                <UploadCloud className="w-4 h-4" /> Change Image
+                                                <UploadCloud className="w-4 h-4" /> Recalibrate Asset
                                             </button>
                                         </div>
                                     </div>
                                 ) : (
                                     <div
                                         onClick={() => fileInputRef.current?.click()}
-                                        className="w-full border-2 border-dashed border-neutral-300 rounded-xl p-8 hover:bg-neutral-50 hover:border-[#C5A46D] transition-colors cursor-pointer flex flex-col items-center justify-center text-center"
+                                        className="w-full border-2 border-dashed border-border/40 rounded-2xl p-10 hover:bg-white/5 hover:border-gold/30 transition-all duration-500 cursor-pointer flex flex-col items-center justify-center text-center group"
                                     >
-                                        <div className="w-12 h-12 bg-[#C5A46D]/10 rounded-full flex items-center justify-center mb-3">
-                                            <UploadCloud className="w-6 h-6 text-[#C5A46D]" />
+                                        <div className="w-16 h-16 bg-gold/10 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                            <UploadCloud className="w-8 h-8 text-gold" />
                                         </div>
-                                        <p className="text-sm font-semibold text-neutral-800">Click to upload image</p>
-                                        <p className="text-xs text-neutral-500 mt-1">JPEG, PNG, WebP up to 10MB</p>
-                                        <p className="text-xs text-neutral-400 mt-4">Recommended size: 1920x1080px</p>
+                                        <p className="text-sm font-serif font-bold text-gold-soft mb-1">Manifest Visual Essence</p>
+                                        <p className="text-[10px] uppercase tracking-widest text-text-muted opacity-60">JPEG, PNG, WebP up to 10MB</p>
+                                        <div className="mt-6 flex items-center gap-2 text-[9px] uppercase tracking-widest text-gold opacity-40">
+                                            <div className="h-px w-8 bg-gold/20" />
+                                            Optimal 1920x1080
+                                            <div className="h-px w-8 bg-gold/20" />
+                                        </div>
                                     </div>
                                 )}
                             </div>
 
                             {/* ── Dynamic Headings ── */}
-                            <div className="space-y-4 pt-4 border-t border-neutral-100">
-                                <div className="flex items-center justify-between">
-                                    <h3 className="text-sm font-semibold tracking-wider text-neutral-500 uppercase">Headings</h3>
+                            <div className="space-y-4 pt-4 border-t border-border">
+                                <div className="flex items-center justify-between px-1">
+                                    <h3 className="text-[10px] font-bold tracking-[0.2em] text-text-muted uppercase">Headings</h3>
                                     <button
                                         type="button"
                                         onClick={addHeading}
-                                        className="inline-flex items-center gap-1.5 text-xs font-medium text-[#722F37] hover:text-[#5A252C]"
+                                        className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gold hover:text-gold-soft transition-all"
                                     >
-                                        <Plus className="w-3.5 h-3.5" />
-                                        Add Heading
+                                        <Plus className="w-4 h-4" />
+                                        Append Heading
                                     </button>
                                 </div>
                                 {form.headings.map((h, i) => (
-                                    <div key={h.id} className="flex items-center gap-3 bg-neutral-50 p-3 rounded-lg border border-neutral-100">
-                                        <span className="text-xs font-medium text-neutral-400 w-5">{i + 1}.</span>
+                                    <div key={h.id} className="flex items-center gap-3 bg-black/20 p-4 rounded-2xl border border-border group animate-fadeIn">
+                                        <span className="text-[10px] font-bold text-gold/30 w-5">{i + 1}.</span>
                                         <input
                                             type="text"
                                             value={h.text}
                                             onChange={e => updateHeading(h.id, 'text', e.target.value)}
-                                            placeholder="E.g., The Art of Ayurvedic Wellness"
+                                            placeholder="E.g., The Art of Vedic Wellness"
                                             className={`${inputCls} flex-1`}
                                         />
-                                        <div className="flex items-center gap-2 px-2 py-1 bg-white border border-neutral-200 rounded-md">
-                                            <label className="text-xs font-medium text-neutral-500 cursor-pointer flex items-center gap-1">
+                                        <div className="flex items-center gap-2 px-3 py-1 bg-black/40 border border-border rounded-xl shadow-inner">
+                                            <label className="text-[9px] font-bold text-text-muted uppercase tracking-widest cursor-pointer flex items-center gap-2">
                                                 Color
                                                 <input
                                                     type="color"
                                                     value={h.color}
                                                     onChange={e => updateHeading(h.id, 'color', e.target.value)}
-                                                    className="w-6 h-6 p-0 border-0 rounded cursor-pointer"
+                                                    className="w-6 h-6 p-0.5 border border-border rounded-lg bg-black/20 cursor-pointer"
                                                 />
                                             </label>
                                         </div>
-                                        <div className="flex items-center gap-1 border border-neutral-200 rounded-md bg-white px-2">
+                                        <div className="flex items-center gap-2 border border-border rounded-xl bg-black/40 px-3 py-1 shadow-inner">
                                             <input
                                                 type="number"
                                                 min="10"
                                                 max="150"
                                                 value={!isNaN(Number(h.fontSize)) ? h.fontSize : h.fontSize.replace(/\D/g, '') || '72'}
                                                 onChange={e => updateHeading(h.id, 'fontSize', e.target.value)}
-                                                className="w-12 text-xs py-1.5 focus:outline-none"
+                                                className="w-12 text-[10px] font-bold text-gold-soft bg-transparent focus:outline-none"
                                             />
-                                            <span className="text-xs text-neutral-400">px</span>
+                                            <span className="text-[9px] font-bold text-text-muted uppercase tracking-widest">px</span>
                                         </div>
                                         <button
                                             type="button"
                                             onClick={() => removeHeading(h.id)}
-                                            className="p-1.5 text-neutral-400 hover:text-red-500 hover:bg-neutral-100 rounded-md transition-colors"
-                                            title="Remove Heading"
+                                            className="p-2.5 text-text-muted/40 hover:text-danger hover:bg-danger/10 rounded-xl transition-all"
+                                            title="Purge Heading"
                                         >
                                             <Minus className="w-4 h-4" />
                                         </button>
                                     </div>
                                 ))}
                                 {form.headings.length === 0 && (
-                                    <p className="text-sm text-neutral-400 italic">No headings added.</p>
+                                    <p className="text-[10px] text-text-muted/40 italic text-center py-4 border border-dashed border-border/40 rounded-2xl">No active headings manifested.</p>
                                 )}
                             </div>
 
                             {/* ── Dynamic Subheadings ── */}
-                            <div className="space-y-4 pt-4 border-t border-neutral-100">
-                                <div className="flex items-center justify-between">
-                                    <h3 className="text-sm font-semibold tracking-wider text-neutral-500 uppercase">Subheadings</h3>
+                            <div className="space-y-4 pt-4 border-t border-border">
+                                <div className="flex items-center justify-between px-1">
+                                    <h3 className="text-[10px] font-bold tracking-[0.2em] text-text-muted uppercase">Subheadings</h3>
                                     <button
                                         type="button"
                                         onClick={addSubheading}
-                                        className="inline-flex items-center gap-1.5 text-xs font-medium text-[#722F37] hover:text-[#5A252C]"
+                                        className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gold hover:text-gold-soft transition-all"
                                     >
-                                        <Plus className="w-3.5 h-3.5" />
-                                        Add Subheading
+                                        <Plus className="w-4 h-4" />
+                                        Append Subheading
                                     </button>
                                 </div>
                                 {form.subheadings.map((s, i) => (
-                                    <div key={s.id} className="flex items-center gap-3 bg-neutral-50 p-3 rounded-lg border border-neutral-100">
-                                        <span className="text-xs font-medium text-neutral-400 w-5">{i + 1}.</span>
+                                    <div key={s.id} className="flex items-center gap-3 bg-black/20 p-4 rounded-2xl border border-border group animate-fadeIn">
+                                        <span className="text-[10px] font-bold text-gold/30 w-5">{i + 1}.</span>
                                         <input
                                             type="text"
                                             value={s.text}
                                             onChange={e => updateSubheading(s.id, 'text', e.target.value)}
-                                            placeholder="Subheading text..."
+                                            placeholder="Subheading essence..."
                                             className={`${inputCls} flex-1`}
                                         />
-                                        <div className="flex items-center gap-2 px-2 py-1 bg-white border border-neutral-200 rounded-md">
-                                            <label className="text-xs font-medium text-neutral-500 cursor-pointer flex items-center gap-1">
+                                        <div className="flex items-center gap-2 px-3 py-1 bg-black/40 border border-border rounded-xl shadow-inner">
+                                            <label className="text-[9px] font-bold text-text-muted uppercase tracking-widest cursor-pointer flex items-center gap-2">
                                                 Color
                                                 <input
                                                     type="color"
                                                     value={s.color}
                                                     onChange={e => updateSubheading(s.id, 'color', e.target.value)}
-                                                    className="w-6 h-6 p-0 border-0 rounded cursor-pointer"
+                                                    className="w-6 h-6 p-0.5 border border-border rounded-lg bg-black/20 cursor-pointer"
                                                 />
                                             </label>
                                         </div>
-                                        <div className="flex items-center gap-1 border border-neutral-200 rounded-md bg-white px-2">
+                                        <div className="flex items-center gap-2 border border-border rounded-xl bg-black/40 px-3 py-1 shadow-inner">
                                             <input
                                                 type="number"
                                                 min="10"
                                                 max="150"
                                                 value={!isNaN(Number(s.fontSize)) ? s.fontSize : s.fontSize.replace(/\D/g, '') || '18'}
                                                 onChange={e => updateSubheading(s.id, 'fontSize', e.target.value)}
-                                                className="w-12 text-xs py-1.5 focus:outline-none"
+                                                className="w-12 text-[10px] font-bold text-gold-soft bg-transparent focus:outline-none"
                                             />
-                                            <span className="text-xs text-neutral-400">px</span>
+                                            <span className="text-[9px] font-bold text-text-muted uppercase tracking-widest">px</span>
                                         </div>
                                         <button
                                             type="button"
                                             onClick={() => removeSubheading(s.id)}
-                                            className="p-1.5 text-neutral-400 hover:text-red-500 hover:bg-neutral-100 rounded-md transition-colors"
-                                            title="Remove Subheading"
+                                            className="p-2.5 text-text-muted/40 hover:text-danger hover:bg-danger/10 rounded-xl transition-all"
+                                            title="Purge Subheading"
                                         >
                                             <Minus className="w-4 h-4" />
                                         </button>
@@ -647,31 +652,31 @@ export default function MediaLibraryPage() {
                             </div>
 
                             {/* ── Dynamic Buttons ── */}
-                            <div className="space-y-4 pt-4 border-t border-neutral-100">
-                                <div className="flex items-center justify-between">
-                                    <h3 className="text-sm font-semibold tracking-wider text-neutral-500 uppercase">Call to Action Buttons</h3>
+                            <div className="space-y-4 pt-4 border-t border-border">
+                                <div className="flex items-center justify-between px-1">
+                                    <h3 className="text-[10px] font-bold tracking-[0.2em] text-text-muted uppercase">Interaction Nodes</h3>
                                     <button
                                         type="button"
                                         onClick={addButton}
-                                        className="inline-flex items-center gap-1.5 text-xs font-medium text-[#722F37] hover:text-[#5A252C]"
+                                        className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gold hover:text-gold-soft transition-all"
                                     >
-                                        <Plus className="w-3.5 h-3.5" />
-                                        Add Button
+                                        <Plus className="w-4 h-4" />
+                                        Link Aspect
                                     </button>
                                 </div>
                                 {form.buttons.map((b, i) => (
-                                    <div key={b.id} className="flex flex-col gap-3 bg-neutral-50 p-4 rounded-lg border border-neutral-100 relative">
+                                    <div key={b.id} className="flex flex-col gap-4 bg-black/20 p-5 rounded-2xl border border-border relative group animate-fadeIn transition-all hover:bg-black/30">
                                         <button
                                             type="button"
                                             onClick={() => removeButton(b.id)}
-                                            className="absolute top-2 right-2 p-1.5 text-neutral-400 hover:text-red-500 hover:bg-neutral-200 rounded-md transition-colors"
-                                            title="Remove Button"
+                                            className="absolute top-4 right-4 p-2 text-text-muted/40 hover:text-danger hover:bg-danger/10 rounded-xl transition-all"
+                                            title="Sever Link"
                                         >
                                             <Minus className="w-4 h-4" />
                                         </button>
-                                        <div className="flex gap-4 pr-8">
-                                            <div className="flex-1 space-y-1">
-                                                <label className="text-xs font-medium text-neutral-500">Label</label>
+                                        <div className="grid grid-cols-2 gap-4 pr-10">
+                                            <div className="space-y-2">
+                                                <label className="text-[9px] font-bold text-text-muted uppercase tracking-widest px-1">Label</label>
                                                 <input
                                                     type="text"
                                                     value={b.label}
@@ -680,8 +685,8 @@ export default function MediaLibraryPage() {
                                                     className={inputCls}
                                                 />
                                             </div>
-                                            <div className="flex-1 space-y-1">
-                                                <label className="text-xs font-medium text-neutral-500">URL</label>
+                                            <div className="space-y-2">
+                                                <label className="text-[9px] font-bold text-text-muted uppercase tracking-widest px-1">URL</label>
                                                 <input
                                                     type="text"
                                                     value={b.url}
@@ -691,26 +696,26 @@ export default function MediaLibraryPage() {
                                                 />
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-4">
-                                            <div className="flex items-center gap-2 px-2 py-1 bg-white border border-neutral-200 rounded-md">
-                                                <label className="text-xs font-medium text-neutral-500 cursor-pointer flex items-center gap-1">
+                                        <div className="flex items-center gap-4 px-1">
+                                            <div className="flex items-center gap-3 px-3 py-1 bg-black/40 border border-border rounded-xl shadow-inner">
+                                                <label className="text-[9px] font-bold text-text-muted uppercase tracking-widest cursor-pointer flex items-center gap-2">
                                                     Background
                                                     <input
                                                         type="color"
                                                         value={b.bgColor}
                                                         onChange={e => updateButton(b.id, 'bgColor', e.target.value)}
-                                                        className="w-6 h-6 p-0 border-0 rounded cursor-pointer"
+                                                        className="w-6 h-6 p-0.5 border border-border rounded-lg bg-black/20 cursor-pointer"
                                                     />
                                                 </label>
                                             </div>
-                                            <div className="flex items-center gap-2 px-2 py-1 bg-white border border-neutral-200 rounded-md">
-                                                <label className="text-xs font-medium text-neutral-500 cursor-pointer flex items-center gap-1">
+                                            <div className="flex items-center gap-3 px-3 py-1 bg-black/40 border border-border rounded-xl shadow-inner">
+                                                <label className="text-[9px] font-bold text-text-muted uppercase tracking-widest cursor-pointer flex items-center gap-2">
                                                     Text Color
                                                     <input
                                                         type="color"
                                                         value={b.textColor}
                                                         onChange={e => updateButton(b.id, 'textColor', e.target.value)}
-                                                        className="w-6 h-6 p-0 border-0 rounded cursor-pointer"
+                                                        className="w-6 h-6 p-0.5 border border-border rounded-lg bg-black/20 cursor-pointer"
                                                     />
                                                 </label>
                                             </div>
@@ -718,34 +723,34 @@ export default function MediaLibraryPage() {
                                     </div>
                                 ))}
                             </div>
-                            <div className="bg-neutral-50 rounded-xl p-4 border border-neutral-100">
-                                <label className="flex items-center justify-between text-xs font-semibold text-neutral-600 uppercase tracking-wide mb-3">
-                                    <span>Dark Overlay Opacity</span>
-                                    <span className="text-[#C5A46D] bg-[#C5A46D]/10 px-2 py-0.5 rounded">{Math.round(form.overlay_opacity * 100)}%</span>
+                            <div className="bg-black/40 rounded-2xl p-6 border border-border shadow-inner space-y-4">
+                                <label className="flex items-center justify-between text-[10px] font-bold text-text-muted uppercase tracking-[0.2em]">
+                                    <span>Atmospheric Density</span>
+                                    <span className="text-gold bg-gold/10 px-3 py-1 rounded-lg border border-gold/20 font-serif">{Math.round(form.overlay_opacity * 100)}%</span>
                                 </label>
                                 <input
                                     type="range" min={0} max={1} step={0.05}
                                     value={form.overlay_opacity}
                                     onChange={e => setForm({ ...form, overlay_opacity: parseFloat(e.target.value) })}
-                                    className="w-full accent-[#C5A46D]"
+                                    className="w-full accent-gold h-1.5 bg-black/40 rounded-full cursor-pointer"
                                 />
-                                <div className="flex justify-between text-[10px] uppercase font-bold text-neutral-400 mt-1">
+                                <div className="flex justify-between text-[9px] uppercase font-bold text-text-muted/40 tracking-widest px-1">
                                     <span>Transparent</span>
-                                    <span>Solid Black</span>
+                                    <span>Absolute Void</span>
                                 </div>
-                                <p className="text-[11px] text-neutral-500 mt-2 flex items-start gap-1.5">
-                                    <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
-                                    <span>Increase opacity if white text is hard to read against the uploaded image.</span>
+                                <p className="text-[10px] text-text-muted/60 leading-relaxed flex items-start gap-2 pt-2">
+                                    <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 text-gold/40" />
+                                    <span>Modulate density to ensure typographic clarity against the prime visual asset.</span>
                                 </p>
                             </div>
 
-                            <label className="flex items-center justify-between cursor-pointer select-none p-4 rounded-xl border border-neutral-200 hover:bg-neutral-50 transition-colors">
+                            <label className="flex items-center justify-between cursor-pointer select-none p-5 rounded-2xl border border-border bg-black/20 hover:bg-black/40 hover:border-gold/20 transition-all duration-300">
                                 <div>
-                                    <p className="text-sm font-bold text-neutral-800">Publish immediately</p>
-                                    <p className="text-xs text-neutral-500 mt-0.5">Toggle off to hide this slide from the storefront</p>
+                                    <p className="text-sm font-serif font-bold text-gold-soft tracking-wide">Manifest Immediately</p>
+                                    <p className="text-[10px] text-text-muted mt-0.5 uppercase tracking-widest font-medium">Toggle visibility of this essence within the storefront</p>
                                 </div>
-                                <div className={`relative w-12 h-6 rounded-full transition-colors ${form.is_active ? 'bg-[#C5A46D]' : 'bg-neutral-300'}`}>
-                                    <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.is_active ? 'translate-x-6' : ''}`} />
+                                <div className={`relative w-14 h-7 rounded-full transition-all duration-500 flex-shrink-0 ${form.is_active ? 'bg-gold shadow-[0_0_15px_rgba(197,164,109,0.3)]' : 'bg-border'}`}>
+                                    <div className={`absolute top-1.5 left-1.5 w-4 h-4 bg-white rounded-full shadow-lg transition-transform duration-500 ease-out ${form.is_active ? 'translate-x-7' : ''}`} />
                                     <input
                                         type="checkbox"
                                         className="sr-only"
@@ -755,14 +760,14 @@ export default function MediaLibraryPage() {
                                 </div>
                             </label>
 
-                            <div className="flex justify-end gap-3 pt-2">
+                            <div className="flex justify-end gap-3 pt-4 border-t border-border">
                                 <button type="button" onClick={() => setModalOpen(false)} disabled={saving}
-                                    className="px-5 py-2.5 text-sm font-semibold text-neutral-600 hover:bg-neutral-100 transition-colors rounded-lg">
-                                    Cancel
+                                    className="px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest text-text-muted hover:text-gold hover:bg-white/5 transition-all rounded-xl">
+                                    Abort
                                 </button>
                                 <button type="submit" disabled={saving}
-                                    className="flex items-center gap-2 px-6 py-2.5 bg-[#C5A46D] hover:bg-[#B3935C] text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50 shadow-sm hover:shadow">
-                                    {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</> : <><Save className="w-4 h-4" /> {editing ? 'Save Changes' : 'Upload Slide'}</>}
+                                    className="flex items-center gap-2 px-8 py-3 bg-primary border border-gold/20 text-gold text-[10px] font-bold uppercase tracking-widest rounded-xl hover:shadow-[0_0_20px_rgba(197,164,109,0.3)] transition-all duration-300 disabled:opacity-50">
+                                    {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Finalizing Essence…</> : <><Save className="w-4 h-4" /> {editing ? 'Commit Changes' : 'Manifest Slide'}</>}
                                 </button>
                             </div>
                         </form>

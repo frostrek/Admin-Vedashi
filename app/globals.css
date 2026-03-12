@@ -37,10 +37,11 @@
   --color-gold-soft: var(--t-gold-soft);
 
   /* Status — organic, no neons */
-  --color-success: #5D7A5D;
-  --color-warning: #9B8A4F;
+  --color-success: var(--t-success);
+  --color-warning: var(--t-warning);
+  --color-warning-dark: var(--t-warning-dark);
   --color-danger: var(--t-danger);
-  --color-info: #4A5A6A;
+  --color-info: var(--t-info);
 
   /* Typography */
   --font-serif: 'Playfair Display', Georgia, serif;
@@ -77,6 +78,10 @@
   --t-gold-soft: #3B5D3B;
 
   --t-danger: #8B3D3D;
+  --t-success: #5D7A5D;
+  --t-warning: #9B8A4F;
+  --t-warning-dark: #7A6932;
+  --t-info: #4A5A6A;
 
   --background: #F6F1EA;
   --foreground: #2C1B16;
@@ -101,9 +106,9 @@
    ───────────────────────────────────────────────── */
 
 .dark {
-  --t-primary: #1F331F;
-  --t-primary-dark: #152415;
-  --t-primary-light: #2A452A;
+  --t-primary: #8CAF8C;
+  --t-primary-dark: #6B8C6B;
+  --t-primary-light: #A8C9A8;
 
   --t-plum: #2D3D2D;
 
@@ -126,6 +131,10 @@
   --t-gold-soft: #D1E0D1;
 
   --t-danger: #5D2D2D;
+  --t-success: #8BA88B;
+  --t-warning: #C5A46D;
+  --t-warning-dark: #E8D8B9;
+  --t-info: #6A8A9A;
 
   --background: #141111;
   --foreground: #E8D8B9;

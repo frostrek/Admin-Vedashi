@@ -29,7 +29,7 @@ const engagementNav = [
 
 const salesNav = [
     { href: '/dashboard/orders', label: 'Orders', icon: ShoppingCart },
-    { href: '/dashboard/payments/logs', label: 'Payment Logs', icon: DollarSign },
+    { href: '/dashboard/payments/logs', label: 'Payment Stratum', icon: DollarSign },
     { href: '#', label: 'Delivery', icon: Truck },
 ];
 
@@ -44,17 +44,17 @@ const marketingNav = [
 ];
 
 const siteContentNav = [
-    { href: '/dashboard/promo-banners', label: 'Banner Promotion', icon: Images },
-    { href: '/dashboard/media', label: 'Media Library', icon: Images },
-    { href: '/dashboard/header', label: 'Header Management', icon: MonitorSmartphone },
-    { href: '/dashboard/footer', label: 'Footer', icon: LayoutTemplate },
+    { href: '/dashboard/promo-banners', label: 'Aura Announcements', icon: Images },
+    { href: '/dashboard/media', label: 'Visual Repository', icon: Images },
+    { href: '/dashboard/header', label: 'Header Canvas', icon: MonitorSmartphone },
+    { href: '/dashboard/footer', label: 'Footer Stratum', icon: LayoutTemplate },
 ];
 
 const optimizationNav = [
     { href: '/dashboard/search/analytics', label: 'Search Analytics', icon: Search },
     { href: '/dashboard/seo-health', label: 'SEO Health', icon: ShieldAlert },
     { href: '/dashboard/analytics/products', label: 'Product Analytics', icon: BarChart },
-    { href: '/dashboard/activity-logs', label: 'Activity Logs', icon: Activity },
+    { href: '/dashboard/activity-logs', label: 'Interaction Chronicles', icon: Activity },
 ];
 
 const supportNav = [
