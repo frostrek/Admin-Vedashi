@@ -144,7 +144,7 @@
   --surface-shadow-hover: rgba(0, 0, 0, 0.3);
 }
 
-/* ─── Base ─── */
+/* ─── Base ─    ── */
 
 body {
   background: var(--background);
