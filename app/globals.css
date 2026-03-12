@@ -144,11 +144,10 @@
   --surface-shadow-hover: rgba(0, 0, 0, 0.3);
 }
 
-/* ─── Base ─── */
+/* ─── Base ─    ── */
 
 body {
   background: var(--background);
-  /* background-image: url('/leaf-bg.png'); */
   background-attachment: fixed;
   background-position: center;
   background-repeat: no-repeat;
