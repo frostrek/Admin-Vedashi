@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import { loginUser as apiLogin, deactivateAccount as apiDeactivate, LoginResult } from '@/lib/api';
+import { loginUser as apiLogin, deactivateAccount as apiDeactivate, logoutUser as apiLogout, LoginResult } from '@/lib/api';
 import { setToken, getToken, setStoredUser, clearAuth, setRefreshToken } from '@/lib/auth';
 
 interface AdminUser {
@@ -84,7 +84,12 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         return { success: false, error: result.error || 'Invalid credentials' };
     }, []);
 
-    const logout = useCallback(() => {
+    const logout = useCallback(async () => {
+        try {
+            await apiLogout();
+        } catch (error) {
+            console.error('Logout API failed:', error);
+        }
         setUser(null);
         localStorage.removeItem(ADMIN_KEY);
         clearAuth();

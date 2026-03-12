@@ -55,7 +55,13 @@ export interface ProductVariant {
     stock_quantity?: number;
     size_label?: string;
     cost_price?: number;
-    weight_kg?: number;
+    weight_g?: number;
+    flavor?: string;
+    is_combo?: boolean;
+    strength?: string;
+    strength_unit?: string;
+    form_factor?: string;
+    units_count?: number;
     barcode?: string;
     is_active?: boolean;
     is_default?: boolean;

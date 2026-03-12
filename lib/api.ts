@@ -47,6 +47,23 @@ export function authHeaders(extra?: Record<string, string>): Record<string, stri
     return headers;
 }
 
+/**
+ * Perform backend logout - clears HttpOnly cookies
+ */
+export async function logoutUser(): Promise<boolean> {
+    try {
+        const res = await authFetch(`${API_URL}/api/auth/logout`, {
+            method: 'POST',
+            headers: authHeaders(),
+        });
+        const json = await res.json();
+        return json.success;
+    } catch (error) {
+        console.error('[Admin API] Failed to logout:', error);
+        return false;
+    }
+}
+
 /* ─── Token Refresh ─── */
 
 let _refreshPromise: Promise<boolean> | null = null;

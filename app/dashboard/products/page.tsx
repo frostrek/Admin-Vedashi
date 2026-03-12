@@ -48,7 +48,11 @@ export default function ProductsListPage() {
             setLoadingVariants(prev => new Set(prev).add(productId));
             const details = await getProduct(productId);
             if (details && details.variants) {
-                const fetchedVariants = details.variants.map((v: any, index: number) => {
+                const variants = details.variants;
+                const hasDefault = variants.some((v: any) => v.is_default);
+                const fetchedVariants = variants.map((v: any, index: number) => {
+                    // Logic: if only 1 variant, or no variant is marked default, treat first one as default for UI
+                    const effectivelyDefault = v.is_default || (variants.length === 1) || (!hasDefault && index === 0);
                     // Find matching image from assets using the same logic as the edit page
                     const allAssets = details.assets || [];
                     const specificImages = allAssets.filter((a: any) => {
@@ -62,7 +66,7 @@ export default function ProductsListPage() {
                         ? (specificImages[0].base64_data || specificImages[0].asset_url)
                         : null;
 
-                    return { ...v, thumbnail_url };
+                    return { ...v, thumbnail_url, effectivelyDefault };
                 });
                 setProductVariants(prev => ({ ...prev, [productId]: fetchedVariants }));
             }
@@ -126,7 +130,8 @@ export default function ProductsListPage() {
                 ...prev,
                 [productId]: currentVariants.map(v => ({
                     ...v,
-                    is_default: (v.variant_id === variantId || v.sku === variantId)
+                    is_default: (v.variant_id === variantId || v.sku === variantId),
+                    effectivelyDefault: (v.variant_id === variantId || v.sku === variantId)
                 }))
             };
         });
@@ -592,7 +597,7 @@ export default function ProductsListPage() {
                                                                     className={`inline-flex h-4 w-4 items-center justify-center rounded-full bg-white shadow-sm transition-transform duration-300 ${isBestSeller ? 'translate-x-5.5' : 'translate-x-0.5'
                                                                         }`}
                                                                 >
-                                                                    {isBestSeller && <Star className="h-2.5 w-2.5 text-amber-500 fill-amber-500" />}
+                                                                    {isBestSeller && <Star className="h-2.5 w-2.5 text-amber-400 fill-amber-400 scale-110 drop-shadow-[0_0_6px_rgba(251,191,36,0.6)]" />}
                                                                 </span>
                                                             )}
                                                         </button>
@@ -677,14 +682,14 @@ export default function ProductsListPage() {
                                                                                     <td className="px-4 py-2 text-right">
                                                                                         <div className="flex items-center justify-end gap-3">
                                                                                             <button
-                                                                                                onClick={() => handleSetDefaultVariant(product.product_id, targetId, v.is_default, v.is_active !== false)}
-                                                                                                className={`focus:outline-none transition-colors duration-200 
-                                                                                                    ${v.is_default ? 'text-amber-500 cursor-default' : 'text-text-muted hover:text-amber-500/50 cursor-pointer'}
+                                                                                                onClick={() => handleSetDefaultVariant(product.product_id, targetId, !!v.effectivelyDefault, v.is_active !== false)}
+                                                                                                className={`focus:outline-none transition-all duration-300 
+                                                                                                    ${v.effectivelyDefault ? 'text-amber-500 cursor-default' : 'text-text-muted hover:text-amber-500/50 cursor-pointer'}
                                                                                                     ${v.is_active === false ? 'opacity-30 cursor-not-allowed hover:text-text-muted' : ''}
                                                                                                 `}
-                                                                                                title={v.is_default ? "Default Variant" : (v.is_active === false ? "Cannot set inactive variant as default" : "Set as Default")}
+                                                                                                title={v.effectivelyDefault ? "Default Variant" : (v.is_active === false ? "Cannot set inactive variant as default" : "Set as Default")}
                                                                                             >
-                                                                                                <Star className={`h-4 w-4 ${v.is_default ? 'fill-amber-500' : ''}`} />
+                                                                                                <Star className={`h-4 w-4 transition-all duration-300 ${v.effectivelyDefault ? 'fill-amber-400 text-amber-400 scale-110 drop-shadow-[0_0_8px_rgba(251,191,36,0.4)]' : ''}`} />
                                                                                             </button>
 
                                                                                             <button

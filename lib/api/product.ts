@@ -41,8 +41,15 @@ export interface VariantPayload {
     length_cm?: string;
     width_cm?: string;
     height_cm?: string;
-    weight_kg?: string;
+    weight_g?: number;
     shelf_life?: string;            // → shelf_life_months
+    // Ayurvedic fields
+    flavor?: string;
+    strength?: string;
+    strength_unit?: string;
+    form_factor?: string;
+    units_count?: number;
+    is_combo?: boolean;
 }
 
 // ─── Payload Types ────────────────────────────────────────────────────────────
