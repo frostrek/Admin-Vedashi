@@ -120,17 +120,14 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
             <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} px-4 py-5 border-b border-border-subtle`}>
                 {!isCollapsed && (
                     <Link href="/dashboard" className="flex items-center gap-2.5">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#828B5C]">
-                            <Leaf className="h-5 w-5 text-white" />
-                        </div>
                         <div>
-                            <span className="font-sans text-lg font-bold text-white tracking-tight">Vedashi Admin</span>
+                            <span className="font-serif text-xl font-bold text-gold-soft tracking-wide">VEDASHI</span>
                         </div>
                     </Link>
                 )}
                 {isCollapsed && (
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#828B5C]">
-                        <Leaf className="h-5 w-5 text-white" />
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/20 border border-primary/15">
+                        <span className="text-gold font-bold text-lg">V</span>
                     </div>
                 )}
             </div>

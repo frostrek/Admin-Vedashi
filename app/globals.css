@@ -148,11 +148,6 @@
 
 body {
   background: var(--background);
-  background-image: url('/leaf-bg.png');
-  background-attachment: fixed;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
   color: var(--foreground);
   font-family: var(--font-sans);
   letter-spacing: 0.01em;

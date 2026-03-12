@@ -89,9 +89,9 @@ export default function AdminLoginPage() {
       <div className="w-full max-w-sm relative z-10">
         <div className="text-center mb-8">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary-light shadow-2xl shadow-primary/30 border border-gold/15">
-            <Leaf className="h-8 w-8 text-gold" />
+            <span className="text-2xl font-bold text-gold">V</span>
           </div>
-          <h1 className="font-serif text-2xl font-bold text-gold-soft tracking-wide">Admin Panel</h1>
+          <h1 className="font-serif text-2xl font-bold text-gold-soft tracking-wide uppercase">Vedashi Admin</h1>
           <p className="mt-1 text-sm text-text-secondary">Sign in to manage your store</p>
         </div>
 
