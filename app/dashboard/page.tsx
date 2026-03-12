@@ -112,12 +112,17 @@ export default function DashboardPage() {
 
     return (
         <div className="space-y-6">
-            {/* Header Banner */}
+            {/* Command Center Header */}
             <div className="animate-fadeInUp" style={{ animationDelay: '0ms' }}>
-                <DashboardHeader icon={Sparkles} />
+                <DashboardHeader 
+                    title="Command Center"
+                    subtitle="Synthesizing ancient wisdom for 5+ active patient protocols."
+                    buttonLabel="Export Ledger"
+                    icon={Sparkles}
+                />
             </div>
 
-            {/* Stats */}
+            {/* Stats - Apothecary & Formulae */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 {stats.map((stat, i) => (
                     <div
@@ -156,73 +161,80 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            {/* Recent Products */}
+            {/* Recent Fulfillment - Semantic Rebranding */}
             <div className="grid gap-6 lg:grid-cols-1">
-                <div className="rounded-2xl border border-border bg-gradient-to-br from-card-bg to-card-bg-elevated animate-fadeInUp" style={{ animationDelay: '560ms' }}>
-                    <div className="flex items-center justify-between border-b border-border px-5 py-4">
-                        <h2 className="font-serif text-base font-semibold text-gold-soft">Recent Products</h2>
+                <div className="rounded-2xl border border-emerald-900/10 bg-white animate-fadeInUp shadow-xl" style={{ animationDelay: '560ms' }}>
+                    <div className="flex items-center justify-between border-b border-emerald-900/5 px-6 py-5">
+                        <div>
+                            <h2 className="font-serif text-base font-bold text-emerald-950 tracking-widest uppercase">Recent Fulfillment</h2>
+                            <p className="text-[10px] text-emerald-900/40 uppercase tracking-widest mt-1">Real-time protocol logistics and dispatch</p>
+                        </div>
                         <div className="flex items-center gap-3">
-                            <Link href="/dashboard/products" className="text-xs font-medium text-gold-muted hover:text-gold transition-colors duration-300">
-                                View All →
-                            </Link>
-                            <Link
-                                href="/dashboard/products/add"
-                                className="flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-[#E8D8B9] hover:bg-primary-light border border-gold/10 transition-all duration-300"
-                            >
-                                <Plus className="h-3 w-3" /> Add
+                            <Link href="/dashboard/orders" className="text-[11px] font-bold uppercase tracking-wider text-emerald-900/60 hover:text-emerald-900 transition-colors duration-300">
+                                View Archive →
                             </Link>
                         </div>
                     </div>
-                    <div className="divide-y divide-border-subtle">
+                    
+                    {/* Header Row for Semantic Labels */}
+                    <div className="grid grid-cols-[1fr_2fr_2fr_1fr_1fr] px-6 py-3 border-b border-emerald-900/5 bg-emerald-900/[0.02]">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-900/40">Protocol ID</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-900/40">Patient</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-900/40">Formula</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-900/40">Status</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-950/40 text-right">Value</span>
+                    </div>
+
+                    <div className="divide-y divide-emerald-900/5">
                         {loading ? (
                             Array.from({ length: 5 }).map((_, i) => (
-                                <div key={i} className="flex items-center gap-3 px-5 py-3.5">
-                                    <div className="h-10 w-10 rounded-xl animate-shimmer flex-shrink-0" />
+                                <div key={i} className="flex items-center gap-3 px-6 py-4">
+                                    <div className="h-10 w-10 rounded-xl bg-emerald-900/5 animate-pulse flex-shrink-0" />
                                     <div className="flex-1 space-y-2">
-                                        <div className="h-4 w-32 rounded animate-shimmer" />
-                                        <div className="h-3 w-20 rounded animate-shimmer" />
+                                        <div className="h-4 w-32 rounded bg-emerald-900/5 animate-pulse" />
+                                        <div className="h-3 w-20 rounded bg-emerald-900/5 animate-pulse" />
                                     </div>
                                 </div>
                             ))
                         ) : products.length === 0 ? (
-                            <div className="px-5 py-12 text-center">
-                                <p className="text-sm text-text-muted mb-3">No products yet</p>
+                            <div className="px-6 py-12 text-center">
+                                <p className="text-sm text-white/30 italic mb-4">No active protocols detected</p>
                                 <Link
                                     href="/dashboard/products/add"
-                                    className="inline-flex items-center gap-1 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-[#E8D8B9] hover:bg-primary-light border border-gold/10 transition-all duration-300"
+                                    className="inline-flex items-center gap-2 rounded-xl bg-[#828B5C] px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-white hover:bg-emerald-700 transition-all duration-300"
                                 >
-                                    <Plus className="h-4 w-4" /> Add First Product
+                                    <Plus className="h-4 w-4" /> Initialize Protocol
                                 </Link>
                             </div>
                         ) : (
-                            products.slice(0, 5).map(product => (
+                            products.slice(0, 5).map((product, i) => (
                                 <Link
                                     key={product.product_id}
                                     href={`/dashboard/products/edit/${product.slug || product.product_id}`}
-                                    className="flex items-center gap-3 px-5 py-3.5 hover:bg-gold/[0.03] transition-all duration-300 group"
+                                    className="grid grid-cols-[1fr_2fr_2fr_1fr_1fr] items-center px-6 py-4 hover:bg-emerald-900/[0.02] transition-all duration-300 group"
                                 >
-                                    <div className="h-10 w-10 flex-shrink-0 rounded-xl bg-primary/20 border border-primary/15 flex items-center justify-center">
-                                        {product.images && product.images.length > 0 ? (
-                                            <img
-                                                src={product.images[0]}
-                                                alt={product.product_name}
-                                                className="h-10 w-10 rounded-xl object-cover"
-                                            />
-                                        ) : (
-                                            <span className="text-lg">🌿</span>
-                                        )}
+                                    <span className="text-xs font-mono text-emerald-900/30">#PR-{product.product_id.toString().slice(-4)}</span>
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-bold text-emerald-950 truncate group-hover:text-emerald-700 transition-colors duration-300">
+                                                —
+                                            </p>
+                                        </div>
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-medium text-text-primary truncate group-hover:text-gold transition-colors duration-300">
+                                        <p className="text-xs font-medium text-emerald-900/60 italic truncate">
                                             {product.product_name}
                                         </p>
-                                        <p className="text-xs text-text-muted">{product.sku}</p>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <p className="text-sm font-semibold text-gold">
+                                    <div>
+                                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg bg-emerald-900/5 border border-emerald-900/10 text-emerald-900/40">
+                                            Active
+                                        </span>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-sm font-bold text-emerald-950 tracking-tight">
                                             {formatINR(product.price ?? 0)}
                                         </p>
-                                        <ArrowUpRight className="h-3.5 w-3.5 text-text-muted opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                                     </div>
                                 </Link>
                             ))

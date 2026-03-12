@@ -189,7 +189,7 @@ export default function TopNavbar({ sidebarCollapsed }: TopNavbarProps) {
                         <input
                             ref={inputRef}
                             type="text"
-                            placeholder="Search products, synonyms, pages..."
+                            placeholder="Search patient records or formulations..."
                             value={query}
                             onChange={e => {
                                 setQuery(e.target.value);
@@ -433,14 +433,8 @@ export default function TopNavbar({ sidebarCollapsed }: TopNavbarProps) {
                             onClick={() => setProfileOpen(!profileOpen)}
                             className="flex items-center gap-2 rounded-xl px-2 py-1.5 hover:bg-gold/[0.06] transition-all duration-300"
                         >
-                            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-plum flex items-center justify-center text-[#E8D8B9] text-xs font-bold border border-gold/20">
+                            <div className="h-9 w-9 rounded-full bg-[#828B5C] flex items-center justify-center text-[#E8D8B9] text-xs font-bold border border-white/20 shadow-lg">
                                 {user?.name?.charAt(0)?.toUpperCase() || 'A'}
-                            </div>
-                            <div className="hidden sm:block text-left">
-                                <p className="text-sm font-medium text-text-primary leading-none">
-                                    {user?.name || 'Admin'}
-                                </p>
-                                <p className="text-[10px] text-text-muted mt-0.5">Administrator</p>
                             </div>
                             <ChevronDown className={`hidden sm:block h-3.5 w-3.5 text-text-muted transition-transform duration-300 ${profileOpen ? 'rotate-180' : ''}`} />
                         </button>

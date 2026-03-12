@@ -24,16 +24,13 @@ export default function StatCard({
     const isPositive = (change ?? 0) >= 0;
 
     const content = (
-        <div className="group relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-card-bg to-card-bg-elevated p-5 transition-all duration-300 hover:shadow-xl hover:shadow-black/20 hover:-translate-y-0.5 hover:border-gold/20">
-            {/* Subtle gold accent bar at top */}
-            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-gold/40 to-transparent opacity-60 group-hover:opacity-100 transition-opacity duration-300" />
-
+        <div className="group relative overflow-hidden rounded-2xl border border-emerald-900/10 bg-white p-5 transition-all duration-500 hover:shadow-xl hover:-translate-y-1">
             <div className="flex items-start justify-between mb-4">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/30 border border-primary/20">
-                    <Icon className="h-5 w-5 text-gold" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 border border-emerald-500/20 group-hover:bg-emerald-500/20 transition-all duration-500">
+                    <Icon className="h-6 w-6 text-emerald-900 drop-shadow-sm" />
                 </div>
                 {change !== undefined && (
-                    <div className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${isPositive ? 'bg-success/15 text-success' : 'bg-danger/15 text-danger'}`}>
+                    <div className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold tracking-tight uppercase ${isPositive ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/10' : 'bg-rose-500/10 text-rose-600 border border-rose-500/10'}`}>
                         {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                         {isPositive ? '+' : ''}{change}%
                     </div>
@@ -42,15 +39,15 @@ export default function StatCard({
 
             {loading ? (
                 <div className="space-y-2">
-                    <div className="h-7 w-24 rounded animate-shimmer" />
-                    <div className="h-4 w-16 rounded animate-shimmer" />
+                    <div className="h-8 w-24 rounded-lg bg-emerald-900/5 animate-pulse" />
+                    <div className="h-4 w-16 rounded-lg bg-emerald-900/5 animate-pulse" />
                 </div>
             ) : (
                 <>
-                    <p className="font-serif text-2xl font-bold text-gold tracking-tight">
+                    <p className="font-serif text-3xl font-bold text-emerald-950 tracking-tight">
                         {value}
                     </p>
-                    <p className="mt-0.5 text-xs font-medium text-text-secondary">
+                    <p className="mt-1 text-[11px] font-bold uppercase tracking-[0.1em] text-emerald-900/60 group-hover:text-emerald-900 transition-colors duration-500">
                         {title}
                     </p>
                 </>
