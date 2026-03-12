@@ -55,7 +55,6 @@ interface VariantRow {
     length_cm: string;
     width_cm: string;
     height_cm: string;
-    weight_kg: string;
     images: { preview: string; file: File }[];
     videos: { preview: string; file: File }[];
     defaultImageIndex: number;
@@ -114,11 +113,13 @@ export default function AddProductPage() {
     });
     const [volUnit, setVolUnit] = useState('ml');
     const [weightUnit, setWeightUnit] = useState('g');
+    const [countUnit, setCountUnit] = useState('Tablets');
+    const [strengthUnit, setStrengthUnit] = useState('mg');
 
     // ÔöÇÔöÇÔöÇ Step 3: Variants Table State ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
     const [autoGenerate, setAutoGenerate] = useState(false);
     const [variants, setVariants] = useState<VariantRow[]>([
-        { weight: '', volume: '', count: '', strength: '', flavor: '', pack: '', combo: '', variant_name: '', sku: '', price: 0, cost_price: 0, stock: 0, shelf_life: '', length_cm: '', width_cm: '', height_cm: '', weight_kg: '', images: [], videos: [], defaultImageIndex: 0, sale_price: '', sale_start_date: '', sale_start_time: '', sale_end_date: '', sale_end_time: '', isDefault: false, isActive: true }
+        { weight: '', volume: '', count: '', strength: '', flavor: '', pack: '', combo: '', variant_name: '', sku: '', price: 0, cost_price: 0, stock: 0, shelf_life: '', length_cm: '', width_cm: '', height_cm: '', images: [], videos: [], defaultImageIndex: 0, sale_price: '', sale_start_date: '', sale_start_time: '', sale_end_date: '', sale_end_time: '', isDefault: false, isActive: true }
     ]);
     const [expandedVariantIndex, setExpandedVariantIndex] = useState<number | null>(null);
     const [sharedImages, setSharedImages] = useState(false);
@@ -213,11 +214,14 @@ export default function AddProductPage() {
     // ÔöÇÔöÇÔöÇ Step 2: Dimension helpers
     const addDimensionValue = (dim: keyof typeof dimConfigs) => {
         const val = dimInputs[dim].trim();
-        if (!val) return;
+        if (!val && dim !== 'combo') return;
 
         let finalVal = val;
         if (dim === 'weight') finalVal = `${val} ${weightUnit}`;
-        if (dim === 'volume') finalVal = `${val} ${volUnit}`;
+        else if (dim === 'volume') finalVal = `${val} ${volUnit}`;
+        else if (dim === 'count') finalVal = `${val} ${countUnit}`;
+        else if (dim === 'strength') finalVal = `${val} ${strengthUnit}`;
+        else if (dim === 'combo') finalVal = val.toLowerCase() === 'yes' || val === 'true' ? 'Yes' : 'No';
 
         if (dimConfigs[dim].values.includes(finalVal)) {
             toast.error(`This ${dim} already exists`);
@@ -264,7 +268,7 @@ export default function AddProductPage() {
             const variant: VariantRow = {
                 weight: '', volume: '', count: '', strength: '', flavor: '', pack: '', combo: '',
                 variant_name: '', sku: '', price: 0, cost_price: 0, stock: 0,
-                shelf_life: '', length_cm: '', width_cm: '', height_cm: '', weight_kg: '',
+                shelf_life: '', length_cm: '', width_cm: '', height_cm: '',
                 images: [], videos: [], defaultImageIndex: 0,
                 sale_price: '', sale_start_date: '', sale_start_time: '', sale_end_date: '', sale_end_time: '',
                 isDefault: false, isActive: true
@@ -293,7 +297,7 @@ export default function AddProductPage() {
             setVariants(combos);
             toast.success(`Generated ${combos.length} variant combinations`);
         } else {
-            setVariants([{ weight: '', volume: '', count: '', strength: '', flavor: '', pack: '', combo: '', variant_name: '', sku: '', price: 0, cost_price: 0, stock: 0, shelf_life: '', length_cm: '', width_cm: '', height_cm: '', weight_kg: '', images: [], videos: [], defaultImageIndex: 0, sale_price: '', sale_start_date: '', sale_start_time: '', sale_end_date: '', sale_end_time: '', isDefault: false, isActive: true }]);
+            setVariants([{ weight: '', volume: '', count: '', strength: '', flavor: '', pack: '', combo: '', variant_name: '', sku: '', price: 0, cost_price: 0, stock: 0, shelf_life: '', length_cm: '', width_cm: '', height_cm: '', images: [], videos: [], defaultImageIndex: 0, sale_price: '', sale_start_date: '', sale_start_time: '', sale_end_date: '', sale_end_time: '', isDefault: false, isActive: true }]);
         }
     };
 
@@ -310,7 +314,7 @@ export default function AddProductPage() {
         setVariants(prev => [...prev, {
             weight: '', volume: '', count: '', strength: '', flavor: '', pack: '', combo: '',
             variant_name: '', sku: '', price: 0, cost_price: 0, stock: 0,
-            shelf_life: '', length_cm: '', width_cm: '', height_cm: '', weight_kg: '',
+            shelf_life: '', length_cm: '', width_cm: '', height_cm: '',
             images: [], videos: [], defaultImageIndex: 0,
             sale_price: '', sale_start_date: '', sale_start_time: '', sale_end_date: '', sale_end_time: '',
             isDefault: false,
@@ -464,17 +468,56 @@ export default function AddProductPage() {
             specifications: form.country_of_origin ? { country_of_origin: form.country_of_origin } : undefined,
             variants: variants
                 .filter(v => v.sku.trim() || v.variant_name.trim())
-                .map(v => ({
-                    sku: v.sku.trim() || `${draftSku}-V${Math.random().toString(36).slice(2, 6)}`,
-                    variant_name: v.variant_name.trim() || 'Draft Variant',
-                    price: Number(v.price) || 0,
-                    stock: Number(v.stock) || 0,
-                    cost_price: v.cost_price ? Number(v.cost_price) : null,
-                    volume: v.volume || undefined,
-                    pack: v.pack || undefined,
-                    isDefault: v.isDefault,
-                    sale_price: v.sale_price || null,
-                })),
+                .map(v => {
+                    const activeDimensions = Object.entries(dimConfigs)
+                        .filter(([_, config]) => config.active)
+                        .map(([id]) => (v as any)[id])
+                        .filter(Boolean);
+                    const combinedName = v.variant_name || activeDimensions.join(' ');
+
+                    // Parse formatted strings for DB fields
+                    let weight_g = undefined;
+                    if (v.weight) {
+                        const [val, unit] = v.weight.split(' ');
+                        weight_g = unit === 'kg' ? parseFloat(val) * 1000 : parseFloat(val);
+                    }
+
+                    let units_count = undefined;
+                    let form_factor = undefined;
+                    if (v.count) {
+                        const parts = v.count.split(' ');
+                        units_count = parseInt(parts[0]);
+                        form_factor = parts.slice(1).join(' ');
+                    }
+
+                    let strength = undefined;
+                    let strength_unit = undefined;
+                    if (v.strength) {
+                        const parts = v.strength.split(' ');
+                        strength = parts[0];
+                        strength_unit = parts.slice(1).join(' ');
+                    }
+
+                    return {
+                        sku: v.sku.trim() || `${draftSku}-V${Math.random().toString(36).slice(2, 6)}`,
+                        variant_name: combinedName || 'Draft Variant',
+                        price: Number(v.price) || 0,
+                        stock: Number(v.stock) || 0,
+                        cost_price: v.cost_price ? Number(v.cost_price) : undefined,
+                        volume: v.volume || undefined,
+                        pack: v.pack || undefined,
+                        isDefault: v.isDefault,
+                        // New fields
+                        weight_g: weight_g,
+                        units_count: units_count,
+                        form_factor: form_factor,
+                        strength: strength,
+                        strength_unit: strength_unit,
+                        flavor: v.flavor || undefined,
+                        is_combo: v.combo === 'Yes',
+                        sale_price: v.sale_price || undefined,
+                    };
+                }),
             available_from: form.available_from_date ? new Date(`${form.available_from_date}T${form.available_from_time || '00:00'}`).toISOString() : undefined,
             available_until: form.available_until_date ? new Date(`${form.available_until_date}T${form.available_until_time || '23:59'}`).toISOString() : undefined,
         };
@@ -544,22 +587,45 @@ export default function AddProductPage() {
                 // Concatenate all active dimensions into variant_name for display/backend fallback
                 const activeDimensions = Object.entries(dimConfigs)
                     .filter(([_, config]) => config.active)
-                    .map(([id]) => v[id as keyof VariantRow])
+                    .map(([id]) => (v as any)[id])
                     .filter(Boolean);
                 
                 const combinedName = v.variant_name || activeDimensions.join(' ');
 
+                // Parse formatted strings for DB fields
+                let weight_g = undefined;
+                if (v.weight) {
+                    const [val, unit] = v.weight.split(' ');
+                    weight_g = unit === 'kg' ? parseFloat(val) * 1000 : parseFloat(val);
+                }
+
+                let units_count = undefined;
+                let form_factor = undefined;
+                if (v.count) {
+                    const parts = v.count.split(' ');
+                    units_count = parseInt(parts[0]);
+                    form_factor = parts.slice(1).join(' ');
+                }
+
+                let strength = undefined;
+                let strength_unit = undefined;
+                if (v.strength) {
+                    const parts = v.strength.split(' ');
+                    strength = parts[0];
+                    strength_unit = parts.slice(1).join(' ');
+                }
+
                 return {
                     sku: v.sku.trim(),
-                    variant_name: combinedName,
+                    variant_name: combinedName.trim(),
                     price: Number(v.price) || 0,
                     stock: Number(v.stock) || 0,
-                    cost_price: v.cost_price ? Number(v.cost_price) : null,
+                    cost_price: v.cost_price ? Number(v.cost_price) : undefined,
                     volume: v.volume || undefined,    // “750 ml” → parsed to volume_ml by backend
                     pack: v.pack || undefined,        // “Pack of 2” → pack_quantity=2 by backend
                     isDefault: v.isDefault,
                     // Sale Management
-                    sale_price: v.sale_price || null,
+                    sale_price: v.sale_price || undefined,
                     sale_start_date: v.sale_start_date || undefined,
                     sale_start_time: v.sale_start_time || undefined,
                     sale_end_date: v.sale_end_date || undefined,
@@ -568,8 +634,15 @@ export default function AddProductPage() {
                     length_cm: v.length_cm || undefined,
                     width_cm: v.width_cm || undefined,
                     height_cm: v.height_cm || undefined,
-                    weight_kg: v.weight_kg || undefined,
                     shelf_life: v.shelf_life || undefined,      // → shelf_life_months by backend
+                    // New fields
+                    weight_g: weight_g,
+                    units_count: units_count,
+                    form_factor: form_factor,
+                    strength: strength,
+                    strength_unit: strength_unit,
+                    flavor: v.flavor || undefined,
+                    is_combo: v.combo === 'Yes',
                 };
             }),
             available_from: form.available_from_date ? new Date(`${form.available_from_date}T${form.available_from_time || '00:00'}`).toISOString() : undefined,
@@ -1050,31 +1123,108 @@ export default function AddProductPage() {
 
                                                     {/* Input row */}
                                                     <div className="flex gap-2">
-                                                        <input
-                                                            type={dim.id === 'weight' || dim.id === 'volume' ? 'number' : 'text'}
-                                                            placeholder={dim.placeholder}
-                                                            value={dimInputs[dim.id as keyof typeof dimInputs]}
-                                                            onChange={e => setDimInputs(prev => ({ ...prev, [dim.id]: e.target.value }))}
-                                                            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addDimensionValue(dim.id as keyof typeof dimConfigs); } }}
-                                                            className="flex-1 rounded-lg border border-border px-3 py-2 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 bg-transparent transition-all"
-                                                        />
-                                                        {dim.id === 'weight' && (
-                                                            <select
-                                                                value={weightUnit}
-                                                                onChange={e => setWeightUnit(e.target.value)}
-                                                                className="w-20 rounded-lg border border-border px-2 py-2 text-sm focus:border-gold/40 focus:outline-none bg-white text-gray-900 transition-all font-medium"
-                                                            >
-                                                                {['g', 'kg', 'mg'].map(u => <option key={u} value={u}>{u}</option>)}
-                                                            </select>
-                                                        )}
-                                                        {dim.id === 'volume' && (
-                                                            <select
-                                                                value={volUnit}
-                                                                onChange={e => setVolUnit(e.target.value)}
-                                                                className="w-20 rounded-lg border border-border px-2 py-2 text-sm focus:border-gold/40 focus:outline-none bg-white text-gray-900 transition-all font-medium"
-                                                            >
-                                                                {PREDEFINED_UNITS.map(u => <option key={u} value={u}>{u}</option>)}
-                                                            </select>
+                                                        {dim.id === 'weight' ? (
+                                                            <div className="flex flex-1 gap-2">
+                                                                <input
+                                                                    type="number"
+                                                                    placeholder="e.g. 500"
+                                                                    value={dimInputs.weight}
+                                                                    onChange={e => setDimInputs(prev => ({ ...prev, weight: e.target.value }))}
+                                                                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addDimensionValue('weight'); } }}
+                                                                    className="flex-1 rounded-lg border border-border px-3 py-2 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 bg-transparent transition-all"
+                                                                />
+                                                                <select
+                                                                    value={weightUnit}
+                                                                    onChange={e => setWeightUnit(e.target.value)}
+                                                                    className="w-20 rounded-lg border border-border px-2 py-2 text-sm focus:border-gold/40 focus:outline-none bg-white text-gray-900 transition-all font-medium"
+                                                                >
+                                                                    {['g', 'kg', 'mg'].map(u => <option key={u} value={u}>{u}</option>)}
+                                                                </select>
+                                                            </div>
+                                                        ) : dim.id === 'volume' ? (
+                                                            <div className="flex flex-1 gap-2">
+                                                                <input
+                                                                    type="number"
+                                                                    placeholder="e.g. 750"
+                                                                    value={dimInputs.volume}
+                                                                    onChange={e => setDimInputs(prev => ({ ...prev, volume: e.target.value }))}
+                                                                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addDimensionValue('volume'); } }}
+                                                                    className="flex-1 rounded-lg border border-border px-3 py-2 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 bg-transparent transition-all"
+                                                                />
+                                                                <select
+                                                                    value={volUnit}
+                                                                    onChange={e => setVolUnit(e.target.value)}
+                                                                    className="w-20 rounded-lg border border-border px-2 py-2 text-sm focus:border-gold/40 focus:outline-none bg-white text-gray-900 transition-all font-medium"
+                                                                >
+                                                                    {['ml', 'L'].map(u => <option key={u} value={u}>{u}</option>)}
+                                                                </select>
+                                                            </div>
+                                                        ) : dim.id === 'count' ? (
+                                                            <div className="flex flex-1 gap-2">
+                                                                <input
+                                                                    type="number"
+                                                                    placeholder="e.g. 60"
+                                                                    value={dimInputs.count}
+                                                                    onChange={e => setDimInputs(prev => ({ ...prev, count: e.target.value }))}
+                                                                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addDimensionValue('count'); } }}
+                                                                    className="flex-1 rounded-lg border border-border px-3 py-2 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 bg-transparent transition-all"
+                                                                />
+                                                                <select
+                                                                    value={countUnit}
+                                                                    onChange={e => setCountUnit(e.target.value)}
+                                                                    className="w-28 rounded-lg border border-border px-2 py-2 text-sm focus:border-gold/40 focus:outline-none bg-white text-gray-900 transition-all font-medium"
+                                                                >
+                                                                    {['Sachets', 'Tablets', 'Capsules'].map(u => <option key={u} value={u}>{u}</option>)}
+                                                                </select>
+                                                            </div>
+                                                        ) : dim.id === 'strength' ? (
+                                                            <div className="flex flex-1 gap-2">
+                                                                <input
+                                                                    type="text"
+                                                                    placeholder="e.g. 500"
+                                                                    value={dimInputs.strength}
+                                                                    onChange={e => setDimInputs(prev => ({ ...prev, strength: e.target.value }))}
+                                                                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addDimensionValue('strength'); } }}
+                                                                    className="flex-1 rounded-lg border border-border px-3 py-2 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 bg-transparent transition-all"
+                                                                />
+                                                                <select
+                                                                    value={strengthUnit}
+                                                                    onChange={e => setStrengthUnit(e.target.value)}
+                                                                    className="w-20 rounded-lg border border-border px-2 py-2 text-sm focus:border-gold/40 focus:outline-none bg-white text-gray-900 transition-all font-medium"
+                                                                >
+                                                                    {['mg', 'IU'].map(u => <option key={u} value={u}>{u}</option>)}
+                                                                </select>
+                                                            </div>
+                                                        ) : dim.id === 'pack' ? (
+                                                            <input
+                                                                type="number"
+                                                                placeholder="e.g. 1"
+                                                                value={dimInputs.pack}
+                                                                onChange={e => setDimInputs(prev => ({ ...prev, pack: e.target.value }))}
+                                                                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addDimensionValue('pack'); } }}
+                                                                className="flex-1 rounded-lg border border-border px-3 py-2 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 bg-transparent transition-all"
+                                                            />
+                                                        ) : dim.id === 'combo' ? (
+                                                            <div className="flex flex-1 items-center gap-3">
+                                                                <label className="flex items-center gap-2 cursor-pointer">
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        checked={dimInputs.combo === 'yes'}
+                                                                        onChange={e => setDimInputs(prev => ({ ...prev, combo: e.target.checked ? 'yes' : 'no' }))}
+                                                                        className="w-4 h-4 rounded border-border text-gold focus:ring-gold"
+                                                                    />
+                                                                    <span className="text-sm text-text-primary">Is Combo?</span>
+                                                                </label>
+                                                            </div>
+                                                        ) : (
+                                                            <input
+                                                                type="text"
+                                                                placeholder={dim.placeholder}
+                                                                value={dimInputs[dim.id as keyof typeof dimInputs]}
+                                                                onChange={e => setDimInputs(prev => ({ ...prev, [dim.id]: e.target.value }))}
+                                                                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addDimensionValue(dim.id as keyof typeof dimConfigs); } }}
+                                                                className="flex-1 rounded-lg border border-border px-3 py-2 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 bg-transparent transition-all"
+                                                            />
                                                         )}
                                                         <button
                                                             type="button"
@@ -1233,7 +1383,7 @@ export default function AddProductPage() {
                                                                                     className={`p-1.5 rounded-lg transition-colors hover:bg-white/5 ${variant.isDefault ? 'text-gold' : 'text-text-muted hover:text-gold'
                                                                                         }`}
                                                                                 >
-                                                                                    <Star className={`h-4 w-4 ${variant.isDefault ? 'fill-gold' : ''}`} />
+                                                                                    <Star className={`h-4 w-4 transition-all duration-300 ${variant.isDefault ? 'fill-amber-400 text-amber-400 scale-110 drop-shadow-[0_0_8px_rgba(251,191,36,0.4)]' : ''}`} />
                                                                                 </button>
                                                                                 <button
                                                                                     type="button"
@@ -1286,7 +1436,6 @@ export default function AddProductPage() {
                                                                                         { label: 'Length (cm)', field: 'length_cm' as keyof VariantRow },
                                                                                         { label: 'Width (cm)', field: 'width_cm' as keyof VariantRow },
                                                                                         { label: 'Height (cm)', field: 'height_cm' as keyof VariantRow },
-                                                                                        { label: 'Weight (kg)', field: 'weight_kg' as keyof VariantRow },
                                                                                     ]).map(({ label, field }) => (
                                                                                         <div key={field}>
                                                                                             <label className="block text-xs font-medium text-text-secondary mb-1">{label}</label>

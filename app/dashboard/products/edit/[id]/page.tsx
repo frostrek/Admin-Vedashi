@@ -56,7 +56,6 @@ interface VariantRow {
     length_cm: string;
     width_cm: string;
     height_cm: string;
-    weight_kg: string;
     images: { preview: string; file?: File; asset_id?: string; alt_text?: string }[];
     videos: { preview: string; file?: File; asset_id?: string; alt_text?: string }[];
     defaultImageIndex: number;
@@ -130,11 +129,13 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
     });
     const [weightUnit, setWeightUnit] = useState('g');
     const [volUnit, setVolUnit] = useState('ml');
+    const [countUnit, setCountUnit] = useState('Tablets');
+    const [strengthUnit, setStrengthUnit] = useState('mg');
 
     // ÔöÇÔöÇÔöÇ Step 3: Variants Table State ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
     const [autoGenerate, setAutoGenerate] = useState(false);
     const [variants, setVariants] = useState<VariantRow[]>([
-        { pack: '', volume: '', variant_name: '', sku: '', price: 0, cost_price: 0, stock: 0, shelf_life: '', length_cm: '', width_cm: '', height_cm: '', weight_kg: '', images: [], videos: [], defaultImageIndex: 0, sale_price: '', sale_start_date: '', sale_start_time: '', sale_end_date: '', sale_end_time: '', isDefault: false, isActive: true }
+        { pack: '', volume: '', variant_name: '', sku: '', price: 0, cost_price: 0, stock: 0, shelf_life: '', length_cm: '', width_cm: '', height_cm: '', images: [], videos: [], defaultImageIndex: 0, sale_price: '', sale_start_date: '', sale_start_time: '', sale_end_date: '', sale_end_time: '', isDefault: false, isActive: true }
     ]);
     const [expandedVariantIndex, setExpandedVariantIndex] = useState<number | null>(null);
     const [sharedImages, setSharedImages] = useState(false);
@@ -236,10 +237,36 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
 
                     // Metadata mapping for all dimensions
                     const dims: (keyof typeof newDimConfigs)[] = ['weight', 'volume', 'count', 'strength', 'flavor', 'pack', 'combo'];
+                    
+                    // Specific mapping for new database fields
+                    let weightStr = v.weight || '';
+                    if (!weightStr && v.weight_g) {
+                        weightStr = v.weight_g >= 1000 ? `${v.weight_g / 1000} kg` : `${v.weight_g} g`;
+                    }
+
+                    let countStr = v.count || '';
+                    if (!countStr && v.units_count) {
+                        countStr = `${v.units_count} ${v.form_factor || ''}`.trim();
+                    }
+
+                    let strengthStr = v.strength || '';
+                    if (v.strength_unit && !strengthStr.includes(v.strength_unit)) {
+                        strengthStr = `${v.strength} ${v.strength_unit}`.trim();
+                    }
+
+                    let comboStr = v.combo || '';
+                    if (!comboStr && v.is_combo != null) {
+                        comboStr = v.is_combo ? 'Yes' : 'No';
+                    }
+
                     dims.forEach(d => {
                         let val = '';
-                        if (d === 'volume') val = volStr;
+                        if (d === 'weight') val = weightStr;
+                        else if (d === 'volume') val = volStr;
+                        else if (d === 'count') val = countStr;
+                        else if (d === 'strength') val = strengthStr;
                         else if (d === 'pack') val = pkStr;
+                        else if (d === 'combo') val = comboStr;
                         else val = v[d] || '';
 
                         if (val) {
@@ -270,13 +297,13 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
 
                     return {
                         variant_id: v.variant_id || undefined,
-                        weight: v.weight || '',
+                        weight: weightStr,
                         volume: volStr,
-                        count: v.count || '',
-                        strength: v.strength || '',
+                        count: countStr,
+                        strength: strengthStr,
                         flavor: v.flavor || '',
                         pack: pkStr,
-                        combo: v.combo || '',
+                        combo: comboStr,
                         variant_name: vName,
                         sku: v.variant_sku || v.sku || '',
                         price: Number(v.price) || 0,
@@ -286,7 +313,6 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                         length_cm: v.length_cm != null ? String(v.length_cm) : '',
                         width_cm: v.width_cm != null ? String(v.width_cm) : '',
                         height_cm: v.height_cm != null ? String(v.height_cm) : '',
-                        weight_kg: v.weight_kg != null ? String(v.weight_kg) : '',
                         images: existingImages,
                         videos: existingVideos,
                         defaultImageIndex: 0,
@@ -386,11 +412,14 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
 
     const addDimensionValue = (dim: keyof typeof dimConfigs) => {
         const val = dimInputs[dim].trim();
-        if (!val) return;
+        if (!val && dim !== 'combo') return;
         
         let finalVal = val;
         if (dim === 'weight') finalVal = `${val} ${weightUnit}`;
-        if (dim === 'volume') finalVal = `${val} ${volUnit}`;
+        else if (dim === 'volume') finalVal = `${val} ${volUnit}`;
+        else if (dim === 'count') finalVal = `${val} ${countUnit}`;
+        else if (dim === 'strength') finalVal = `${val} ${strengthUnit}`;
+        else if (dim === 'combo') finalVal = val.toLowerCase() === 'yes' || val === 'true' ? 'Yes' : 'No';
 
         if (!dimConfigs[dim].values.includes(finalVal)) {
             setDimConfigs(prev => ({
@@ -672,20 +701,51 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                         .filter(Boolean);
                     const combinedName = v.variant_name || activeDimensions.join(' ');
 
+                    // Parse formatted strings for DB fields
+                    let weight_g = undefined;
+                    if (v.weight) {
+                        const [val, unit] = v.weight.split(' ');
+                        weight_g = unit === 'kg' ? parseFloat(val) * 1000 : parseFloat(val);
+                    }
+
+                    let units_count = undefined;
+                    let form_factor = undefined;
+                    if (v.count) {
+                        const parts = v.count.split(' ');
+                        units_count = parseInt(parts[0]);
+                        form_factor = parts.slice(1).join(' ');
+                    }
+
+                    let strength = undefined;
+                    let strength_unit = undefined;
+                    if (v.strength) {
+                        const parts = v.strength.split(' ');
+                        strength = parts[0];
+                        strength_unit = parts.slice(1).join(' ');
+                    }
+
                     return {
                         sku: v.sku.trim() || `${draftSku}-V${Math.random().toString(36).slice(2, 6)}`,
                         variant_name: combinedName || 'Draft Variant',
                         price: Number(v.price) || 0,
                         stock: Number(v.stock) || 0,
-                        cost_price: v.cost_price ? Number(v.cost_price) : null,
+                        cost_price: v.cost_price ? Number(v.cost_price) : undefined,
                         volume: v.volume || undefined,
                         pack: v.pack || undefined,
                         isDefault: v.isDefault,
-                        sale_price: v.sale_price || null,
+                        sale_price: v.sale_price || undefined,
+                        // New fields
+                        weight_g,
+                        units_count,
+                        form_factor,
+                        strength,
+                        strength_unit,
+                        flavor: v.flavor || undefined,
+                        is_combo: v.combo === 'Yes',
                     };
                 }),
-            available_from: form.available_from_date ? new Date(`${form.available_from_date}T${form.available_from_time || '00:00'}`).toISOString() : null,
-            available_until: form.available_until_date ? new Date(`${form.available_until_date}T${form.available_until_time || '23:59'}`).toISOString() : null,
+            available_from: form.available_from_date ? new Date(`${form.available_from_date}T${form.available_from_time || '00:00'}`).toISOString() : undefined,
+            available_until: form.available_until_date ? new Date(`${form.available_until_date}T${form.available_until_time || '23:59'}`).toISOString() : undefined,
         };
 
         setLoading(true);
@@ -745,40 +805,70 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                 : undefined,
 
             // Full variants array ÔÇö backend maps these to product_variants rows
-            variants: variants.map(v => {
-                const activeDimensions = Object.entries(dimConfigs)
-                    .filter(([_, config]) => config.active)
-                    .map(([id]) => (v as any)[id])
-                    .filter(Boolean);
-                const combinedName = v.variant_name || activeDimensions.join(' ');
+                    variants: variants.map(v => {
+                        const activeDimensions = Object.entries(dimConfigs)
+                            .filter(([_, config]) => config.active)
+                            .map(([id]) => (v as any)[id])
+                            .filter(Boolean);
+                        const combinedName = v.variant_name || activeDimensions.join(' ');
 
-                return {
-                    variant_id: v.variant_id || undefined,
-                    sku: v.sku.trim(),
-                    variant_name: combinedName.trim(),
-                    price: Number(v.price) || 0,
-                    stock: Number(v.stock) || 0,
-                    cost_price: v.cost_price ? Number(v.cost_price) : null,
-                    volume: v.volume || undefined,
-                    pack: v.pack || undefined,
-                    isDefault: v.isDefault,
-                    isActive: v.isActive,
-                    // Sale Management
-                    sale_price: v.sale_price || null,
-                    sale_start_date: v.sale_start_date || undefined,
-                    sale_start_time: v.sale_start_time || undefined,
-                    sale_end_date: v.sale_end_date || undefined,
-                    sale_end_time: v.sale_end_time || undefined,
-                    // Dimensions + shelf life
-                    length_cm: v.length_cm || undefined,
-                    width_cm: v.width_cm || undefined,
-                    height_cm: v.height_cm || undefined,
-                    weight_kg: v.weight_kg || undefined,
-                    shelf_life: v.shelf_life || undefined,
-                };
-            }),
-            available_from: form.available_from_date ? new Date(`${form.available_from_date}T${form.available_from_time || '00:00'}`).toISOString() : null,
-            available_until: form.available_until_date ? new Date(`${form.available_until_date}T${form.available_until_time || '23:59'}`).toISOString() : null,
+                        // Parse formatted strings for DB fields
+                        let weight_g = null;
+                        if (v.weight) {
+                            const [val, unit] = v.weight.split(' ');
+                            weight_g = unit === 'kg' ? parseFloat(val) * 1000 : parseFloat(val);
+                        }
+
+                        let units_count = null;
+                        let form_factor = null;
+                        if (v.count) {
+                            const parts = v.count.split(' ');
+                            units_count = parseInt(parts[0]);
+                            form_factor = parts.slice(1).join(' ');
+                        }
+
+                        let strength = undefined;
+                        let strength_unit = undefined;
+                        if (v.strength) {
+                            const parts = v.strength.split(' ');
+                            strength = parts[0];
+                            strength_unit = parts.slice(1).join(' ');
+                        }
+
+                        return {
+                            variant_id: v.variant_id || undefined,
+                            sku: v.sku.trim(),
+                            variant_name: combinedName.trim(),
+                            price: Number(v.price) || 0,
+                            stock: Number(v.stock) || 0,
+                            cost_price: v.cost_price ? Number(v.cost_price) : undefined,
+                            volume: v.volume || undefined,
+                            pack: v.pack || undefined,
+                            isDefault: v.isDefault,
+                            isActive: v.isActive,
+                            // Sale Management
+                            sale_price: v.sale_price || undefined,
+                            sale_start_date: v.sale_start_date || undefined,
+                            sale_start_time: v.sale_start_time || undefined,
+                            sale_end_date: v.sale_end_date || undefined,
+                            sale_end_time: v.sale_end_time || undefined,
+                            // Dimensions + shelf life
+                            length_cm: v.length_cm || undefined,
+                            width_cm: v.width_cm || undefined,
+                            height_cm: v.height_cm || undefined,
+                            shelf_life: v.shelf_life || undefined,
+                            // New fields
+                            weight_g: weight_g,
+                            units_count: units_count,
+                            form_factor: form_factor,
+                            strength: strength,
+                            strength_unit: strength_unit,
+                            flavor: v.flavor || undefined,
+                            is_combo: v.combo === 'Yes',
+                        };
+                    }),
+            available_from: form.available_from_date ? new Date(`${form.available_from_date}T${form.available_from_time || '00:00'}`).toISOString() : undefined,
+            available_until: form.available_until_date ? new Date(`${form.available_until_date}T${form.available_until_time || '23:59'}`).toISOString() : undefined,
 
             // SEO metadata (saved via seo.controller on the backend)
             seo: Object.values(seoData).some(v => v) ? seoData : undefined,
@@ -1302,7 +1392,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                                     {key === 'weight' ? (
                                                         <div className="flex flex-1 gap-2">
                                                             <input
-                                                                type="text"
+                                                                type="number"
                                                                 placeholder="e.g. 500"
                                                                 value={dimInputs.weight}
                                                                 onChange={e => setDimInputs(prev => ({ ...prev, weight: e.target.value }))}
@@ -1320,7 +1410,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                                     ) : key === 'volume' ? (
                                                         <div className="flex flex-1 gap-2">
                                                             <input
-                                                                type="text"
+                                                                type="number"
                                                                 placeholder="e.g. 750"
                                                                 value={dimInputs.volume}
                                                                 onChange={e => setDimInputs(prev => ({ ...prev, volume: e.target.value }))}
@@ -1332,8 +1422,65 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                                                 onChange={e => setVolUnit(e.target.value)}
                                                                 className="bg-card-bg border border-border rounded-lg px-2 py-1.5 text-xs focus:border-gold/40 focus:outline-none"
                                                             >
-                                                                {['ml', 'L', 'fl oz'].map(u => <option key={u} value={u}>{u}</option>)}
+                                                                {['ml', 'L'].map(u => <option key={u} value={u}>{u}</option>)}
                                                             </select>
+                                                        </div>
+                                                    ) : key === 'count' ? (
+                                                        <div className="flex flex-1 gap-2">
+                                                            <input
+                                                                type="number"
+                                                                placeholder="e.g. 60"
+                                                                value={dimInputs.count}
+                                                                onChange={e => setDimInputs(prev => ({ ...prev, count: e.target.value }))}
+                                                                onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addDimensionValue('count'))}
+                                                                className="flex-1 bg-transparent border border-border rounded-lg px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none transition-colors"
+                                                            />
+                                                            <select
+                                                                value={countUnit}
+                                                                onChange={e => setCountUnit(e.target.value)}
+                                                                className="bg-card-bg border border-border rounded-lg px-2 py-1.5 text-xs focus:border-gold/40 focus:outline-none"
+                                                            >
+                                                                {['Sachets', 'Tablets', 'Capsules'].map(u => <option key={u} value={u}>{u}</option>)}
+                                                            </select>
+                                                        </div>
+                                                    ) : key === 'strength' ? (
+                                                        <div className="flex flex-1 gap-2">
+                                                            <input
+                                                                type="text"
+                                                                placeholder="e.g. 500"
+                                                                value={dimInputs.strength}
+                                                                onChange={e => setDimInputs(prev => ({ ...prev, strength: e.target.value }))}
+                                                                onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addDimensionValue('strength'))}
+                                                                className="flex-1 bg-transparent border border-border rounded-lg px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none transition-colors"
+                                                            />
+                                                            <select
+                                                                value={strengthUnit}
+                                                                onChange={e => setStrengthUnit(e.target.value)}
+                                                                className="bg-card-bg border border-border rounded-lg px-2 py-1.5 text-xs focus:border-gold/40 focus:outline-none"
+                                                            >
+                                                                {['mg', 'IU'].map(u => <option key={u} value={u}>{u}</option>)}
+                                                            </select>
+                                                        </div>
+                                                    ) : key === 'pack' ? (
+                                                        <input
+                                                            type="number"
+                                                            placeholder="e.g. 1"
+                                                            value={dimInputs.pack}
+                                                            onChange={e => setDimInputs(prev => ({ ...prev, pack: e.target.value }))}
+                                                            onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addDimensionValue('pack'))}
+                                                            className="flex-1 bg-transparent border border-border rounded-lg px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none transition-colors"
+                                                        />
+                                                    ) : key === 'combo' ? (
+                                                        <div className="flex flex-1 items-center gap-3">
+                                                            <label className="flex items-center gap-2 cursor-pointer">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={dimInputs.combo === 'yes'}
+                                                                    onChange={e => setDimInputs(prev => ({ ...prev, combo: e.target.checked ? 'yes' : 'no' }))}
+                                                                    className="w-4 h-4 rounded border-border text-gold focus:ring-gold"
+                                                                />
+                                                                <span className="text-sm text-text-primary">Is Combo?</span>
+                                                            </label>
                                                         </div>
                                                     ) : (
                                                         <input
@@ -1514,7 +1661,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                                                             className={`p-1.5 rounded-lg transition-colors hover:bg-white/5 ${variant.isDefault ? 'text-gold' : 'text-text-muted hover:text-gold'
                                                                                 }`}
                                                                         >
-                                                                            <Star className={`h-4 w-4 ${variant.isDefault ? 'fill-gold' : ''}`} />
+                                                                            <Star className={`h-4 w-4 transition-all duration-300 ${variant.isDefault ? 'fill-amber-400 text-amber-400 scale-110 drop-shadow-[0_0_8px_rgba(251,191,36,0.4)]' : ''}`} />
                                                                         </button>
                                                                         <button
                                                                             type="button"
@@ -1567,7 +1714,6 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                                                                         { label: 'Length (cm)', field: 'length_cm' as keyof VariantRow },
                                                                                         { label: 'Width (cm)', field: 'width_cm' as keyof VariantRow },
                                                                                         { label: 'Height (cm)', field: 'height_cm' as keyof VariantRow },
-                                                                                        { label: 'Weight (kg)', field: 'weight_kg' as keyof VariantRow },
                                                                                     ]).map(({ label, field }) => (
                                                                                         <div key={field}>
                                                                                             <label className="block text-xs font-medium text-text-secondary mb-1">{label}</label>
