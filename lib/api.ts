@@ -199,6 +199,27 @@ export async function getCustomers(): Promise<Customer[]> {
     }
 }
 
+export async function getCustomerDetail(id: string): Promise<Customer | null> {
+    try {
+        // Try direct endpoint first
+        const res = await fetch(`${API_URL}/api/admin/customers/${id}`, {
+            headers: authHeaders(),
+            credentials: 'include',
+        });
+        const json: ApiResponse<any> = await res.json();
+        if (json.success && json.data?.customer) return json.data.customer;
+
+        // Fallback: Fetch all and filter (since direct ID endpoint might 404)
+        console.warn(`[Admin API] Direct fetch for ${id} failed or returned null, trying fallback...`);
+        const all = await getCustomers();
+        return all.find(c => c.customer_id === id || (c as any).id === id || (c as any)._id === id) || null;
+    } catch (error) {
+        console.error('[Admin API] Failed to fetch customer detail, trying fallback...', error);
+        const all = await getCustomers();
+        return all.find(c => c.customer_id === id || (c as any).id === id || (c as any)._id === id) || null;
+    }
+}
+
 /* ─── Products ─── */
 
 export async function getProducts(status = 'active'): Promise<Product[]> {

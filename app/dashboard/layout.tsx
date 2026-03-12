@@ -31,12 +31,22 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     }
 
     return (
-        <div className="flex min-h-screen bg-page-bg">
+        <div className="flex min-h-screen bg-page-bg relative overflow-hidden">
+            {/* Command Center Background */}
+            <div 
+                className="fixed inset-0 z-0 pointer-events-none opacity-40 mix-blend-multiply transition-opacity duration-1000"
+                style={{ 
+                    backgroundImage: 'url("/dashboard_bg.png")',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                }}
+            />
+            
             <AdminSidebar
                 collapsed={sidebarCollapsed}
                 onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
             />
-            <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'md:ml-[68px]' : 'md:ml-72'
+            <div className={`flex-1 flex flex-col transition-all duration-300 relative z-10 ${sidebarCollapsed ? 'md:ml-[68px]' : 'md:ml-72'
                 }`}>
                 <TopNavbar sidebarCollapsed={sidebarCollapsed} />
                 <main className="flex-1 p-4 sm:p-6 pt-16 md:pt-6">
