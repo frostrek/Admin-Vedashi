@@ -58,8 +58,8 @@ export interface CreateProductPayload {
     // Core product fields (maps directly to inventory.products)
     product_name: string;
     brand?: string;
-    category?: string;
-    sub_category?: string;
+    category_id?: string;
+    sub_category_id?: string;
     description?: string;
     intended_use?: string;
     alcohol_percentage?: number | null;   // form field "abv"
@@ -83,8 +83,8 @@ export interface ProductRecord {
     product_id: string;
     product_name: string;
     brand?: string;
-    category?: string;
-    sub_category?: string;
+    category_id?: string;
+    sub_category_id?: string;
     description?: string;
     intended_use?: string;
     alcohol_percentage?: number;

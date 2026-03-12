@@ -101,8 +101,8 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
     const [form, setForm] = useState({
         product_name: '',
         brand: '',
-        category: '',
-        sub_category: '',
+        category_id: '',
+        sub_category_id: '',
         country_of_origin: '',
 
 
@@ -177,11 +177,27 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
             setDbProductId((product as any).product_id || urlId);
 
             // ── Step 1: General Info ──
+            const productCatId = product.category_id || '';
+            const catObj = cats.find(c => c.category_id === productCatId);
+            
+            let finalCatId = '';
+            let finalSubCatId = '';
+            
+            if (catObj) {
+                if (catObj.parent_id) {
+                    finalCatId = catObj.parent_id;
+                    finalSubCatId = catObj.category_id;
+                } else {
+                    finalCatId = catObj.category_id;
+                    finalSubCatId = '';
+                }
+            }
+
             setForm({
                 product_name: product.product_name || '',
                 brand: product.brand || '',
-                category: product.category || '',
-                sub_category: product.sub_category || '',
+                category_id: finalCatId,
+                sub_category_id: finalSubCatId,
                 country_of_origin: product.country_of_origin || (product as any).specifications?.country_of_origin || '',
 
                 intended_use: product.intended_use || '',
@@ -338,7 +354,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
     }, [urlId]);
 
     const parentCategories = categories.filter(c => !c.parent_id);
-    const selectedParent = categories.find(c => !c.parent_id && c.name === form.category);
+    const selectedParent = categories.find(c => !c.parent_id && c.category_id === form.category_id);
     const subCategories = selectedParent
         ? categories.filter(c => c.parent_id === selectedParent.category_id)
         : [];
@@ -347,8 +363,8 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
     const update = (field: string, value: string) => setForm(prev => ({ ...prev, [field]: value }));
 
     const handleCategoryChange = (value: string) => {
-        update('category', value);
-        update('sub_category', '');
+        update('category_id', value);
+        update('sub_category_id', '');
     };
 
     const autoSlug = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -367,8 +383,8 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
             if (res.success) {
                 toast.success(`Category "${newCatForm.name}" created!`);
                 const cats = await refreshCategories();
-                update('category', newCatForm.name.trim());
-                update('sub_category', '');
+                update('category_id', res.category?.category_id || '');
+                update('sub_category_id', '');
                 setNewCatForm({ name: '', slug: '', description: '' });
                 setShowCategoryModal(false);
             } else {
@@ -393,7 +409,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
             if (res.success) {
                 toast.success(`Subcategory "${newSubCatForm.name}" created!`);
                 await refreshCategories();
-                update('sub_category', newSubCatForm.name.trim());
+                update('sub_category_id', res.category?.category_id || '');
                 setNewSubCatForm({ name: '', slug: '', description: '', parent_id: '' });
                 setShowSubcategoryModal(false);
             } else {
@@ -631,7 +647,14 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
             toast.error('At least one variant row is required');
             return;
         }
-        setVariants(prev => prev.filter((_, i) => i !== index));
+        setVariants(prev => {
+            const wasDefault = prev[index].isDefault;
+            const filtered = prev.filter((_, i) => i !== index);
+            if (wasDefault && filtered.length > 0) {
+                filtered[0].isDefault = true;
+            }
+            return filtered;
+        });
         if (expandedVariantIndex === index) setExpandedVariantIndex(null);
         else if (expandedVariantIndex !== null && expandedVariantIndex > index) setExpandedVariantIndex(expandedVariantIndex - 1);
     };
@@ -684,8 +707,8 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
         const draftPayload = {
             product_name: form.product_name.trim(),
             brand: form.brand.trim() || undefined,
-            category: form.category || undefined,
-            sub_category: form.sub_category || undefined,
+            category_id: form.category_id || undefined,
+            sub_category_id: form.sub_category_id || undefined,
             description: form.description.trim() || undefined,
             intended_use: form.intended_use.trim() || undefined,
 
@@ -790,8 +813,8 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
             // Core product table fields
             product_name: form.product_name.trim(),
             brand: form.brand.trim() || undefined,
-            category: form.category || undefined,
-            sub_category: form.sub_category || undefined,
+            category_id: form.category_id || undefined,
+            sub_category_id: form.sub_category_id || undefined,
             description: form.description.trim() || undefined,
             intended_use: form.intended_use.trim() || undefined,
 
@@ -1176,13 +1199,13 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                     <div>
                                         <label className="block text-sm font-medium text-text-primary mb-1.5">Category</label>
                                         <select
-                                            value={form.category}
+                                            value={form.category_id}
                                             onChange={e => handleCategoryChange(e.target.value)}
                                             className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 bg-white text-gray-900 transition-all"
                                         >
                                             <option value="">Select category</option>
                                             {parentCategories.map(cat => (
-                                                <option key={cat.category_id} value={cat.name}>{cat.name}</option>
+                                                <option key={cat.category_id} value={cat.category_id}>{cat.name}</option>
                                             ))}
                                         </select>
                                         <button
@@ -1198,19 +1221,19 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                     <div>
                                         <label className="block text-sm font-medium text-text-primary mb-1.5">Subcategory</label>
                                         <select
-                                            value={form.sub_category}
-                                            onChange={e => update('sub_category', e.target.value)}
+                                            value={form.sub_category_id}
+                                            onChange={e => update('sub_category_id', e.target.value)}
                                             className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 bg-white text-gray-900 transition-all"
-                                            disabled={!form.category || subCategories.length === 0}
+                                            disabled={!form.category_id || subCategories.length === 0}
                                         >
                                             <option value="">
-                                                {!form.category ? 'Select a category first' : subCategories.length === 0 ? 'No subcategories' : 'Select subcategory'}
+                                                {!form.category_id ? 'Select a category first' : subCategories.length === 0 ? 'No subcategories' : 'Select subcategory'}
                                             </option>
                                             {subCategories.map(cat => (
-                                                <option key={cat.category_id} value={cat.name}>{cat.name}</option>
+                                                <option key={cat.category_id} value={cat.category_id}>{cat.name}</option>
                                             ))}
                                         </select>
-                                        {form.category && (
+                                        {form.category_id && (
                                             <button
                                                 type="button"
                                                 onClick={() => {
@@ -1939,7 +1962,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                     entityName={form.product_name}
                                     entityDescription={form.description}
                                     entityBrand={form.brand}
-                                    entityCategory={form.category}
+                                    entityCategory={categories.find(c => c.category_id === form.category_id)?.name}
                                     value={seoData}
                                     onChange={setSeoData}
                                 />

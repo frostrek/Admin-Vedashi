@@ -7,6 +7,8 @@ export interface Product {
     brand?: string;
     category?: string;
     sub_category?: string;
+    category_id?: string;
+    sub_category_id?: string;
     description?: string;
     unit_of_measure?: string;
     intended_use?: string;
