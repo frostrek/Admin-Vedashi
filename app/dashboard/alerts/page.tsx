@@ -11,7 +11,7 @@ export default function AlertsPage() {
     const [enquiries, setEnquiries] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const [visibleCount, setVisibleCount] = useState(10); // Simple pagination state
+    const [visibleCount, setVisibleCount] = useState(10); // Simple pagination states
 
     useEffect(() => {
         const fetchAlerts = async () => {
