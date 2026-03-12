@@ -1932,6 +1932,17 @@ export async function updateFeedbackStatus(id: string, status: string) {
     } catch { return { success: false }; }
 }
 
+export async function replyToFeedback(id: string, body: string, type: 'reply' | 'note' = 'reply') {
+    try {
+        const res = await authFetch(`${API_URL}/api/customer-enquiry/admin/${id}/reply`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ body, type }),
+        });
+        return (await res.json());
+    } catch { return { success: false, message: 'Network error' }; }
+}
+
 export async function getFeedbackAnalytics() {
     try {
         const res = await fetch(`${API_URL}/api/feedback/admin/analytics`, { headers: authHeaders() });
