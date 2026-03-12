@@ -102,23 +102,27 @@ export default function ActivityLogsPage() {
     }
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div className="space-y-10 min-h-screen animate-fadeIn">
+            {/* ── Page Header ── */}
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 animate-fadeInUp">
                 <div>
-                    <h1 className="text-2xl sm:text-3xl font-bold text-gold tracking-wide font-serif mb-1">
-                        Activity Logs
-                    </h1>
-                    <p className="text-text-muted text-sm px-1">
-                        Irreversible audit trail of administrative actions.
+                    <div className="flex items-center gap-4 mb-3">
+                        <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/20 border border-border shadow-lg">
+                            <Activity className="w-6 h-6 text-gold" />
+                        </div>
+                        <h1 className="text-3xl font-serif font-bold text-gold tracking-tighter">Interaction Chronicles</h1>
+                    </div>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-muted">
+                        An irreversible audit trail of administrative vibrations and system evolutions.
                     </p>
                 </div>
                 <button
                     onClick={() => fetchLogs(pagination.page.toString())}
                     disabled={loading}
-                    className="flex items-center gap-2 bg-card-bg border border-border px-4 py-2 rounded-lg text-text-muted hover:text-gold hover:border-gold/50 transition-colors disabled:opacity-50"
+                    className="flex items-center gap-2 bg-primary border border-gold/20 text-gold text-[10px] font-bold uppercase tracking-widest px-6 py-2.5 rounded-xl hover:shadow-[0_0_20px_rgba(197,164,109,0.3)] transition-all disabled:opacity-50"
                 >
                     <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                    <span className="text-sm font-medium">Refresh</span>
+                    Recalibrate Chronicles
                 </button>
             </div>
 

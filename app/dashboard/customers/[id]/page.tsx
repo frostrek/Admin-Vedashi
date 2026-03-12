@@ -4,12 +4,13 @@ import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { 
-    getCustomerDetail, getOrders, formatINR, Customer, Order 
+    getCustomerDetail, getOrders, formatINR, Customer, Order, updateCustomerStatus
 } from '@/lib/api';
 import { 
     User, Mail, Calendar, MapPin, ShoppingBag, CreditCard, 
     ChevronLeft, ArrowUpRight, Clock, Shield, CheckCircle2, 
-    XCircle, AlertTriangle, UserX, Loader2, IndianRupee, Hash
+    XCircle, AlertTriangle, UserX, Loader2, IndianRupee, Hash,
+    Ban, ShieldAlert
 } from 'lucide-react';
 
 interface OrderDetail extends Order {
@@ -29,10 +30,11 @@ export default function CustomerDetailPage() {
     const [customer, setCustomer] = useState<Customer | null>(null);
     const [orders, setOrders] = useState<OrderDetail[]>([]);
     const [loading, setLoading] = useState(true);
+    const [actionLoading, setActionLoading] = useState(false);
 
-    useEffect(() => {
+    const fetchData = () => {
         if (!id) return;
-
+        setLoading(true);
         Promise.all([
             getCustomerDetail(id as string),
             getOrders()
@@ -50,7 +52,31 @@ export default function CustomerDetailPage() {
                 router.push('/dashboard/customers');
             }
         }).finally(() => setLoading(false));
+    };
+
+    useEffect(() => {
+        fetchData();
     }, [id, router]);
+
+    const handleUpdateStatus = async (updates: Partial<Pick<Customer, 'is_suspended' | 'is_banned'>>) => {
+        if (!id) return;
+        const confirmMsg = updates.is_banned !== undefined 
+            ? `Are you sure you want to ${updates.is_banned ? 'BAN' : 'UNBAN'} this account?`
+            : `Are you sure you want to ${updates.is_suspended ? 'SUSPEND' : 'UNSUSPEND'} this account?`;
+        
+        if (!confirm(confirmMsg)) return;
+
+        setActionLoading(true);
+        const success = await updateCustomerStatus(id as string, updates);
+        if (success) {
+            // Refresh patient data
+            const freshData = await getCustomerDetail(id as string);
+            if (freshData) setCustomer(freshData);
+        } else {
+            alert('Failed to update account status. Please try again.');
+        }
+        setActionLoading(false);
+    };
 
     const stats = useMemo(() => {
         const totalSpent = orders.reduce((sum, o) => sum + (o.total || 0), 0);
@@ -101,6 +127,30 @@ export default function CustomerDetailPage() {
                     <span className="text-sm font-medium">Back to Customers</span>
                 </button>
                 <div className="flex gap-3">
+                    <button
+                        onClick={() => handleUpdateStatus({ is_suspended: !customer.is_suspended })}
+                        disabled={actionLoading}
+                        className={`flex items-center gap-2 rounded-lg border-2 px-4 py-2 text-sm font-bold transition-all duration-300 shadow-lg backdrop-blur-md disabled:opacity-50 ${
+                            customer.is_suspended 
+                            ? 'border-success bg-white/90 text-success hover:bg-success/10' 
+                            : 'border-orange-500 bg-white/80 text-orange-700 hover:bg-white/90'
+                        }`}
+                    >
+                        <ShieldAlert className="h-4 w-4" /> 
+                        {customer.is_suspended ? 'Unsuspend' : 'Suspend'}
+                    </button>
+                    <button
+                        onClick={() => handleUpdateStatus({ is_banned: !customer.is_banned })}
+                        disabled={actionLoading}
+                        className={`flex items-center gap-2 rounded-lg border-2 px-4 py-2 text-sm font-bold transition-all duration-300 shadow-lg backdrop-blur-md disabled:opacity-50 ${
+                            customer.is_banned 
+                            ? 'border-success bg-white/90 text-success hover:bg-success/10' 
+                            : 'border-red-500 bg-white/80 text-red-700 hover:bg-white/90'
+                        }`}
+                    >
+                        <Ban className="h-4 w-4" /> 
+                        {customer.is_banned ? 'Unban Account' : 'Ban Account'}
+                    </button>
                     <a 
                         href={`https://mail.google.com/mail/?view=cm&fs=1&to=${customer.email}`}
                         target="_blank"

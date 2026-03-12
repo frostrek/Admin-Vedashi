@@ -111,66 +111,66 @@ export default function SeoHealthCheck() {
     }
 
     return (
-        <div className="p-8 max-w-7xl mx-auto space-y-8">
-            <div>
-                <h1 className="text-2xl font-bold flex items-center gap-3">
-                    <ShieldAlert className="text-primary" />
+        <div className="p-8 max-w-7xl mx-auto space-y-8 min-h-screen">
+            <div className="animate-fadeInUp" style={{ animationDelay: '0ms' }}>
+                <h1 className="font-serif text-3xl font-bold flex items-center gap-3 text-gold">
+                    <ShieldAlert className="h-8 w-8 text-gold" />
                     SEO Health Check
                 </h1>
-                <p className="text-gray-500 mt-2">Audit your product catalog for missing or suboptimal SEO metadata.</p>
+                <p className="text-text-muted mt-2 uppercase tracking-widest text-[10px] font-bold">Audit your product catalog for missing or suboptimal SEO metadata.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col items-center justify-center text-center">
-                    <span className="text-4xl font-bold text-gray-800">{products.length}</span>
-                    <span className="text-sm text-gray-500 mt-1">Total Products Scanned</span>
+                <div className="bg-gradient-to-br from-card-bg to-card-bg-elevated p-6 rounded-2xl border border-border shadow-xl flex flex-col items-center justify-center text-center backdrop-blur-sm animate-fadeInUp" style={{ animationDelay: '100ms' }}>
+                    <span className="text-4xl font-serif font-bold text-gold">{products.length}</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted mt-2">Total Products Scanned</span>
                 </div>
-                <div className="bg-emerald-50 p-6 rounded-xl border border-emerald-100 flex flex-col items-center justify-center text-center">
-                    <span className="text-4xl font-bold text-emerald-600 flex items-center gap-2">
+                <div className="bg-gradient-to-br from-card-bg to-card-bg-elevated p-6 rounded-2xl border border-border shadow-xl flex flex-col items-center justify-center text-center backdrop-blur-sm animate-fadeInUp" style={{ animationDelay: '200ms' }}>
+                    <span className="text-4xl font-serif font-bold text-success flex items-center gap-2">
                         <CheckCircle2 size={32} /> {healthyCount}
                     </span>
-                    <span className="text-sm text-emerald-700 mt-1">Healthy Products</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted mt-2">Healthy Products</span>
                 </div>
-                <div className="bg-amber-50 p-6 rounded-xl border border-amber-100 flex flex-col items-center justify-center text-center">
-                    <span className="text-4xl font-bold text-amber-600 flex items-center gap-2">
+                <div className="bg-gradient-to-br from-card-bg to-card-bg-elevated p-6 rounded-2xl border border-border shadow-xl flex flex-col items-center justify-center text-center backdrop-blur-sm animate-fadeInUp" style={{ animationDelay: '300ms' }}>
+                    <span className="text-4xl font-serif font-bold text-warning flex items-center gap-2">
                         <AlertTriangle size={32} /> {warningProducts.length}
                     </span>
-                    <span className="text-sm text-amber-700 mt-1">Needs Attention</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted mt-2">Needs Attention</span>
                 </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100 bg-gray-50">
-                    <h2 className="font-semibold text-gray-800">Products Requiring SEO Updates</h2>
+            <div className="bg-gradient-to-br from-card-bg to-card-bg-elevated rounded-2xl shadow-xl border border-border overflow-hidden animate-fadeInUp backdrop-blur-sm" style={{ animationDelay: '400ms' }}>
+                <div className="px-6 py-5 border-b border-border bg-primary/10">
+                    <h2 className="font-serif text-base font-bold text-gold tracking-widest uppercase">Products Requiring SEO Updates</h2>
                 </div>
 
                 {warningProducts.length === 0 ? (
-                    <div className="p-12 text-center text-gray-500">
-                        <CheckCircle2 className="mx-auto h-12 w-12 text-emerald-400 mb-4" />
-                        <p className="text-lg font-medium text-gray-900">All products are fully optimized!</p>
-                        <p>No SEO warnings found.</p>
+                    <div className="p-12 text-center text-text-muted">
+                        <CheckCircle2 className="mx-auto h-12 w-12 text-success opacity-50 mb-4" />
+                        <p className="text-lg font-serif font-medium text-gold">All products are fully optimized!</p>
+                        <p className="text-sm mt-1">No SEO warnings detected in current protocol registry.</p>
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-sm">
-                            <thead className="bg-white text-gray-500">
+                            <thead className="bg-primary/5 text-text-muted">
                                 <tr>
-                                    <th className="px-6 py-4 font-medium">Product</th>
-                                    <th className="px-6 py-4 font-medium">Warnings</th>
-                                    <th className="px-6 py-4 font-medium text-right">Action</th>
+                                    <th className="px-6 py-4 font-bold uppercase tracking-widest text-[10px]">Product / Formula</th>
+                                    <th className="px-6 py-4 font-bold uppercase tracking-widest text-[10px]">Anomalies Detected</th>
+                                    <th className="px-6 py-4 font-bold uppercase tracking-widest text-[10px] text-right">Action</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-100">
+                            <tbody className="divide-y divide-border-subtle">
                                 {warningProducts.map((p) => (
-                                    <tr key={p.id} className="hover:bg-gray-50 transition-colors">
+                                    <tr key={p.id} className="hover:bg-primary/5 transition-colors group">
                                         <td className="px-6 py-4">
-                                            <div className="font-medium text-gray-900">{p.name}</div>
-                                            <div className="text-gray-400 text-xs mt-1 font-mono">{p.slug || 'No slug'}</div>
+                                            <div className="font-bold text-gold group-hover:text-gold-soft transition-colors">{p.name}</div>
+                                            <div className="text-text-muted text-[10px] mt-1 font-mono uppercase tracking-[0.05em]">{p.slug || 'No slug'}</div>
                                         </td>
                                         <td className="px-6 py-4 h-full align-middle">
                                             <div className="flex flex-wrap gap-2">
                                                 {p.warnings.map((w, i) => (
-                                                    <span key={i} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-50 text-red-700 border border-red-100">
+                                                    <span key={i} className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-danger/10 text-danger border border-danger/20">
                                                         {w}
                                                     </span>
                                                 ))}
@@ -179,7 +179,7 @@ export default function SeoHealthCheck() {
                                         <td className="px-6 py-4 text-right">
                                             <Link
                                                 href={`/dashboard/products/edit/${p.slug || p.id}?step=4`}
-                                                className="inline-flex items-center gap-1 text-primary hover:text-primary/80 font-medium bg-primary/5 px-3 py-1.5 rounded-lg transition-colors"
+                                                className="inline-flex items-center gap-1 text-gold hover:text-gold-soft font-bold text-[11px] uppercase tracking-widest bg-primary/20 hover:bg-primary/40 border border-gold/10 px-3 py-1.5 rounded-lg transition-all"
                                             >
                                                 Edit <ArrowRight size={14} />
                                             </Link>

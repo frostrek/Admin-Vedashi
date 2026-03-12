@@ -163,45 +163,45 @@ export default function DashboardPage() {
 
             {/* Recent Fulfillment - Semantic Rebranding */}
             <div className="grid gap-6 lg:grid-cols-1">
-                <div className="rounded-2xl border border-emerald-900/10 bg-white animate-fadeInUp shadow-xl" style={{ animationDelay: '560ms' }}>
-                    <div className="flex items-center justify-between border-b border-emerald-900/5 px-6 py-5">
+                <div className="rounded-2xl border border-border bg-gradient-to-br from-card-bg to-card-bg-elevated animate-fadeInUp shadow-xl transition-all duration-500" style={{ animationDelay: '560ms' }}>
+                    <div className="flex items-center justify-between border-b border-border px-6 py-5">
                         <div>
-                            <h2 className="font-serif text-base font-bold text-emerald-950 tracking-widest uppercase">Recent Fulfillment</h2>
-                            <p className="text-[10px] text-emerald-900/40 uppercase tracking-widest mt-1">Real-time protocol logistics and dispatch</p>
+                            <h2 className="font-serif text-base font-bold text-gold tracking-widest uppercase">Recent Fulfillment</h2>
+                            <p className="text-[10px] text-text-muted uppercase tracking-widest mt-1">Real-time protocol logistics and dispatch</p>
                         </div>
                         <div className="flex items-center gap-3">
-                            <Link href="/dashboard/orders" className="text-[11px] font-bold uppercase tracking-wider text-emerald-900/60 hover:text-emerald-900 transition-colors duration-300">
+                            <Link href="/dashboard/orders" className="text-[11px] font-bold uppercase tracking-wider text-gold-soft hover:text-gold transition-colors duration-300">
                                 View Archive →
                             </Link>
                         </div>
                     </div>
                     
                     {/* Header Row for Semantic Labels */}
-                    <div className="grid grid-cols-[1fr_2fr_2fr_1fr_1fr] px-6 py-3 border-b border-emerald-900/5 bg-emerald-900/[0.02]">
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-900/40">Protocol ID</span>
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-900/40">Patient</span>
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-900/40">Formula</span>
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-900/40">Status</span>
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-950/40 text-right">Value</span>
+                    <div className="grid grid-cols-[1fr_2fr_2fr_1fr_1fr] px-6 py-3 border-b border-border bg-primary/5">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted">Protocol ID</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted">Patient</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted">Formula</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted">Status</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted text-right">Value</span>
                     </div>
 
-                    <div className="divide-y divide-emerald-900/5">
+                    <div className="divide-y divide-border-subtle">
                         {loading ? (
                             Array.from({ length: 5 }).map((_, i) => (
                                 <div key={i} className="flex items-center gap-3 px-6 py-4">
-                                    <div className="h-10 w-10 rounded-xl bg-emerald-900/5 animate-pulse flex-shrink-0" />
+                                    <div className="h-10 w-10 rounded-xl bg-primary/10 animate-pulse flex-shrink-0" />
                                     <div className="flex-1 space-y-2">
-                                        <div className="h-4 w-32 rounded bg-emerald-900/5 animate-pulse" />
-                                        <div className="h-3 w-20 rounded bg-emerald-900/5 animate-pulse" />
+                                        <div className="h-4 w-32 rounded bg-primary/10 animate-pulse" />
+                                        <div className="h-3 w-20 rounded bg-primary/10 animate-pulse" />
                                     </div>
                                 </div>
                             ))
                         ) : products.length === 0 ? (
                             <div className="px-6 py-12 text-center">
-                                <p className="text-sm text-white/30 italic mb-4">No active protocols detected</p>
+                                <p className="text-sm text-text-muted italic mb-4">No active protocols detected</p>
                                 <Link
                                     href="/dashboard/products/add"
-                                    className="inline-flex items-center gap-2 rounded-xl bg-[#828B5C] px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-white hover:bg-emerald-700 transition-all duration-300"
+                                    className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-gold hover:bg-primary-light transition-all duration-300"
                                 >
                                     <Plus className="h-4 w-4" /> Initialize Protocol
                                 </Link>
@@ -211,28 +211,28 @@ export default function DashboardPage() {
                                 <Link
                                     key={product.product_id}
                                     href={`/dashboard/products/edit/${product.slug || product.product_id}`}
-                                    className="grid grid-cols-[1fr_2fr_2fr_1fr_1fr] items-center px-6 py-4 hover:bg-emerald-900/[0.02] transition-all duration-300 group"
+                                    className="grid grid-cols-[1fr_2fr_2fr_1fr_1fr] items-center px-6 py-4 hover:bg-primary/10 transition-all duration-300 group"
                                 >
-                                    <span className="text-xs font-mono text-emerald-900/30">#PR-{product.product_id.toString().slice(-4)}</span>
+                                    <span className="text-xs font-mono text-text-muted">#PR-{product.product_id.toString().slice(-4)}</span>
                                     <div className="flex items-center gap-3">
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-bold text-emerald-950 truncate group-hover:text-emerald-700 transition-colors duration-300">
+                                            <p className="text-sm font-bold text-text-primary truncate group-hover:text-gold transition-colors duration-300">
                                                 —
                                             </p>
                                         </div>
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-xs font-medium text-emerald-900/60 italic truncate">
+                                        <p className="text-xs font-medium text-text-secondary italic truncate">
                                             {product.product_name}
                                         </p>
                                     </div>
                                     <div>
-                                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg bg-emerald-900/5 border border-emerald-900/10 text-emerald-900/40">
+                                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg bg-primary/20 border border-border text-gold-soft">
                                             Active
                                         </span>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-sm font-bold text-emerald-950 tracking-tight">
+                                        <p className="text-sm font-bold text-gold tracking-tight">
                                             {formatINR(product.price ?? 0)}
                                         </p>
                                     </div>
