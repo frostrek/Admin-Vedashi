@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAdminAuth } from '@/context/AdminAuthContext';
-import { Activity, ShieldAlert, RefreshCw, ChevronLeft, ChevronRight, Search, FileText } from 'lucide-react';
+import { Activity, ShieldAlert, RefreshCw, ChevronLeft, ChevronRight, Search, FileText, Eye, X, Copy } from 'lucide-react';
 import { getToken } from '@/lib/auth';
 import toast from 'react-hot-toast';
 
@@ -30,6 +30,17 @@ export default function ActivityLogsPage() {
     const { user } = useAdminAuth();
     const [logs, setLogs] = useState<ActivityLog[]>([]);
     const [loading, setLoading] = useState(true);
+    const [activeLog, setActiveLog] = useState<ActivityLog | null>(null);
+
+    const formatMetadata = (metadata: any) => {
+        if (!metadata) return '-';
+        try {
+            const parsed = typeof metadata === 'string' ? JSON.parse(metadata) : metadata;
+            return JSON.stringify(parsed, null, 2);
+        } catch (e) {
+            return String(metadata);
+        }
+    };
 
     // Filters
     const [filterEmail, setFilterEmail] = useState('');
@@ -77,6 +88,17 @@ export default function ActivityLogsPage() {
             setLoading(false);
         }
     }, [pagination.limit, filterEmail, filterEntity, filterAction]);
+
+    useEffect(() => {
+        if (activeLog) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, [activeLog]);
 
     useEffect(() => {
         if (isAuthorized) {
@@ -176,6 +198,7 @@ export default function ActivityLogsPage() {
                                 <th className="px-5 py-4 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">Entity Type</th>
                                 <th className="px-5 py-4 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">Entity ID</th>
                                 <th className="px-5 py-4 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">Metadata</th>
+                                <th className="px-5 py-4 text-right text-xs font-semibold text-text-muted uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border/30 relative">
@@ -214,7 +237,16 @@ export default function ActivityLogsPage() {
                                             {log.entity_id ? log.entity_id.substring(0, 8) + '...' : '-'}
                                         </td>
                                         <td className="px-5 py-3 text-xs text-text-muted max-w-[200px] truncate overflow-hidden" title={log.metadata ? JSON.stringify(log.metadata) : ''}>
-                                            {log.metadata ? JSON.stringify(log.metadata) : '-'}
+                                            {log.metadata ? (typeof log.metadata === 'string' ? log.metadata : JSON.stringify(log.metadata)) : '-'}
+                                        </td>
+                                        <td className="px-5 py-3 text-right">
+                                            <button
+                                                onClick={() => setActiveLog(log)}
+                                                className="p-2 text-text-muted hover:text-gold hover:bg-gold/10 rounded-lg transition-all"
+                                                title="View Details"
+                                            >
+                                                <Eye className="w-4 h-4" />
+                                            </button>
                                         </td>
                                     </tr>
                                 ))
@@ -222,6 +254,105 @@ export default function ActivityLogsPage() {
                         </tbody>
                     </table>
                 </div>
+
+                {/* Log Detail Modal */}
+                {activeLog && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+                        <div className="bg-[#0c0d0a] border border-gold/20 w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden animate-zoomIn">
+                            <div className="flex items-center justify-between p-6 border-b border-gold/10 bg-sidebar-bg">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 rounded-lg bg-gold/10 text-gold">
+                                        <Activity className="w-5 h-5" />
+                                    </div>
+                                    <h2 className="text-xl font-bold text-text font-serif tracking-tight">Chronicle Entry Details</h2>
+                                </div>
+                                <button onClick={() => setActiveLog(null)} className="p-2 text-text-muted hover:text-white transition-colors">
+                                    <X className="w-6 h-6" />
+                                </button>
+                            </div>
+
+                            <div className="p-8 max-h-[70vh] overflow-y-auto space-y-8 scrollbar-thin scrollbar-thumb-gold/20">
+                                {/* Info Grid */}
+                                <div className="grid grid-cols-2 gap-8">
+                                    <div>
+                                        <label className="text-[10px] uppercase font-bold tracking-[0.2em] text-text-muted mb-2 block">Origin Actor</label>
+                                        <div className="text-text font-medium">{activeLog.actor_email || 'System Operation'}</div>
+                                        <div className="text-[10px] text-text-muted/60 mt-1 font-mono uppercase tracking-tight">ID: {activeLog.actor_id}</div>
+                                        <div className="text-[10px] text-text-muted/60 font-mono uppercase tracking-tight">IP: {activeLog.ip_address || 'LOCALHOST'}</div>
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] uppercase font-bold tracking-[0.2em] text-text-muted mb-2 block">Recorded At</label>
+                                        <div className="text-text font-medium">{new Date(activeLog.created_at).toLocaleString()}</div>
+                                        <div className="text-[10px] text-text-muted/60 mt-1 uppercase tracking-tight">{activeLog.created_at}</div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <label className="text-[10px] uppercase font-bold tracking-[0.2em] text-text-muted block">Manifested Action</label>
+                                    <span className="inline-block px-4 py-1.5 text-xs font-bold tracking-[0.1em] uppercase rounded-full bg-gold/10 text-gold border border-gold/20">
+                                        {activeLog.action}
+                                    </span>
+                                </div>
+
+                                <div className="p-5 bg-sidebar-bg border border-gold/10 rounded-2xl space-y-4">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <label className="text-[10px] uppercase font-bold tracking-[0.2em] text-text-muted mb-2 block">Entity Association</label>
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-gold text-lg font-serif italic">{activeLog.entity_type || 'General System'}</span>
+                                                <span className="text-text-muted/80 font-mono text-sm tracking-tight break-all">
+                                                    {activeLog.entity_id || 'NO_ENTITY_ID'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        {activeLog.entity_id && (
+                                            <button
+                                                onClick={() => {
+                                                    navigator.clipboard.writeText(activeLog.entity_id);
+                                                    toast.success('Entity ID copied');
+                                                }}
+                                                className="p-3 bg-gold/5 text-gold hover:bg-gold/20 rounded-xl transition-all border border-gold/10"
+                                                title="Copy Full ID"
+                                            >
+                                                <Copy className="w-4 h-4" />
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <label className="text-[10px] uppercase font-bold tracking-[0.2em] text-text-muted block">Evolutionary Metadata (JSON)</label>
+                                    <div className="relative group">
+                                        <pre className="p-6 bg-black/40 rounded-2xl border border-gold/10 overflow-x-auto text-[13px] text-gold/90 font-mono leading-relaxed max-h-[300px] overflow-y-auto">
+                                            {formatMetadata(activeLog.metadata)}
+                                        </pre>
+                                        {activeLog.metadata && (
+                                            <button
+                                                onClick={() => {
+                                                    navigator.clipboard.writeText(formatMetadata(activeLog.metadata));
+                                                    toast.success('Metadata copied');
+                                                }}
+                                                className="absolute top-4 right-4 p-2 bg-gold/10 text-gold opacity-0 group-hover:opacity-100 transition-opacity rounded-lg"
+                                                title="Copy JSON"
+                                            >
+                                                <Copy className="w-3.5 h-3.5" />
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="p-6 bg-sidebar-bg border-t border-gold/10 flex justify-end">
+                                <button
+                                    onClick={() => setActiveLog(null)}
+                                    className="px-8 py-3 bg-gold/5 hover:bg-gold hover:text-black border border-gold/20 text-gold rounded-xl font-bold uppercase text-[10px] tracking-[0.3em] transition-all"
+                                >
+                                    Dismiss Chronicles
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {logs.length > 0 && (
                     <div className="px-5 py-4 border-t border-border-subtle bg-sidebar-bg flex items-center justify-between">
