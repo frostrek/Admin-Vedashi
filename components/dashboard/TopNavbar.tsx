@@ -113,9 +113,16 @@ export default function TopNavbar({ sidebarCollapsed }: TopNavbarProps) {
                     getLowStockProducts(),
                     getAdminFeedback({ status: 'new' })
                 ]);
-                const pendingOrders = ordersRes.filter(o => o.status === 'pending').length;
-                const lowStock = stockRes.length;
+                const dismissed = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('dismissed_alerts') || '[]') : [];
+                
+                const pendingOrders = ordersRes.filter(o => {
+                    const id = o.order_id || o.id;
+                    return o.status === 'pending' && !dismissed.includes(id);
+                }).length;
+
+                const lowStock = stockRes.filter(p => !dismissed.includes(p.product_id)).length;
                 const newEnquiries = feedbackRes.total || 0;
+                
                 setAlertsData({ orders: pendingOrders, products: lowStock, enquiries: newEnquiries });
             } catch (e) {
                 console.error("Failed to fetch alerts", e);
@@ -352,7 +359,9 @@ export default function TopNavbar({ sidebarCollapsed }: TopNavbarProps) {
                             className="relative flex h-9 w-9 items-center justify-center rounded-xl text-text-muted hover:text-gold hover:bg-gold/[0.06] transition-all duration-300"
                         >
                             <Bell className="h-[18px] w-[18px]" />
-                            <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-gold ring-2 ring-card-bg" />
+                            {(alertsData.orders + alertsData.products + alertsData.enquiries) > 0 && (
+                                <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-gold ring-2 ring-card-bg shadow-[0_0_8px_rgba(212,168,71,0.6)] animate-pulse" />
+                            )}
                         </button>
 
                         {/* Notifications Dropdown */}
