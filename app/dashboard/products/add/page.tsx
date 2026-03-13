@@ -6,7 +6,7 @@ import { getCategories, createCategory } from '@/lib/api/category';
 import { createProduct } from '@/lib/api/product';
 import { uploadProductImage } from '@/lib/api';
 import { Category } from '@/types/category';
-import { ArrowLeft, ArrowRight, Check, X, Plus, Trash2, ChevronDown, ChevronUp, AlertCircle, Info, Package, Layers, Star, ImageIcon, Maximize2, Loader2, Film, Search } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, X, Plus, Trash2, ChevronDown, ChevronUp, AlertCircle, Info, Package, Layers, Star, ImageIcon, Maximize2, Loader2, Film, Search, Weight, Droplets, Hash, Zap, Utensils } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import CountryPicker from '@/components/CountryPicker';
@@ -432,8 +432,7 @@ export default function AddProductPage() {
                 toast.error('Product Name is required');
                 return;
             }
-        }
-        if (currentStep === 2) {
+        } else if (currentStep === 2) {
             const activeDims = Object.entries(dimConfigs).filter(([_, c]) => c.active);
             if (activeDims.length === 0) {
                 toast.error('Please select at least one variant dimension');
@@ -443,8 +442,20 @@ export default function AddProductPage() {
                 toast.error('Please add at least one value for each selected dimension');
                 return;
             }
+        } else if (currentStep === 3) {
+            if (variants.length === 0) {
+                toast.error('Please add at least one variant');
+                return;
+            }
+            // Ensure all variants have SKU and Price
+            const invalidVariant = variants.find(v => !v.sku.trim() || !v.price);
+            if (invalidVariant) {
+                toast.error('Please ensure all variants have an SKU and a Price');
+                return;
+            }
         }
-        if (currentStep < 3) setCurrentStep(prev => prev + 1);
+
+        if (currentStep < STEPS.length) setCurrentStep(prev => prev + 1);
     };
 
     const goBack = () => {
@@ -666,6 +677,8 @@ export default function AddProductPage() {
 
             if (result.success && result.product) {
                 const productId = result.product.product_id;
+                const dbVariants = result.variants || []; // Getting variants from response
+
                 console.log('[handleSubmit] Product created with ID:', productId);
 
                 // ── Upload images & videos for each variant ──
@@ -685,20 +698,22 @@ export default function AddProductPage() {
                 }
 
                 for (const v of variantsToUpload) {
+                    // Match local variant with DB variant by SKU to get the variant_id
+                    const dbVariant = dbVariants.find((dv: any) => dv.variant_sku === v.sku.trim());
+                    const variantId = dbVariant?.variant_id;
+
                     // Upload images
                     for (let imgIdx = 0; imgIdx < v.images.length; imgIdx++) {
                         const img = v.images[imgIdx];
                         try {
-                            console.log('[handleSubmit] Converting image to base64:', img.file.name, 'size:', img.file.size);
                             const base64 = await fileToBase64(img.file);
-                            console.log('[handleSubmit] Uploading image:', img.file.name, 'base64 length:', base64.length);
-                            const uploadResult = await uploadProductImage(productId, base64, {
+                            await uploadProductImage(productId, base64, {
                                 file_name: img.file.name,
                                 is_primary: imgIdx === 0,
                                 sort_order: imgIdx,
                                 media_type: 'image',
+                                variant_id: variantId, // Pass variant_id
                             });
-                            console.log('[handleSubmit] Image upload result:', uploadResult);
                             uploadedAssets++;
                         } catch (e) {
                             console.error('[Upload] Image failed:', img.file.name, e);
@@ -709,16 +724,14 @@ export default function AddProductPage() {
                     for (let vidIdx = 0; vidIdx < v.videos.length; vidIdx++) {
                         const vid = v.videos[vidIdx];
                         try {
-                            console.log('[handleSubmit] Converting video to base64:', vid.file.name, 'size:', vid.file.size);
                             const base64 = await fileToBase64(vid.file);
-                            console.log('[handleSubmit] Uploading video:', vid.file.name, 'base64 length:', base64.length);
-                            const uploadResult = await uploadProductImage(productId, base64, {
+                            await uploadProductImage(productId, base64, {
                                 file_name: vid.file.name,
                                 is_primary: false,
                                 sort_order: 100 + vidIdx,
                                 media_type: 'video',
+                                variant_id: variantId, // Pass variant_id
                             });
-                            console.log('[handleSubmit] Video upload result:', uploadResult);
                             uploadedAssets++;
                         } catch (e) {
                             console.error('[Upload] Video failed:', vid.file.name, e);
@@ -1079,172 +1092,185 @@ export default function AddProductPage() {
                         )}
 
                         {/* ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ STEP 2: DEFINE VARIANTS ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ */}
+                        {/* ─── STEP 2: DEFINE VARIANTS ─── */}
                         {currentStep === 2 && (
                             <div className="space-y-6 animate-fade-in-up">
                                 <div className="border-b border-border pb-3">
                                     <h3 className="font-serif text-lg font-semibold text-gold-soft">Define Variants</h3>
-                                    <p className="text-xs text-text-secondary mt-1">Select variant dimensions and add their possible values</p>
+                                    <p className="text-xs text-text-secondary mt-1">Select variant types and add their values</p>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {[
-                                        { id: 'weight', label: 'By Weight', placeholder: 'e.g. 500, 1', unit: true },
-                                        { id: 'volume', label: 'By Volume', placeholder: 'e.g. 100, 750', unit: true },
-                                        { id: 'count', label: 'By Count', placeholder: 'e.g. 60 Capsules, 10 Sachets' },
-                                        { id: 'strength', label: 'By Strength', placeholder: 'e.g. 1000 IU, 500 mg' },
-                                        { id: 'flavor', label: 'By Flavor', placeholder: 'e.g. Chocolate, Vanilla' },
-                                        { id: 'pack', label: 'Pack Size', placeholder: 'e.g. Pack of 1, Pack of 3' },
-                                        { id: 'combo', label: 'Combo', placeholder: 'e.g. Starter Kit, Family Pack' },
-                                    ].map((dim) => (
-                                        <div key={dim.id} className={`bg-white/[0.03] border rounded-xl p-5 transition-all duration-300 ${dimConfigs[dim.id as keyof typeof dimConfigs].active ? 'border-gold/30 ring-1 ring-gold/10' : 'border-border'}`}>
-                                            <label className="flex items-center gap-3 mb-4 cursor-pointer group">
-                                                <div className="relative">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={dimConfigs[dim.id as keyof typeof dimConfigs].active}
-                                                        onChange={() => toggleDimensionActive(dim.id as keyof typeof dimConfigs)}
-                                                        className="peer sr-only"
-                                                    />
-                                                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-200 ${dimConfigs[dim.id as keyof typeof dimConfigs].active ? 'bg-gold border-gold' : 'border-border group-hover:border-gold/40'}`}>
-                                                        {dimConfigs[dim.id as keyof typeof dimConfigs].active && <Check className="w-3.5 h-3.5 text-white" />}
-                                                    </div>
+                                    {/* Dimension Selection */}
+                                    <div className="space-y-4">
+                                        <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider">Select Variant Types</p>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            {Object.entries(dimConfigs).map(([key, config]) => {
+                                                const Icon = key === 'weight' ? Weight : key === 'volume' ? Droplets : key === 'count' ? Hash : key === 'strength' ? Zap : key === 'flavor' ? Utensils : key === 'pack' ? Package : Layers;
+                                                return (
+                                                    <button
+                                                        key={key}
+                                                        type="button"
+                                                        onClick={() => toggleDimensionActive(key as keyof typeof dimConfigs)}
+                                                        className={`flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 text-left ${config.active
+                                                            ? 'bg-gold/[0.08] border-gold/40 text-gold-soft shadow-sm shadow-gold/10'
+                                                            : 'bg-white/[0.02] border-border text-text-secondary hover:border-gold/20 hover:text-text-primary'
+                                                            }`}
+                                                    >
+                                                        <Icon className={`h-4 w-4 ${config.active ? 'text-gold' : 'text-text-muted'}`} />
+                                                        <span className="text-sm font-medium capitalize">{key}</span>
+                                                        {config.active && <Check className="h-3.5 w-3.5 ml-auto text-gold" />}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+
+                                    {/* Active Dimension Values */}
+                                    <div className="space-y-6">
+                                        {Object.entries(dimConfigs).filter(([_, c]) => c.active).map(([key, config]) => (
+                                            <div key={key} className="bg-white/[0.03] border border-border rounded-xl p-4 space-y-3">
+                                                <div className="flex items-center justify-between">
+                                                    <h4 className="text-sm font-semibold text-text-primary capitalize">BY {key}</h4>
+                                                    <span className="text-[10px] text-text-muted bg-white/5 px-2 py-0.5 rounded-full">{config.values.length} values</span>
                                                 </div>
-                                                <span className={`font-semibold text-sm transition-colors ${dimConfigs[dim.id as keyof typeof dimConfigs].active ? 'text-gold-soft' : 'text-text-secondary'}`}>{dim.label}</span>
-                                            </label>
 
-                                            {dimConfigs[dim.id as keyof typeof dimConfigs].active && (
-                                                <div className="space-y-4 animate-fade-in-down">
-                                                    {/* Added chips */}
-                                                    {dimConfigs[dim.id as keyof typeof dimConfigs].values.length > 0 && (
-                                                        <div className="flex flex-wrap gap-2">
-                                                            {dimConfigs[dim.id as keyof typeof dimConfigs].values.map((v, i) => (
-                                                                <div key={i} className="flex items-center gap-1.5 bg-gold/[0.08] border border-gold/20 text-text-primary px-3 py-1.5 rounded-full text-sm">
-                                                                    <span>{v}</span>
-                                                                    <button type="button" onClick={() => removeDimensionValue(dim.id as keyof typeof dimConfigs, i)} className="text-text-muted hover:text-danger rounded-full hover:bg-white/10 p-0.5 transition-colors">
-                                                                        <X className="h-3 w-3" />
-                                                                    </button>
-                                                                </div>
-                                                            ))}
+                                                <div className="flex flex-wrap gap-2">
+                                                    {config.values.map((val, i) => (
+                                                        <div key={i} className="flex items-center gap-1.5 bg-gold/[0.08] border border-gold/20 text-gold-soft px-2.5 py-1 rounded-lg text-xs font-medium">
+                                                            {val}
+                                                            <button type="button" onClick={() => removeDimensionValue(key as keyof typeof dimConfigs, i)} className="p-0.5 hover:bg-gold/20 rounded transition-colors">
+                                                                <X className="h-3 w-3" />
+                                                            </button>
                                                         </div>
-                                                    )}
+                                                    ))}
+                                                </div>
 
-                                                    {/* Input row */}
-                                                    <div className="flex gap-2">
-                                                        {dim.id === 'weight' ? (
-                                                            <div className="flex flex-1 gap-2">
-                                                                <input
-                                                                    type="number"
-                                                                    placeholder="e.g. 500"
-                                                                    value={dimInputs.weight}
-                                                                    onChange={e => setDimInputs(prev => ({ ...prev, weight: e.target.value }))}
-                                                                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addDimensionValue('weight'); } }}
-                                                                    className="flex-1 rounded-lg border border-border px-3 py-2 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 bg-transparent transition-all"
-                                                                />
-                                                                <select
-                                                                    value={weightUnit}
-                                                                    onChange={e => setWeightUnit(e.target.value)}
-                                                                    className="w-20 rounded-lg border border-border px-2 py-2 text-sm focus:border-gold/40 focus:outline-none bg-white text-gray-900 transition-all font-medium"
-                                                                >
-                                                                    {['g', 'kg', 'mg'].map(u => <option key={u} value={u}>{u}</option>)}
-                                                                </select>
-                                                            </div>
-                                                        ) : dim.id === 'volume' ? (
-                                                            <div className="flex flex-1 gap-2">
-                                                                <input
-                                                                    type="number"
-                                                                    placeholder="e.g. 750"
-                                                                    value={dimInputs.volume}
-                                                                    onChange={e => setDimInputs(prev => ({ ...prev, volume: e.target.value }))}
-                                                                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addDimensionValue('volume'); } }}
-                                                                    className="flex-1 rounded-lg border border-border px-3 py-2 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 bg-transparent transition-all"
-                                                                />
-                                                                <select
-                                                                    value={volUnit}
-                                                                    onChange={e => setVolUnit(e.target.value)}
-                                                                    className="w-20 rounded-lg border border-border px-2 py-2 text-sm focus:border-gold/40 focus:outline-none bg-white text-gray-900 transition-all font-medium"
-                                                                >
-                                                                    {['ml', 'L'].map(u => <option key={u} value={u}>{u}</option>)}
-                                                                </select>
-                                                            </div>
-                                                        ) : dim.id === 'count' ? (
-                                                            <div className="flex flex-1 gap-2">
-                                                                <input
-                                                                    type="number"
-                                                                    placeholder="e.g. 60"
-                                                                    value={dimInputs.count}
-                                                                    onChange={e => setDimInputs(prev => ({ ...prev, count: e.target.value }))}
-                                                                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addDimensionValue('count'); } }}
-                                                                    className="flex-1 rounded-lg border border-border px-3 py-2 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 bg-transparent transition-all"
-                                                                />
-                                                                <select
-                                                                    value={countUnit}
-                                                                    onChange={e => setCountUnit(e.target.value)}
-                                                                    className="w-28 rounded-lg border border-border px-2 py-2 text-sm focus:border-gold/40 focus:outline-none bg-white text-gray-900 transition-all font-medium"
-                                                                >
-                                                                    {['Sachets', 'Tablets', 'Capsules'].map(u => <option key={u} value={u}>{u}</option>)}
-                                                                </select>
-                                                            </div>
-                                                        ) : dim.id === 'strength' ? (
-                                                            <div className="flex flex-1 gap-2">
-                                                                <input
-                                                                    type="text"
-                                                                    placeholder="e.g. 500"
-                                                                    value={dimInputs.strength}
-                                                                    onChange={e => setDimInputs(prev => ({ ...prev, strength: e.target.value }))}
-                                                                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addDimensionValue('strength'); } }}
-                                                                    className="flex-1 rounded-lg border border-border px-3 py-2 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 bg-transparent transition-all"
-                                                                />
-                                                                <select
-                                                                    value={strengthUnit}
-                                                                    onChange={e => setStrengthUnit(e.target.value)}
-                                                                    className="w-20 rounded-lg border border-border px-2 py-2 text-sm focus:border-gold/40 focus:outline-none bg-white text-gray-900 transition-all font-medium"
-                                                                >
-                                                                    {['mg', 'IU'].map(u => <option key={u} value={u}>{u}</option>)}
-                                                                </select>
-                                                            </div>
-                                                        ) : dim.id === 'pack' ? (
+                                                <div className="flex gap-2">
+                                                    {key === 'weight' ? (
+                                                        <div className="flex flex-1 gap-2">
                                                             <input
                                                                 type="number"
-                                                                placeholder="e.g. 1"
-                                                                value={dimInputs.pack}
-                                                                onChange={e => setDimInputs(prev => ({ ...prev, pack: e.target.value }))}
-                                                                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addDimensionValue('pack'); } }}
-                                                                className="flex-1 rounded-lg border border-border px-3 py-2 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 bg-transparent transition-all"
+                                                                placeholder="e.g. 500"
+                                                                value={dimInputs.weight}
+                                                                onChange={e => setDimInputs(prev => ({ ...prev, weight: e.target.value }))}
+                                                                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addDimensionValue('weight'); } }}
+                                                                className="flex-1 bg-transparent border border-border rounded-lg px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none transition-colors"
                                                             />
-                                                        ) : dim.id === 'combo' ? (
-                                                            <div className="flex flex-1 items-center gap-3">
-                                                                <label className="flex items-center gap-2 cursor-pointer">
-                                                                    <input
-                                                                        type="checkbox"
-                                                                        checked={dimInputs.combo === 'yes'}
-                                                                        onChange={e => setDimInputs(prev => ({ ...prev, combo: e.target.checked ? 'yes' : 'no' }))}
-                                                                        className="w-4 h-4 rounded border-border text-gold focus:ring-gold"
-                                                                    />
-                                                                    <span className="text-sm text-text-primary">Is Combo?</span>
-                                                                </label>
-                                                            </div>
-                                                        ) : (
+                                                            <select
+                                                                value={weightUnit}
+                                                                onChange={e => setWeightUnit(e.target.value)}
+                                                                className="bg-card-bg border border-border rounded-lg px-2 py-1.5 text-xs focus:border-gold/40 focus:outline-none"
+                                                            >
+                                                                {['g', 'kg', 'mg'].map(u => <option key={u} value={u}>{u}</option>)}
+                                                            </select>
+                                                        </div>
+                                                    ) : key === 'volume' ? (
+                                                        <div className="flex flex-1 gap-2">
+                                                            <input
+                                                                type="number"
+                                                                placeholder="e.g. 750"
+                                                                value={dimInputs.volume}
+                                                                onChange={e => setDimInputs(prev => ({ ...prev, volume: e.target.value }))}
+                                                                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addDimensionValue('volume'); } }}
+                                                                className="flex-1 bg-transparent border border-border rounded-lg px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none transition-colors"
+                                                            />
+                                                            <select
+                                                                value={volUnit}
+                                                                onChange={e => setVolUnit(e.target.value)}
+                                                                className="bg-card-bg border border-border rounded-lg px-2 py-1.5 text-xs focus:border-gold/40 focus:outline-none"
+                                                            >
+                                                                {['ml', 'L'].map(u => <option key={u} value={u}>{u}</option>)}
+                                                            </select>
+                                                        </div>
+                                                    ) : key === 'count' ? (
+                                                        <div className="flex flex-1 gap-2">
+                                                            <input
+                                                                type="number"
+                                                                placeholder="e.g. 60"
+                                                                value={dimInputs.count}
+                                                                onChange={e => setDimInputs(prev => ({ ...prev, count: e.target.value }))}
+                                                                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addDimensionValue('count'); } }}
+                                                                className="flex-1 bg-transparent border border-border rounded-lg px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none transition-colors"
+                                                            />
+                                                            <select
+                                                                value={countUnit}
+                                                                onChange={e => setCountUnit(e.target.value)}
+                                                                className="bg-card-bg border border-border rounded-lg px-2 py-1.5 text-xs focus:border-gold/40 focus:outline-none"
+                                                            >
+                                                                {['Sachets', 'Tablets', 'Capsules'].map(u => <option key={u} value={u}>{u}</option>)}
+                                                            </select>
+                                                        </div>
+                                                    ) : key === 'strength' ? (
+                                                        <div className="flex flex-1 gap-2">
                                                             <input
                                                                 type="text"
-                                                                placeholder={dim.placeholder}
-                                                                value={dimInputs[dim.id as keyof typeof dimInputs]}
-                                                                onChange={e => setDimInputs(prev => ({ ...prev, [dim.id]: e.target.value }))}
-                                                                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addDimensionValue(dim.id as keyof typeof dimConfigs); } }}
-                                                                className="flex-1 rounded-lg border border-border px-3 py-2 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 bg-transparent transition-all"
+                                                                placeholder="e.g. 500"
+                                                                value={dimInputs.strength}
+                                                                onChange={e => setDimInputs(prev => ({ ...prev, strength: e.target.value }))}
+                                                                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addDimensionValue('strength'); } }}
+                                                                className="flex-1 bg-transparent border border-border rounded-lg px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none transition-colors"
                                                             />
-                                                        )}
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => addDimensionValue(dim.id as keyof typeof dimConfigs)}
-                                                            className="rounded-lg border border-border bg-white/5 px-4 py-2 text-sm font-medium hover:bg-white/10 hover:text-gold hover:border-gold/30 transition-all"
-                                                        >
-                                                            Add
-                                                        </button>
-                                                    </div>
+                                                            <select
+                                                                value={strengthUnit}
+                                                                onChange={e => setStrengthUnit(e.target.value)}
+                                                                className="bg-card-bg border border-border rounded-lg px-2 py-1.5 text-xs focus:border-gold/40 focus:outline-none"
+                                                            >
+                                                                {['mg', 'IU'].map(u => <option key={u} value={u}>{u}</option>)}
+                                                            </select>
+                                                        </div>
+                                                    ) : key === 'pack' ? (
+                                                        <input
+                                                            type="number"
+                                                            placeholder="e.g. 1"
+                                                            value={dimInputs.pack}
+                                                            onChange={e => setDimInputs(prev => ({ ...prev, pack: e.target.value }))}
+                                                            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addDimensionValue('pack'); } }}
+                                                            className="flex-1 bg-transparent border border-border rounded-lg px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none transition-colors"
+                                                        />
+                                                    ) : key === 'combo' ? (
+                                                        <div className="flex flex-1 items-center gap-3">
+                                                            <label className="flex items-center gap-2 cursor-pointer">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={dimInputs.combo === 'yes'}
+                                                                    onChange={e => setDimInputs(prev => ({ ...prev, combo: e.target.checked ? 'yes' : 'no' }))}
+                                                                    className="w-4 h-4 rounded border-border text-gold focus:ring-gold"
+                                                                />
+                                                                <span className="text-sm text-text-primary">Is Combo?</span>
+                                                            </label>
+                                                        </div>
+                                                    ) : (
+                                                        <input
+                                                            type="text"
+                                                            placeholder={`Add ${key} value...`}
+                                                            value={dimInputs[key as keyof typeof dimInputs]}
+                                                            onChange={e => setDimInputs(prev => ({ ...prev, [key]: e.target.value }))}
+                                                            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addDimensionValue(key as keyof typeof dimConfigs); } }}
+                                                            className="flex-1 bg-transparent border border-border rounded-lg px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none transition-colors"
+                                                        />
+                                                    )}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => addDimensionValue(key as keyof typeof dimConfigs)}
+                                                        className="px-4 py-1.5 bg-gold/10 text-gold hover:bg-gold/20 rounded-lg text-sm font-medium transition-colors"
+                                                    >
+                                                        Add
+                                                    </button>
                                                 </div>
-                                            )}
-                                        </div>
-                                    ))}
+                                            </div>
+                                        ))}
+
+                                        {Object.values(dimConfigs).every(d => !d.active) && (
+                                            <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-border rounded-2xl bg-white/[0.01]">
+                                                <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-4">
+                                                    <Plus className="h-6 w-6 text-text-muted" />
+                                                </div>
+                                                <p className="text-sm font-medium text-text-secondary">No variant types selected</p>
+                                                <p className="text-xs text-text-muted mt-1 text-center max-w-[200px]">Select dimensions from the left to start configuring your product variants</p>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         )}

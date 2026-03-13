@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, use, Suspense } from 'react';
+import React, { useState, useEffect, use, Suspense, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getCategories, createCategory } from '@/lib/api/category';
 import { updateProduct } from '@/lib/api/product';
@@ -970,20 +970,32 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                     // Upload videos
                     for (let vidIdx = 0; vidIdx < v.videos.length; vidIdx++) {
                         const vid = v.videos[vidIdx];
-                        if (!vid.file) continue;
-                        try {
-                            const base64 = await fileToBase64(vid.file);
-                            const uploadResult = await uploadProductImage(id, base64, {
-                                file_name: vid.file.name,
-                                is_primary: false,
-                                sort_order: 100 + vidIdx,
-                                media_type: 'video',
-                                variant_id: variantId,
-                            });
-                            if (uploadResult.success) uploadedAssets++;
-                            else console.error('[Upload] Video failed:', vid.file.name);
-                        } catch (e) {
-                            console.error('[Upload] Video error:', vid.file.name, e);
+                        if (vid.file) {
+                            try {
+                                const base64 = await fileToBase64(vid.file);
+                                const uploadResult = await uploadProductImage(id, base64, {
+                                    file_name: vid.file.name,
+                                    is_primary: false,
+                                    sort_order: 100 + vidIdx,
+                                    media_type: 'video',
+                                    variant_id: variantId,
+                                });
+                                if (uploadResult.success) uploadedAssets++;
+                                else console.error('[Upload] Video failed:', vid.file.name);
+                            } catch (e) {
+                                console.error('[Upload] Video error:', vid.file.name, e);
+                            }
+                        } else if (vid.asset_id) {
+                            // Existing video — update metadata
+                            try {
+                                await updateProductImage(id, vid.asset_id, {
+                                    is_primary: false,
+                                    sort_order: 100 + vidIdx,
+                                    variant_id: variantId
+                                });
+                            } catch (e) {
+                                console.error('[Update] Video metadata error:', e);
+                            }
                         }
                     }
                 }
@@ -1006,6 +1018,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
     };
 
     const duplicateSkus = variants.map(v => v.sku).filter((sku, i, arr) => sku && arr.indexOf(sku) !== i);
+    const activeDims = useMemo(() => Object.entries(dimConfigs).filter(([_, c]) => c.active), [dimConfigs]);
 
     // Show loading skeleton while product is being fetched initially
     if (loading && variants.length === 1 && !variants[0].sku && !form.product_name) {
@@ -1097,59 +1110,54 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                 </p>
                             </div>
 
-                            {/* ÔöÇÔöÇ Actions ÔöÇÔöÇ */}
+                            {/* ─── Actions ─── */}
                             <div className="mt-4 px-2 space-y-3 pb-2">
-                                {/* Save as Draft — only visible when editing a draft product */}
+                                {/* Save as Draft — only visible for draft products */}
                                 {productStatus === 'draft' && (
                                     <button
                                         type="button"
                                         onClick={handleSaveAsDraft}
                                         disabled={loading}
-                                        className="w-full h-10 flex items-center justify-center gap-2 border border-gold/40 text-gold-soft hover:bg-gold/[0.06] rounded-lg text-sm font-medium transition-all duration-300 disabled:opacity-50"
+                                        className="flex w-full items-center justify-center gap-2 rounded-lg border border-gold/20 px-4 py-2.5 text-sm font-semibold text-gold-soft hover:bg-gold/[0.06] transition-all duration-300 disabled:opacity-50"
                                     >
-                                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Layers className="h-4 w-4" />}
-                                        Save as Draft
+                                        {loading ? 'Saving...' : 'Save as Draft'}
                                     </button>
                                 )}
 
-                                <div className="flex items-center gap-3">
-                                    {currentStep > 1 && (
-                                        <button
-                                            type="button"
-                                            onClick={goBack}
-                                            className="flex-1 h-11 flex items-center justify-center gap-2 border border-border text-text-secondary hover:bg-white/[0.04] rounded-xl text-sm font-medium transition-all duration-300"
-                                        >
-                                            <ArrowLeft className="h-4 w-4" />
-                                            Back
-                                        </button>
-                                    )}
+                                {currentStep < 4 ? (
                                     <button
                                         type="button"
-                                        onClick={currentStep === STEPS.length ? handleSubmit : goNext}
-                                        disabled={loading}
-                                        className={`flex-[2] h-11 flex items-center justify-center gap-2 rounded-xl text-sm font-bold transition-all duration-300 shadow-lg shadow-gold/10 ${loading ? 'opacity-50 cursor-not-allowed' : ''
-                                            } bg-gradient-to-r from-gold to-[#D4A847] text-white hover:scale-[1.02] active:scale-[0.98]`}
+                                        onClick={goNext}
+                                        className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-[#E8D8B9] hover:bg-primary-light border border-gold/10 transition-all duration-300 shadow-lg shadow-primary/10"
                                     >
-                                        {loading ? (
-                                            <Loader2 className="h-4 w-4 animate-spin" />
-                                        ) : currentStep === STEPS.length ? (
-                                            <>
-                                                <Check className="h-4 w-4" />
-                                                Save Changes
-                                            </>
-                                        ) : (
-                                            <>
-                                                Next
-                                                <ArrowRight className="h-4 w-4" />
-                                            </>
-                                        )}
+                                        Next
+                                        <ArrowRight className="h-4 w-4" />
                                     </button>
-                                </div>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={handleSubmit}
+                                        disabled={loading}
+                                        className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-[#E8D8B9] hover:bg-primary-light border border-gold/10 transition-all duration-300 shadow-lg shadow-primary/10 disabled:opacity-50"
+                                    >
+                                        <Check className="h-4 w-4" />
+                                        {loading ? 'Saving...' : 'Save Changes'}
+                                    </button>
+                                )}
 
-                                {currentStep === 1 && (
+                                {currentStep > 1 ? (
+                                    <button
+                                        type="button"
+                                        onClick={goBack}
+                                        className="flex w-full items-center justify-center gap-2 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-text-secondary hover:text-gold hover:border-gold/30 transition-all duration-300"
+                                    >
+                                        <ArrowLeft className="h-4 w-4" />
+                                        Back
+                                    </button>
+                                ) : (
                                     <Link
                                         href="/dashboard/products"
-                                        className="w-full h-10 flex items-center justify-center rounded-lg border border-border text-sm font-medium text-text-secondary hover:text-gold hover:border-gold/30 transition-all duration-300"
+                                        className="flex w-full items-center justify-center rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-text-secondary hover:text-gold hover:border-gold/30 transition-all duration-300"
                                     >
                                         Cancel
                                     </Link>
@@ -1581,8 +1589,8 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                             <thead className="bg-white/5 border-b border-border">
                                                 <tr>
                                                     <th className="px-4 py-4 w-10"></th>
-                                                    {Object.entries(dimConfigs).filter(([_, c]) => c.active).map(([key]) => (
-                                                        <th key={key} className="px-4 py-4 font-medium text-text-secondary capitalize">{key}</th>
+                                                    {activeDims.map(([id]: [string, any]) => (
+                                                        <th key={id} className="px-4 py-4 font-medium text-text-secondary capitalize">{id}</th>
                                                     ))}
                                                     <th className="px-4 py-4 font-medium text-text-secondary">Variant Name <span className="text-danger text-xs">*</span></th>
                                                     <th className="px-4 py-4 font-medium text-text-secondary">SKU *</th>
@@ -1595,8 +1603,6 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                                 {variants.map((variant, vIdx) => {
                                                     const isDuplicate = variant.sku && duplicateSkus.includes(variant.sku);
                                                     const isExpanded = expandedVariantIndex === vIdx;
-                                                    const activeDims = Object.entries(dimConfigs).filter(([_, c]) => c.active);
-
                                                     return (
                                                         <React.Fragment key={vIdx}>
                                                             <tr className={`transition-colors ${isExpanded ? 'bg-white/[0.04]' : 'hover:bg-white/[0.02]'}`}>
@@ -1610,23 +1616,20 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                                                     </button>
                                                                 </td>
 
-                                                                {/* Dynamic Dimensions Columns */}
-                                                                {activeDims.map(([key, config]) => (
-                                                                    <td key={key} className="px-4 py-3 align-top">
-                                                                        {autoGenerate ? (
+                                                                {activeDims.map(([id, config]: [string, any]) => (
+                                                                    <td key={id} className="px-4 py-3 align-top">
+                                                                        {autoGenerate || config.values.length <= 1 ? (
                                                                             <span className="bg-white/5 border border-border px-3 py-1.5 rounded text-xs font-medium text-text-primary">
-                                                                                {(variant as any)[key] || '—'}
+                                                                                {(variant[id as keyof VariantRow] as string) || (config.values[0] ?? '—')}
                                                                             </span>
                                                                         ) : (
                                                                             <select
-                                                                                value={(variant as any)[key] || ''}
-                                                                                onChange={e => updateVariant(vIdx, key as keyof VariantRow, e.target.value)}
+                                                                                value={variant[id as keyof VariantRow] as string}
+                                                                                onChange={e => updateVariant(vIdx, id as keyof VariantRow, e.target.value)}
                                                                                 className="w-full min-w-[120px] rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
                                                                             >
                                                                                 <option value="">Select</option>
-                                                                                {config.values.map(val => (
-                                                                                    <option key={val} value={val}>{val}</option>
-                                                                                ))}
+                                                                                {config.values.map((v: string) => <option key={v} value={v}>{v}</option>)}
                                                                             </select>
                                                                         )}
                                                                     </td>
@@ -1697,11 +1700,10 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                                                 </td>
                                                             </tr>
 
-                                                            {/* Expanded row (Legacy structure updated colSpan) */}
-                                                            {isExpanded && (
-                                                                <tr className="bg-white/[0.01] border-b border-border">
-                                                                    <td colSpan={5 + activeDims.length} className="p-5">
-                                                                        <div className="animate-fade-in-up space-y-6">
+                                                                    {isExpanded && (
+                                                                        <tr className="bg-white/[0.01] border-b border-border">
+                                                                            <td colSpan={activeDims.length + 6} className="p-5">
+                                                                                <div className="animate-fade-in-up space-y-6">
 
                                                                             {/* ÔöÇÔöÇ Extra fields row ÔöÇÔöÇ */}
                                                                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
