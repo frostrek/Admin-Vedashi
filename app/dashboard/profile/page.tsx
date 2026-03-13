@@ -12,6 +12,11 @@ import {
 import toast from 'react-hot-toast';
 
 import { useTheme } from '@/context/ThemeContext';
+import { 
+    updateAdminProfile, 
+    changeAdminPassword, 
+    updateAdminProfileImage 
+} from '@/lib/api';
 
 export default function ProfileStratumPage() {
     const { isDark } = useTheme();
@@ -19,19 +24,101 @@ export default function ProfileStratumPage() {
     const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('identity');
 
+    // Password form state
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [securityLoading, setSecurityLoading] = useState(false);
+
     // Mock states for demonstration (would normally be connected to an API)
     const [name, setName] = useState(user?.name || '');
     const [email, setEmail] = useState(user?.email || '');
-    const [phone, setPhone] = useState('+91 98765 43210');
+    const [phone, setPhone] = useState(user?.phone || '+91 98765 43210');
     const [bio, setBio] = useState('Senior Alchemist of the Vedic Admin Panel. Orchestrating digital vibrations for universal health.');
+
+    // Vibe Matrix state
+    const [aura, setAura] = useState('Balanced');
+    const [volume, setVolume] = useState(60);
+
+    useEffect(() => {
+        // Load preferences from local storage if they exist
+        const savedAura = localStorage.getItem('admin_aura');
+        const savedVolume = localStorage.getItem('admin_volume');
+        const savedBio = localStorage.getItem('admin_bio');
+        const savedPhone = localStorage.getItem('admin_phone');
+
+        if (savedAura) setAura(savedAura);
+        if (savedVolume) setVolume(parseInt(savedVolume));
+        if (savedBio) setBio(savedBio);
+        if (savedPhone) setPhone(savedPhone);
+    }, []);
 
     const handleSaveProfile = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!user?.customer_id) return toast.error('Admin record not found');
+        
         setLoading(true);
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        toast.success('Identity resonance updated!');
-        setLoading(false);
+        try {
+            const res = await updateAdminProfile(user.customer_id, {
+                full_name: name,
+                phone: phone,
+            });
+            if (res.success) {
+                localStorage.setItem('admin_bio', bio);
+                localStorage.setItem('admin_phone', phone);
+                toast.success('Identity resonance updated!');
+            } else {
+                toast.error(res.message || 'Failed to update resonance');
+            }
+        } catch (error) {
+            toast.error('Connection failed');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleChangePassword = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (newPassword !== confirmPassword) return toast.error('Keys do not resonate (Passwords do not match)');
+        if (newPassword.length < 8) return toast.error('Key too weak (Minimum 8 characters)');
+
+        setSecurityLoading(true);
+        try {
+            const res = await changeAdminPassword(currentPassword, newPassword);
+            if (res.success) {
+                toast.success('Security vault recalibrated!');
+                setCurrentPassword('');
+                setNewPassword('');
+                setConfirmPassword('');
+            } else {
+                toast.error(res.message || 'Calibration failure');
+            }
+        } catch (error) {
+            toast.error('Vault connection interrupted');
+        } finally {
+            setSecurityLoading(false);
+        }
+    };
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !user?.customer_id) return;
+
+        setLoading(true);
+        try {
+            const res = await updateAdminProfileImage(user.customer_id, file);
+            if (res.success) {
+                toast.success('Avatar frequency updated');
+                // Normally we'd refresh the profile or update context
+                window.location.reload(); 
+            } else {
+                toast.error('Image resonance failed');
+            }
+        } catch (error) {
+            toast.error('Upload interrupted');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const [logs, setLogs] = useState<any[]>([]);
@@ -123,9 +210,10 @@ export default function ProfileStratumPage() {
                                                 {name.charAt(0).toUpperCase()}
                                             </span>
                                         </div>
-                                        <button type="button" className="absolute bottom-1 right-1 p-3 bg-gold text-black rounded-full shadow-[0_0_15px_rgba(197,164,109,0.5)] hover:scale-110 active:scale-95 transition-all">
+                                        <label className="absolute bottom-1 right-1 p-3 bg-gold text-black rounded-full shadow-[0_0_15px_rgba(197,164,109,0.5)] hover:scale-110 active:scale-95 transition-all cursor-pointer">
                                             <Camera className="w-4.5 h-4.5" />
-                                        </button>
+                                            <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
+                                        </label>
                                     </div>
                                     <div className="flex-1 text-center md:text-left space-y-4">
                                         <div>
@@ -211,7 +299,7 @@ export default function ProfileStratumPage() {
                         )}
 
                         {activeTab === 'security' && (
-                            <div className="p-10 space-y-12 animate-fadeIn">
+                            <form onSubmit={handleChangePassword} className="p-10 space-y-12 animate-fadeIn">
                                 <div className="space-y-4">
                                     <h3 className="text-xl font-serif font-bold text-gold tracking-tight flex items-center gap-3">
                                         <Key className="w-5 h-5" /> Key Calibration
@@ -222,16 +310,37 @@ export default function ProfileStratumPage() {
                                 <div className="space-y-6">
                                     <div className="space-y-2">
                                         <label className={labelCls}>Primordial Key (Current Password)</label>
-                                        <input type="password" className={inputCls} placeholder="••••••••••••" />
+                                        <input 
+                                            type="password" 
+                                            required
+                                            value={currentPassword}
+                                            onChange={(e) => setCurrentPassword(e.target.value)}
+                                            className={inputCls} 
+                                            placeholder="••••••••••••" 
+                                        />
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-2">
                                             <label className={labelCls}>Ascended Key (New Password)</label>
-                                            <input type="password" className={inputCls} placeholder="New security vibration" />
+                                            <input 
+                                                type="password" 
+                                                required
+                                                value={newPassword}
+                                                onChange={(e) => setNewPassword(e.target.value)}
+                                                className={inputCls} 
+                                                placeholder="New security vibration" 
+                                            />
                                         </div>
                                         <div className="space-y-2">
                                             <label className={labelCls}>Confirm Ascension</label>
-                                            <input type="password" className={inputCls} placeholder="Re-enter for resonance" />
+                                            <input 
+                                                type="password" 
+                                                required
+                                                value={confirmPassword}
+                                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                                className={inputCls} 
+                                                placeholder="Re-enter for resonance" 
+                                            />
                                         </div>
                                     </div>
                                 </div>
@@ -254,19 +363,75 @@ export default function ProfileStratumPage() {
                                             <p className="text-[10px] text-emerald-400 font-bold uppercase tracking-widest">Configured & Active</p>
                                         </div>
                                     </div>
-                                    <button className={`px-8 py-3 ${isDark ? 'bg-black/40 border-white/10 text-gold-soft hover:bg-black/60' : 'bg-emerald-50 border-gold/10 text-emerald-900 hover:bg-emerald-100'} border text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all`}>
+                                    <button 
+                                        type="submit"
+                                        disabled={securityLoading}
+                                        className="px-10 py-4 bg-gold hover:bg-gold-muted text-primary text-[10px] font-bold uppercase tracking-[0.2em] rounded-2xl transition-all shadow-lg shadow-gold/20 disabled:opacity-50 flex items-center gap-2"
+                                    >
+                                        {securityLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
                                         Recalibrate Keys
                                     </button>
                                 </div>
-                            </div>
+                            </form>
                         )}
 
                         {activeTab === 'preferences' && (
-                            <div className="p-10 space-y-12 animate-fadeIn flex flex-col items-center justify-center min-h-[400px]">
-                                <Sparkles className="w-16 h-16 text-gold/20 mb-6 animate-pulse" />
-                                <div className="text-center space-y-2">
-                                    <h3 className="text-xl font-serif font-bold text-gold">Vibe Matrix</h3>
-                                    <p className="text-xs text-text-muted max-w-sm mx-auto uppercase tracking-widest font-bold leading-relaxed">Coming Soon: Personalize your administrative atmosphere with custom color frequencies and sound vibrations.</p>
+                            <div className="p-10 space-y-12 animate-fadeIn">
+                                <div className="space-y-4 text-center">
+                                    <h3 className="text-2xl font-serif font-bold text-gold tracking-tight">Vibe Matrix</h3>
+                                    <p className="text-xs text-text-muted leading-relaxed uppercase tracking-widest font-bold">Tune the frequencies of your administrative environment.</p>
+                                </div>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className={`p-8 rounded-3xl border ${isDark ? 'bg-white/5 border-white/10' : 'bg-primary/5 border-primary/10'} space-y-4`}>
+                                        <div className="flex items-center justify-between">
+                                            <h4 className={`text-sm font-serif font-bold ${isDark ? 'text-gold' : 'text-emerald-950'}`}>Visual Aura</h4>
+                                            <Sparkles className="w-5 h-5 text-gold/40" />
+                                        </div>
+                                        <p className="text-[10px] text-text-muted uppercase tracking-widest font-bold">Control the luminous intensity of the stratum.</p>
+                                        <div className="flex gap-3 pt-2">
+                                            {['Minimal', 'Balanced', 'Intense'].map(a => (
+                                                <button 
+                                                    key={a} 
+                                                    onClick={() => {
+                                                        setAura(a);
+                                                        localStorage.setItem('admin_aura', a);
+                                                        toast.success(`Aura shifted to ${a}`);
+                                                    }}
+                                                    className={`px-4 py-2 rounded-xl border transition-all text-[9px] font-black uppercase tracking-widest ${aura === a ? 'bg-primary text-gold border-gold' : 'bg-primary/10 border-gold/10 text-gold/40 hover:bg-primary/20'}`}
+                                                >
+                                                    {a}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className={`p-8 rounded-3xl border ${isDark ? 'bg-white/5 border-white/10' : 'bg-primary/5 border-primary/10'} space-y-4`}>
+                                        <div className="flex items-center justify-between">
+                                            <h4 className={`text-sm font-serif font-bold ${isDark ? 'text-gold' : 'text-emerald-950'}`}>Sound Resonance</h4>
+                                            <Bell className="w-5 h-5 text-gold/40" />
+                                        </div>
+                                        <p className="text-[10px] text-text-muted uppercase tracking-widest font-bold">Harmonize with interface notification vibrations.</p>
+                                        <div className="flex items-center gap-4 pt-2">
+                                            <input 
+                                                type="range" 
+                                                min="0" 
+                                                max="100" 
+                                                value={volume}
+                                                onChange={(e) => {
+                                                    const v = parseInt(e.target.value);
+                                                    setVolume(v);
+                                                    localStorage.setItem('admin_volume', v.toString());
+                                                }}
+                                                className="flex-1 h-1.5 bg-black/20 rounded-full appearance-none cursor-pointer accent-gold"
+                                            />
+                                            <span className="text-[10px] font-black text-gold w-8">{volume}%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div className="text-center pt-8 border-t border-white/5">
+                                    <p className="text-[10px] text-gold/30 uppercase tracking-[0.3em] font-black italic">Advanced frequencies currently under spectral refinement</p>
                                 </div>
                             </div>
                         )}

@@ -43,7 +43,7 @@ export default function SeoHealthCheck() {
             setLoading(true);
             const h = headers();
             console.log('[SEO Health] Fetching with token:', h['Authorization'] ? 'present' : 'MISSING');
-            const res = await fetch(`${API_URL}/api/seo/health-check`, { headers: h });
+            const res = await fetch(`${API_URL}/api/seo/health-check`, { headers: h, credentials: 'include' });
             console.log('[SEO Health] Response status:', res.status);
             const data = await res.json();
             console.log('[SEO Health] Response data:', data);

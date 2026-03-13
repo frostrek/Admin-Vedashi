@@ -85,8 +85,8 @@ export default function MediaLibraryPage() {
         setLoading(true);
         try {
             const [slidesRes, settingsRes] = await Promise.all([
-                fetch(`${API_URL}/api/media/hero`, { headers: headers() }),
-                fetch(`${API_URL}/api/media/hero/settings`, { headers: headers() })
+                fetch(`${API_URL}/api/media/hero`, { headers: headers(), credentials: 'include' }),
+                fetch(`${API_URL}/api/media/hero/settings`, { headers: headers(), credentials: 'include' })
             ]);
 
             const slidesData = await slidesRes.json();
@@ -186,7 +186,7 @@ export default function MediaLibraryPage() {
             // Append sort_order for new slides
             const payload = { ...form, sort_order: editing ? editing.sort_order : slides.length };
 
-            const res = await fetch(url, { method, headers: headers(), body: JSON.stringify(payload) });
+            const res = await fetch(url, { method, headers: headers(), body: JSON.stringify(payload), credentials: 'include' });
             const data = await res.json();
             if (data.success) {
                 toast.success(editing ? 'Slide updated!' : 'Slide created!');

@@ -119,7 +119,7 @@ export default function FooterManagementPage() {
     const load = useCallback(async () => {
         setLoading(true);
         try {
-            const res = await fetch(`${API_URL}/api/footer/admin`, { headers: headers() });
+            const res = await fetch(`${API_URL}/api/footer/admin`, { headers: headers(), credentials: 'include' });
             const data = await res.json();
             if (data.success) setFooter(data.data);
             else toast.error('Failed to load footer content');
