@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Fragment } from 'react';
 import { getOrders, getOrderById, updateOrderStatus as apiUpdateStatus, updatePaymentStatus as apiUpdatePayment, bulkUpdateOrderStatus, bulkUpdateOrderPaymentStatus, Order, downloadInvoiceAdmin, formatINR, getPaymentInfo, initiateRefund, getRefunds, PaymentInfo, RefundRecord } from '@/lib/api';
-import { ShoppingCart, Eye, X, Package, User, CreditCard, MapPin, RefreshCw, Download, FileText, RotateCcw, Banknote, Shield, CheckSquare, Square, ChevronDown, Zap } from 'lucide-react';
+import { ShoppingCart, Eye, X, Package, User, CreditCard, MapPin, RefreshCw, Download, FileText, RotateCcw, Banknote, Shield, CheckSquare, Square, ChevronDown, Zap, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { PaymentToggle } from '@/components/PaymentToggle';
 import ExportModal from '@/components/orders/ExportModal';
@@ -52,6 +52,12 @@ export default function OrdersPage() {
     const [selectedOrder, setSelectedOrder] = useState<OrderDetail | null>(null);
     const [loadingDetail, setLoadingDetail] = useState(false);
     const [filterStatus, setFilterStatus] = useState<string>('all');
+    const [filterPayment, setFilterPayment] = useState<string>('all');
+    const [filterDate, setFilterDate] = useState<string>('all');
+    const [filterAmount, setFilterAmount] = useState<string>('all');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(20);
     const [updatingPayments, setUpdatingPayments] = useState<Set<string>>(new Set());
     const [exportOpen, setExportOpen] = useState(false);
 
@@ -85,7 +91,64 @@ export default function OrdersPage() {
         };
     }, [selectedOrder]);
 
-    const filtered = filterStatus === 'all' ? orders : orders.filter(o => o.status === filterStatus);
+    const filtered = orders.filter(o => {
+        const statusMatch = filterStatus === 'all' || o.status === filterStatus;
+        const paymentMatch = filterPayment === 'all' || o.payment_status?.toLowerCase() === filterPayment.toLowerCase();
+        
+        // Date filter
+        let dateMatch = true;
+        if (filterDate !== 'all') {
+            const orderDate = new Date(o.created_at);
+            const now = new Date();
+            const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            
+            if (filterDate === 'today') {
+                dateMatch = orderDate >= todayStart;
+            } else if (filterDate === '7days') {
+                const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                dateMatch = orderDate >= sevenDaysAgo;
+            } else if (filterDate === '30days') {
+                const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                dateMatch = orderDate >= thirtyDaysAgo;
+            }
+        }
+        
+        // Amount filter
+        let amountMatch = true;
+        if (filterAmount !== 'all') {
+            const amount = o.total ?? 0;
+            if (filterAmount === 'under_1000') amountMatch = amount < 1000;
+            else if (filterAmount === '1000_5000') amountMatch = amount >= 1000 && amount <= 5000;
+            else if (filterAmount === 'over_5000') amountMatch = amount > 5000;
+        }
+        
+        let searchMatch = true;
+        if (searchQuery.trim()) {
+            const q = searchQuery.toLowerCase();
+            const idMatch = o.id.toLowerCase().includes(q);
+            const nameMatch = o.customer_name?.toLowerCase().includes(q);
+            const emailMatch = o.customer_email?.toLowerCase().includes(q);
+            searchMatch = !!(idMatch || nameMatch || emailMatch);
+        }
+        
+        return statusMatch && paymentMatch && dateMatch && amountMatch && searchMatch;
+    });
+
+    // Reset pagination when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filterStatus, filterPayment, filterDate, filterAmount, searchQuery]);
+
+    // --- Pagination helpers ---
+    const totalPages = Math.ceil(filtered.length / itemsPerPage);
+    const paginatedOrders = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+    const handlePageChange = (newPage: number) => {
+        if (newPage >= 1 && newPage <= totalPages) {
+            setCurrentPage(newPage);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
 
     // ─── Bulk selection helpers ────────────────────────────────────
     const allFilteredSelected = filtered.length > 0 && filtered.every(o => selectedIds.has(o.id));
@@ -251,28 +314,92 @@ export default function OrdersPage() {
 
     return (
         <div>
-            <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-                <div>
-                    <h1 className="font-serif text-2xl font-bold text-gold-soft">Orders</h1>
-                    <p className="text-sm text-text-secondary">{orders.length} total orders</p>
+            <div className="flex flex-col gap-4 mb-6">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                        <h1 className="font-serif text-2xl font-bold text-gold-soft">Orders</h1>
+                        <p className="text-sm text-text-secondary">{orders.length} total orders</p>
+                    </div>
+                    <div className="flex items-center gap-2 sm:gap-3">
+                        <button
+                            onClick={() => setExportOpen(true)}
+                            className="flex items-center gap-2 rounded-lg border border-gold/20 bg-gradient-to-r from-primary to-primary-light px-4 py-2.5 text-sm font-semibold text-[#E8D8B9] hover:border-gold/40 transition-all duration-300 shadow-md hover:shadow-lg"
+                        >
+                            <Download className="h-4 w-4" /> Export
+                        </button>
+                    </div>
                 </div>
-                <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-                    <select
-                        value={filterStatus}
-                        onChange={e => { setFilterStatus(e.target.value); clearSelection(); }}
-                        className="rounded-lg border border-border bg-card-bg px-3 py-2 text-sm text-text-primary focus:border-gold/40 focus:outline-none transition-colors duration-300"
-                    >
-                        <option value="all">All Statuses</option>
-                        {statusOptions.map(s => (
-                            <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
-                        ))}
-                    </select>
-                    <button
-                        onClick={() => setExportOpen(true)}
-                        className="flex items-center gap-2 rounded-lg border border-gold/20 bg-gradient-to-r from-primary to-primary-light px-4 py-2 text-sm font-semibold text-[#E8D8B9] hover:border-gold/40 transition-all duration-300"
-                    >
-                        <Download className="h-4 w-4" /> Export
-                    </button>
+
+                {/* Filters Row */}
+                <div className="flex flex-col xl:flex-row gap-3 items-center w-full">
+                    <div className="relative flex-1 w-full max-w-md xl:max-w-sm">
+                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={e => { setSearchQuery(e.target.value); clearSelection(); }}
+                            placeholder="Search orders..."
+                            className="w-full rounded-lg border border-border bg-card-bg pl-10 pr-4 py-2.5 text-sm text-text-primary focus:border-gold/40 focus:outline-none transition-colors duration-300"
+                        />
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-3 flex-1 xl:justify-end w-full">
+                        <div className="relative flex-1 min-w-[140px] xl:flex-none">
+                            <select
+                                value={filterStatus}
+                                onChange={e => { setFilterStatus(e.target.value); clearSelection(); }}
+                                className="w-full appearance-none rounded-lg border border-border bg-card-bg px-3 py-2.5 pr-8 text-sm text-text-primary focus:border-gold/40 focus:outline-none transition-colors duration-300 cursor-pointer"
+                            >
+                                <option value="all">All Statuses</option>
+                                {statusOptions.map(s => (
+                                    <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+                                ))}
+                            </select>
+                            <ChevronDown className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted pointer-events-none" />
+                        </div>
+                        
+                        <div className="relative flex-1 min-w-[140px] xl:flex-none">
+                            <select
+                                value={filterPayment}
+                                onChange={e => { setFilterPayment(e.target.value); clearSelection(); }}
+                                className="w-full appearance-none rounded-lg border border-border bg-card-bg px-3 py-2.5 pr-8 text-sm text-text-primary focus:border-gold/40 focus:outline-none transition-colors duration-300 cursor-pointer"
+                            >
+                                <option value="all">All Payments</option>
+                                {paymentStatusOptions.map(s => (
+                                    <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+                                ))}
+                            </select>
+                            <ChevronDown className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted pointer-events-none" />
+                        </div>
+
+                        <div className="relative flex-1 min-w-[140px] xl:flex-none">
+                            <select
+                                value={filterDate}
+                                onChange={e => { setFilterDate(e.target.value); clearSelection(); }}
+                                className="w-full appearance-none rounded-lg border border-border bg-card-bg px-3 py-2.5 pr-8 text-sm text-text-primary focus:border-gold/40 focus:outline-none transition-colors duration-300 cursor-pointer"
+                            >
+                                <option value="all">All Time</option>
+                                <option value="today">Today</option>
+                                <option value="7days">Last 7 Days</option>
+                                <option value="30days">Last 30 Days</option>
+                            </select>
+                            <ChevronDown className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted pointer-events-none" />
+                        </div>
+
+                        <div className="relative flex-1 min-w-[140px] xl:flex-none">
+                            <select
+                                value={filterAmount}
+                                onChange={e => { setFilterAmount(e.target.value); clearSelection(); }}
+                                className="w-full appearance-none rounded-lg border border-border bg-card-bg px-3 py-2.5 pr-8 text-sm text-text-primary focus:border-gold/40 focus:outline-none transition-colors duration-300 cursor-pointer"
+                            >
+                                <option value="all">Any Amount</option>
+                                <option value="under_1000">Under ₹1,000</option>
+                                <option value="1000_5000">₹1,000 - ₹5,000</option>
+                                <option value="over_5000">Over ₹5,000</option>
+                            </select>
+                            <ChevronDown className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted pointer-events-none" />
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -392,11 +519,18 @@ export default function OrdersPage() {
                                 <tr>
                                     <td colSpan={9} className="px-4 py-12 text-center">
                                         <ShoppingCart className="mx-auto h-10 w-10 text-text-muted/40 mb-2" />
+                                        <p className="text-sm text-text-muted">No orders found matching filters.</p>
+                                    </td>
+                                </tr>
+                            ) : paginatedOrders.length === 0 ? (
+                                <tr>
+                                    <td colSpan={9} className="px-4 py-12 text-center">
+                                        <ShoppingCart className="mx-auto h-10 w-10 text-text-muted/40 mb-2" />
                                         <p className="text-sm text-text-muted">No orders found</p>
                                     </td>
                                 </tr>
                             ) : (
-                                filtered.map(order => {
+                                paginatedOrders.map(order => {
                                     const isSelected = selectedIds.has(order.id);
                                     return (
                                         <tr
@@ -473,6 +607,91 @@ export default function OrdersPage() {
                         </tbody>
                     </table>
                 </div>
+                
+                {/* Pagination Controls */}
+                {filtered.length > 0 && (
+                    <div className="flex items-center justify-between border-t border-border-subtle bg-page-bg/50 px-4 py-3 sm:px-6">
+                        <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                            <div className="flex items-center gap-3">
+                                <p className="text-sm text-text-secondary">
+                                    Showing <span className="font-semibold text-text-primary">{((currentPage - 1) * itemsPerPage) + 1}</span> to <span className="font-semibold text-text-primary">{Math.min(currentPage * itemsPerPage, filtered.length)}</span> of <span className="font-semibold text-text-primary">{filtered.length}</span> orders
+                                </p>
+                                <select 
+                                    className="text-xs bg-card-bg border border-border rounded px-2 py-1 text-text-primary cursor-pointer focus:outline-none focus:border-gold/50"
+                                    value={itemsPerPage}
+                                    onChange={(e) => {
+                                        setItemsPerPage(Number(e.target.value));
+                                        setCurrentPage(1);
+                                    }}
+                                >
+                                    <option value={10}>10 per page</option>
+                                    <option value={20}>20 per page</option>
+                                    <option value={50}>50 per page</option>
+                                    <option value={100}>100 per page</option>
+                                </select>
+                            </div>
+                            <div>
+                                <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                                    <button
+                                        onClick={() => handlePageChange(currentPage - 1)}
+                                        disabled={currentPage === 1}
+                                        className="relative inline-flex items-center rounded-l-md px-2 py-2 text-text-muted ring-1 ring-inset ring-border hover:bg-gold/[0.05] focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    >
+                                        <span className="sr-only">Previous</span>
+                                        <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+                                    </button>
+                                    
+                                    {Array.from({ length: totalPages }, (_, i) => i + 1)
+                                        .filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+                                        .map((p, i, arr) => (
+                                            <Fragment key={p}>
+                                                {i > 0 && p - arr[i - 1] > 1 && (
+                                                    <span className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-text-muted ring-1 ring-inset ring-border">...</span>
+                                                )}
+                                                <button
+                                                    onClick={() => handlePageChange(p)}
+                                                    className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 focus:outline-offset-0 transition-colors ${
+                                                        p === currentPage ? 'z-10 bg-gold/10 text-gold ring-1 ring-inset ring-gold/50' : 'text-text-primary ring-1 ring-inset ring-border hover:bg-gold/[0.05]'
+                                                    }`}
+                                                >
+                                                    {p}
+                                                </button>
+                                            </Fragment>
+                                        ))}
+                                    
+                                    <button
+                                        onClick={() => handlePageChange(currentPage + 1)}
+                                        disabled={currentPage === totalPages}
+                                        className="relative inline-flex items-center rounded-r-md px-2 py-2 text-text-muted ring-1 ring-inset ring-border hover:bg-gold/[0.05] focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    >
+                                        <span className="sr-only">Next</span>
+                                        <ChevronRight className="h-4 w-4" aria-hidden="true" />
+                                    </button>
+                                </nav>
+                            </div>
+                        </div>
+                        {/* Mobile view pagination */}
+                        <div className="flex flex-1 justify-between sm:hidden">
+                            <button
+                                onClick={() => handlePageChange(currentPage - 1)}
+                                disabled={currentPage === 1}
+                                className="relative inline-flex items-center rounded-md border border-border bg-card-bg px-4 py-2 text-sm font-medium text-text-primary hover:bg-gold/[0.05] disabled:opacity-50"
+                            >
+                                Previous
+                            </button>
+                            <span className="text-sm text-text-secondary self-center">
+                                Page {currentPage} of {totalPages}
+                            </span>
+                            <button
+                                onClick={() => handlePageChange(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                                className="relative ml-3 inline-flex items-center rounded-md border border-border bg-card-bg px-4 py-2 text-sm font-medium text-text-primary hover:bg-gold/[0.05] disabled:opacity-50"
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* ─── Order Detail Modal ─────────────────────────────── */}
