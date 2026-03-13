@@ -10,7 +10,7 @@ import {
     User, Mail, Calendar, MapPin, ShoppingBag, CreditCard, 
     ChevronLeft, ArrowUpRight, Clock, Shield, CheckCircle2, 
     XCircle, AlertTriangle, UserX, Loader2, IndianRupee, Hash,
-    Ban, ShieldAlert
+    Ban, ShieldAlert, Phone, Eye
 } from 'lucide-react';
 
 interface OrderDetail extends Order {
@@ -98,11 +98,11 @@ export default function CustomerDetailPage() {
     }, [orders]);
 
     const statusBadge = (cust: Customer) => {
-        if (cust.is_banned) return <span className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold bg-danger/15 text-danger"><XCircle className="h-3.5 w-3.5" />Banned</span>;
-        if (cust.is_suspended) return <span className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold bg-warning/15 text-warning"><AlertTriangle className="h-3.5 w-3.5" />Suspended</span>;
-        if (cust.is_deleted) return <span className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold bg-text-muted/15 text-text-muted"><UserX className="h-3.5 w-3.5" />Deleted</span>;
-        if (!cust.is_active) return <span className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold bg-text-muted/15 text-text-muted"><XCircle className="h-3.5 w-3.5" />Inactive</span>;
-        return <span className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold bg-success/15 text-success"><CheckCircle2 className="h-3.5 w-3.5" />Active</span>;
+        if (cust.is_banned) return <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold bg-danger/15 text-danger"><XCircle className="h-3.5 w-3.5" />Banned</span>;
+        if (cust.is_suspended) return <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold bg-warning/15 text-warning"><AlertTriangle className="h-3.5 w-3.5" />Suspended</span>;
+        if (cust.is_deleted) return <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold bg-text-muted/15 text-text-muted"><UserX className="h-3.5 w-3.5" />Deleted</span>;
+        if (!cust.is_active) return <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold bg-text-muted/15 text-text-muted"><XCircle className="h-3.5 w-3.5" />Inactive</span>;
+        return <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold bg-success/15 text-success"><CheckCircle2 className="h-3.5 w-3.5" />Active</span>;
     };
 
     if (loading) {
@@ -116,7 +116,7 @@ export default function CustomerDetailPage() {
     if (!customer) return null;
 
     return (
-        <div className="max-w-7xl mx-auto pb-12">
+        <div className="max-w-7xl mx-auto pb-12 animate-fadeIn">
             {/* Breadcrumbs & Actions */}
             <div className="mb-8 flex items-center justify-between">
                 <button 
@@ -130,10 +130,10 @@ export default function CustomerDetailPage() {
                     <button
                         onClick={() => handleUpdateStatus({ is_suspended: !customer.is_suspended })}
                         disabled={actionLoading}
-                        className={`flex items-center gap-2 rounded-lg border-2 px-4 py-2 text-sm font-bold transition-all duration-300 shadow-lg backdrop-blur-md disabled:opacity-50 ${
+                        className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-bold transition-all duration-300 disabled:opacity-50 ${
                             customer.is_suspended 
-                            ? 'border-success bg-white/90 text-success hover:bg-success/10' 
-                            : 'border-orange-500 bg-white/80 text-orange-700 hover:bg-white/90'
+                            ? 'border-success/30 bg-success/10 text-success hover:bg-success/20' 
+                            : 'border-warning/30 bg-warning/10 text-warning hover:bg-warning/20'
                         }`}
                     >
                         <ShieldAlert className="h-4 w-4" /> 
@@ -142,10 +142,10 @@ export default function CustomerDetailPage() {
                     <button
                         onClick={() => handleUpdateStatus({ is_banned: !customer.is_banned })}
                         disabled={actionLoading}
-                        className={`flex items-center gap-2 rounded-lg border-2 px-4 py-2 text-sm font-bold transition-all duration-300 shadow-lg backdrop-blur-md disabled:opacity-50 ${
+                        className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-bold transition-all duration-300 disabled:opacity-50 ${
                             customer.is_banned 
-                            ? 'border-success bg-white/90 text-success hover:bg-success/10' 
-                            : 'border-red-500 bg-white/80 text-red-700 hover:bg-white/90'
+                            ? 'border-success/30 bg-success/10 text-success hover:bg-success/20' 
+                            : 'border-danger/30 bg-danger/10 text-danger hover:bg-danger/20'
                         }`}
                     >
                         <Ban className="h-4 w-4" /> 
@@ -155,7 +155,7 @@ export default function CustomerDetailPage() {
                         href={`https://mail.google.com/mail/?view=cm&fs=1&to=${customer.email}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-2 rounded-lg border border-gold/20 bg-gradient-to-r from-primary to-primary-light px-4 py-2 text-sm font-semibold text-[#E8D8B9] hover:border-gold/40 transition-all duration-300 shadow-md"
+                        className="flex items-center gap-2 rounded-xl border border-gold/20 bg-gradient-to-r from-primary to-primary-light px-5 py-2.5 text-sm font-semibold text-card-bg hover:border-gold/40 transition-all duration-300 shadow-md hover:shadow-lg"
                     >
                         <Mail className="h-4 w-4" /> Send Message
                     </a>
@@ -163,26 +163,31 @@ export default function CustomerDetailPage() {
             </div>
 
             {/* Header Profile Section */}
-            <div className="mb-8 p-6 rounded-2xl border border-border bg-white shadow-sm flex flex-col md:flex-row gap-6 items-center">
-                <div className="w-24 h-24 rounded-full bg-gold/10 border-2 border-gold/20 flex items-center justify-center text-gold text-3xl font-serif">
-                    {customer.full_name?.charAt(0) || 'P'}
-                </div>
-                <div className="flex-1 text-center md:text-left">
-                    <h1 className="font-serif text-3xl font-bold text-primary mb-1">{customer.full_name || 'Anonymous Customer'}</h1>
-                    <div className="flex flex-wrap justify-center md:justify-start gap-4 text-text-secondary text-sm">
-                        <span className="flex items-center gap-1.5"><Mail className="h-4 w-4 text-gold-muted" /> {customer.email}</span>
-                        <span className="flex items-center gap-1.5"><Calendar className="h-4 w-4 text-gold-muted" /> Joined {new Date(customer.created_at).toLocaleDateString()}</span>
-                        <span className="flex items-center gap-1.5">
-                            <Clock className="h-4 w-4 text-gold-muted" /> 
-                            Last Active: {customer.last_login_at || customer.updated_at 
-                                ? new Date(customer.last_login_at || customer.updated_at!).toLocaleString() 
-                                : 'Never'}
-                        </span>
+            <div className="mb-8 p-8 rounded-2xl border border-border bg-card-bg shadow-sm relative overflow-hidden">
+                {/* Subtle gradient accent */}
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-gold/40 via-primary/40 to-gold/40"></div>
+                
+                <div className="flex flex-col md:flex-row gap-6 items-center">
+                    <div className="w-20 h-20 rounded-2xl bg-gold/10 border-2 border-gold/20 flex items-center justify-center text-gold text-3xl font-serif shadow-sm">
+                        {customer.full_name?.charAt(0) || 'P'}
                     </div>
-                </div>
-                <div className="flex flex-col items-center md:items-end gap-2">
-                    {statusBadge(customer)}
-                    <span className="text-[10px] font-mono text-text-muted uppercase tracking-widest">{customer.customer_id}</span>
+                    <div className="flex-1 text-center md:text-left">
+                        <h1 className="font-serif text-3xl font-bold text-text-primary mb-2">{customer.full_name || 'Anonymous Customer'}</h1>
+                        <div className="flex flex-wrap justify-center md:justify-start gap-5 text-text-secondary text-sm">
+                            <span className="flex items-center gap-1.5"><Mail className="h-4 w-4 text-gold-muted" /> {customer.email}</span>
+                            <span className="flex items-center gap-1.5"><Calendar className="h-4 w-4 text-gold-muted" /> Joined {new Date(customer.created_at).toLocaleDateString()}</span>
+                            <span className="flex items-center gap-1.5">
+                                <Clock className="h-4 w-4 text-gold-muted" /> 
+                                Last Active: {customer.last_login_at || customer.updated_at 
+                                    ? new Date(customer.last_login_at || customer.updated_at!).toLocaleString() 
+                                    : 'Never'}
+                            </span>
+                        </div>
+                    </div>
+                    <div className="flex flex-col items-center md:items-end gap-3">
+                        {statusBadge(customer)}
+                        <span className="text-[10px] font-mono text-text-muted uppercase tracking-widest select-all">{customer.customer_id}</span>
+                    </div>
                 </div>
             </div>
 
@@ -190,43 +195,52 @@ export default function CustomerDetailPage() {
                 {/* Left Column: Personal Info & Address */}
                 <div className="lg:col-span-1 space-y-6">
                     {/* Personal Details */}
-                    <div className="p-6 rounded-2xl border border-border bg-white shadow-sm">
-                        <h3 className="font-serif text-lg font-bold text-primary mb-6 flex items-center gap-2">
-                            <User className="h-5 w-5 text-gold" /> Personal Identity
+                    <div className="p-6 rounded-2xl border border-border bg-card-bg shadow-sm hover-lift">
+                        <h3 className="font-serif text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
+                            <div className="p-1.5 rounded-lg bg-gold/10">
+                                <User className="h-4 w-4 text-gold" />
+                            </div>
+                            Personal Identity
                         </h3>
-                        <div className="space-y-4">
-                            <div>
-                                <p className="text-[10px] font-bold text-gold-muted uppercase tracking-widest mb-1">Customer Name</p>
+                        <div className="space-y-5">
+                            <div className="group">
+                                <p className="text-[10px] font-bold text-gold-muted uppercase tracking-widest mb-1.5">Customer Name</p>
                                 <p className="text-sm font-medium text-text-primary">{customer.full_name || 'N/A'}</p>
                             </div>
-                            <div>
-                                <p className="text-[10px] font-bold text-gold-muted uppercase tracking-widest mb-1">Email Address</p>
+                            <div className="h-px bg-border-subtle"></div>
+                            <div className="group">
+                                <p className="text-[10px] font-bold text-gold-muted uppercase tracking-widest mb-1.5">Email Address</p>
                                 <p className="text-sm font-medium text-text-primary">{customer.email}</p>
                             </div>
-                            <div>
-                                <p className="text-[10px] font-bold text-gold-muted uppercase tracking-widest mb-1">Phone Number</p>
+                            <div className="h-px bg-border-subtle"></div>
+                            <div className="group">
+                                <p className="text-[10px] font-bold text-gold-muted uppercase tracking-widest mb-1.5">Phone Number</p>
                                 <p className="text-sm font-medium text-text-primary">{customer.phone || 'Not Provided'}</p>
                             </div>
-                            <div>
-                                <p className="text-[10px] font-bold text-gold-muted uppercase tracking-widest mb-1">Customer ID</p>
-                                <p className="text-xs font-mono text-text-muted">{customer.customer_id}</p>
+                            <div className="h-px bg-border-subtle"></div>
+                            <div className="group">
+                                <p className="text-[10px] font-bold text-gold-muted uppercase tracking-widest mb-1.5">Customer ID</p>
+                                <p className="text-xs font-mono text-text-muted select-all">{customer.customer_id}</p>
                             </div>
                         </div>
                     </div>
 
                     {/* Shipping Address */}
-                    <div className="p-6 rounded-2xl border border-border bg-white shadow-sm">
-                        <h3 className="font-serif text-lg font-bold text-primary mb-6 flex items-center gap-2">
-                            <MapPin className="h-5 w-5 text-gold" /> Shipping Registry
+                    <div className="p-6 rounded-2xl border border-border bg-card-bg shadow-sm hover-lift">
+                        <h3 className="font-serif text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
+                            <div className="p-1.5 rounded-lg bg-gold/10">
+                                <MapPin className="h-4 w-4 text-gold" />
+                            </div>
+                            Shipping Registry
                         </h3>
                         <div className="space-y-4">
-                            <div className="flex gap-3">
-                                <div className="p-2 rounded-lg bg-gold/5 border border-gold/10 h-min">
-                                    <MapPin className="h-4 w-4 text-gold" />
+                            <div className="flex gap-3 items-start">
+                                <div className="p-2.5 rounded-xl bg-primary/5 border border-primary/10 h-min mt-0.5">
+                                    <MapPin className="h-4 w-4 text-primary" />
                                 </div>
                                 <div>
-                                    <p className="text-[10px] font-bold text-gold-muted uppercase tracking-widest mb-1">Latest Order Address</p>
-                                    <p className="text-sm text-text-primary leading-relaxed">
+                                    <p className="text-[10px] font-bold text-gold-muted uppercase tracking-widest mb-1.5">Latest Order Address</p>
+                                    <p className="text-sm text-text-secondary leading-relaxed">
                                         {stats.latestAddress}
                                     </p>
                                 </div>
@@ -239,41 +253,44 @@ export default function CustomerDetailPage() {
                 <div className="lg:col-span-2 space-y-6">
                     {/* Vital Financial Stats */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div className="p-6 rounded-2xl border border-border bg-white shadow-sm hover:shadow-md transition-shadow">
-                            <div className="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center text-success mb-4">
+                        <div className="p-6 rounded-2xl border border-border bg-card-bg shadow-sm hover-lift group">
+                            <div className="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center text-success mb-4 group-hover:scale-110 transition-transform">
                                 <IndianRupee className="h-5 w-5" />
                             </div>
                             <p className="text-[10px] font-bold text-gold-muted uppercase tracking-widest mb-1">Lifetime Spend</p>
-                            <p className="text-2xl font-serif font-bold text-primary">{formatINR(stats.totalSpent)}</p>
+                            <p className="text-2xl font-serif font-bold text-text-primary">{formatINR(stats.totalSpent)}</p>
                         </div>
-                        <div className="p-6 rounded-2xl border border-border bg-white shadow-sm hover:shadow-md transition-shadow">
-                            <div className="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center text-gold mb-4">
+                        <div className="p-6 rounded-2xl border border-border bg-card-bg shadow-sm hover-lift group">
+                            <div className="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center text-gold mb-4 group-hover:scale-110 transition-transform">
                                 <ShoppingBag className="h-5 w-5" />
                             </div>
                             <p className="text-[10px] font-bold text-gold-muted uppercase tracking-widest mb-1">Total Orders</p>
-                            <p className="text-2xl font-serif font-bold text-primary">{stats.totalOrders}</p>
+                            <p className="text-2xl font-serif font-bold text-text-primary">{stats.totalOrders}</p>
                         </div>
-                        <div className="p-6 rounded-2xl border border-border bg-white shadow-sm hover:shadow-md transition-shadow">
-                            <div className="w-10 h-10 rounded-xl bg-info/10 flex items-center justify-center text-info mb-4">
+                        <div className="p-6 rounded-2xl border border-border bg-card-bg shadow-sm hover-lift group">
+                            <div className="w-10 h-10 rounded-xl bg-info/10 flex items-center justify-center text-info mb-4 group-hover:scale-110 transition-transform">
                                 <ArrowUpRight className="h-5 w-5" />
                             </div>
                             <p className="text-[10px] font-bold text-gold-muted uppercase tracking-widest mb-1">Avg. Order Value</p>
-                            <p className="text-2xl font-serif font-bold text-primary">{formatINR(stats.aov)}</p>
+                            <p className="text-2xl font-serif font-bold text-text-primary">{formatINR(stats.aov)}</p>
                         </div>
                     </div>
 
                     {/* Order History Table */}
-                    <div className="rounded-2xl border border-border bg-white shadow-sm overflow-hidden">
+                    <div className="rounded-2xl border border-border bg-card-bg shadow-sm overflow-hidden">
                         <div className="p-6 border-b border-border flex items-center justify-between">
-                            <h3 className="font-serif text-lg font-bold text-primary flex items-center gap-2">
-                                <Clock className="h-5 w-5 text-gold" /> Fulfillment History
+                            <h3 className="font-serif text-lg font-bold text-text-primary flex items-center gap-2">
+                                <div className="p-1.5 rounded-lg bg-gold/10">
+                                    <Clock className="h-4 w-4 text-gold" />
+                                </div>
+                                Fulfillment History
                             </h3>
-                            <span className="text-xs text-text-muted">{orders.length} transactions</span>
+                            <span className="text-xs font-medium text-text-muted bg-page-bg px-3 py-1.5 rounded-full border border-border-subtle">{orders.length} transactions</span>
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-left">
                                 <thead>
-                                    <tr className="bg-gold/5">
+                                    <tr className="bg-primary/5 border-b border-border-subtle">
                                         <th className="px-6 py-4 text-xs font-bold text-gold-muted uppercase tracking-wider">Order ID</th>
                                         <th className="px-6 py-4 text-xs font-bold text-gold-muted uppercase tracking-wider">Date</th>
                                         <th className="px-6 py-4 text-xs font-bold text-gold-muted uppercase tracking-wider">Status</th>
@@ -284,21 +301,26 @@ export default function CustomerDetailPage() {
                                 <tbody className="divide-y divide-border-subtle">
                                     {orders.length === 0 ? (
                                         <tr>
-                                            <td colSpan={5} className="px-6 py-12 text-center text-text-muted text-sm">
-                                                No fulfillment records found for this customer.
+                                            <td colSpan={5} className="px-6 py-16 text-center text-text-muted text-sm">
+                                                <div className="flex flex-col items-center gap-3">
+                                                    <div className="w-12 h-12 rounded-2xl bg-page-bg border border-border-subtle flex items-center justify-center">
+                                                        <ShoppingBag className="h-6 w-6 text-text-muted/40" />
+                                                    </div>
+                                                    <p>No fulfillment records found for this customer.</p>
+                                                </div>
                                             </td>
                                         </tr>
                                     ) : (
                                         orders.map(order => (
-                                            <tr key={order.id} className="hover:bg-gold/[0.02] transition-colors">
+                                            <tr key={order.id} className="hover:bg-primary/[0.03] transition-colors duration-200">
                                                 <td className="px-6 py-4">
-                                                    <span className="text-xs font-mono text-text-primary">#{order.id.slice(0, 8)}</span>
+                                                    <span className="text-xs font-mono text-text-primary font-medium">#{order.id.slice(0, 8)}</span>
                                                 </td>
                                                 <td className="px-6 py-4 text-sm text-text-secondary">
                                                     {new Date(order.created_at).toLocaleDateString()}
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                                                    <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${
                                                         order.status === 'delivered' ? 'bg-success/15 text-success' :
                                                         order.status === 'cancelled' ? 'bg-danger/15 text-danger' :
                                                         'bg-warning/15 text-warning'
@@ -306,13 +328,13 @@ export default function CustomerDetailPage() {
                                                         {order.status}
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-4 text-right text-sm font-semibold text-primary">
+                                                <td className="px-6 py-4 text-right text-sm font-semibold text-text-primary">
                                                     {formatINR(order.total)}
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
                                                     <Link 
                                                         href="/dashboard/orders" 
-                                                        className="inline-flex items-center gap-1.5 text-xs font-bold text-gold hover:text-gold-soft transition-colors"
+                                                        className="inline-flex items-center gap-1.5 text-xs font-bold text-gold hover:text-gold-soft transition-colors duration-200"
                                                     >
                                                         Details <ArrowUpRight className="h-3 w-3" />
                                                     </Link>
