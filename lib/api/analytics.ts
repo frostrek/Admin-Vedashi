@@ -53,6 +53,7 @@ export async function getAnalyticsSummary(): Promise<AnalyticsSummary | null> {
     try {
         const res = await fetch(`${API_URL}/api/admin/analytics/summary`, {
             headers: authHeaders(),
+            credentials: 'include',
         });
         const json: ApiResponse<AnalyticsSummary> = await res.json();
         if (json.success && json.data) return json.data;
@@ -70,7 +71,7 @@ export async function getSalesOverview(
     try {
         const res = await fetch(
             `${API_URL}/api/admin/analytics/sales-overview?range=${range}`,
-            { headers: authHeaders() }
+            { headers: authHeaders(), credentials: 'include' }
         );
         const json: ApiResponse<SalesDataPoint[]> = await res.json();
         if (json.success && Array.isArray(json.data)) return json.data;
@@ -86,7 +87,7 @@ export async function getPaymentBreakdown(): Promise<PaymentBreakdown | null> {
     try {
         const res = await fetch(
             `${API_URL}/api/admin/analytics/payment-breakdown`,
-            { headers: authHeaders() }
+            { headers: authHeaders(), credentials: 'include' }
         );
         const json: ApiResponse<PaymentBreakdown> = await res.json();
         if (json.success && json.data) return json.data;

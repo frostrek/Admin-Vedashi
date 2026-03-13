@@ -63,7 +63,7 @@ export default function NotificationsPage() {
     const loadCampaigns = useCallback(async () => {
         setLoading(true);
         try {
-            const res = await fetch(`${API_URL}/api/admin/campaigns`, { headers: headers() });
+            const res = await fetch(`${API_URL}/api/admin/campaigns`, { headers: headers(), credentials: 'include' });
             const data = await res.json();
             if (data.success) setCampaigns(data.data?.campaigns || []);
             else toast.error(data.message || 'Failed to load campaigns');

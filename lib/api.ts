@@ -140,6 +140,53 @@ export function formatINR(amount: number): string {
     return '₹' + amount.toLocaleString('en-IN');
 }
 
+/* ─── Profile Management ─── */
+
+export async function updateAdminProfile(id: string, updates: any): Promise<ApiResponse<any>> {
+    try {
+        const res = await authFetch(`${API_URL}/api/customers/${id}`, {
+            method: 'PATCH',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify(updates),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to update profile:', error);
+        return { success: false, message: 'Network error' };
+    }
+}
+
+export async function changeAdminPassword(currentPassword: string, newPassword: string): Promise<ApiResponse<any>> {
+    try {
+        const res = await authFetch(`${API_URL}/api/auth/change-password`, {
+            method: 'PUT',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ oldPassword: currentPassword, newPassword }),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to change password:', error);
+        return { success: false, message: 'Network error' };
+    }
+}
+
+export async function updateAdminProfileImage(id: string, file: File): Promise<ApiResponse<any>> {
+    try {
+        const formData = new FormData();
+        formData.append('profileImage', file);
+
+        const res = await authFetch(`${API_URL}/api/customers/${id}/profile-image`, {
+            method: 'PUT',
+            headers: authHeaders(), // Don't set Content-Type for FormData
+            body: formData,
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to upload profile image:', error);
+        return { success: false, message: 'Network error' };
+    }
+}
+
 export interface ApiResponse<T = unknown> {
     success: boolean;
     message?: string;
@@ -260,6 +307,7 @@ export async function getProducts(status = 'active'): Promise<Product[]> {
     try {
         const res = await fetch(`${API_URL}/api/products?status=${encodeURIComponent(status)}`, {
             headers: authHeaders(),
+            credentials: 'include',
         });
         const json: ApiResponse<any> = await res.json();
 
@@ -291,6 +339,7 @@ export async function getDraftProducts(): Promise<Product[]> {
     try {
         const res = await fetch(`${API_URL}/api/products?status=draft&limit=200`, {
             headers: authHeaders(),
+            credentials: 'include',
         });
         const json: ApiResponse<any> = await res.json();
         let products: Product[] = [];
@@ -317,6 +366,7 @@ export async function searchProductsAdmin(query: string): Promise<Product[]> {
     try {
         const response = await fetch(`${API_URL}/api/products/search?q=${encodeURIComponent(query)}&limit=100`, {
             headers: authHeaders(),
+            credentials: 'include',
         });
         const data = await response.json();
         // The backend returns an array of products mapped differently than getProducts, 
@@ -340,6 +390,7 @@ export async function getProduct(id: string, skipCache: boolean = false): Promis
         // Use details endpoint to get product + variants (for stock quantity)
         const res = await fetch(`${API_URL}/api/products/${id}/details${queryParams}`, {
             headers: authHeaders(),
+            credentials: 'include',
         });
         const json: ApiResponse<any> = await res.json();
         if (json.success && json.data) {
@@ -434,7 +485,7 @@ export async function deleteProduct(id: string): Promise<boolean> {
 
 export async function checkApiHealth(): Promise<boolean> {
     try {
-        const res = await fetch(`${API_URL}/api/products?limit=1`);
+        const res = await fetch(`${API_URL}/api/products?limit=1`, { credentials: 'include' });
         return res.ok;
     } catch {
         return false;
@@ -637,7 +688,7 @@ export async function bulkUpdateOrderPaymentStatus(orderIds: string[], paymentSt
 export async function downloadInvoiceAdmin(orderId: string): Promise<{ success: boolean; message?: string }> {
     try {
         const url = `${API_URL}/api/invoices/${orderId}/download`;
-        const res = await fetch(url, { headers: authHeaders() });
+        const res = await fetch(url, { headers: authHeaders(), credentials: 'include' });
         if (!res.ok) {
             const data = await res.json().catch(() => null);
             return { success: false, message: data?.message || 'Failed to download invoice' };
@@ -750,7 +801,7 @@ export async function getRefunds(orderId: string): Promise<{ refunds: RefundReco
 
 export async function getEnums(): Promise<Record<string, string[]>> {
     try {
-        const res = await fetch(`${API_URL}/api/products/enums`);
+        const res = await fetch(`${API_URL}/api/products/enums`, { credentials: 'include' });
         const json: ApiResponse<Record<string, string[]>> = await res.json();
         return json.success && json.data ? json.data : {};
     } catch {
@@ -843,6 +894,7 @@ export async function getLowStockProducts(): Promise<Product[]> {
     try {
         const res = await fetch(`${API_URL}/api/products/low-stock-alerts`, {
             headers: authHeaders(),
+            credentials: 'include',
         });
         const json: ApiResponse<Product[]> = await res.json();
         return json.success && json.data ? json.data : [];
@@ -872,6 +924,7 @@ export async function getStockHistory(productId: string) {
     try {
         const res = await fetch(`${API_URL}/api/inventory/history/${productId}`, {
             headers: authHeaders(),
+            credentials: 'include',
         });
         const json: ApiResponse = await res.json();
         return json.success && json.data ? json.data : [];
@@ -917,7 +970,7 @@ export async function updateProductImage(productId: string, assetId: string, opt
 
 export async function getProductImages(productId: string) {
     try {
-        const res = await fetch(`${API_URL}/api/products/${productId}/images`);
+        const res = await fetch(`${API_URL}/api/products/${productId}/images`, { credentials: 'include' });
         const json: ApiResponse = await res.json();
         return json.success && json.data ? json.data : [];
     } catch {
@@ -972,6 +1025,7 @@ export async function getRankingOverrides(): Promise<RankingOverride[]> {
     try {
         const res = await fetch(`${API_URL}/api/products/ranking-overrides`, {
             headers: authHeaders(),
+            credentials: 'include',
         });
         const json: ApiResponse<RankingOverride[]> = await res.json();
         if (json.success && Array.isArray(json.data)) return json.data;
@@ -1054,6 +1108,7 @@ export async function getExportJobStatus(jobId: string): Promise<ExportJob | nul
     try {
         const res = await fetch(`${API_URL}/api/admin/orders/export/${jobId}/status`, {
             headers: authHeaders(),
+            credentials: 'include',
         });
         const json = await res.json();
         return json.success && json.data ? json.data : null;
@@ -1069,7 +1124,7 @@ export function getExportDownloadUrl(jobId: string): string {
 export async function downloadExportFile(jobId: string): Promise<boolean> {
     try {
         const url = getExportDownloadUrl(jobId);
-        const res = await fetch(url, { headers: authHeaders() });
+        const res = await fetch(url, { headers: authHeaders(), credentials: 'include' });
         if (!res.ok) return false;
 
         const blob = await res.blob();
@@ -1094,6 +1149,7 @@ export async function getExportHistory(limit = 20): Promise<ExportJob[]> {
     try {
         const res = await fetch(`${API_URL}/api/admin/orders/export/history?limit=${limit}`, {
             headers: authHeaders(),
+            credentials: 'include',
         });
         const json = await res.json();
         return json.success && Array.isArray(json.data) ? json.data : [];
@@ -1115,7 +1171,7 @@ export interface SearchSynonym {
 
 export async function getSynonyms(): Promise<SearchSynonym[]> {
     try {
-        const res = await fetch(`${API_URL}/api/admin/search-synonyms`, { headers: authHeaders() });
+        const res = await fetch(`${API_URL}/api/admin/search-synonyms`, { headers: authHeaders(), credentials: 'include' });
         const json = await res.json();
         return json.success && Array.isArray(json.data) ? json.data : [];
     } catch {
@@ -1177,7 +1233,7 @@ export interface SearchDashboardStats {
 
 export async function getSearchAnalytics(days: number = 30): Promise<SearchDashboardStats | null> {
     try {
-        const res = await fetch(`${API_URL}/api/admin/analytics/search-stats?days=${days}`, { headers: authHeaders() });
+        const res = await fetch(`${API_URL}/api/admin/analytics/search-stats?days=${days}`, { headers: authHeaders(), credentials: 'include' });
         const json = await res.json();
         return json.success ? json.data : null;
     } catch {
@@ -1312,6 +1368,7 @@ export async function getAdminProductRelations(productId: string): Promise<Produ
     try {
         const res = await fetch(`${API_URL}/api/admin/products/${productId}/relations`, {
             headers: authHeaders(),
+            credentials: 'include',
         });
         const json: ApiResponse<ProductRelation[]> = await res.json();
         return json.success && json.data ? json.data : [];
@@ -1481,7 +1538,7 @@ export async function getAdminBlogPosts(params?: { status?: string; cursor?: str
         if (params?.status) sp.set('status', params.status);
         if (params?.cursor) sp.set('cursor', params.cursor);
         if (params?.limit) sp.set('limit', String(params.limit));
-        const res = await fetch(`${API_URL}/api/blog/admin/posts?${sp.toString()}`, { headers: authHeaders() });
+        const res = await fetch(`${API_URL}/api/blog/admin/posts?${sp.toString()}`, { headers: authHeaders(), credentials: 'include' });
         const json = await res.json();
         if (json.success) return json.data;
         console.warn('[Admin API] getAdminBlogPosts failed:', json.message);
@@ -1494,7 +1551,7 @@ export async function getAdminBlogPosts(params?: { status?: string; cursor?: str
 
 export async function getAdminBlogPost(id: string): Promise<BlogPost | null> {
     try {
-        const res = await fetch(`${API_URL}/api/blog/admin/posts/${id}`, { headers: authHeaders() });
+        const res = await fetch(`${API_URL}/api/blog/admin/posts/${id}`, { headers: authHeaders(), credentials: 'include' });
         const json = await res.json();
         return json.success ? json.data : null;
     } catch { return null; }
@@ -1553,7 +1610,7 @@ export async function deleteBlogPost(id: string): Promise<boolean> {
 // Blog Categories
 export async function getAdminBlogCategories(): Promise<BlogCategory[]> {
     try {
-        const res = await fetch(`${API_URL}/api/blog/categories`);
+        const res = await fetch(`${API_URL}/api/blog/categories`, { credentials: 'include' });
         const json = await res.json();
         return json.success ? json.data || [] : [];
     } catch { return []; }
@@ -1574,7 +1631,7 @@ export async function createBlogCategory(data: { name: string; description?: str
 // Blog Tags
 export async function getAdminBlogTags(): Promise<BlogTag[]> {
     try {
-        const res = await fetch(`${API_URL}/api/blog/tags`);
+        const res = await fetch(`${API_URL}/api/blog/tags`, { credentials: 'include' });
         const json = await res.json();
         return json.success ? json.data?.tags || json.data || [] : [];
     } catch { return []; }
@@ -1583,7 +1640,7 @@ export async function getAdminBlogTags(): Promise<BlogTag[]> {
 // Comments Moderation
 export async function getPendingBlogComments(): Promise<BlogComment[]> {
     try {
-        const res = await fetch(`${API_URL}/api/blog/admin/comments/moderation`, { headers: authHeaders() });
+        const res = await fetch(`${API_URL}/api/blog/admin/comments/moderation`, { headers: authHeaders(), credentials: 'include' });
         const json = await res.json();
         return json.success ? json.data?.comments || json.data || [] : [];
     } catch { return []; }
@@ -1627,7 +1684,7 @@ export async function deleteBlogComment(commentId: string): Promise<boolean> {
 // Blog Analytics
 export async function getBlogAnalyticsDashboard(): Promise<any> {
     try {
-        const res = await fetch(`${API_URL}/api/blog/admin/analytics/dashboard`, { headers: authHeaders() });
+        const res = await fetch(`${API_URL}/api/blog/admin/analytics/dashboard`, { headers: authHeaders(), credentials: 'include' });
         const json = await res.json();
         return json.success ? json.data : null;
     } catch { return null; }
@@ -1666,7 +1723,7 @@ export interface AdminReview {
 export async function getAdminReviews(page = 1, limit = 50): Promise<AdminReview[]> {
     try {
         const offset = (page - 1) * limit;
-        const res = await fetch(`${API_URL}/api/reviews/admin?limit=${limit}&offset=${offset}`, { headers: authHeaders() });
+        const res = await fetch(`${API_URL}/api/reviews/admin?limit=${limit}&offset=${offset}`, { headers: authHeaders(), credentials: 'include' });
         const json = await res.json();
         return json.success ? json.data || [] : [];
     } catch { return []; }
@@ -1674,7 +1731,7 @@ export async function getAdminReviews(page = 1, limit = 50): Promise<AdminReview
 
 export async function getReviewReports(status = 'pending'): Promise<ReviewReport[]> {
     try {
-        const res = await fetch(`${API_URL}/api/reviews/admin/reports?status=${status}`, { headers: authHeaders() });
+        const res = await fetch(`${API_URL}/api/reviews/admin/reports?status=${status}`, { headers: authHeaders(), credentials: 'include' });
         const json = await res.json();
         return json.success ? json.data || [] : [];
     } catch { return []; }
@@ -1717,7 +1774,7 @@ export async function getAdminTickets(params?: { status?: string; priority?: str
         if (params?.search) sp.set('search', params.search);
         if (params?.limit) sp.set('limit', String(params.limit));
         if (params?.offset) sp.set('offset', String(params.offset));
-        const res = await fetch(`${API_URL}/api/support/admin?${sp.toString()}`, { headers: authHeaders() });
+        const res = await fetch(`${API_URL}/api/support/admin?${sp.toString()}`, { headers: authHeaders(), credentials: 'include' });
         const json = await res.json();
         return json.success ? json.data : { tickets: [], total: 0 };
     } catch { return { tickets: [], total: 0 }; }
@@ -1725,7 +1782,7 @@ export async function getAdminTickets(params?: { status?: string; priority?: str
 
 export async function getAdminTicketStats() {
     try {
-        const res = await fetch(`${API_URL}/api/support/admin/stats`, { headers: authHeaders() });
+        const res = await fetch(`${API_URL}/api/support/admin/stats`, { headers: authHeaders(), credentials: 'include' });
         const json = await res.json();
         return json.success ? json.data : null;
     } catch { return null; }
@@ -1733,7 +1790,7 @@ export async function getAdminTicketStats() {
 
 export async function getAdminTicketDetail(ticketId: string) {
     try {
-        const res = await fetch(`${API_URL}/api/support/admin/${ticketId}`, { headers: authHeaders() });
+        const res = await fetch(`${API_URL}/api/support/admin/${ticketId}`, { headers: authHeaders(), credentials: 'include' });
         const json = await res.json();
         return json.success ? json.data : null;
     } catch { return null; }
@@ -1764,7 +1821,7 @@ export async function updateAdminTicket(ticketId: string, data: { status?: strin
 // FAQs
 export async function getAdminFaqs() {
     try {
-        const res = await fetch(`${API_URL}/api/faqs/admin`, { headers: authHeaders() });
+        const res = await fetch(`${API_URL}/api/faqs/admin`, { headers: authHeaders(), credentials: 'include' });
         const json = await res.json();
         return json.success ? json.data : [];
     } catch { return []; }
@@ -1809,7 +1866,7 @@ export async function toggleFaqVisibility(id: string) {
 // Help Center
 export async function getAdminHelpArticles() {
     try {
-        const res = await fetch(`${API_URL}/api/help-center/admin`, { headers: authHeaders() });
+        const res = await fetch(`${API_URL}/api/help-center/admin`, { headers: authHeaders(), credentials: 'include' });
         const json = await res.json();
         return json.success ? json.data : [];
     } catch { return []; }
@@ -1847,7 +1904,7 @@ export async function deleteAdminHelpArticle(id: string) {
 // Knowledge Base
 export async function getAdminKBArticles() {
     try {
-        const res = await fetch(`${API_URL}/api/knowledge-base/admin`, { headers: authHeaders() });
+        const res = await fetch(`${API_URL}/api/knowledge-base/admin`, { headers: authHeaders(), credentials: 'include' });
         const json = await res.json();
         return json.success ? json.data : [];
     } catch { return []; }
@@ -1855,7 +1912,7 @@ export async function getAdminKBArticles() {
 
 export async function getAdminKBCategories() {
     try {
-        const res = await fetch(`${API_URL}/api/knowledge-base/categories`);
+        const res = await fetch(`${API_URL}/api/knowledge-base/categories`, { credentials: 'include' });
         const json = await res.json();
         return json.success ? json.data : [];
     } catch { return []; }
@@ -1917,7 +1974,7 @@ export async function getAdminFeedback(params?: { type?: string; status?: string
         if (params?.search) sp.set('search', params.search);
         if (params?.limit) sp.set('limit', String(params.limit));
         if (params?.offset) sp.set('offset', String(params.offset));
-        const res = await fetch(`${API_URL}/api/customer-enquiry/admin?${sp.toString()}`, { headers: authHeaders() });
+        const res = await fetch(`${API_URL}/api/customer-enquiry/admin?${sp.toString()}`, { headers: authHeaders(), credentials: 'include' });
         const json = await res.json();
         return json.success ? json.data : { feedback: [], total: 0 };
     } catch { return { feedback: [], total: 0 }; }
@@ -1947,7 +2004,7 @@ export async function replyToFeedback(id: string, body: string, type: 'reply' | 
 
 export async function getFeedbackAnalytics() {
     try {
-        const res = await fetch(`${API_URL}/api/feedback/admin/analytics`, { headers: authHeaders() });
+        const res = await fetch(`${API_URL}/api/feedback/admin/analytics`, { headers: authHeaders(), credentials: 'include' });
         const json = await res.json();
         return json.success ? json.data : null;
     } catch { return null; }
@@ -2252,4 +2309,123 @@ export async function getActivityLogs(params?: Record<string, string>): Promise<
         console.error('[Admin API] getActivityLogs failed:', error);
         return { logs: [], pagination: {} };
     }
+}
+
+/* ─── Loyalty & Rewards (Admin) ─── */
+
+export async function getAdminLoyaltyDashboard() {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/loyalty/dashboard`, { headers: authHeaders() });
+        const json = await res.json();
+        return json.success ? json.data : null;
+    } catch { return null; }
+}
+
+export async function getAdminLoyaltyTiers() {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/loyalty/tiers`, { headers: authHeaders() });
+        const json = await res.json();
+        return json.success ? json.data : [];
+    } catch { return []; }
+}
+
+export async function getAdminLoyaltyRules() {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/loyalty/rules`, { headers: authHeaders() });
+        const json = await res.json();
+        return json.success ? json.data : [];
+    } catch { return []; }
+}
+
+export async function getAdminLoyaltyPromotions() {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/loyalty/promotions`, { headers: authHeaders() });
+        const json = await res.json();
+        return json.success ? json.data : [];
+    } catch { return []; }
+}
+
+export async function getAdminLoyaltyWallets() {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/loyalty/wallets`, { headers: authHeaders() });
+        const json = await res.json();
+        return json.success ? json.data : [];
+    } catch { return []; }
+}
+
+export async function adjustAdminLoyaltyPoints(customerId: string, points: number, description: string) {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/loyalty/customers/${customerId}/adjust`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ points, description }),
+        });
+        const json = await res.json();
+        return json;
+    } catch (error) {
+        return { success: false, message: 'Network error' };
+    }
+}
+
+export async function updateAdminLoyaltyTier(tierId: string, data: any) {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/loyalty/tiers/${tierId}`, {
+            method: 'PUT',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify(data),
+        });
+        return await res.json();
+    } catch { return { success: false }; }
+}
+
+export async function deleteAdminLoyaltyTier(tierId: string) {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/loyalty/tiers/${tierId}`, {
+            method: 'DELETE',
+            headers: authHeaders(),
+        });
+        return await res.json();
+    } catch { return { success: false }; }
+}
+
+export async function updateAdminLoyaltyRule(ruleId: string, data: any) {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/loyalty/rules/${ruleId}`, {
+            method: 'PUT',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify(data),
+        });
+        return await res.json();
+    } catch { return { success: false }; }
+}
+
+export async function deleteAdminLoyaltyRule(ruleId: string) {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/loyalty/rules/${ruleId}`, {
+            method: 'DELETE',
+            headers: authHeaders(),
+        });
+        return await res.json();
+    } catch { return { success: false }; }
+}
+
+export async function updateAdminLoyaltyPromotion(promoId: string, data: any) {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/loyalty/promotions/${promoId}`, {
+            method: 'PUT',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify(data),
+        });
+        return await res.json();
+    } catch { return { success: false }; }
+}
+
+export async function deleteAdminLoyaltyPromotion(promoId: string) {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/loyalty/promotions/${promoId}`, {
+            method: 'DELETE',
+            headers: authHeaders(),
+        });
+        return await res.json();
+    } catch { return { success: false }; }
 }

@@ -6,7 +6,7 @@ import { useAdminAuth } from '@/context/AdminAuthContext';
 import {
     LayoutDashboard, Package, ShoppingCart, Tag, LogOut, Leaf,
     ChevronLeft, Menu, Truck, Megaphone, BarChart, Settings, Users, X, Shield, Search, Ticket,
-    FileText, MessageSquare, Star, ShieldAlert, LayoutTemplate, Images, HelpCircle, BookOpen, Send, MonitorSmartphone, Activity, Layers, DollarSign
+    FileText, MessageSquare, Star, ShieldAlert, LayoutTemplate, Images, HelpCircle, BookOpen, Send, MonitorSmartphone, Activity, Layers, DollarSign, Gift
 } from 'lucide-react';
 const useState = require('react').useState;
 const useEffect = require('react').useEffect;
@@ -41,6 +41,7 @@ const usersNav = [
 const marketingNav = [
     { href: '/dashboard/coupons', label: 'Coupons', icon: Ticket },
     { href: '/dashboard/notifications', label: 'Promotions', icon: Megaphone },
+    { href: '/dashboard/loyalty', label: 'Loyalty & Rewards', icon: Gift },
 ];
 
 const siteContentNav = [

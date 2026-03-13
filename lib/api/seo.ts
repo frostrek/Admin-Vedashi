@@ -52,7 +52,7 @@ export async function saveSeo(
     data: Partial<SeoData>
 ): Promise<{ success: boolean; error?: string }> {
     try {
-        const res = await fetch(`${API_URL}/api/seo/${entityType}/${entityId}`, {
+        const res = await authFetch(`${API_URL}/api/seo/${entityType}/${entityId}`, {
             method: 'PUT',
             headers: authHeaders(),
             body: JSON.stringify(data),
@@ -80,7 +80,7 @@ export async function exportSeo(entityType: string): Promise<SeoData[]> {
 /** POST /api/seo/bulk */
 export async function bulkImportSeo(records: Array<SeoData & { entity_type: string; entity_id: string }>): Promise<{ success: boolean; count?: number; error?: string }> {
     try {
-        const res = await fetch(`${API_URL}/api/seo/bulk`, {
+        const res = await authFetch(`${API_URL}/api/seo/bulk`, {
             method: 'POST',
             headers: authHeaders(),
             body: JSON.stringify({ records }),

@@ -61,7 +61,7 @@ function CreateCampaignForm() {
     useEffect(() => {
         (async () => {
             try {
-                const res = await fetch(`${API_URL}/api/admin/campaigns/categories`, { headers: headers() });
+                const res = await fetch(`${API_URL}/api/admin/campaigns/categories`, { headers: headers(), credentials: 'include' });
                 const data = await res.json();
                 if (data.success) setCategories(data.data || []);
             } catch { /* silent */ }
@@ -73,7 +73,7 @@ function CreateCampaignForm() {
         if (!editId) return;
         (async () => {
             try {
-                const res = await fetch(`${API_URL}/api/admin/campaigns/${editId}`, { headers: headers() });
+                const res = await fetch(`${API_URL}/api/admin/campaigns/${editId}`, { headers: headers(), credentials: 'include' });
                 const data = await res.json();
                 if (data.success && data.data) {
                     const c = data.data;
@@ -108,7 +108,7 @@ function CreateCampaignForm() {
                     if (form.target_audience === 'category_buyers' && selectedCategoryIds.length > 0) {
                         url += `&category_ids=${selectedCategoryIds.join(',')}`;
                     }
-                    const res = await fetch(url, { headers: headers() });
+                    const res = await fetch(url, { headers: headers(), credentials: 'include' });
                     const data = await res.json();
                     if (!cancelled && data.success) {
                         setRecipientCount(data.data?.count ?? null);
@@ -150,7 +150,7 @@ function CreateCampaignForm() {
                 : `${API_URL}/api/admin/campaigns`;
             const method = editId ? 'PATCH' : 'POST';
 
-            const res = await fetch(url, { method, headers: headers(), body: JSON.stringify(buildPayload()) });
+            const res = await fetch(url, { method, headers: headers(), body: JSON.stringify(buildPayload()), credentials: 'include' });
             const data = await res.json();
             if (data.success) {
                 toast.success(editId ? 'Campaign updated!' : 'Campaign saved as draft!');
