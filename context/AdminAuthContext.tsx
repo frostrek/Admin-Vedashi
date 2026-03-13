@@ -9,6 +9,7 @@ interface AdminUser {
     name: string;
     role: 'admin' | 'owner';
     customer_id?: string;
+    phone?: string;
 }
 
 interface LoginResponse {
@@ -58,6 +59,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
                 name: result.customer.full_name || email.split('@')[0],
                 role: 'admin',
                 customer_id: result.customer.customer_id,
+                phone: result.customer.phone,
             };
             setUser(adminUser);
             localStorage.setItem(ADMIN_KEY, JSON.stringify(adminUser));

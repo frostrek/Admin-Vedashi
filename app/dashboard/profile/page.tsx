@@ -33,8 +33,25 @@ export default function ProfileStratumPage() {
     // Mock states for demonstration (would normally be connected to an API)
     const [name, setName] = useState(user?.name || '');
     const [email, setEmail] = useState(user?.email || '');
-    const [phone, setPhone] = useState('+91 98765 43210');
+    const [phone, setPhone] = useState(user?.phone || '+91 98765 43210');
     const [bio, setBio] = useState('Senior Alchemist of the Vedic Admin Panel. Orchestrating digital vibrations for universal health.');
+
+    // Vibe Matrix state
+    const [aura, setAura] = useState('Balanced');
+    const [volume, setVolume] = useState(60);
+
+    useEffect(() => {
+        // Load preferences from local storage if they exist
+        const savedAura = localStorage.getItem('admin_aura');
+        const savedVolume = localStorage.getItem('admin_volume');
+        const savedBio = localStorage.getItem('admin_bio');
+        const savedPhone = localStorage.getItem('admin_phone');
+
+        if (savedAura) setAura(savedAura);
+        if (savedVolume) setVolume(parseInt(savedVolume));
+        if (savedBio) setBio(savedBio);
+        if (savedPhone) setPhone(savedPhone);
+    }, []);
 
     const handleSaveProfile = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -45,10 +62,10 @@ export default function ProfileStratumPage() {
             const res = await updateAdminProfile(user.customer_id, {
                 full_name: name,
                 phone: phone,
-                // We could also store bio in a meta field if the backend supports it, 
-                // but for now let's update the main fields.
             });
             if (res.success) {
+                localStorage.setItem('admin_bio', bio);
+                localStorage.setItem('admin_phone', phone);
                 toast.success('Identity resonance updated!');
             } else {
                 toast.error(res.message || 'Failed to update resonance');
@@ -366,32 +383,49 @@ export default function ProfileStratumPage() {
                                 </div>
                                 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    <div className={`p-8 rounded-3xl border ${isDark ? 'bg-white/5 border-white/10' : 'bg-emerald-50 border-gold/20'} space-y-4`}>
+                                    <div className={`p-8 rounded-3xl border ${isDark ? 'bg-white/5 border-white/10' : 'bg-primary/5 border-primary/10'} space-y-4`}>
                                         <div className="flex items-center justify-between">
                                             <h4 className={`text-sm font-serif font-bold ${isDark ? 'text-gold' : 'text-emerald-950'}`}>Visual Aura</h4>
                                             <Sparkles className="w-5 h-5 text-gold/40" />
                                         </div>
                                         <p className="text-[10px] text-text-muted uppercase tracking-widest font-bold">Control the luminous intensity of the stratum.</p>
                                         <div className="flex gap-3 pt-2">
-                                            {['Minimal', 'Balanced', 'Intense'].map(aura => (
-                                                <button key={aura} className="px-4 py-2 rounded-xl bg-primary/20 border border-gold/20 text-[9px] font-black uppercase tracking-widest text-gold hover:bg-primary transition-all">
-                                                    {aura}
+                                            {['Minimal', 'Balanced', 'Intense'].map(a => (
+                                                <button 
+                                                    key={a} 
+                                                    onClick={() => {
+                                                        setAura(a);
+                                                        localStorage.setItem('admin_aura', a);
+                                                        toast.success(`Aura shifted to ${a}`);
+                                                    }}
+                                                    className={`px-4 py-2 rounded-xl border transition-all text-[9px] font-black uppercase tracking-widest ${aura === a ? 'bg-primary text-gold border-gold' : 'bg-primary/10 border-gold/10 text-gold/40 hover:bg-primary/20'}`}
+                                                >
+                                                    {a}
                                                 </button>
                                             ))}
                                         </div>
                                     </div>
 
-                                    <div className={`p-8 rounded-3xl border ${isDark ? 'bg-white/5 border-white/10' : 'bg-emerald-50 border-gold/20'} space-y-4`}>
+                                    <div className={`p-8 rounded-3xl border ${isDark ? 'bg-white/5 border-white/10' : 'bg-primary/5 border-primary/10'} space-y-4`}>
                                         <div className="flex items-center justify-between">
                                             <h4 className={`text-sm font-serif font-bold ${isDark ? 'text-gold' : 'text-emerald-950'}`}>Sound Resonance</h4>
                                             <Bell className="w-5 h-5 text-gold/40" />
                                         </div>
                                         <p className="text-[10px] text-text-muted uppercase tracking-widest font-bold">Harmonize with interface notification vibrations.</p>
-                                        <div className="flex items-center gap-3 pt-2">
-                                            <div className="h-1.5 flex-1 bg-white/10 rounded-full overflow-hidden">
-                                                <div className="h-full w-2/3 bg-gold shadow-[0_0_10px_#C5A46D]" />
-                                            </div>
-                                            <span className="text-[10px] font-black text-gold">60%</span>
+                                        <div className="flex items-center gap-4 pt-2">
+                                            <input 
+                                                type="range" 
+                                                min="0" 
+                                                max="100" 
+                                                value={volume}
+                                                onChange={(e) => {
+                                                    const v = parseInt(e.target.value);
+                                                    setVolume(v);
+                                                    localStorage.setItem('admin_volume', v.toString());
+                                                }}
+                                                className="flex-1 h-1.5 bg-black/20 rounded-full appearance-none cursor-pointer accent-gold"
+                                            />
+                                            <span className="text-[10px] font-black text-gold w-8">{volume}%</span>
                                         </div>
                                     </div>
                                 </div>

@@ -1268,7 +1268,7 @@ export interface LoginResult {
     success: boolean;
     error?: string;
     deactivated?: boolean;
-    customer?: { customer_id: string; full_name: string; email: string; role?: string };
+    customer?: { customer_id: string; full_name: string; email: string; role?: string; phone?: string };
     access_token?: string;
     refresh_token?: string;
 }
