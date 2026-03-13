@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, Fragment } from 'react';
 import Link from 'next/link';
 import { getProducts, deleteProduct, Product, getRankingOverrides, setRankingOverride, removeRankingOverride, RankingOverride, searchProductsAdmin, getProduct, updateVariantStatus, updateDefaultVariant, getDraftProducts } from '@/lib/api';
-import { Plus, Pencil, Trash2, Search, Package, Star, Loader2, Tag, ChevronDown, FileEdit, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Package, Star, Loader2, Tag, ChevronDown, FileEdit, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import BulkDiscountModal from '@/components/BulkDiscountModal';
 import BulkImportModal from '@/components/BulkImportModal';
@@ -18,6 +18,13 @@ export default function ProductsListPage() {
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
+    const [filterCategory, setFilterCategory] = useState<string>('all');
+    const [filterStock, setFilterStock] = useState<string>('all');
+    const [filterPrice, setFilterPrice] = useState<string>('all');
+    const [filterBestSeller, setFilterBestSeller] = useState<string>('all');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(20);
+    const [searchResults, setSearchResults] = useState<Product[] | null>(null);
     // ─── Ranking override state ───
     const [overrideMap, setOverrideMap] = useState<Map<string, RankingOverride>>(new Map());
     const [togglingIds, setTogglingIds] = useState<Set<string>>(new Set());
@@ -181,7 +188,6 @@ export default function ProductsListPage() {
         setLoading(true);
         const data = await getProducts();
         setProducts(data);
-        setFiltered(data);
         setLoading(false);
     };
 
@@ -205,17 +211,63 @@ export default function ProductsListPage() {
     useEffect(() => {
         const fetchSearch = async () => {
             if (!debouncedSearch) {
-                setFiltered(products);
+                setSearchResults(null);
                 return;
             }
             setLoading(true);
             const results = await searchProductsAdmin(debouncedSearch);
-            setFiltered(results);
+            setSearchResults(results);
             setLoading(false);
         };
         fetchSearch();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [debouncedSearch]);
+
+    useEffect(() => {
+        let base = searchResults !== null ? searchResults : products;
+        
+        if (filterCategory !== 'all') {
+            base = base.filter(p => p.category === filterCategory);
+        }
+        
+        if (filterStock !== 'all') {
+            base = base.filter(p => {
+                const qty = p.stock_quantity ?? p.quantity ?? 0;
+                if (filterStock === 'in_stock') return qty > LOW_STOCK_THRESHOLD;
+                if (filterStock === 'low_stock') return qty > 0 && qty <= LOW_STOCK_THRESHOLD;
+                if (filterStock === 'out_of_stock') return qty <= 0;
+                return true;
+            });
+        }
+        
+        if (filterPrice !== 'all') {
+            base = base.filter(p => {
+                const price = p.price ?? 0;
+                if (filterPrice === 'under_500') return price < 500;
+                if (filterPrice === '500_1500') return price >= 500 && price <= 1500;
+                if (filterPrice === 'over_1500') return price > 1500;
+                return true;
+            });
+        }
+        
+        if (filterBestSeller === 'best_seller') {
+            base = base.filter(p => overrideMap.has(p.product_id));
+        }
+        
+        setFiltered(base);
+        setCurrentPage(1); // Reset to first page when filters change
+    }, [products, searchResults, filterCategory, filterStock, filterPrice, filterBestSeller, overrideMap]);
+
+    // --- Pagination helpers ---
+    const totalPages = Math.ceil(filtered.length / itemsPerPage);
+    const paginatedProducts = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+    const handlePageChange = (newPage: number) => {
+        if (newPage >= 1 && newPage <= totalPages) {
+            setCurrentPage(newPage);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
 
     const handleDelete = async (id: string, name: string) => {
         if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
@@ -513,16 +565,70 @@ export default function ProductsListPage() {
 
 
 
-            {/* Search */}
-            <div className="mb-4 relative max-w-md">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
-                <input
-                    type="text"
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                    placeholder="Search products..."
-                    className="w-full rounded-lg border border-border bg-card-bg pl-10 pr-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none transition-colors duration-300"
-                />
+            {/* Filters & Search */}
+            <div className="mb-4 flex flex-col xl:flex-row gap-3">
+                <div className="relative flex-1 max-w-md">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
+                    <input
+                        type="text"
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                        placeholder="Search products..."
+                        className="w-full rounded-lg border border-border bg-card-bg pl-10 pr-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none transition-colors duration-300"
+                    />
+                </div>
+                <div className="flex flex-wrap gap-3 flex-1 xl:justify-end">
+                    <div className="relative">
+                        <select
+                            value={filterCategory}
+                            onChange={(e) => setFilterCategory(e.target.value)}
+                            className="appearance-none rounded-lg border border-border bg-card-bg px-3 py-2.5 pr-8 text-sm text-text-primary focus:border-gold/40 focus:outline-none cursor-pointer"
+                        >
+                            <option value="all">All Categories</option>
+                            {Array.from(new Set(products.map(p => p.category).filter(Boolean))).map(cat => (
+                                <option key={cat} value={cat}>{cat}</option>
+                            ))}
+                        </select>
+                        <ChevronDown className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted pointer-events-none" />
+                    </div>
+                    <div className="relative">
+                        <select
+                            value={filterStock}
+                            onChange={(e) => setFilterStock(e.target.value)}
+                            className="appearance-none rounded-lg border border-border bg-card-bg px-3 py-2.5 pr-8 text-sm text-text-primary focus:border-gold/40 focus:outline-none cursor-pointer"
+                        >
+                            <option value="all">All Stock Status</option>
+                            <option value="in_stock">In Stock</option>
+                            <option value="low_stock">Low Stock</option>
+                            <option value="out_of_stock">Out of Stock</option>
+                        </select>
+                        <ChevronDown className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted pointer-events-none" />
+                    </div>
+                    <div className="relative">
+                        <select
+                            value={filterPrice}
+                            onChange={(e) => setFilterPrice(e.target.value)}
+                            className="appearance-none rounded-lg border border-border bg-card-bg px-3 py-2.5 pr-8 text-sm text-text-primary focus:border-gold/40 focus:outline-none cursor-pointer"
+                        >
+                            <option value="all">All Prices</option>
+                            <option value="under_500">Under ₹500</option>
+                            <option value="500_1500">₹500 - ₹1500</option>
+                            <option value="over_1500">Over ₹1500</option>
+                        </select>
+                        <ChevronDown className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted pointer-events-none" />
+                    </div>
+                    <div className="relative">
+                        <select
+                            value={filterBestSeller}
+                            onChange={(e) => setFilterBestSeller(e.target.value)}
+                            className="appearance-none rounded-lg border border-border bg-card-bg px-3 py-2.5 pr-8 text-sm text-text-primary focus:border-gold/40 focus:outline-none cursor-pointer"
+                        >
+                            <option value="all">Any Status</option>
+                            <option value="best_seller">Best Sellers Only</option>
+                        </select>
+                        <ChevronDown className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted pointer-events-none" />
+                    </div>
+                </div>
             </div>
 
             {/* Table */}
@@ -549,15 +655,15 @@ export default function ProductsListPage() {
                                         </td>
                                     </tr>
                                 ))
-                            ) : filtered.length === 0 ? (
+                            ) : paginatedProducts.length === 0 ? (
                                 <tr>
                                     <td colSpan={7} className="px-4 py-12 text-center">
                                         <Package className="mx-auto h-10 w-10 text-text-muted/40 mb-2" />
-                                        <p className="text-sm text-text-muted">No products found</p>
+                                        <p className="text-sm text-text-muted">No products found matching filters.</p>
                                     </td>
                                 </tr>
                             ) : (
-                                filtered.map(product => {
+                                paginatedProducts.map(product => {
                                     const qty = product.stock_quantity ?? product.quantity ?? 0;
                                     const badge = getStockBadge(qty);
                                     const override = overrideMap.get(product.product_id);
@@ -755,6 +861,91 @@ export default function ProductsListPage() {
                         </tbody >
                     </table >
                 </div >
+                
+                {/* Pagination Controls */}
+                {filtered.length > 0 && (
+                    <div className="flex items-center justify-between border-t border-border-subtle bg-page-bg/50 px-4 py-3 sm:px-6">
+                        <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                            <div className="flex items-center gap-3">
+                                <p className="text-sm text-text-secondary">
+                                    Showing <span className="font-semibold text-text-primary">{((currentPage - 1) * itemsPerPage) + 1}</span> to <span className="font-semibold text-text-primary">{Math.min(currentPage * itemsPerPage, filtered.length)}</span> of <span className="font-semibold text-text-primary">{filtered.length}</span> products
+                                </p>
+                                <select 
+                                    className="text-xs bg-card-bg border border-border rounded px-2 py-1 text-text-primary cursor-pointer focus:outline-none focus:border-gold/50"
+                                    value={itemsPerPage}
+                                    onChange={(e) => {
+                                        setItemsPerPage(Number(e.target.value));
+                                        setCurrentPage(1);
+                                    }}
+                                >
+                                    <option value={10}>10 per page</option>
+                                    <option value={20}>20 per page</option>
+                                    <option value={50}>50 per page</option>
+                                    <option value={100}>100 per page</option>
+                                </select>
+                            </div>
+                            <div>
+                                <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                                    <button
+                                        onClick={() => handlePageChange(currentPage - 1)}
+                                        disabled={currentPage === 1}
+                                        className="relative inline-flex items-center rounded-l-md px-2 py-2 text-text-muted ring-1 ring-inset ring-border hover:bg-gold/[0.05] focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    >
+                                        <span className="sr-only">Previous</span>
+                                        <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+                                    </button>
+                                    
+                                    {Array.from({ length: totalPages }, (_, i) => i + 1)
+                                        .filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+                                        .map((p, i, arr) => (
+                                            <Fragment key={p}>
+                                                {i > 0 && p - arr[i - 1] > 1 && (
+                                                    <span className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-text-muted ring-1 ring-inset ring-border">...</span>
+                                                )}
+                                                <button
+                                                    onClick={() => handlePageChange(p)}
+                                                    className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 focus:outline-offset-0 transition-colors ${
+                                                        p === currentPage ? 'z-10 bg-gold/10 text-gold ring-1 ring-inset ring-gold/50' : 'text-text-primary ring-1 ring-inset ring-border hover:bg-gold/[0.05]'
+                                                    }`}
+                                                >
+                                                    {p}
+                                                </button>
+                                            </Fragment>
+                                        ))}
+                                    
+                                    <button
+                                        onClick={() => handlePageChange(currentPage + 1)}
+                                        disabled={currentPage === totalPages}
+                                        className="relative inline-flex items-center rounded-r-md px-2 py-2 text-text-muted ring-1 ring-inset ring-border hover:bg-gold/[0.05] focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    >
+                                        <span className="sr-only">Next</span>
+                                        <ChevronRight className="h-4 w-4" aria-hidden="true" />
+                                    </button>
+                                </nav>
+                            </div>
+                        </div>
+                        {/* Mobile view pagination */}
+                        <div className="flex flex-1 justify-between sm:hidden">
+                            <button
+                                onClick={() => handlePageChange(currentPage - 1)}
+                                disabled={currentPage === 1}
+                                className="relative inline-flex items-center rounded-md border border-border bg-card-bg px-4 py-2 text-sm font-medium text-text-primary hover:bg-gold/[0.05] disabled:opacity-50"
+                            >
+                                Previous
+                            </button>
+                            <span className="text-sm text-text-secondary self-center">
+                                Page {currentPage} of {totalPages}
+                            </span>
+                            <button
+                                onClick={() => handlePageChange(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                                className="relative ml-3 inline-flex items-center rounded-md border border-border bg-card-bg px-4 py-2 text-sm font-medium text-text-primary hover:bg-gold/[0.05] disabled:opacity-50"
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div >
         </div >
     );
