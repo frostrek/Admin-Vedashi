@@ -43,7 +43,12 @@ interface StripSection {
     show_categories: boolean;
 }
 
+interface SettingsSection {
+    use_backend_navbar: boolean;
+}
+
 interface HeaderData {
+    settings: SettingsSection;
     branding: BrandingSection;
     colors: ColorsSection;
     nav_links: NavLink[];
@@ -265,6 +270,25 @@ export default function HeaderManagementPage() {
             </div>
 
             <div className="space-y-4">
+
+                
+                <div className="bg-gradient-to-br from-card-bg to-card-bg-elevated border border-border rounded-2xl shadow-xl overflow-hidden backdrop-blur-sm p-6 mb-8 flex flex-col md:flex-row items-center justify-between gap-4 w-full">
+                    <div className="flex-1">
+                        <Toggle
+                            checked={header.settings?.use_backend_navbar ?? true}
+                            onChange={v => update('settings', { ...header.settings, use_backend_navbar: v })}
+                            label="Enable Dynamic Navbar Synthesis"
+                            sub={
+                                (header.settings?.use_backend_navbar ?? true) 
+                                ? "ON: Storefront will dynamically fetch and display this canvas configuration." 
+                                : "OFF: Storefront will revert to the default hardcoded components."
+                            }
+                        />
+                    </div>
+                    <div className="flex-shrink-0">
+                        <SaveBtn section="settings" />
+                    </div>
+                </div>
 
                 {/* ── 1. Branding ───────────────────────────────── */}
                 <SectionCard icon={Layout} title="Branding">

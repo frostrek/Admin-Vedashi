@@ -58,8 +58,8 @@ export interface CreateProductPayload {
     // Core product fields (maps directly to inventory.products)
     product_name: string;
     brand?: string;
-    category?: string;
-    sub_category?: string;
+    category_id?: string;
+    sub_category_id?: string;
     description?: string;
     intended_use?: string;
     alcohol_percentage?: number | null;   // form field "abv"
@@ -83,8 +83,8 @@ export interface ProductRecord {
     product_id: string;
     product_name: string;
     brand?: string;
-    category?: string;
-    sub_category?: string;
+    category_id?: string;
+    sub_category_id?: string;
     description?: string;
     intended_use?: string;
     alcohol_percentage?: number;
@@ -98,7 +98,7 @@ export interface ProductRecord {
 
 export async function createProduct(
     payload: CreateProductPayload
-): Promise<{ success: boolean; product?: ProductRecord; error?: string }> {
+): Promise<{ success: boolean; product?: ProductRecord; variants?: any[]; error?: string }> {
     try {
         const res = await authFetch(`${API_URL}/api/products`, {
             method: 'POST',
@@ -108,9 +108,12 @@ export async function createProduct(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const json: ApiResponse<any> = await res.json();
         if ((res.status === 200 || res.status === 201) && json.data) {
-            // Backend returns { product: {...}, variants: [...] } — unwrap
-            const product = json.data.product || json.data;
-            return { success: true, product };
+            // Backend returns { product: {...}, variants: [...] }
+            return { 
+                success: true, 
+                product: json.data.product || json.data,
+                variants: json.data.variants || []
+            };
         }
         return { success: false, error: json.message || `Request failed (${res.status})` };
     } catch (error) {
@@ -124,14 +127,14 @@ export async function createProduct(
 export async function updateProduct(
     id: string,
     payload: Partial<CreateProductPayload>
-): Promise<{ success: boolean; product?: ProductRecord; error?: string }> {
+): Promise<{ success: boolean; product?: any; error?: string }> {
     try {
         const res = await authFetch(`${API_URL}/api/products/${id}`, {
             method: 'PATCH',
             headers: authHeaders(),
             body: JSON.stringify(payload),
         });
-        const json: ApiResponse<ProductRecord> = await res.json();
+        const json: ApiResponse<any> = await res.json();
         if (json.success && json.data) {
             return { success: true, product: json.data };
         }

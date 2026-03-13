@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, use, Suspense } from 'react';
+import React, { useState, useEffect, use, Suspense, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getCategories, createCategory } from '@/lib/api/category';
 import { updateProduct } from '@/lib/api/product';
@@ -101,8 +101,8 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
     const [form, setForm] = useState({
         product_name: '',
         brand: '',
-        category: '',
-        sub_category: '',
+        category_id: '',
+        sub_category_id: '',
         country_of_origin: '',
 
 
@@ -177,11 +177,27 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
             setDbProductId((product as any).product_id || urlId);
 
             // ── Step 1: General Info ──
+            const productCatId = product.category_id || '';
+            const catObj = cats.find(c => c.category_id === productCatId);
+            
+            let finalCatId = '';
+            let finalSubCatId = '';
+            
+            if (catObj) {
+                if (catObj.parent_id) {
+                    finalCatId = catObj.parent_id;
+                    finalSubCatId = catObj.category_id;
+                } else {
+                    finalCatId = catObj.category_id;
+                    finalSubCatId = '';
+                }
+            }
+
             setForm({
                 product_name: product.product_name || '',
                 brand: product.brand || '',
-                category: product.category || '',
-                sub_category: product.sub_category || '',
+                category_id: finalCatId,
+                sub_category_id: finalSubCatId,
                 country_of_origin: product.country_of_origin || (product as any).specifications?.country_of_origin || '',
 
                 intended_use: product.intended_use || '',
@@ -338,7 +354,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
     }, [urlId]);
 
     const parentCategories = categories.filter(c => !c.parent_id);
-    const selectedParent = categories.find(c => !c.parent_id && c.name === form.category);
+    const selectedParent = categories.find(c => !c.parent_id && c.category_id === form.category_id);
     const subCategories = selectedParent
         ? categories.filter(c => c.parent_id === selectedParent.category_id)
         : [];
@@ -347,8 +363,8 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
     const update = (field: string, value: string) => setForm(prev => ({ ...prev, [field]: value }));
 
     const handleCategoryChange = (value: string) => {
-        update('category', value);
-        update('sub_category', '');
+        update('category_id', value);
+        update('sub_category_id', '');
     };
 
     const autoSlug = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -367,8 +383,8 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
             if (res.success) {
                 toast.success(`Category "${newCatForm.name}" created!`);
                 const cats = await refreshCategories();
-                update('category', newCatForm.name.trim());
-                update('sub_category', '');
+                update('category_id', res.category?.category_id || '');
+                update('sub_category_id', '');
                 setNewCatForm({ name: '', slug: '', description: '' });
                 setShowCategoryModal(false);
             } else {
@@ -393,7 +409,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
             if (res.success) {
                 toast.success(`Subcategory "${newSubCatForm.name}" created!`);
                 await refreshCategories();
-                update('sub_category', newSubCatForm.name.trim());
+                update('sub_category_id', res.category?.category_id || '');
                 setNewSubCatForm({ name: '', slug: '', description: '', parent_id: '' });
                 setShowSubcategoryModal(false);
             } else {
@@ -631,7 +647,14 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
             toast.error('At least one variant row is required');
             return;
         }
-        setVariants(prev => prev.filter((_, i) => i !== index));
+        setVariants(prev => {
+            const wasDefault = prev[index].isDefault;
+            const filtered = prev.filter((_, i) => i !== index);
+            if (wasDefault && filtered.length > 0) {
+                filtered[0].isDefault = true;
+            }
+            return filtered;
+        });
         if (expandedVariantIndex === index) setExpandedVariantIndex(null);
         else if (expandedVariantIndex !== null && expandedVariantIndex > index) setExpandedVariantIndex(expandedVariantIndex - 1);
     };
@@ -684,8 +707,8 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
         const draftPayload = {
             product_name: form.product_name.trim(),
             brand: form.brand.trim() || undefined,
-            category: form.category || undefined,
-            sub_category: form.sub_category || undefined,
+            category_id: form.category_id || undefined,
+            sub_category_id: form.sub_category_id || undefined,
             description: form.description.trim() || undefined,
             intended_use: form.intended_use.trim() || undefined,
 
@@ -790,8 +813,8 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
             // Core product table fields
             product_name: form.product_name.trim(),
             brand: form.brand.trim() || undefined,
-            category: form.category || undefined,
-            sub_category: form.sub_category || undefined,
+            category_id: form.category_id || undefined,
+            sub_category_id: form.sub_category_id || undefined,
             description: form.description.trim() || undefined,
             intended_use: form.intended_use.trim() || undefined,
 
@@ -947,20 +970,32 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                     // Upload videos
                     for (let vidIdx = 0; vidIdx < v.videos.length; vidIdx++) {
                         const vid = v.videos[vidIdx];
-                        if (!vid.file) continue;
-                        try {
-                            const base64 = await fileToBase64(vid.file);
-                            const uploadResult = await uploadProductImage(id, base64, {
-                                file_name: vid.file.name,
-                                is_primary: false,
-                                sort_order: 100 + vidIdx,
-                                media_type: 'video',
-                                variant_id: variantId,
-                            });
-                            if (uploadResult.success) uploadedAssets++;
-                            else console.error('[Upload] Video failed:', vid.file.name);
-                        } catch (e) {
-                            console.error('[Upload] Video error:', vid.file.name, e);
+                        if (vid.file) {
+                            try {
+                                const base64 = await fileToBase64(vid.file);
+                                const uploadResult = await uploadProductImage(id, base64, {
+                                    file_name: vid.file.name,
+                                    is_primary: false,
+                                    sort_order: 100 + vidIdx,
+                                    media_type: 'video',
+                                    variant_id: variantId,
+                                });
+                                if (uploadResult.success) uploadedAssets++;
+                                else console.error('[Upload] Video failed:', vid.file.name);
+                            } catch (e) {
+                                console.error('[Upload] Video error:', vid.file.name, e);
+                            }
+                        } else if (vid.asset_id) {
+                            // Existing video — update metadata
+                            try {
+                                await updateProductImage(id, vid.asset_id, {
+                                    is_primary: false,
+                                    sort_order: 100 + vidIdx,
+                                    variant_id: variantId
+                                });
+                            } catch (e) {
+                                console.error('[Update] Video metadata error:', e);
+                            }
                         }
                     }
                 }
@@ -983,6 +1018,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
     };
 
     const duplicateSkus = variants.map(v => v.sku).filter((sku, i, arr) => sku && arr.indexOf(sku) !== i);
+    const activeDims = useMemo(() => Object.entries(dimConfigs).filter(([_, c]) => c.active), [dimConfigs]);
 
     // Show loading skeleton while product is being fetched initially
     if (loading && variants.length === 1 && !variants[0].sku && !form.product_name) {
@@ -1074,59 +1110,54 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                 </p>
                             </div>
 
-                            {/* ÔöÇÔöÇ Actions ÔöÇÔöÇ */}
+                            {/* ─── Actions ─── */}
                             <div className="mt-4 px-2 space-y-3 pb-2">
-                                {/* Save as Draft — only visible when editing a draft product */}
+                                {/* Save as Draft — only visible for draft products */}
                                 {productStatus === 'draft' && (
                                     <button
                                         type="button"
                                         onClick={handleSaveAsDraft}
                                         disabled={loading}
-                                        className="w-full h-10 flex items-center justify-center gap-2 border border-gold/40 text-gold-soft hover:bg-gold/[0.06] rounded-lg text-sm font-medium transition-all duration-300 disabled:opacity-50"
+                                        className="flex w-full items-center justify-center gap-2 rounded-lg border border-gold/20 px-4 py-2.5 text-sm font-semibold text-gold-soft hover:bg-gold/[0.06] transition-all duration-300 disabled:opacity-50"
                                     >
-                                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Layers className="h-4 w-4" />}
-                                        Save as Draft
+                                        {loading ? 'Saving...' : 'Save as Draft'}
                                     </button>
                                 )}
 
-                                <div className="flex items-center gap-3">
-                                    {currentStep > 1 && (
-                                        <button
-                                            type="button"
-                                            onClick={goBack}
-                                            className="flex-1 h-11 flex items-center justify-center gap-2 border border-border text-text-secondary hover:bg-white/[0.04] rounded-xl text-sm font-medium transition-all duration-300"
-                                        >
-                                            <ArrowLeft className="h-4 w-4" />
-                                            Back
-                                        </button>
-                                    )}
+                                {currentStep < 4 ? (
                                     <button
                                         type="button"
-                                        onClick={currentStep === STEPS.length ? handleSubmit : goNext}
-                                        disabled={loading}
-                                        className={`flex-[2] h-11 flex items-center justify-center gap-2 rounded-xl text-sm font-bold transition-all duration-300 shadow-lg shadow-gold/10 ${loading ? 'opacity-50 cursor-not-allowed' : ''
-                                            } bg-gradient-to-r from-gold to-[#D4A847] text-white hover:scale-[1.02] active:scale-[0.98]`}
+                                        onClick={goNext}
+                                        className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-[#E8D8B9] hover:bg-primary-light border border-gold/10 transition-all duration-300 shadow-lg shadow-primary/10"
                                     >
-                                        {loading ? (
-                                            <Loader2 className="h-4 w-4 animate-spin" />
-                                        ) : currentStep === STEPS.length ? (
-                                            <>
-                                                <Check className="h-4 w-4" />
-                                                Save Changes
-                                            </>
-                                        ) : (
-                                            <>
-                                                Next
-                                                <ArrowRight className="h-4 w-4" />
-                                            </>
-                                        )}
+                                        Next
+                                        <ArrowRight className="h-4 w-4" />
                                     </button>
-                                </div>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={handleSubmit}
+                                        disabled={loading}
+                                        className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-[#E8D8B9] hover:bg-primary-light border border-gold/10 transition-all duration-300 shadow-lg shadow-primary/10 disabled:opacity-50"
+                                    >
+                                        <Check className="h-4 w-4" />
+                                        {loading ? 'Saving...' : 'Save Changes'}
+                                    </button>
+                                )}
 
-                                {currentStep === 1 && (
+                                {currentStep > 1 ? (
+                                    <button
+                                        type="button"
+                                        onClick={goBack}
+                                        className="flex w-full items-center justify-center gap-2 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-text-secondary hover:text-gold hover:border-gold/30 transition-all duration-300"
+                                    >
+                                        <ArrowLeft className="h-4 w-4" />
+                                        Back
+                                    </button>
+                                ) : (
                                     <Link
                                         href="/dashboard/products"
-                                        className="w-full h-10 flex items-center justify-center rounded-lg border border-border text-sm font-medium text-text-secondary hover:text-gold hover:border-gold/30 transition-all duration-300"
+                                        className="flex w-full items-center justify-center rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-text-secondary hover:text-gold hover:border-gold/30 transition-all duration-300"
                                     >
                                         Cancel
                                     </Link>
@@ -1176,13 +1207,13 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                     <div>
                                         <label className="block text-sm font-medium text-text-primary mb-1.5">Category</label>
                                         <select
-                                            value={form.category}
+                                            value={form.category_id}
                                             onChange={e => handleCategoryChange(e.target.value)}
                                             className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 bg-white text-gray-900 transition-all"
                                         >
                                             <option value="">Select category</option>
                                             {parentCategories.map(cat => (
-                                                <option key={cat.category_id} value={cat.name}>{cat.name}</option>
+                                                <option key={cat.category_id} value={cat.category_id}>{cat.name}</option>
                                             ))}
                                         </select>
                                         <button
@@ -1198,19 +1229,19 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                     <div>
                                         <label className="block text-sm font-medium text-text-primary mb-1.5">Subcategory</label>
                                         <select
-                                            value={form.sub_category}
-                                            onChange={e => update('sub_category', e.target.value)}
+                                            value={form.sub_category_id}
+                                            onChange={e => update('sub_category_id', e.target.value)}
                                             className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 bg-white text-gray-900 transition-all"
-                                            disabled={!form.category || subCategories.length === 0}
+                                            disabled={!form.category_id || subCategories.length === 0}
                                         >
                                             <option value="">
-                                                {!form.category ? 'Select a category first' : subCategories.length === 0 ? 'No subcategories' : 'Select subcategory'}
+                                                {!form.category_id ? 'Select a category first' : subCategories.length === 0 ? 'No subcategories' : 'Select subcategory'}
                                             </option>
                                             {subCategories.map(cat => (
-                                                <option key={cat.category_id} value={cat.name}>{cat.name}</option>
+                                                <option key={cat.category_id} value={cat.category_id}>{cat.name}</option>
                                             ))}
                                         </select>
-                                        {form.category && (
+                                        {form.category_id && (
                                             <button
                                                 type="button"
                                                 onClick={() => {
@@ -1558,8 +1589,8 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                             <thead className="bg-white/5 border-b border-border">
                                                 <tr>
                                                     <th className="px-4 py-4 w-10"></th>
-                                                    {Object.entries(dimConfigs).filter(([_, c]) => c.active).map(([key]) => (
-                                                        <th key={key} className="px-4 py-4 font-medium text-text-secondary capitalize">{key}</th>
+                                                    {activeDims.map(([id]: [string, any]) => (
+                                                        <th key={id} className="px-4 py-4 font-medium text-text-secondary capitalize">{id}</th>
                                                     ))}
                                                     <th className="px-4 py-4 font-medium text-text-secondary">Variant Name <span className="text-danger text-xs">*</span></th>
                                                     <th className="px-4 py-4 font-medium text-text-secondary">SKU *</th>
@@ -1572,8 +1603,6 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                                 {variants.map((variant, vIdx) => {
                                                     const isDuplicate = variant.sku && duplicateSkus.includes(variant.sku);
                                                     const isExpanded = expandedVariantIndex === vIdx;
-                                                    const activeDims = Object.entries(dimConfigs).filter(([_, c]) => c.active);
-
                                                     return (
                                                         <React.Fragment key={vIdx}>
                                                             <tr className={`transition-colors ${isExpanded ? 'bg-white/[0.04]' : 'hover:bg-white/[0.02]'}`}>
@@ -1587,23 +1616,20 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                                                     </button>
                                                                 </td>
 
-                                                                {/* Dynamic Dimensions Columns */}
-                                                                {activeDims.map(([key, config]) => (
-                                                                    <td key={key} className="px-4 py-3 align-top">
-                                                                        {autoGenerate ? (
+                                                                {activeDims.map(([id, config]: [string, any]) => (
+                                                                    <td key={id} className="px-4 py-3 align-top">
+                                                                        {autoGenerate || config.values.length <= 1 ? (
                                                                             <span className="bg-white/5 border border-border px-3 py-1.5 rounded text-xs font-medium text-text-primary">
-                                                                                {(variant as any)[key] || '—'}
+                                                                                {(variant[id as keyof VariantRow] as string) || (config.values[0] ?? '—')}
                                                                             </span>
                                                                         ) : (
                                                                             <select
-                                                                                value={(variant as any)[key] || ''}
-                                                                                onChange={e => updateVariant(vIdx, key as keyof VariantRow, e.target.value)}
+                                                                                value={variant[id as keyof VariantRow] as string}
+                                                                                onChange={e => updateVariant(vIdx, id as keyof VariantRow, e.target.value)}
                                                                                 className="w-full min-w-[120px] rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
                                                                             >
                                                                                 <option value="">Select</option>
-                                                                                {config.values.map(val => (
-                                                                                    <option key={val} value={val}>{val}</option>
-                                                                                ))}
+                                                                                {config.values.map((v: string) => <option key={v} value={v}>{v}</option>)}
                                                                             </select>
                                                                         )}
                                                                     </td>
@@ -1674,11 +1700,10 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                                                 </td>
                                                             </tr>
 
-                                                            {/* Expanded row (Legacy structure updated colSpan) */}
-                                                            {isExpanded && (
-                                                                <tr className="bg-white/[0.01] border-b border-border">
-                                                                    <td colSpan={5 + activeDims.length} className="p-5">
-                                                                        <div className="animate-fade-in-up space-y-6">
+                                                                    {isExpanded && (
+                                                                        <tr className="bg-white/[0.01] border-b border-border">
+                                                                            <td colSpan={activeDims.length + 6} className="p-5">
+                                                                                <div className="animate-fade-in-up space-y-6">
 
                                                                             {/* ÔöÇÔöÇ Extra fields row ÔöÇÔöÇ */}
                                                                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -1939,7 +1964,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                     entityName={form.product_name}
                                     entityDescription={form.description}
                                     entityBrand={form.brand}
-                                    entityCategory={form.category}
+                                    entityCategory={categories.find(c => c.category_id === form.category_id)?.name}
                                     value={seoData}
                                     onChange={setSeoData}
                                 />

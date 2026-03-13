@@ -55,12 +55,20 @@ export default function ProductsListPage() {
                     const effectivelyDefault = v.is_default || (variants.length === 1) || (!hasDefault && index === 0);
                     // Find matching image from assets using the same logic as the edit page
                     const allAssets = details.assets || [];
-                    const specificImages = allAssets.filter((a: any) => {
+                    let specificImages = allAssets.filter((a: any) => {
                         const mt = (a.media_type || a.mime_type || '').toLowerCase();
                         const isImage = !mt.startsWith('video');
-                        const belongsToVariant = a.variant_id === v.variant_id || (!a.variant_id && index === 0);
-                        return isImage && belongsToVariant;
+                        return isImage && a.variant_id === v.variant_id;
                     });
+
+                    // Fallback to product images (no variant_id) if no variant-specific images exist
+                    if (specificImages.length === 0) {
+                        specificImages = allAssets.filter((a: any) => {
+                            const mt = (a.media_type || a.mime_type || '').toLowerCase();
+                            const isImage = !mt.startsWith('video');
+                            return isImage && !a.variant_id;
+                        });
+                    }
 
                     const thumbnail_url = specificImages.length > 0
                         ? (specificImages[0].base64_data || specificImages[0].asset_url)
@@ -69,6 +77,16 @@ export default function ProductsListPage() {
                     return { ...v, thumbnail_url, effectivelyDefault };
                 });
                 setProductVariants(prev => ({ ...prev, [productId]: fetchedVariants }));
+                
+                // Update the main product row image to match the default variant discovered in details
+                const defaultVariant = fetchedVariants.find(v => v.effectivelyDefault);
+                if (defaultVariant?.thumbnail_url) {
+                    const updateList = (list: Product[]) => list.map(p => 
+                        p.product_id === productId ? { ...p, images: [defaultVariant.thumbnail_url] } : p
+                    );
+                    setProducts(prev => updateList(prev));
+                    setFiltered(prev => updateList(prev));
+                }
             }
             setLoadingVariants(prev => {
                 const next = new Set(prev);
@@ -140,6 +158,18 @@ export default function ProductsListPage() {
 
         if (success) {
             toast.success('Default variant updated');
+            
+            // Also update the main product image in the list to match the new default variant
+            const newDefaultVariant = productVariants[productId]?.find(v => (v.variant_id === variantId || v.sku === variantId));
+            if (newDefaultVariant?.thumbnail_url) {
+                const updateProductInList = (list: Product[]) => list.map(p => 
+                    p.product_id === productId 
+                        ? { ...p, images: [newDefaultVariant.thumbnail_url, ...(p.images || []).slice(1)] } 
+                        : p
+                );
+                setProducts(prev => updateProductInList(prev));
+                setFiltered(prev => updateProductInList(prev));
+            }
         } else {
             toast.error('Failed to update default variant');
             // We could revert optimistic update here, but it generally requires keeping track of the previous default.
