@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import { getOrders, getOrderById, updateOrderStatus as apiUpdateStatus, updatePaymentStatus as apiUpdatePayment, bulkUpdateOrderStatus, bulkUpdateOrderPaymentStatus, Order, downloadInvoiceAdmin, formatINR, getPaymentInfo, initiateRefund, getRefunds, PaymentInfo, RefundRecord } from '@/lib/api';
@@ -182,19 +182,44 @@ export default function OrdersPage() {
 
     const updateStatus = (orderId: string, newStatus: Order['status']) => {
         setOrders(prev =>
-            prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o)
+            prev.map(o => {
+                if (o.id === orderId) {
+                    let nextPaymentStatus = o.payment_status;
+                    if (newStatus === 'delivered') {
+                        nextPaymentStatus = 'PAID';
+                    } else if (o.payment_method === 'cod' && newStatus !== 'delivered') {
+                        nextPaymentStatus = 'UNPAID';
+                    }
+                    return { ...o, status: newStatus, payment_status: nextPaymentStatus };
+                }
+                return o;
+            })
         );
         if (selectedOrder?.id === orderId) {
-            setSelectedOrder(prev => prev ? { ...prev, status: newStatus } : prev);
+            setSelectedOrder(prev => {
+                if (!prev) return prev;
+                let nextPaymentStatus = prev.payment_status;
+                if (newStatus === 'delivered') {
+                    nextPaymentStatus = 'PAID';
+                } else if (prev.payment_method === 'cod' && newStatus !== 'delivered') {
+                    nextPaymentStatus = 'UNPAID';
+                }
+                return { ...prev, status: newStatus, payment_status: nextPaymentStatus };
+            });
         }
         apiUpdateStatus(orderId, newStatus);
         toast.success(`Order status updated to ${newStatus}`);
     };
 
     const updatePayment = async (orderId: string, newStatus: string) => {
+        const targetOrder = orders.find(o => o.id === orderId);
+        if (targetOrder?.payment_method === 'razorpay' && targetOrder?.payment_status?.toUpperCase() === 'PAID' && newStatus.toUpperCase() === 'UNPAID') {
+            toast.error('Razorpay payments cannot be marked as unpaid once successful. Please initiate a refund instead.');
+            return;
+        }
+
         setUpdatingPayments(prev => new Set(prev).add(orderId));
 
-        const targetOrder = orders.find(o => o.id === orderId);
         const prevStatus = targetOrder?.payment_status || 'Unpaid';
 
         setOrders(prev =>
@@ -433,7 +458,7 @@ export default function OrdersPage() {
                                                     <PaymentToggle
                                                         status={order.payment_status ?? 'UNPAID'}
                                                         onToggle={(newStatus) => updatePayment(order.id, newStatus)}
-                                                        disabled={updatingPayments.has(order.id)}
+                                                        disabled={updatingPayments.has(order.id) || (order.payment_status?.toUpperCase() === 'PAID' && (order.payment_method === 'razorpay' || order.payment_method === 'cod'))}
                                                     />
                                                     <span className={`text-[10px] font-semibold uppercase rounded-full px-2 py-0.5 ${order.payment_method === 'razorpay'
                                                         ? 'bg-blue-500/15 text-blue-400'
@@ -556,7 +581,7 @@ export default function OrdersPage() {
                                         <PaymentToggle
                                             status={selectedOrder.payment_status ?? 'UNPAID'}
                                             onToggle={(newStatus) => updatePayment(selectedOrder.id, newStatus)}
-                                            disabled={updatingPayments.has(selectedOrder.id)}
+                                            disabled={updatingPayments.has(selectedOrder.id) || (selectedOrder.payment_status?.toUpperCase() === 'PAID' && (selectedOrder.payment_method === 'razorpay' || selectedOrder.payment_method === 'cod'))}
                                         />
                                     </div>
                                     {selectedOrder.order_notes && (

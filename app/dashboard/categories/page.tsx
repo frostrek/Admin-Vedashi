@@ -5,7 +5,7 @@ import { getCategories, createCategory, updateCategory, deleteCategory } from '@
 import { Category, CreateCategoryPayload, UpdateCategoryPayload } from '@/types/category';
 import CategoryCard from '@/components/admin/CategoryCard';
 import CategoryModal from '@/components/admin/CategoryModal';
-import { Plus, AlertTriangle, FolderTree } from 'lucide-react';
+import { Plus, AlertTriangle, FolderTree, Tag } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 type FilterMode = 'all' | 'parents' | 'subcategories';
@@ -145,7 +145,9 @@ export default function CategoriesPage() {
             <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
                 <div>
                     <h1 className="font-serif text-2xl font-bold text-gold-soft">Categories</h1>
-                    <p className="text-sm text-text-secondary">{categories.length} categories</p>
+                    <p className="text-sm text-text-secondary">
+                        {parentCategories.length} Categories & {categories.length - parentCategories.length} Subcategories
+                    </p>
                 </div>
                 <button
                     onClick={handleCreate}
@@ -168,7 +170,7 @@ export default function CategoriesPage() {
                                 : 'text-text-secondary hover:text-text-primary'
                                 }`}
                         >
-                            {tab.label}
+                            {tab.key === 'parents' ? 'Categories' : tab.label}
                             <span className="ml-1.5 text-text-muted">({tab.count})</span>
                         </button>
                     ))}
@@ -217,17 +219,65 @@ export default function CategoriesPage() {
 
             {/* Category Grid */}
             {!loading && filteredCategories.length > 0 && (
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {filteredCategories.map((cat) => (
-                        <CategoryCard
-                            key={cat.category_id}
-                            category={cat}
-                            subcategoryCount={subcategoryCountMap[cat.category_id] || 0}
-                            parentName={cat.parent_id ? parentNameMap[cat.parent_id] : undefined}
-                            onEdit={handleEdit}
-                            onDelete={handleDeleteClick}
-                        />
-                    ))}
+                <div className="space-y-8">
+                    {/* If filtering by 'all', show two sections */}
+                    {filter === 'all' ? (
+                        <>
+                            {/* Parents Section */}
+                            <div>
+                                <h2 className="text-sm font-semibold text-text-secondary mb-4 flex items-center gap-2">
+                                    <Tag className="h-4 w-4" /> Categories ({parentCategories.length})
+                                </h2>
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                    {parentCategories.map((cat) => (
+                                        <CategoryCard
+                                            key={cat.category_id}
+                                            category={cat}
+                                            subcategoryCount={subcategoryCountMap[cat.category_id] || 0}
+                                            parentName={undefined}
+                                            onEdit={handleEdit}
+                                            onDelete={handleDeleteClick}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Subcategories Section */}
+                            {categories.length - parentCategories.length > 0 && (
+                                <div>
+                                    <h2 className="text-sm font-semibold text-text-secondary mb-4 flex items-center gap-2 pt-4">
+                                        <FolderTree className="h-4 w-4" /> Subcategories ({categories.length - parentCategories.length})
+                                    </h2>
+                                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                        {categories.filter(c => !!c.parent_id).map((cat) => (
+                                            <CategoryCard
+                                                key={cat.category_id}
+                                                category={cat}
+                                                subcategoryCount={0}
+                                                parentName={parentNameMap[cat.parent_id!]}
+                                                onEdit={handleEdit}
+                                                onDelete={handleDeleteClick}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </>
+                    ) : (
+                        /* Single Section for specific filters */
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                            {filteredCategories.map((cat) => (
+                                <CategoryCard
+                                    key={cat.category_id}
+                                    category={cat}
+                                    subcategoryCount={subcategoryCountMap[cat.category_id] || 0}
+                                    parentName={cat.parent_id ? parentNameMap[cat.parent_id] : undefined}
+                                    onEdit={handleEdit}
+                                    onDelete={handleDeleteClick}
+                                />
+                            ))}
+                        </div>
+                    )}
                 </div>
             )}
 
