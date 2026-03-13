@@ -1192,7 +1192,7 @@ export default function AdminFeedbackPage() {
                                         <div className="grid grid-cols-3 gap-2 px-5 pb-4">
                                             {[
                                                 { label:'Orders',    value:c360.orders?.length||0,                                                                    Icon:ShoppingBag, cls:'text-primary', bg:'bg-primary/10' },
-                                                { label:'Spent',     value:formatINR(c360.orders?.reduce((a:number,o:any)=>a+(o.final_total||0),0)||0), Icon:TrendingUp,  cls:'text-success', bg:'bg-success/10' },
+                                                { label:'Spent',     value:formatINR(c360.orders?.reduce((a:number,o:any)=>a + (o.order_status?.toUpperCase() !== 'CANCELLED' ? Number(o.final_total||0) : 0), 0)||0), Icon:TrendingUp,  cls:'text-success', bg:'bg-success/10' },
                                                 { label:'Addresses', value:c360.addresses?.length||0,                                                                  Icon:MapPin,      cls:'text-gold',    bg:'bg-gold/10'   },
                                             ].map((s,i)=>(
                                                 <div key={s.label}
@@ -1422,15 +1422,9 @@ export default function AdminFeedbackPage() {
                                     </div>
 
                                     {/* Pinned footer */}
-                                    <div className="shrink-0 p-4 border-t border-border bg-card-bg grid grid-cols-2 gap-3">
-                                        <button onClick={() => window.open(`/dashboard/customers/${c360.profile.customer_id}/edit`,'_blank')}
-                                            className="py-2.5 bg-page-bg border border-border rounded-xl text-[12.5px] font-bold
-                                                       text-text-primary flex items-center justify-center gap-2
-                                                       hover:bg-card-bg-elevated hover:border-primary/30 transition-all vd-btn-press">
-                                            <Edit3 className="w-3.5 h-3.5" /> Edit Profile
-                                        </button>
+                                    <div className="shrink-0 p-4 border-t border-border bg-card-bg">
                                         <button onClick={() => window.open(`/dashboard/customers/${c360.profile.customer_id}`,'_blank')}
-                                            className="py-2.5 bg-primary text-white rounded-xl text-[12.5px] font-bold
+                                            className="w-full py-2.5 bg-primary text-white rounded-xl text-[12.5px] font-bold
                                                        flex items-center justify-center gap-2
                                                        hover:bg-primary-dark active:scale-[.98] transition-all shadow-md shadow-primary/20 vd-btn-press">
                                             <BarChart2 className="w-3.5 h-3.5" /> Full Dashboard

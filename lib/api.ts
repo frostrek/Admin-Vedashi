@@ -298,7 +298,14 @@ export async function getCustomer360(id: string): Promise<{ profile: Customer; a
         const json: ApiResponse<any> = await res.json();
         console.log(`[Admin API] getCustomer360 response body:`, json);
         if (json.success && json.data) {
-            return json.data;
+            const data = json.data;
+            if (Array.isArray(data.orders)) {
+                data.orders = data.orders.map((o: any) => ({
+                    ...o,
+                    final_total: parseFloat(o.final_total ?? o.total ?? 0)
+                }));
+            }
+            return data;
         }
         return null;
     } catch (error) {
@@ -515,12 +522,27 @@ export async function checkApiHealth(): Promise<boolean> {
 
 /* ─── Orders ─── */
 
+export interface OrderItem {
+    product_name?: string;
+    quantity: number;
+    price: number;
+}
+
 export interface Order {
     id: string;
     order_id?: string;
     customer_name: string;
     customer_email: string;
-    items: { product_name?: string; quantity: number; price: number }[];
+    shipping_address?: {
+        address_line1: string;
+        address_line2?: string;
+        city: string;
+        state: string;
+        pincode: string;
+        country: string;
+        phone?: string;
+    };
+    items: OrderItem[];
     total: number;
     subtotal?: number;
     status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
@@ -562,7 +584,7 @@ export async function getOrders(): Promise<Order[]> {
             const itemCount = parseInt(row.item_count || row.items?.length || 0);
 
             // Create a dummy items array so items.length works in the frontend
-            const dummyItems = Array.from({ length: itemCount }).map(() => ({
+            const dummyItems: OrderItem[] = Array.from({ length: itemCount }).map(() => ({
                 product_name: 'Item',
                 quantity: 1,
                 price: 0
@@ -572,7 +594,8 @@ export async function getOrders(): Promise<Order[]> {
                 id: row.order_id ?? row.id ?? '',
                 order_id: row.order_id,
                 customer_name: row.customer_name ?? 'Unknown',
-                customer_email: row.customer_email ?? '',
+                customer_email: row.customer_email || '',
+                shipping_address: row.shipping_address ? (typeof row.shipping_address === 'string' ? JSON.parse(row.shipping_address) : row.shipping_address) : undefined,
                 items: Array.isArray(row.items) && row.items.length > 0
                     ? row.items.map((item: any) => ({
                         product_name: item.product_name ?? 'Unknown Product',

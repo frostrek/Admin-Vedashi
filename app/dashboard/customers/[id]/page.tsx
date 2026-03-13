@@ -15,12 +15,12 @@ import {
 
 interface OrderDetail extends Order {
     shipping_address?: {
-        address_line1?: string;
+        address_line1: string;
         address_line2?: string;
-        city?: string;
-        state?: string;
-        pincode?: string;
-        country?: string;
+        city: string;
+        state: string;
+        pincode: string;
+        country: string;
     };
 }
 
@@ -79,7 +79,7 @@ export default function CustomerDetailPage() {
     };
 
     const stats = useMemo(() => {
-        const totalSpent = orders.reduce((sum, o) => sum + (o.total || 0), 0);
+        const totalSpent = orders.reduce((sum, o) => sum + (o.status?.toUpperCase() !== 'CANCELLED' ? Number(o.total || 0) : 0), 0);
         const totalOrders = orders.length;
         const aov = totalOrders > 0 ? totalSpent / totalOrders : 0;
         
