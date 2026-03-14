@@ -166,17 +166,36 @@ export default function CollectionsPage() {
 
         // 2. Sync Products if collection save was successful
         if (success && collectionId) {
+            let syncSuccess = true;
+
             // Remove products
             if (pendingProductIdsToRemove.size > 0) {
-                await removeCollectionProducts(collectionId, Array.from(pendingProductIdsToRemove));
-            }
-            // Add products
-            if (pendingProductsToAdd.length > 0) {
-                await addCollectionProducts(collectionId, pendingProductsToAdd.map(p => p.product_id));
+                const ok = await removeCollectionProducts(collectionId, Array.from(pendingProductIdsToRemove));
+                if (!ok) {
+                    syncSuccess = false;
+                    toast.error('Failed to remove some products');
+                }
             }
 
-            setModalMode(null);
-            fetchCollections();
+            // Add products
+            if (pendingProductsToAdd.length > 0) {
+                const result = await addCollectionProducts(collectionId, pendingProductsToAdd.map(p => p.product_id));
+                if (!result.success) {
+                    syncSuccess = false;
+                    toast.error(result.error || 'Failed to add products');
+                }
+            }
+
+            if (syncSuccess) {
+                setModalMode(null);
+                fetchCollections();
+            } else {
+                // If sync failed, we reload the collection data to stay consistent
+                const detail = await getAdminCollection(collectionId);
+                setCollectionProducts(detail?.products || []);
+                setPendingProductsToAdd([]);
+                setPendingProductIdsToRemove(new Set());
+            }
         }
 
         setSaving(false);
@@ -208,6 +227,8 @@ export default function CollectionsPage() {
     };
 
     const handleRemoveProduct = (productId: string, isPendingAdd: boolean) => {
+        if (!window.confirm('Are you sure you want to remove this product from the collection?')) return;
+        
         if (isPendingAdd) {
             setPendingProductsToAdd(prev => prev.filter(p => p.product_id !== productId));
         } else {

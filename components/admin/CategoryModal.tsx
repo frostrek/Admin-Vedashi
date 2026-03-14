@@ -23,6 +23,18 @@ export default function CategoryModal({ isOpen, onClose, onSubmit, editCategory,
     const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
 
     const isEdit = !!editCategory;
+    
+    // Lock background scroll when modal is open
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isOpen]);
 
     // Populate form when editing
     useEffect(() => {

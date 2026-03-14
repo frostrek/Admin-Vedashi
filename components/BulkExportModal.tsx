@@ -14,6 +14,18 @@ interface BulkExportModalProps {
 type TargetType = 'category' | 'sub_category' | 'brand' | 'all';
 
 export default function BulkExportModal({ isOpen, onClose, products }: BulkExportModalProps) {
+    // Lock background scroll when modal is open
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isOpen]);
+
     const [targetType, setTargetType] = useState<TargetType>('category');
     const [targetValue, setTargetValue] = useState('');
     const [dropdownOpen, setDropdownOpen] = useState(false);
