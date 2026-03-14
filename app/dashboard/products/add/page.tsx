@@ -761,7 +761,7 @@ export default function AddProductPage() {
     // ÔöÇÔöÇÔöÇ Render ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
     return (
         <>
-            <div>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full overflow-x-hidden">
                 {/* ÔöÇÔöÇ Header ÔöÇÔöÇ */}
                 <div className="flex items-center gap-3 mb-6">
                     <Link href="/dashboard/products" className="rounded-lg border border-border p-2 hover:bg-gold/[0.06] hover:border-gold/20 transition-all duration-300">
@@ -893,7 +893,7 @@ export default function AddProductPage() {
                     </div>
 
                     {/* ÔöÇÔöÇ Right Content Area ÔöÇÔöÇ */}
-                    <div className="flex-1 rounded-xl border border-border bg-gradient-to-br from-card-bg to-card-bg-elevated p-6 sm:p-8 min-h-[500px]">
+                    <div className="flex-1 min-w-0 rounded-xl border border-border bg-gradient-to-br from-card-bg to-card-bg-elevated p-6 sm:p-8 min-h-[500px]">
 
                         {/* ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ STEP 1: GENERAL INFO ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ */}
                         {currentStep === 1 && (
@@ -1313,8 +1313,8 @@ export default function AddProductPage() {
                                     const activeDims = Object.entries(dimConfigs).filter(([_, c]) => c.active);
                                     return (
                                         <div className="border border-border rounded-xl bg-card-bg overflow-hidden shadow-sm">
-                                            <div className="overflow-x-auto">
-                                                <table className="w-full text-left text-sm whitespace-nowrap">
+                                            <div className="w-full overflow-x-auto">
+                                                <table className="min-w-[900px] w-full text-left text-sm whitespace-nowrap">
                                                     <thead className="bg-white/5 border-b border-border">
                                                         <tr>
                                                             <th className="px-4 py-4 w-10"></th>
