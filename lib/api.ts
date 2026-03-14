@@ -568,9 +568,15 @@ export interface Order {
 }
 
 /** Fetches orders from the real API. Returns [] on failure. */
-export async function getOrders(): Promise<Order[]> {
+export async function getOrders(params?: { dateFrom?: string; dateTo?: string }): Promise<Order[]> {
     try {
-        const res = await authFetch(`${API_URL}/api/orders`, {
+        let url = `${API_URL}/api/orders`;
+        const queryParams = [];
+        if (params?.dateFrom) queryParams.push(`date_from=${encodeURIComponent(params.dateFrom)}`);
+        if (params?.dateTo) queryParams.push(`date_to=${encodeURIComponent(params.dateTo)}`);
+        if (queryParams.length > 0) url += `?${queryParams.join('&')}`;
+
+        const res = await authFetch(url, {
             headers: authHeaders(),
             credentials: 'include',
         });

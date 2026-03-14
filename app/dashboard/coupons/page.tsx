@@ -62,6 +62,18 @@ export default function CouponsPage() {
     const [editing, setEditing] = useState<Coupon | null>(null);
     const [form, setForm] = useState(emptyCoupon);
     const [saving, setSaving] = useState(false);
+    
+    // Lock background scroll when modal is open
+    useEffect(() => {
+        if (modalOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [modalOpen]);
 
     const headers = useCallback(() => {
         const h: Record<string, string> = { 'Content-Type': 'application/json' };

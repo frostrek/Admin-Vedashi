@@ -1,7 +1,7 @@
 'use client';
 import { authFetch } from '@/lib/api';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { X, UploadCloud, FileType, CheckCircle2, AlertCircle, Loader2, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
 import * as xlsx from 'xlsx';
@@ -13,6 +13,19 @@ interface BulkImportModalProps {
 }
 
 export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImportModalProps) {
+    // Lock background scroll when modal is open
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isOpen]);
+
+
     const [file, setFile] = useState<File | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const [results, setResults] = useState<{
@@ -103,8 +116,6 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
                 Category: "Wellness",
                 Sub_Category: "Capsules",
                 Country_of_Origin: "India",
-                Vintage_Year: "",
-                Alcohol_Percentage: "0",
                 Intended_Use: "Daily wellness",
                 Description: "A premium ayurvedic supplement for vitality and stress relief.",
                 Available_From: "",        // e.g. 2025-01-01

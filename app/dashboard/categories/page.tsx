@@ -5,8 +5,9 @@ import { getCategories, createCategory, updateCategory, deleteCategory } from '@
 import { Category, CreateCategoryPayload, UpdateCategoryPayload } from '@/types/category';
 import CategoryCard from '@/components/admin/CategoryCard';
 import CategoryModal from '@/components/admin/CategoryModal';
-import { Plus, AlertTriangle, FolderTree, Tag } from 'lucide-react';
+import { Plus, AlertTriangle, FolderTree, Tag, Search, ChevronDown } from 'lucide-react';
 import toast from 'react-hot-toast';
+import ConfirmModal from '@/components/ConfirmModal';
 
 type FilterMode = 'all' | 'parents' | 'subcategories';
 
@@ -14,6 +15,8 @@ export default function CategoriesPage() {
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState<FilterMode>('all');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
 
     // Modal state
     const [modalOpen, setModalOpen] = useState(false);
@@ -34,6 +37,7 @@ export default function CategoriesPage() {
     useEffect(() => {
         loadCategories();
     }, []);
+
 
     /* ─── Derived data ─── */
     const parentCategories = useMemo(
@@ -60,15 +64,38 @@ export default function CategoriesPage() {
     }, [categories]);
 
     const filteredCategories = useMemo(() => {
-        switch (filter) {
-            case 'parents':
-                return categories.filter((c) => !c.parent_id);
-            case 'subcategories':
-                return categories.filter((c) => !!c.parent_id);
-            default:
-                return categories;
-        }
-    }, [categories, filter]);
+        return categories.filter((c) => {
+            // Tab Filter
+            const matchesTab = 
+                filter === 'all' || 
+                (filter === 'parents' && !c.parent_id) || 
+                (filter === 'subcategories' && !!c.parent_id);
+            
+            // Status Filter
+            const matchesStatus = 
+                statusFilter === 'all' || 
+                (statusFilter === 'active' && c.is_active) || 
+                (statusFilter === 'inactive' && !c.is_active);
+            
+            // Search Query
+            const query = searchQuery.toLowerCase().trim();
+            const matchesSearch = 
+                !query || 
+                c.name.toLowerCase().includes(query) || 
+                c.slug.toLowerCase().includes(query) || 
+                (c.description || '').toLowerCase().includes(query);
+
+            return matchesTab && matchesStatus && matchesSearch;
+        });
+    }, [categories, filter, searchQuery, statusFilter]);
+
+    const displayParents = useMemo(() => 
+        filteredCategories.filter(c => !c.parent_id),
+    [filteredCategories]);
+
+    const displaySubcategories = useMemo(() => 
+        filteredCategories.filter(c => !!c.parent_id),
+    [filteredCategories]);
 
     /* ─── CRUD handlers ─── */
     const handleCreate = () => {
@@ -158,22 +185,53 @@ export default function CategoriesPage() {
                 </button>
             </div>
 
-            {/* Filter Tabs */}
+            {/* Filter Bar */}
             {!loading && categories.length > 0 && (
-                <div className="flex gap-1 mb-5 p-1 bg-page-bg rounded-lg w-fit">
-                    {filterTabs.map((tab) => (
-                        <button
-                            key={tab.key}
-                            onClick={() => setFilter(tab.key)}
-                            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${filter === tab.key
-                                ? 'bg-white text-text-primary shadow-sm'
-                                : 'text-text-secondary hover:text-text-primary'
-                                }`}
-                        >
-                            {tab.key === 'parents' ? 'Categories' : tab.label}
-                            <span className="ml-1.5 text-text-muted">({tab.count})</span>
-                        </button>
-                    ))}
+                <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-6">
+                    {/* Filter Tabs */}
+                    <div className="flex gap-1 p-1 bg-page-bg rounded-lg w-fit">
+                        {filterTabs.map((tab) => (
+                            <button
+                                key={tab.key}
+                                onClick={() => setFilter(tab.key)}
+                                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${filter === tab.key
+                                    ? 'bg-white text-text-primary shadow-sm'
+                                    : 'text-text-secondary hover:text-text-primary'
+                                    }`}
+                            >
+                                {tab.key === 'parents' ? 'Categories' : tab.label}
+                                <span className="ml-1.5 text-text-muted">({tab.count})</span>
+                            </button>
+                        ))}
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+                        {/* Search */}
+                        <div className="relative flex-1 lg:w-64">
+                            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Search categories..."
+                                className="w-full rounded-lg border border-border bg-card-bg pl-10 pr-4 py-2 text-sm focus:border-gold/40 focus:outline-none transition-colors"
+                            />
+                        </div>
+
+                        {/* Status Filter */}
+                        <div className="relative">
+                            <select
+                                value={statusFilter}
+                                onChange={(e) => setStatusFilter(e.target.value as any)}
+                                className="appearance-none rounded-lg border border-border bg-card-bg px-3 py-2 pr-8 text-sm text-text-primary focus:border-gold/40 focus:outline-none cursor-pointer min-w-[120px]"
+                            >
+                                <option value="all">All Status</option>
+                                <option value="active">Active Only</option>
+                                <option value="inactive">Inactive Only</option>
+                            </select>
+                            <ChevronDown className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted pointer-events-none" />
+                        </div>
+                    </div>
                 </div>
             )}
 
@@ -224,32 +282,34 @@ export default function CategoriesPage() {
                     {filter === 'all' ? (
                         <>
                             {/* Parents Section */}
-                            <div>
-                                <h2 className="text-sm font-semibold text-text-secondary mb-4 flex items-center gap-2">
-                                    <Tag className="h-4 w-4" /> Categories ({parentCategories.length})
-                                </h2>
-                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                                    {parentCategories.map((cat) => (
-                                        <CategoryCard
-                                            key={cat.category_id}
-                                            category={cat}
-                                            subcategoryCount={subcategoryCountMap[cat.category_id] || 0}
-                                            parentName={undefined}
-                                            onEdit={handleEdit}
-                                            onDelete={handleDeleteClick}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Subcategories Section */}
-                            {categories.length - parentCategories.length > 0 && (
+                            {displayParents.length > 0 && (
                                 <div>
-                                    <h2 className="text-sm font-semibold text-text-secondary mb-4 flex items-center gap-2 pt-4">
-                                        <FolderTree className="h-4 w-4" /> Subcategories ({categories.length - parentCategories.length})
+                                    <h2 className="text-sm font-semibold text-text-secondary mb-4 flex items-center gap-2">
+                                        <Tag className="h-4 w-4" /> Categories ({displayParents.length})
                                     </h2>
                                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                                        {categories.filter(c => !!c.parent_id).map((cat) => (
+                                        {displayParents.map((cat) => (
+                                            <CategoryCard
+                                                key={cat.category_id}
+                                                category={cat}
+                                                subcategoryCount={subcategoryCountMap[cat.category_id] || 0}
+                                                parentName={undefined}
+                                                onEdit={handleEdit}
+                                                onDelete={handleDeleteClick}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Subcategories Section */}
+                            {displaySubcategories.length > 0 && (
+                                <div>
+                                    <h2 className="text-sm font-semibold text-text-secondary mb-4 flex items-center gap-2 pt-4">
+                                        <FolderTree className="h-4 w-4" /> Subcategories ({displaySubcategories.length})
+                                    </h2>
+                                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                        {displaySubcategories.map((cat) => (
                                             <CategoryCard
                                                 key={cat.category_id}
                                                 category={cat}
@@ -298,40 +358,21 @@ export default function CategoriesPage() {
             />
 
             {/* Delete Confirmation Modal */}
-            {deleteTarget && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center">
-                    <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setDeleteTarget(null)} />
-                    <div className="relative w-full max-w-sm rounded-2xl border border-border bg-card-bg p-6 shadow-xl mx-4">
-                        <div className="flex flex-col items-center text-center">
-                            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-50 mb-4">
-                                <AlertTriangle className="h-6 w-6 text-danger" />
-                            </div>
-                            <h3 className="font-serif text-lg font-semibold text-text-primary mb-1">
-                                Delete Category
-                            </h3>
-                            <p className="text-sm text-text-secondary mb-5">
-                                Are you sure you want to delete <strong>&quot;{deleteTarget.name}&quot;</strong>? This action cannot be undone.
-                            </p>
-                            <div className="flex items-center gap-2 w-full">
-                                <button
-                                    onClick={() => setDeleteTarget(null)}
-                                    disabled={deleting}
-                                    className="flex-1 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-text-secondary hover:bg-page-bg transition-colors disabled:opacity-50"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleDeleteConfirm}
-                                    disabled={deleting}
-                                    className="flex-1 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-700 transition-colors disabled:opacity-50"
-                                >
-                                    {deleting ? 'Deleting...' : 'Delete'}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <ConfirmModal
+                open={!!deleteTarget}
+                onClose={() => setDeleteTarget(null)}
+                title="Delete Category"
+                confirmLabel="Delete"
+                confirmVariant="danger"
+                loading={deleting}
+                onConfirm={handleDeleteConfirm}
+            >
+                {deleteTarget && (
+                    <p>
+                        Are you sure you want to delete <strong>&quot;{deleteTarget.name}&quot;</strong>? This action cannot be undone.
+                    </p>
+                )}
+            </ConfirmModal>
         </div>
     );
 }

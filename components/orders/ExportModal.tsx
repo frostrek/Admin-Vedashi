@@ -30,9 +30,10 @@ export default function ExportModal({ open, onClose }: ExportModalProps) {
     const [customerEmail, setCustomerEmail] = useState('');
     const [country, setCountry] = useState('');
 
-    // Load history on open
+    // Load history on open and handle body scroll lock
     useEffect(() => {
         if (open) {
+            document.body.style.overflow = 'hidden';
             setHistoryLoading(true);
             getExportHistory(10).then(h => {
                 setHistory(h);
@@ -41,8 +42,12 @@ export default function ExportModal({ open, onClose }: ExportModalProps) {
                 const active = h.find(j => j.status === 'PENDING' || j.status === 'PROCESSING');
                 if (active) setActiveJob(active);
             });
+        } else {
+            document.body.style.overflow = '';
         }
+
         return () => {
+            document.body.style.overflow = '';
             if (pollRef.current) clearInterval(pollRef.current);
         };
     }, [open]);

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { getCategories, createCategory } from '@/lib/api/category';
 import { createProduct } from '@/lib/api/product';
@@ -72,6 +72,7 @@ interface VariantRow {
 export default function AddProductPage() {
     const router = useRouter();
     const { isDark } = useTheme();
+    const isSubmittingRef = useRef(false);
     const [currentStep, setCurrentStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
@@ -136,6 +137,75 @@ export default function AddProductPage() {
     const [newSubCatForm, setNewSubCatForm] = useState({ name: '', slug: '', description: '', parent_id: '' });
     const [catCreating, setCatCreating] = useState(false);
     const [subCatCreating, setSubCatCreating] = useState(false);
+
+    const latestForm = useRef<any>(null);
+    const latestVariants = useRef<any[]>([]);
+    const latestConfigs = useRef<any>(null);
+
+    useEffect(() => {
+        latestForm.current = form;
+        latestVariants.current = variants;
+        latestConfigs.current = dimConfigs;
+    }, [form, variants, dimConfigs]);
+
+    // Cleanup on unmount (Browser back navigation Auto-Save)
+    useEffect(() => {
+        const handleAutoSave = () => {
+            if (isSubmittingRef.current || !latestForm.current) return;
+            
+            const f = latestForm.current;
+            const v = latestVariants.current;
+            
+            const hasInput = !!f.product_name.trim() || !!f.brand.trim() || v.some((vd: any) => !!vd.sku.trim() || !!vd.variant_name.trim() || Number(vd.price) > 0);
+            if (hasInput) {
+                const safeName = f.product_name.trim() || `Untitled Draft - ${Date.now()}`;
+                const draftSku = (v.find((variant: any) => variant.isDefault) ?? v[0])?.sku?.trim() || `DRAFT-${Date.now()}`;
+                
+                const draftPayload = {
+                    product_name: safeName,
+                    brand: f.brand.trim() || undefined,
+                    category_id: f.category_id || undefined,
+                    sku: draftSku,
+                    status: 'draft',
+                    variants: v.filter((variant: any) => variant.sku.trim() || variant.variant_name.trim() || true).map((variant: any) => {
+                        const activeDimensions = Object.entries(latestConfigs.current || {})
+                            .filter(([_, config]: any) => config.active)
+                            .map(([id]) => (variant as any)[id])
+                            .filter(Boolean);
+                        const combinedName = variant.variant_name || activeDimensions.join(' ');
+
+                        return {
+                            sku: variant.sku.trim() || `${draftSku}-V${Math.random().toString(36).slice(2, 6)}`,
+                            variant_name: combinedName || 'Draft Variant',
+                            price: Number(variant.price) || 0,
+                            stock: Number(variant.stock) || 0,
+                            isDefault: variant.isDefault,
+                            volume: variant.volume || undefined,
+                            pack: variant.pack || undefined
+                        };
+                    })
+                };
+                
+                const token = localStorage.getItem('ksp_admin_token');
+                fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/products`, {
+                    method: 'POST',
+                    keepalive: true,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                    },
+                    body: JSON.stringify(draftPayload)
+                }).catch(err => console.error('[AutoSave] Keepalive fetch failed:', err));
+            }
+        };
+
+        window.addEventListener('pagehide', handleAutoSave);
+
+        return () => {
+            window.removeEventListener('pagehide', handleAutoSave);
+            handleAutoSave();
+        };
+    }, []);
 
     // ─── Fetch categories ─────────────────────────────────
     const refreshCategories = async () => {
@@ -465,17 +535,26 @@ export default function AddProductPage() {
     };
 
     // ─── Save as Draft ────────────────────────────────────────────────────────
-    const handleSaveAsDraft = async () => {
-        if (!form.product_name.trim()) {
+    const handleSaveAsDraft = async (isAutoSaveParam?: boolean | any) => {
+        const isAutoSave = typeof isAutoSaveParam === 'boolean' ? isAutoSaveParam : false;
+        let currentName = form.product_name.trim();
+
+        if (!currentName && !isAutoSave) {
             toast.error('Product Name is required to save a draft');
             return;
         }
+
+        if (!currentName && isAutoSave) {
+            currentName = `Untitled Draft - ${Date.now()}`;
+        }
+        
+        isSubmittingRef.current = true;
         // Draft requires at least a placeholder SKU — auto-generate one from name if blank
         const draftSku = (variants.find(v => v.isDefault) ?? variants[0]).sku.trim()
             || `DRAFT-${Date.now()}`;
 
         const draftPayload = {
-            product_name: form.product_name.trim(),
+            product_name: currentName,
             brand: form.brand.trim() || undefined,
             category_id: form.category_id || undefined,
             sub_category_id: form.sub_category_id || undefined,
@@ -487,7 +566,7 @@ export default function AddProductPage() {
             status: 'draft',
             specifications: form.country_of_origin ? { country_of_origin: form.country_of_origin } : undefined,
             variants: variants
-                .filter(v => v.sku.trim() || v.variant_name.trim())
+                .filter(v => v.sku.trim() || v.variant_name.trim() || isAutoSave)
                 .map(v => {
                     const activeDimensions = Object.entries(dimConfigs)
                         .filter(([_, config]) => config.active)
@@ -546,16 +625,18 @@ export default function AddProductPage() {
         try {
             const result = await createProduct(draftPayload as any);
             if (result.success) {
-                toast.success('Draft saved! View it in the Drafts panel.');
+                if (!isAutoSave) toast.success('Draft saved! View it in the Drafts panel.');
                 router.push('/dashboard/products');
             } else {
-                toast.error(result.error || 'Failed to save draft');
+                if (!isAutoSave) toast.error(result.error || 'Failed to save draft');
+                isSubmittingRef.current = false;
             }
         } catch (err) {
             console.error('[handleSaveAsDraft] Error:', err);
-            toast.error('Something went wrong saving draft');
+            if (!isAutoSave) toast.error('Something went wrong saving draft');
+            isSubmittingRef.current = false;
         } finally {
-            setLoading(false);
+            if (!isSubmittingRef.current) setLoading(false);
         }
     };
 
@@ -760,15 +841,25 @@ export default function AddProductPage() {
 
     const duplicateSkus = variants.map(v => v.sku).filter((sku, i, arr) => sku && arr.indexOf(sku) !== i);
 
+    const handleSafeBack = (e?: React.MouseEvent) => {
+        if (e) e.preventDefault();
+        const hasInput = !!form.product_name.trim() || !!form.brand.trim() || variants.some(v => !!v.sku.trim() || !!v.variant_name.trim() || Number(v.price) > 0);
+        if (hasInput) {
+            handleSaveAsDraft(true);
+        } else {
+            router.push('/dashboard/products');
+        }
+    };
+
     // ÔöÇÔöÇÔöÇ Render ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
     return (
         <>
-            <div>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full overflow-x-hidden">
                 {/* ÔöÇÔöÇ Header ÔöÇÔöÇ */}
                 <div className="flex items-center gap-3 mb-6">
-                    <Link href="/dashboard/products" className="rounded-lg border border-border p-2 hover:bg-gold/[0.06] hover:border-gold/20 transition-all duration-300">
+                    <button onClick={handleSafeBack} className="rounded-lg border border-border p-2 hover:bg-gold/[0.06] hover:border-gold/20 transition-all duration-300">
                         <ArrowLeft className="h-4 w-4 text-text-muted" />
-                    </Link>
+                    </button>
                     <div>
                         <h1 className="font-serif text-2xl font-bold text-gold-soft">Add New Product</h1>
                         <p className="text-sm text-text-secondary">Fill in the details to create a new product</p>
@@ -895,7 +986,7 @@ export default function AddProductPage() {
                     </div>
 
                     {/* ÔöÇÔöÇ Right Content Area ÔöÇÔöÇ */}
-                    <div className="flex-1 rounded-xl border border-border bg-gradient-to-br from-card-bg to-card-bg-elevated p-6 sm:p-8 min-h-[500px]">
+                    <div className="flex-1 min-w-0 rounded-xl border border-border bg-gradient-to-br from-card-bg to-card-bg-elevated p-6 sm:p-8 min-h-[500px]">
 
                         {/* ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ STEP 1: GENERAL INFO ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ */}
                         {currentStep === 1 && (
@@ -1315,8 +1406,8 @@ export default function AddProductPage() {
                                     const activeDims = Object.entries(dimConfigs).filter(([_, c]) => c.active);
                                     return (
                                         <div className="border border-border rounded-xl bg-card-bg overflow-hidden shadow-sm">
-                                            <div className="overflow-x-auto">
-                                                <table className="w-full text-left text-sm whitespace-nowrap">
+                                            <div className="w-full overflow-x-auto">
+                                                <table className="min-w-[900px] w-full text-left text-sm whitespace-nowrap">
                                                     <thead className="bg-white/5 border-b border-border">
                                                         <tr>
                                                             <th className="px-4 py-4 w-10"></th>

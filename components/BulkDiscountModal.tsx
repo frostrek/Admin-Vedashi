@@ -26,6 +26,18 @@ interface ActiveDiscount {
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 export default function BulkDiscountModal({ isOpen, onClose, onApply }: BulkDiscountModalProps) {
+    // Lock background scroll when modal is open
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isOpen]);
+
     const [activeTab, setActiveTab] = useState<BulkActionType>('discount');
 
     // Common State

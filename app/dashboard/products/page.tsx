@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import BulkDiscountModal from '@/components/BulkDiscountModal';
 import BulkImportModal from '@/components/BulkImportModal';
 import BulkExportModal from '@/components/BulkExportModal';
+import ConfirmModal from '@/components/ConfirmModal';
 import { Download } from 'lucide-react';
 
 const LOW_STOCK_THRESHOLD = 10;
@@ -34,6 +35,32 @@ export default function ProductsListPage() {
     const [draftsOpen, setDraftsOpen] = useState(false);
     const [drafts, setDrafts] = useState<Product[]>([]);
     const [draftsLoading, setDraftsLoading] = useState(false);
+
+    // ─── Custom Confirm Modal state ───
+    const [confirmModal, setConfirmModal] = useState<{
+        open: boolean;
+        title: string;
+        message: string;
+        onConfirm: () => void;
+        confirmVariant?: 'danger' | 'primary';
+    }>({
+        open: false,
+        title: '',
+        message: '',
+        onConfirm: () => { },
+    });
+    
+    // Lock background scroll when Drafts modal is open
+    useEffect(() => {
+        if (draftsOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [draftsOpen]);
 
     // ─── Expanded variants state ───
     const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
@@ -269,15 +296,23 @@ export default function ProductsListPage() {
         }
     };
 
-    const handleDelete = async (id: string, name: string) => {
-        if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
-        const success = await deleteProduct(id);
-        if (success) {
-            toast.success('Product deleted');
-            loadProducts();
-        } else {
-            toast.error('Failed to delete product');
-        }
+    const handleDelete = (id: string, name: string) => {
+        setConfirmModal({
+            open: true,
+            title: 'Delete Product',
+            message: `Are you sure you want to delete "${name}"? This action cannot be undone.`,
+            confirmVariant: 'danger',
+            onConfirm: async () => {
+                const success = await deleteProduct(id);
+                if (success) {
+                    toast.success('Product deleted');
+                    loadProducts();
+                } else {
+                    toast.error('Failed to delete product');
+                }
+                setConfirmModal(prev => ({ ...prev, open: false }));
+            }
+        });
     };
 
     // ─── Best Seller toggle ───
@@ -338,15 +373,23 @@ export default function ProductsListPage() {
         });
     };
 
-    const handleDeleteDraft = async (id: string, name: string) => {
-        if (!confirm(`Delete draft "${name}"? This cannot be undone.`)) return;
-        const success = await deleteProduct(id);
-        if (success) {
-            toast.success('Draft deleted');
-            setDrafts(prev => prev.filter(d => d.product_id !== id));
-        } else {
-            toast.error('Failed to delete draft');
-        }
+    const handleDeleteDraft = (id: string, name: string) => {
+        setConfirmModal({
+            open: true,
+            title: 'Delete Draft',
+            message: `Are you sure you want to delete draft "${name}"? This cannot be undone.`,
+            confirmVariant: 'danger',
+            onConfirm: async () => {
+                const success = await deleteProduct(id);
+                if (success) {
+                    toast.success('Draft deleted');
+                    setDrafts(prev => prev.filter(d => d.product_id !== id));
+                } else {
+                    toast.error('Failed to delete draft');
+                }
+                setConfirmModal(prev => ({ ...prev, open: false }));
+            }
+        });
     };
 
     const openDrafts = async () => {
@@ -422,6 +465,17 @@ export default function ProductsListPage() {
                 onClose={() => setBulkExportOpen(false)}
                 products={products}
             />
+
+            <ConfirmModal
+                open={confirmModal.open}
+                onClose={() => setConfirmModal(prev => ({ ...prev, open: false }))}
+                title={confirmModal.title}
+                confirmLabel="Delete"
+                confirmVariant={confirmModal.confirmVariant}
+                onConfirm={confirmModal.onConfirm}
+            >
+                {confirmModal.message}
+            </ConfirmModal>
 
             {/* ── Drafts Modal ── */}
             {draftsOpen && (

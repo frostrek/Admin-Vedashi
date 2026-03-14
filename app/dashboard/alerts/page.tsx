@@ -155,7 +155,7 @@ export default function AlertsPage() {
                         if (alert.type === 'order') {
                             const order = alert.data as Order;
                             return (
-                                <div key={alert.id} className="p-5 flex gap-4 hover:bg-gold/[0.02] transition-colors group relative">
+                                <div key={`${alert.type}-${alert.id}`} className="p-5 flex gap-4 hover:bg-gold/[0.02] transition-colors group relative">
                                     <div className="h-10 w-10 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
                                         <ShoppingCart className="h-5 w-5" />
                                     </div>
@@ -181,7 +181,7 @@ export default function AlertsPage() {
                         } else if (alert.type === 'product') {
                             const product = alert.data as Product;
                             return (
-                                <div key={alert.id} className="p-5 flex gap-4 hover:bg-gold/[0.02] transition-colors group relative">
+                                <div key={`${alert.type}-${alert.id}`} className="p-5 flex gap-4 hover:bg-gold/[0.02] transition-colors group relative">
                                     <div className="h-10 w-10 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
                                         <Package className="h-5 w-5" />
                                     </div>
@@ -207,7 +207,7 @@ export default function AlertsPage() {
                         } else {
                             const enquiry = alert.data as any;
                             return (
-                                <div key={alert.id} className="p-5 flex gap-4 hover:bg-gold/[0.02] transition-colors cursor-default group relative">
+                                <div key={`${alert.type}-${alert.id}`} className="p-5 flex gap-4 hover:bg-gold/[0.02] transition-colors cursor-default group relative">
                                     <div className="h-10 w-10 rounded-full bg-purple-500/10 text-purple-500 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
                                         <Users className="h-5 w-5" />
                                     </div>

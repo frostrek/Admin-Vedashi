@@ -70,6 +70,12 @@ const systemNav = [
     { href: '/dashboard/gdpr', label: 'GDPR', icon: Shield },
 ];
 
+const allNavItems = [
+    ...overviewNav, ...catalogNav, ...engagementNav, ...salesNav, 
+    ...usersNav, ...marketingNav, ...siteContentNav, ...optimizationNav, 
+    ...supportNav, ...systemNav
+];
+
 interface AdminSidebarProps {
     collapsed: boolean;
     onToggle: () => void;
@@ -93,22 +99,45 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
     }, [mobileOpen]);
 
     const renderNavItem = (item: { href: string; label: string; icon: any; isSubItem?: boolean }, isCollapsed: boolean) => {
-        const isActive = item.href === '/dashboard'
-            ? pathname === '/dashboard'
-            : pathname.startsWith(item.href) && item.href !== '#';
+        let isActive = false;
+        let isParentWithActiveChild = false;
+
+        if (item.href === '/dashboard' || item.href === '#') {
+            isActive = pathname === item.href;
+        } else {
+            const isMatch = pathname === item.href || pathname.startsWith(item.href + '/');
+            if (isMatch) {
+                const hasLongerMatch = allNavItems.some(other => 
+                    other.href !== item.href && 
+                    other.href !== '#' && 
+                    (pathname === other.href || pathname.startsWith(other.href + '/')) && 
+                    other.href.length > item.href.length
+                );
+                isActive = !hasLongerMatch;
+                isParentWithActiveChild = hasLongerMatch;
+            }
+        }
+
         const Icon = item.icon;
 
         return (
             <Link
                 key={item.label}
                 href={item.href}
-                className={`flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-300 relative ${isActive
-                    ? 'text-white bg-[#828B5C]'
-                    : 'text-[#A0A691] hover:text-white hover:bg-white/5'
-                    } ${isCollapsed ? 'justify-center' : ''} ${item.isSubItem ? 'ml-6 border-l border-white/10 rounded-l-none pl-4 py-2 text-xs' : ''}`}
+                className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 relative before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:w-[3px] before:h-[60%] before:rounded-r-full before:transition-all before:duration-150 ${
+                    isActive
+                        ? "text-white bg-[#4a5238] before:bg-[#9aab6f]"
+                        : isParentWithActiveChild
+                            ? "text-[#c8d0b8] bg-white/[0.04] before:bg-transparent"
+                            : "text-[#7a8070] hover:text-[#d4d9c8] hover:bg-white/5 before:bg-transparent"
+                    } ${isCollapsed ? 'justify-center' : ''} ${
+                        item.isSubItem 
+                        ? `ml-6 pl-4 text-xs`
+                        : ''
+                    }`}
                 title={isCollapsed ? item.label : undefined}
             >
-                <Icon className={`${item.isSubItem ? 'h-3.5 w-3.5' : 'h-[18px] w-[18px]'} flex-shrink-0 ${isActive ? 'text-white' : ''}`} />
+                <Icon className={`${item.isSubItem ? 'h-3.5 w-3.5' : 'h-[18px] w-[18px]'} flex-shrink-0 ${(isActive || isParentWithActiveChild) ? 'text-white' : ''}`} />
                 {!isCollapsed && <span>{item.label}</span>}
             </Link>
         );
