@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useAdminAuth } from '@/context/AdminAuthContext';
-import { Activity, ShieldAlert, RefreshCw, ChevronLeft, ChevronRight, Search, FileText, Eye, X, Copy } from 'lucide-react';
+import { Activity, ShieldAlert, RefreshCw, ChevronLeft, ChevronRight, Search, FileText, Eye, X, Copy, ExternalLink } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useTheme } from '@/context/ThemeContext';
 import { getToken } from '@/lib/auth';
 import toast from 'react-hot-toast';
 
@@ -26,8 +28,12 @@ interface PaginationMeta {
     totalPages: number;
 }
 
-export default function ActivityLogsPage() {
+function ActivityLogsPageContent() {
     const { user } = useAdminAuth();
+    const router = useRouter();
+    const { isDark } = useTheme();
+    const searchParams = useSearchParams();
+    const logIdFromUrl = searchParams.get('log_id');
     const [logs, setLogs] = useState<ActivityLog[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeLog, setActiveLog] = useState<ActivityLog | null>(null);
@@ -108,6 +114,16 @@ export default function ActivityLogsPage() {
         }
     }, [isAuthorized, fetchLogs]);
 
+    // Handle deep link to specific log
+    useEffect(() => {
+        if (logIdFromUrl && logs.length > 0) {
+            const logToActivate = logs.find(l => l.id === logIdFromUrl);
+            if (logToActivate) {
+                setActiveLog(logToActivate);
+            }
+        }
+    }, [logIdFromUrl, logs]);
+
     const handleFilterSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         fetchLogs('1');
@@ -115,26 +131,27 @@ export default function ActivityLogsPage() {
 
     if (!isAuthorized && !loading) {
         return (
-            <div className="flex flex-col items-center justify-center p-12 bg-card-bg/50 rounded-2xl border border-danger/20">
+            <div className={`flex flex-col items-center justify-center p-12 rounded-2xl border ${isDark ? 'bg-card-bg/50 border-danger/20' : 'bg-white border-danger/10 shadow-xl shadow-danger/5'}`}>
                 <ShieldAlert className="w-12 h-12 text-danger mb-4" />
-                <h2 className="text-xl font-bold text-text mb-2">Access Denied</h2>
-                <p className="text-text-muted">You must be an Owner or Admin to view activity logs.</p>
+                <h2 className={`text-xl font-bold ${isDark ? 'text-text' : 'text-emerald-950'} mb-2`}>Access Denied</h2>
+                <p className={`${isDark ? 'text-text-muted' : 'text-emerald-900/60'}`}>You must be an Owner or Admin to view activity logs.</p>
             </div>
         );
     }
 
     return (
-        <div className="space-y-10 min-h-screen animate-fadeIn">
+        <>
+        <div className="p-4 sm:p-8 max-w-[1600px] mx-auto space-y-10 min-h-screen animate-fadeIn">
             {/* ── Page Header ── */}
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 animate-fadeInUp">
                 <div>
                     <div className="flex items-center gap-4 mb-3">
-                        <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/20 border border-border shadow-lg">
+                        <div className={`flex items-center justify-center w-12 h-12 rounded-2xl ${isDark ? 'bg-primary/20 border-border' : 'bg-gold/10 border-gold/20'} border shadow-lg`}>
                             <Activity className="w-6 h-6 text-gold" />
                         </div>
-                        <h1 className="text-3xl font-serif font-bold text-gold tracking-tighter">Interaction Chronicles</h1>
+                        <h1 className={`text-3xl font-serif font-bold ${isDark ? 'text-gold' : 'text-emerald-950'} tracking-tighter`}>Interaction Chronicles</h1>
                     </div>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-muted">
+                    <p className={`text-[10px] font-bold uppercase tracking-[0.2em] ${isDark ? 'text-text-muted' : 'text-emerald-900/40'} ml-1`}>
                         An irreversible audit trail of administrative vibrations and system evolutions.
                     </p>
                 </div>
@@ -149,100 +166,104 @@ export default function ActivityLogsPage() {
             </div>
 
             {/* Filters */}
-            <form onSubmit={handleFilterSubmit} className="grid grid-cols-1 sm:grid-cols-4 gap-4 p-4 bg-card-bg rounded-xl border border-border-subtle">
+            <form onSubmit={handleFilterSubmit} className={`grid grid-cols-1 sm:grid-cols-4 gap-4 p-6 ${isDark ? 'bg-card-bg border-border-subtle' : 'bg-white/80 border-gold/15 shadow-sm'} rounded-2xl border`}>
                 <div>
-                    <label className="text-xs font-medium text-text-muted uppercase tracking-wider mb-1 block">Actor Email</label>
+                    <label className={`text-[10px] font-black uppercase tracking-[0.2em] ${isDark ? 'text-gold' : 'text-emerald-900'} mb-2 block ml-1`}>Actor Email</label>
                     <input
                         type="email"
                         placeholder="Search email..."
                         value={filterEmail}
                         onChange={(e) => setFilterEmail(e.target.value)}
-                        className="w-full bg-sidebar-bg border border-border rounded-lg px-3 py-2 text-sm text-text focus:border-gold outline-none"
+                        className={`w-full ${isDark ? 'bg-sidebar-bg border-border' : 'bg-white border-gold/10 text-emerald-950'} border rounded-xl px-4 py-2.5 text-sm outline-none focus:border-gold/50 transition-all shadow-inner`}
                     />
                 </div>
                 <div>
-                    <label className="text-xs font-medium text-text-muted uppercase tracking-wider mb-1 block">Entity Type</label>
+                    <label className={`text-[10px] font-black uppercase tracking-[0.2em] ${isDark ? 'text-gold' : 'text-emerald-900'} mb-2 block ml-1`}>Entity Type</label>
                     <input
                         type="text"
                         placeholder="e.g., product, order"
                         value={filterEntity}
                         onChange={(e) => setFilterEntity(e.target.value)}
-                        className="w-full bg-sidebar-bg border border-border rounded-lg px-3 py-2 text-sm text-text focus:border-gold outline-none"
+                        className={`w-full ${isDark ? 'bg-sidebar-bg border-border' : 'bg-white border-gold/10 text-emerald-950'} border rounded-xl px-4 py-2.5 text-sm outline-none focus:border-gold/50 transition-all shadow-inner`}
                     />
                 </div>
                 <div>
-                    <label className="text-xs font-medium text-text-muted uppercase tracking-wider mb-1 block">Action</label>
+                    <label className={`text-[10px] font-black uppercase tracking-[0.2em] ${isDark ? 'text-gold' : 'text-emerald-900'} mb-2 block ml-1`}>Action</label>
                     <input
                         type="text"
                         placeholder="e.g., updated_order_status"
                         value={filterAction}
                         onChange={(e) => setFilterAction(e.target.value)}
-                        className="w-full bg-sidebar-bg border border-border rounded-lg px-3 py-2 text-sm text-text focus:border-gold outline-none"
+                        className={`w-full ${isDark ? 'bg-sidebar-bg border-border' : 'bg-white border-gold/10 text-emerald-950'} border rounded-xl px-4 py-2.5 text-sm outline-none focus:border-gold/50 transition-all shadow-inner`}
                     />
                 </div>
                 <div className="flex items-end">
-                    <button type="submit" className="w-full bg-gold/10 text-gold border border-gold/30 hover:bg-gold hover:text-black py-2 rounded-lg font-medium transition-colors flex justify-center items-center gap-2 text-sm">
-                        <Search className="w-4 h-4" /> Filter
+                    <button type="submit" className="w-full bg-gold/10 text-gold border border-gold/30 hover:bg-gold hover:text-black py-2.5 rounded-xl font-bold uppercase tracking-widest transition-all flex justify-center items-center gap-2 text-[10px] shadow-sm active:scale-95">
+                        <Search className="w-4 h-4" /> Filter Records
                     </button>
                 </div>
             </form>
 
-            <div className="bg-card-bg rounded-xl border border-border-subtle overflow-hidden">
+            <div className={`${isDark ? 'bg-card-bg border-border-subtle' : 'bg-white/95 border-gold/15 shadow-xl shadow-gold/5'} rounded-2xl border overflow-hidden`}>
                 <div className="overflow-x-auto min-h-[400px]">
                     <table className="w-full whitespace-nowrap">
                         <thead>
-                            <tr className="border-b border-border/50 bg-sidebar-bg">
-                                <th className="px-5 py-4 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">Time</th>
-                                <th className="px-5 py-4 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">Actor</th>
-                                <th className="px-5 py-4 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">Action</th>
-                                <th className="px-5 py-4 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">Entity Type</th>
-                                <th className="px-5 py-4 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">Entity ID</th>
-                                <th className="px-5 py-4 text-left text-xs font-semibold text-text-muted uppercase tracking-wider">Metadata</th>
-                                <th className="px-5 py-4 text-right text-xs font-semibold text-text-muted uppercase tracking-wider">Actions</th>
+                            <tr className={`border-b ${isDark ? 'border-border/50 bg-sidebar-bg' : 'border-gold/10 bg-emerald-50/40'}`}>
+                                <th className={`px-5 py-4 text-left text-[10px] font-black ${isDark ? 'text-text-muted' : 'text-emerald-900/60'} uppercase tracking-[0.2em]`}>Time</th>
+                                <th className={`px-5 py-4 text-left text-[10px] font-black ${isDark ? 'text-text-muted' : 'text-emerald-900/60'} uppercase tracking-[0.2em]`}>Actor</th>
+                                <th className={`px-5 py-4 text-left text-[10px] font-black ${isDark ? 'text-text-muted' : 'text-emerald-900/60'} uppercase tracking-[0.2em]`}>Action</th>
+                                <th className={`px-5 py-4 text-left text-[10px] font-black ${isDark ? 'text-text-muted' : 'text-emerald-900/60'} uppercase tracking-[0.2em]`}>Entity Type</th>
+                                <th className={`px-5 py-4 text-left text-[10px] font-black ${isDark ? 'text-text-muted' : 'text-emerald-900/60'} uppercase tracking-[0.2em]`}>Entity ID</th>
+                                <th className={`px-5 py-4 text-left text-[10px] font-black ${isDark ? 'text-text-muted' : 'text-emerald-900/60'} uppercase tracking-[0.2em]`}>Metadata</th>
+                                <th className={`px-5 py-4 text-right text-[10px] font-black ${isDark ? 'text-text-muted' : 'text-emerald-900/60'} uppercase tracking-[0.2em]`}>Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-border/30 relative">
+                        <tbody className={`divide-y ${isDark ? 'divide-border/30' : 'divide-gold/5'} relative`}>
                             {loading ? (
                                 <tr>
-                                    <td colSpan={6} className="h-48 text-center text-text-muted">Loading logs...</td>
+                                    <td colSpan={7} className="h-48 text-center text-text-muted italic text-xs tracking-widest animate-pulse">Synchronizing Chronicles...</td>
                                 </tr>
                             ) : logs.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="h-48 text-center bg-card-bg">
-                                        <div className="flex flex-col items-center justify-center p-8">
-                                            <FileText className="w-12 h-12 text-border mb-4" />
-                                            <p className="text-text-muted text-sm">No activity logs found</p>
+                                    <td colSpan={7} className="h-48 text-center">
+                                        <div className="flex flex-col items-center justify-center p-8 opacity-40">
+                                            <FileText className="w-12 h-12 text-gold mb-4" />
+                                            <p className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-text-muted' : 'text-emerald-900'}`}>No traces found in this timeline</p>
                                         </div>
                                     </td>
                                 </tr>
                             ) : (
                                 logs.map((log) => (
-                                    <tr key={log.id} className="hover:bg-gold/[0.02] transition-colors">
-                                        <td className="px-5 py-3 text-sm text-text-muted">
+                                    <tr 
+                                        key={log.id} 
+                                        onClick={() => setActiveLog(log)}
+                                        className={`group hover:bg-gold/[0.03] transition-all duration-300 cursor-pointer border-l-2 border-transparent hover:border-gold`}
+                                    >
+                                        <td className={`px-5 py-4 text-xs font-medium ${isDark ? 'text-text-muted' : 'text-emerald-900/70'}`}>
                                             {new Date(log.created_at).toLocaleString()}
                                         </td>
-                                        <td className="px-5 py-3">
-                                            <div className="text-sm font-medium text-text">{log.actor_email || 'System'}</div>
-                                            <div className="text-xs text-text-muted opacity-60">IP: {log.ip_address || 'N/A'}</div>
+                                        <td className="px-5 py-4">
+                                            <div className={`text-sm font-bold ${isDark ? 'text-text' : 'text-emerald-950'} group-hover:text-gold transition-colors`}>{log.actor_email || 'System'}</div>
+                                            <div className="text-[10px] text-text-muted opacity-60 font-mono">IP: {log.ip_address || 'N/A'}</div>
                                         </td>
-                                        <td className="px-5 py-3">
-                                            <span className="px-2 py-1 text-[11px] font-medium tracking-wide uppercase rounded-md bg-gold/10 text-gold border border-gold/20">
+                                        <td className="px-5 py-4">
+                                            <span className={`px-3 py-1 text-[9px] font-black tracking-[0.1em] uppercase rounded-full ${isDark ? 'bg-gold/10 text-gold border-gold/20' : 'bg-emerald-900/5 text-emerald-900 border-emerald-900/10'} border shadow-sm`}>
                                                 {log.action}
                                             </span>
                                         </td>
-                                        <td className="px-5 py-3 text-sm text-text">
+                                        <td className={`px-5 py-4 text-xs font-bold uppercase tracking-widest ${isDark ? 'text-text' : 'text-emerald-950/80'}`}>
                                             {log.entity_type || '-'}
                                         </td>
-                                        <td className="px-5 py-3 text-sm font-mono text-text-muted">
+                                        <td className="px-5 py-4 text-[11px] font-mono text-text-muted/60">
                                             {log.entity_id ? log.entity_id.substring(0, 8) + '...' : '-'}
                                         </td>
-                                        <td className="px-5 py-3 text-xs text-text-muted max-w-[200px] truncate overflow-hidden" title={log.metadata ? JSON.stringify(log.metadata) : ''}>
+                                        <td className="px-5 py-4 text-[11px] text-text-muted/60 max-w-[200px] truncate italic" title={log.metadata ? JSON.parse(typeof log.metadata === 'string' ? log.metadata : JSON.stringify(log.metadata)) : ''}>
                                             {log.metadata ? (typeof log.metadata === 'string' ? log.metadata : JSON.stringify(log.metadata)) : '-'}
                                         </td>
-                                        <td className="px-5 py-3 text-right">
+                                        <td className="px-5 py-4 text-right">
                                             <button
                                                 onClick={() => setActiveLog(log)}
-                                                className="p-2 text-text-muted hover:text-gold hover:bg-gold/10 rounded-lg transition-all"
+                                                className={`p-2.5 rounded-xl transition-all ${isDark ? 'text-text-muted hover:text-gold hover:bg-gold/10' : 'text-emerald-900/40 hover:text-gold hover:bg-gold/5'}`}
                                                 title="View Details"
                                             >
                                                 <Eye className="w-4 h-4" />
@@ -255,126 +276,27 @@ export default function ActivityLogsPage() {
                     </table>
                 </div>
 
-                {/* Log Detail Modal */}
-                {activeLog && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-                        <div className="bg-[#0c0d0a] border border-gold/20 w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden animate-zoomIn">
-                            <div className="flex items-center justify-between p-6 border-b border-gold/10 bg-sidebar-bg">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 rounded-lg bg-gold/10 text-gold">
-                                        <Activity className="w-5 h-5" />
-                                    </div>
-                                    <h2 className="text-xl font-bold text-text font-serif tracking-tight">Chronicle Entry Details</h2>
-                                </div>
-                                <button onClick={() => setActiveLog(null)} className="p-2 text-text-muted hover:text-white transition-colors">
-                                    <X className="w-6 h-6" />
-                                </button>
-                            </div>
-
-                            <div className="p-8 max-h-[70vh] overflow-y-auto space-y-8 scrollbar-thin scrollbar-thumb-gold/20">
-                                {/* Info Grid */}
-                                <div className="grid grid-cols-2 gap-8">
-                                    <div>
-                                        <label className="text-[10px] uppercase font-bold tracking-[0.2em] text-text-muted mb-2 block">Origin Actor</label>
-                                        <div className="text-text font-medium">{activeLog.actor_email || 'System Operation'}</div>
-                                        <div className="text-[10px] text-text-muted/60 mt-1 font-mono uppercase tracking-tight">ID: {activeLog.actor_id}</div>
-                                        <div className="text-[10px] text-text-muted/60 font-mono uppercase tracking-tight">IP: {activeLog.ip_address || 'LOCALHOST'}</div>
-                                    </div>
-                                    <div>
-                                        <label className="text-[10px] uppercase font-bold tracking-[0.2em] text-text-muted mb-2 block">Recorded At</label>
-                                        <div className="text-text font-medium">{new Date(activeLog.created_at).toLocaleString()}</div>
-                                        <div className="text-[10px] text-text-muted/60 mt-1 uppercase tracking-tight">{activeLog.created_at}</div>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-4">
-                                    <label className="text-[10px] uppercase font-bold tracking-[0.2em] text-text-muted block">Manifested Action</label>
-                                    <span className="inline-block px-4 py-1.5 text-xs font-bold tracking-[0.1em] uppercase rounded-full bg-gold/10 text-gold border border-gold/20">
-                                        {activeLog.action}
-                                    </span>
-                                </div>
-
-                                <div className="p-5 bg-sidebar-bg border border-gold/10 rounded-2xl space-y-4">
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <label className="text-[10px] uppercase font-bold tracking-[0.2em] text-text-muted mb-2 block">Entity Association</label>
-                                            <div className="flex flex-col gap-1">
-                                                <span className="text-gold text-lg font-serif italic">{activeLog.entity_type || 'General System'}</span>
-                                                <span className="text-text-muted/80 font-mono text-sm tracking-tight break-all">
-                                                    {activeLog.entity_id || 'NO_ENTITY_ID'}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        {activeLog.entity_id && (
-                                            <button
-                                                onClick={() => {
-                                                    navigator.clipboard.writeText(activeLog.entity_id);
-                                                    toast.success('Entity ID copied');
-                                                }}
-                                                className="p-3 bg-gold/5 text-gold hover:bg-gold/20 rounded-xl transition-all border border-gold/10"
-                                                title="Copy Full ID"
-                                            >
-                                                <Copy className="w-4 h-4" />
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-
-                                <div className="space-y-3">
-                                    <label className="text-[10px] uppercase font-bold tracking-[0.2em] text-text-muted block">Evolutionary Metadata (JSON)</label>
-                                    <div className="relative group">
-                                        <pre className="p-6 bg-black/40 rounded-2xl border border-gold/10 overflow-x-auto text-[13px] text-gold/90 font-mono leading-relaxed max-h-[300px] overflow-y-auto">
-                                            {formatMetadata(activeLog.metadata)}
-                                        </pre>
-                                        {activeLog.metadata && (
-                                            <button
-                                                onClick={() => {
-                                                    navigator.clipboard.writeText(formatMetadata(activeLog.metadata));
-                                                    toast.success('Metadata copied');
-                                                }}
-                                                className="absolute top-4 right-4 p-2 bg-gold/10 text-gold opacity-0 group-hover:opacity-100 transition-opacity rounded-lg"
-                                                title="Copy JSON"
-                                            >
-                                                <Copy className="w-3.5 h-3.5" />
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="p-6 bg-sidebar-bg border-t border-gold/10 flex justify-end">
-                                <button
-                                    onClick={() => setActiveLog(null)}
-                                    className="px-8 py-3 bg-gold/5 hover:bg-gold hover:text-black border border-gold/20 text-gold rounded-xl font-bold uppercase text-[10px] tracking-[0.3em] transition-all"
-                                >
-                                    Dismiss Chronicles
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
                 {logs.length > 0 && (
-                    <div className="px-5 py-4 border-t border-border-subtle bg-sidebar-bg flex items-center justify-between">
-                        <p className="text-sm text-text-muted">
-                            Showing <span className="font-medium text-text">{(pagination.page - 1) * pagination.limit + 1}</span> to{' '}
-                            <span className="font-medium text-text">
+                    <div className={`px-5 py-5 border-t ${isDark ? 'border-border-subtle bg-sidebar-bg' : 'border-gold/10 bg-emerald-50/30'} flex items-center justify-between`}>
+                        <p className={`text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-text-muted' : 'text-emerald-900/50'}`}>
+                            Showing <span className={`text-gold font-black`}>{(pagination.page - 1) * pagination.limit + 1}</span> to{' '}
+                            <span className={`text-gold font-black`}>
                                 {Math.min(pagination.page * pagination.limit, pagination.total)}
                             </span>{' '}
-                            of <span className="font-medium text-text">{pagination.total}</span> logs
+                            of <span className={`text-gold font-black`}>{pagination.total}</span> vibrations
                         </p>
-                        <div className="flex gap-2">
+                        <div className="flex gap-3">
                             <button
                                 onClick={() => fetchLogs((pagination.page - 1).toString())}
                                 disabled={pagination.page <= 1 || loading}
-                                className="p-1 rounded bg-card-bg border border-border text-text-muted hover:text-gold disabled:opacity-30 disabled:hover:text-text-muted"
+                                className={`p-2 rounded-xl border transition-all ${isDark ? 'bg-card-bg border-border text-text-muted hover:text-gold' : 'bg-white border-gold/20 text-emerald-900 hover:bg-emerald-50'} disabled:opacity-20 shadow-sm`}
                             >
                                 <ChevronLeft className="w-5 h-5" />
                             </button>
                             <button
                                 onClick={() => fetchLogs((pagination.page + 1).toString())}
                                 disabled={pagination.page >= pagination.totalPages || loading}
-                                className="p-1 rounded bg-card-bg border border-border text-text-muted hover:text-gold disabled:opacity-30 disabled:hover:text-text-muted"
+                                className={`p-2 rounded-xl border transition-all ${isDark ? 'bg-card-bg border-border text-text-muted hover:text-gold' : 'bg-white border-gold/20 text-emerald-900 hover:bg-emerald-50'} disabled:opacity-20 shadow-sm`}
                             >
                                 <ChevronRight className="w-5 h-5" />
                             </button>
@@ -383,5 +305,153 @@ export default function ActivityLogsPage() {
                 )}
             </div>
         </div>
+                    {/* Log Detail Modal - Moved outside to escape stacking context trap */}
+            {activeLog && (
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl animate-fadeIn">
+                    <div className={`w-full max-w-2xl rounded-[2.5rem] shadow-[0_40px_100px_rgba(0,0,0,0.5)] overflow-hidden animate-zoomIn border ${isDark ? 'bg-[#0A0D0A] border-gold/20' : 'bg-white/95 border-gold/10'}`}>
+                        <div className={`flex items-center justify-between p-8 border-b ${isDark ? 'border-gold/10 bg-white/5' : 'border-gold/5 bg-gold/5'}`}>
+                            <div className="flex items-center gap-4">
+                                <div className={`p-3 rounded-2xl ${isDark ? 'bg-gold/20 text-gold' : 'bg-gold/10 text-emerald-900'} shadow-inner`}>
+                                    <Activity className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <h2 className={`text-2xl font-bold font-serif tracking-tight ${isDark ? 'text-gold' : 'text-emerald-950'}`}>Chronicle Entry</h2>
+                                    <p className={`text-[10px] uppercase font-black tracking-[0.3em] ${isDark ? 'text-gold/50' : 'text-emerald-900/40'}`}>Detail Analysis</p>
+                                </div>
+                            </div>
+                            <button onClick={() => {
+                                setActiveLog(null);
+                                router.push('/dashboard/activity-logs');
+                            }} className={`p-2 ${isDark ? 'text-text-muted hover:text-danger hover:bg-danger/10' : 'text-emerald-900/40 hover:text-danger hover:bg-danger/5'} rounded-full transition-all duration-300`}>
+                                <X className="w-6 h-6" />
+                            </button>
+                        </div>
+
+                        <div className="p-10 max-h-[70vh] overflow-y-auto space-y-10 scrollbar-thin scrollbar-thumb-gold/20">
+                            <div className="grid grid-cols-2 gap-10">
+                                <div className="space-y-1">
+                                    <label className={`text-[10px] uppercase font-black tracking-[0.3em] ${isDark ? 'text-gold/60' : 'text-emerald-900/60'} mb-2 block`}>Origin Actor</label>
+                                    <div className={`text-lg font-bold font-serif ${isDark ? 'text-text' : 'text-emerald-950'}`}>{activeLog.actor_email || 'System Operation'}</div>
+                                    <div className={`text-[11px] ${isDark ? 'text-text-muted/60' : 'text-emerald-900/40'} mt-1 font-mono uppercase tracking-widest break-all`}>ID: {activeLog.actor_id}</div>
+                                    <div className={`text-[11px] ${isDark ? 'text-text-muted/60' : 'text-emerald-900/40'} font-mono uppercase tracking-widest mt-1 italic`}>Vibration Source: {activeLog.ip_address || 'LOCALHOST'}</div>
+                                </div>
+                                <div className="space-y-1">
+                                    <label className={`text-[10px] uppercase font-black tracking-[0.3em] ${isDark ? 'text-gold/60' : 'text-emerald-900/60'} mb-2 block`}>Recorded At</label>
+                                    <div className={`text-lg font-bold font-serif ${isDark ? 'text-text' : 'text-emerald-950'}`}>{new Date(activeLog.created_at).toLocaleString()}</div>
+                                    <div className={`text-[11px] ${isDark ? 'text-text-muted/60' : 'text-emerald-900/50'} mt-2 p-2 ${isDark ? 'bg-gold/5 border-gold/10' : 'bg-emerald-50/50 border-gold/5'} rounded-lg border text-center uppercase tracking-widest font-bold`}>
+                                        Vedic Timestamp: {activeLog.created_at.split('T')[0]}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <label className={`text-[10px] uppercase font-black tracking-[0.3em] ${isDark ? 'text-gold/60' : 'text-emerald-900/60'} block underline decoration-gold/20 underline-offset-8`}>Manifested Action</label>
+                                <span className={`inline-block px-8 py-3 text-xs font-black tracking-[0.2em] uppercase rounded-full border shadow-xl ${isDark ? 'bg-gold/10 text-gold border-gold/30' : 'bg-emerald-900/5 text-emerald-900 border-emerald-900/20'}`}>
+                                    {activeLog.action}
+                                </span>
+                            </div>
+
+                            <div className={`p-8 border rounded-[2rem] space-y-4 shadow-inner ${isDark ? 'bg-white/[0.02] border-gold/15' : 'bg-emerald-50/30 border-gold/10'}`}>
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <label className={`text-[10px] uppercase font-black tracking-[0.3em] ${isDark ? 'text-gold/60' : 'text-emerald-900/60'} mb-3 block`}>Entity Association</label>
+                                        <div className="flex flex-col gap-2">
+                                            <span className={`text-3xl font-serif italic ${isDark ? 'text-gold' : 'text-emerald-900'}`}>{activeLog.entity_type || 'General System'}</span>
+                                            <span className={`font-mono text-xs tracking-[0.1em] break-all p-2 rounded-lg ${isDark ? 'text-text-muted/70 bg-black/5' : 'text-emerald-900/60 bg-white shadow-sm'}`}>
+                                                {activeLog.entity_id || 'NO_ENTITY_ID'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    {activeLog.entity_id && (
+                                        <div className="flex gap-3">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    navigator.clipboard.writeText(activeLog.entity_id);
+                                                    toast.success('Signature ID copied to ether');
+                                                }}
+                                                className={`p-4 rounded-2xl transition-all border shadow-lg ${isDark ? 'bg-gold/5 text-gold border-gold/20 hover:bg-gold/20' : 'bg-white text-emerald-900 border-gold/20 hover:bg-emerald-50'}`}
+                                                title="Copy ID"
+                                            >
+                                                <Copy className="w-5 h-5" />
+                                            </button>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    const path = 
+                                                        activeLog.entity_type === 'customer' ? `/dashboard/customers/${activeLog.entity_id}` :
+                                                        activeLog.entity_type === 'product' ? `/dashboard/products/edit/${activeLog.entity_id}` :
+                                                        activeLog.entity_type === 'order' ? `/dashboard/orders` : 
+                                                        null;
+                                                    
+                                                    if (path) {
+                                                        router.push(path);
+                                                        setActiveLog(null);
+                                                    } else {
+                                                        toast.error('No direct portal available for this entity vibration');
+                                                    }
+                                                }}
+                                                className={`p-4 rounded-2xl transition-all border shadow-lg ${isDark ? 'bg-gold/5 text-gold border-gold/20 hover:bg-gold/20' : 'bg-white text-emerald-900 border-gold/20 hover:bg-emerald-50'}`}
+                                                title="Visit Entity"
+                                            >
+                                                <ExternalLink className="w-5 h-5" />
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <label className={`text-[10px] uppercase font-black tracking-[0.3em] ${isDark ? 'text-gold/60' : 'text-emerald-900/60'} block`}>Evolutionary Metadata (JSON)</label>
+                                    {activeLog.metadata && (
+                                        <button
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(formatMetadata(activeLog.metadata));
+                                                toast.success('Scroll copied');
+                                            }}
+                                            className="text-[10px] font-black uppercase tracking-widest text-gold hover:text-gold-soft transition-colors flex items-center gap-2"
+                                        >
+                                            <Copy className="w-3.5 h-3.5" /> Copy Scroll
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="relative">
+                                    <pre className={`p-8 rounded-[2rem] border overflow-x-auto text-sm font-mono leading-relaxed max-h-[400px] overflow-y-auto scrollbar-thin shadow-2xl ${isDark ? 'bg-black/60 border-gold/10 text-gold-soft' : 'bg-white border-gold/10 text-emerald-950'}`}>
+                                        {formatMetadata(activeLog.metadata)}
+                                    </pre>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className={`p-8 border-t flex justify-end gap-4 ${isDark ? 'border-gold/10 bg-white/5' : 'border-gold/5 bg-gold/5'}`}>
+                            <button
+                                onClick={() => {
+                                    setActiveLog(null);
+                                    router.push('/dashboard/activity-logs');
+                                }}
+                                className={`px-12 py-4 rounded-2xl font-black uppercase text-[11px] tracking-[0.3em] transition-all duration-300 shadow-xl ${isDark ? 'bg-gold text-primary hover:bg-gold-soft' : 'bg-emerald-950 text-gold hover:bg-emerald-900'} hover:scale-105 active:scale-95`}
+                            >
+                                Dismiss Chronicles
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
+    );
+}
+
+
+export default function ActivityLogsPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex flex-col items-center justify-center p-20 animate-pulse">
+                <RefreshCw className="w-8 h-8 text-gold animate-spin mb-4" />
+                <p className="text-[10px] font-black uppercase tracking-widest text-gold/40">Synchronizing Chronicles...</p>
+            </div>
+        }>
+            <ActivityLogsPageContent />
+        </Suspense>
     );
 }

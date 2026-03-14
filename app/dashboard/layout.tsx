@@ -47,7 +47,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                 collapsed={sidebarCollapsed}
                 onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
             />
-            <div className={`flex-1 flex flex-col transition-all duration-300 relative z-10 ${sidebarCollapsed ? 'md:ml-[68px]' : 'md:ml-72'
+            <div className={`flex-1 flex flex-col transition-all duration-300 relative ${sidebarCollapsed ? 'md:ml-[68px]' : 'md:ml-72'
                 }`}>
                 <TopNavbar sidebarCollapsed={sidebarCollapsed} />
                 <main className="flex-1 p-4 sm:p-6 pt-16 md:pt-6">

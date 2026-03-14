@@ -41,21 +41,29 @@ export default function SeoHealthCheck() {
     const loadHealthData = async () => {
         try {
             setLoading(true);
-            const h = headers();
-            console.log('[SEO Health] Fetching with token:', h['Authorization'] ? 'present' : 'MISSING');
-            const res = await fetch(`${API_URL}/api/seo/health-check`, { headers: h, credentials: 'include' });
-            console.log('[SEO Health] Response status:', res.status);
+            const token = getToken();
+            if (!token) {
+                setError('Session expired (Prasada lost)');
+                return;
+            }
+            
+            const res = await fetch(`${API_URL}/api/seo/health-check`, { 
+                headers: { 'Authorization': `Bearer ${token}` }, 
+                credentials: 'include' 
+            });
+            
+            if (!res.ok) throw new Error(`Status ${res.status}`);
             const data = await res.json();
-            console.log('[SEO Health] Response data:', data);
 
-            if (!res.ok || data.success === false) {
-                setError(data.message || `HTTP ${res.status}`);
-            } else {
+            if (data.success && (data.products || data.data?.products)) {
                 setProducts(data.products || data.data?.products || []);
+                setError(null);
+            } else {
+                setError(data.message || 'The cosmic alignment failed to return data.');
             }
         } catch (err: any) {
             console.error('[SEO Health] Fetch error:', err);
-            setError(err.message || 'Failed to connect to SEO health API');
+            setError(err.message || 'Failed to connect to SEO health repository');
         } finally {
             setLoading(false);
         }

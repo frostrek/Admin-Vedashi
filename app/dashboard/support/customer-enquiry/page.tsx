@@ -10,23 +10,24 @@ import {
     BarChart2, ChevronRight, Activity, ArrowRight, X, Heart, ChevronUp
 } from 'lucide-react';
 import { getAdminFeedback, updateFeedbackStatus, replyToFeedback, getCustomer360, formatINR } from '@/lib/api';
+import { useTheme } from '@/context/ThemeContext';
 import toast from 'react-hot-toast';
 
 /* ─── Config using your globals.css theme tokens ─── */
 
 const STATUS_CONFIG: Record<string, { badgeCls: string; dotCls: string; icon: any; label: string }> = {
-    new:       { badgeCls: 'bg-info/10 text-info border-info/25',                        dotCls: 'bg-info',       icon: Inbox,       label: 'Pending'   },
-    reviewed:  { badgeCls: 'bg-warning/10 text-warning border-warning/25',               dotCls: 'bg-warning',    icon: Search,      label: 'Open'      },
-    resolved:  { badgeCls: 'bg-success/10 text-success border-success/25',               dotCls: 'bg-success',    icon: CheckCircle, label: 'Resolved'  },
+    new:       { badgeCls: 'bg-info/10 text-info dark:border-info/25 border-info/40',    dotCls: 'bg-info',       icon: Inbox,       label: 'Pending'   },
+    reviewed:  { badgeCls: 'bg-warning/10 text-warning dark:border-warning/25 border-warning/40', dotCls: 'bg-warning',    icon: Search,      label: 'Open'      },
+    resolved:  { badgeCls: 'bg-success/10 text-success dark:border-success/25 border-success/40', dotCls: 'bg-success',    icon: CheckCircle, label: 'Resolved'  },
     dismissed: { badgeCls: 'bg-text-muted/10 text-text-muted border-text-muted/20',      dotCls: 'bg-text-muted', icon: XCircle,     label: 'Dismissed' },
 };
 
 const TYPE_CONFIG: Record<string, { icon: any; colorCls: string; label: string }> = {
-    suggestion: { icon: Sparkles,   colorCls: 'text-primary',    label: 'Suggestion' },
-    complaint:  { icon: Activity,   colorCls: 'text-danger',     label: 'Complaint'  },
-    bug_report: { icon: Bug,        colorCls: 'text-warning',    label: 'Bug Report' },
-    contact:    { icon: Mail,       colorCls: 'text-info',       label: 'Contact'    },
-    other:      { icon: HelpCircle, colorCls: 'text-text-muted', label: 'General'    },
+    suggestion: { icon: Sparkles,   colorCls: 'text-primary dark:text-primary-light',    label: 'Suggestion' },
+    complaint:  { icon: Activity,   colorCls: 'text-danger dark:text-red-400',           label: 'Complaint'  },
+    bug_report: { icon: Bug,        colorCls: 'text-warning dark:text-warning-dark',     label: 'Bug Report' },
+    contact:    { icon: Mail,       colorCls: 'text-info dark:text-info',                label: 'Contact'    },
+    other:      { icon: HelpCircle, colorCls: 'text-text-muted dark:text-text-muted',    label: 'General'    },
 };
 
 const DOSHA_CONFIG: Record<string, { bg: string; text: string; bar: string; glyph: string }> = {
@@ -104,9 +105,9 @@ const PAGE_STYLES = `
     }
 
     .vd-row { border-left:3px solid transparent; transition:border-color .18s,background .18s,transform .12s }
-    .vd-row.sel  { border-left-color: var(--color-primary) }
+    .vd-row.sel  { border-left-color: var(--t-primary) }
     .vd-row:not(.sel):hover { 
-        border-left-color: color-mix(in srgb, var(--color-primary) 35%, transparent);
+        border-left-color: color-mix(in srgb, var(--t-primary) 35%, transparent);
         transform: translateX(1px);
     }
 
@@ -129,7 +130,7 @@ const PAGE_STYLES = `
 
     /* Agent bubble — bright contrast fix */
     .vd-bubble-agent {
-        background: var(--color-primary);
+        background: var(--t-primary);
         color: #fff !important;
         position: relative;
         overflow: hidden;
@@ -152,17 +153,17 @@ const PAGE_STYLES = `
 
     /* Customer bubble */
     .vd-bubble-customer {
-        background: var(--card-bg);
+        background: var(--t-card-bg);
         border: 1px solid var(--t-border);
         transition: border-color .2s, box-shadow .2s;
     }
-    .vd-bubble-customer:hover { border-color: color-mix(in srgb, var(--color-primary) 30%, transparent); }
+    .vd-bubble-customer:hover { border-color: color-mix(in srgb, var(--t-primary) 30%, transparent); }
 
     /* Note bubble */
     .vd-bubble-note {
         background: linear-gradient(135deg, rgba(var(--color-warning-rgb, 197,164,109),.1) 0%, rgba(var(--color-warning-rgb, 197,164,109),.06) 100%);
         border: 1px solid rgba(var(--color-warning-rgb, 197,164,109),.25);
-        border-left: 3px solid var(--color-warning, #c5a46d);
+        border-left: 3px solid var(--t-gold, #c5a46d);
     }
 
     /* Panel custom scrollbar */
@@ -258,6 +259,7 @@ const PAGE_STYLES = `
 `;
 
 export default function AdminFeedbackPage() {
+    const { isDark }                          = useTheme();
     const [data, setData]                     = useState<any>({ feedback: [], total: 0 });
     const [filters, setFilters]               = useState({ type: 'all', status: 'all', search: '', assignee: 'all' });
     const [loading, setLoading]               = useState(true);
@@ -491,6 +493,7 @@ export default function AdminFeedbackPage() {
         <>
             <div className={`flex flex-col h-[calc(100vh-3.5rem)] -m-4 sm:-m-6 lg:-m-8
                             bg-background text-text-primary overflow-hidden vd-fade font-sans
+                            ${isDark ? 'dark' : ''}
                             ${isResizing ? 'vd-resizing' : ''}
                             ${isReplyResizing ? 'vd-reply-resizing' : ''}`}>
 
@@ -602,7 +605,7 @@ export default function AdminFeedbackPage() {
                                     className="w-full pl-9 pr-4 py-2 rounded-lg text-sm font-medium
                                                bg-page-bg border border-border text-text-primary
                                                placeholder:text-text-muted focus:outline-none
-                                               focus:border-primary/60 focus:ring-1 focus:ring-primary/20 transition-all" />
+                                               focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all" />
                             </div>
                             {/* Mobile: horizontal chip scroll for status filter */}
                             <div className="flex lg:hidden gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none">
@@ -681,7 +684,7 @@ export default function AdminFeedbackPage() {
                                             </div>
                                             <div
                                                 onClick={e => { e.stopPropagation(); fb.customer_id && openProfile(fb.customer_id); }}
-                                                className={`w-9 h-9 rounded-xl bg-primary-dark/50 border border-primary/25
+                                                className={`w-9 h-9 rounded-xl ${isDark ? 'bg-primary-dark/50' : 'bg-primary/10'} border border-primary/25
                                                             flex items-center justify-center text-primary font-bold text-[12px] shrink-0
                                                             vd-avatar-lift
                                                             ${fb.customer_id ? 'cursor-pointer' : ''}`}>
@@ -724,7 +727,7 @@ export default function AdminFeedbackPage() {
                                                         ))}
                                                         {assignee && (
                                                             <span className="text-[10px] font-bold px-2 py-0.5 rounded-md
-                                                                             bg-gold/10 text-gold border border-gold/25
+                                                                             bg-gold/10 text-gold-muted dark:text-gold border border-gold/25
                                                                              flex items-center gap-1">
                                                                 <User className="w-2.5 h-2.5" /> {assignee}
                                                             </span>
@@ -733,7 +736,7 @@ export default function AdminFeedbackPage() {
                                                 )}
                                             </div>
                                             {/* Mobile chevron */}
-                                            <ChevronRight className="lg:hidden w-4 h-4 text-text-muted/40 shrink-0 self-center ml-auto" />
+                                            <ChevronRight className="lg:hidden w-4 h-4 text-text-muted shrink-0 self-center ml-auto" />
                                         </div>
                                     </div>
                                 );
@@ -788,13 +791,13 @@ export default function AdminFeedbackPage() {
                                         </button>
                                         <div className="hidden lg:flex p-2 rounded-xl bg-card-bg-elevated border border-border shrink-0
                                                         transition-transform hover:scale-110 duration-200">
-                                            {(() => { const tc = TYPE_CONFIG[selected.type] || TYPE_CONFIG.other; return <tc.icon className={`w-4.5 h-4.5 ${tc.colorCls}`} style={{width:18,height:18}} />; })()}
+                                            {(() => { const tc = TYPE_CONFIG[selected.type] || TYPE_CONFIG.other; return <tc.icon className={`w-4.5 h-4.5 ${isDark ? tc.colorCls : tc.colorCls.replace('text-', 'text-emerald-')}`} style={{width:18,height:18}} />; })()}
                                         </div>
                                         <div className="min-w-0">
                                             <h2 className="font-serif text-[16px] font-bold text-text-primary
                                                            flex items-center gap-2 leading-tight truncate">
                                                 <span className="truncate">{selected.subject || (selected.type || 'Enquiry').replace('_', ' ')}</span>
-                                                <span className="text-text-muted/50 text-[12px] font-semibold shrink-0">
+                                                <span className="text-text-muted text-[12px] font-semibold shrink-0">
                                                     #{selected.feedback_id.substring(0,6).toUpperCase()}
                                                 </span>
                                             </h2>
@@ -829,7 +832,7 @@ export default function AdminFeedbackPage() {
                                         <button onClick={() => toast('Ticket locked.', { icon: '🔒' })}
                                             className="p-2 rounded-lg text-text-muted hover:text-text-primary
                                                        hover:bg-card-bg-elevated transition-all vd-btn-press">
-                                            <Lock className="w-4 h-4" />
+                                            <Lock className={`w-4 h-4 ${isDark ? '' : 'text-emerald-900/60'}`} />
                                         </button>
                                         <div className="h-5 w-px bg-border" />
                                         <button onClick={handleAssign}
@@ -952,8 +955,8 @@ export default function AdminFeedbackPage() {
                                                     ${reply.replier_id === 'SYSTEM-BOT'
                                                         ? 'vd-bubble-bot'
                                                         : 'vd-bubble-agent'}`}>
-                                                    <p className="text-[14px] leading-relaxed font-medium whitespace-pre-wrap
-                                                                  ${reply.replier_id === 'SYSTEM-BOT' ? 'text-text-primary' : 'text-white'}">
+                                                    <p className={`text-[14px] leading-relaxed font-medium whitespace-pre-wrap
+                                                                  ${reply.replier_id === 'SYSTEM-BOT' ? 'text-text-primary' : 'text-white'}`}>
                                                         {reply.message}
                                                     </p>
                                                 </div>
@@ -1117,8 +1120,9 @@ export default function AdminFeedbackPage() {
                         <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] vd-fade"
                              onClick={closeProfile} />
 
-                        <div className="relative w-full max-w-[480px] h-full bg-card-bg shadow-[−8px_0_40px_rgba(0,0,0,0.5)]
-                                        flex flex-col vd-right border-l border-border overflow-hidden">
+                        <div className={`relative w-full max-w-[480px] h-full bg-card-bg shadow-2xl
+                                        flex flex-col vd-right border-l border-border overflow-hidden
+                                        ${isDark ? 'shadow-black/50' : 'shadow-emerald-950/10'}`}>
 
                             {loadingProfile ? (
                                 <div className="flex-1 flex flex-col items-center justify-center gap-5">
@@ -1489,23 +1493,23 @@ export default function AdminFeedbackPage() {
                                             borderRadius: 8,
                                             fontSize: 12,
                                             fontWeight: 500,
-                                            background: '#171e17',
-                                            border: '1px solid #2e3d2e',
-                                            color: '#d4e8d4',
+                                            background: isDark ? '#171e17' : 'var(--t-page-bg)',
+                                            border: isDark ? '1px solid #2e3d2e' : '1px solid var(--t-border)',
+                                            color: isDark ? '#d4e8d4' : 'var(--t-text-primary)',
                                             boxSizing: 'border-box',
                                             outline: 'none',
                                             display: 'block',
                                         }}
-                                        onFocus={e => { e.currentTarget.style.borderColor = 'rgba(140,175,140,.55)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(140,175,140,.1)'; }}
-                                        onBlur={e => { e.currentTarget.style.borderColor = '#2e3a2e'; e.currentTarget.style.boxShadow = 'none'; }}
+                                        onFocus={e => { e.currentTarget.style.borderColor = isDark ? 'rgba(140,175,140,.6)' : 'var(--t-primary)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(140,175,140,.12)'; }}
+                                        onBlur={e => { e.currentTarget.style.borderColor = isDark ? '#2e3a2e' : 'var(--t-border)'; e.currentTarget.style.boxShadow = 'none'; }}
                                     />
                                 </div>
                             </div>
                             {/* List */}
-                            <div style={{ maxHeight: 300, overflowY: 'auto', padding: '6px 0', background: '#1e2820' }}>
+                            <div style={{ maxHeight: 300, overflowY: 'auto', padding: '6px 0', background: isDark ? '#1e2820' : 'var(--t-card-bg-elevated)' }}>
                                 {filteredTemplates.length === 0 ? (
                                     <div style={{ padding: '32px 16px', textAlign: 'center' }}>
-                                        <p style={{ fontSize: 12, color: '#6b8f6b' }}>No templates found</p>
+                                        <p style={{ fontSize: 12, color: isDark ? '#6b8f6b' : 'var(--t-text-muted)' }}>No templates found</p>
                                     </div>
                                 ) : filteredTemplates.map((res, i) => (
                                     <button
@@ -1518,19 +1522,19 @@ export default function AdminFeedbackPage() {
                                             padding: '10px 16px',
                                             background: 'transparent',
                                             border: 'none',
-                                            borderBottom: '1px solid rgba(46,61,46,.6)',
+                                            borderBottom: `1px solid ${isDark ? 'rgba(46,61,46,.6)' : 'var(--t-border-subtle)'}`,
                                             cursor: 'pointer',
                                             transition: 'background .15s, padding-left .15s',
                                             display: 'block',
                                         }}
-                                        onMouseEnter={e => { e.currentTarget.style.background = '#252e25'; e.currentTarget.style.paddingLeft = '20px'; }}
+                                        onMouseEnter={e => { e.currentTarget.style.background = isDark ? '#252e25' : 'rgba(59, 93, 59, 0.05)'; e.currentTarget.style.paddingLeft = '20px'; }}
                                         onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.paddingLeft = '16px'; }}
                                     >
                                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 4 }}>
-                                            <span style={{ fontSize: 12.5, fontWeight: 700, color: '#d4e8d4' }}>{res.name}</span>
-                                            <span style={{ fontSize: 10, fontWeight: 700, color: '#8caf8c', opacity: 0.7, whiteSpace: 'nowrap', flexShrink: 0 }}>Insert →</span>
+                                            <span style={{ fontSize: 12.5, fontWeight: 700, color: isDark ? '#d4e8d4' : 'var(--t-text-primary)' }}>{res.name}</span>
+                                            <span style={{ fontSize: 10, fontWeight: 700, color: isDark ? '#8caf8c' : 'var(--t-primary)', opacity: 0.7, whiteSpace: 'nowrap', flexShrink: 0 }}>Insert →</span>
                                         </div>
-                                        <div style={{ fontSize: 11, color: '#7a9f7a', lineHeight: 1.5, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as any }}>{res.text}</div>
+                                        <div style={{ fontSize: 11, color: isDark ? '#7a9f7a' : 'var(--t-text-secondary)', lineHeight: 1.5, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as any }}>{res.text}</div>
                                     </button>
                                 ))}
                             </div>
@@ -1553,12 +1557,12 @@ export default function AdminFeedbackPage() {
                         <div
                             className="vd-pop"
                             style={{
-                                background: 'var(--card-bg, #1e2520)',
-                                border: '1px solid var(--t-border, #2e3a2e)',
+                                background: 'var(--t-card-bg)',
+                                border: '1px solid var(--t-border)',
                                 borderRadius: 18,
                                 padding: '24px 24px 20px',
                                 width: 340,
-                                boxShadow: '0 24px 64px rgba(0,0,0,.55), 0 4px 16px rgba(0,0,0,.3)',
+                                boxShadow: isDark ? '0 24px 64px rgba(0,0,0,.55), 0 4px 16px rgba(0,0,0,.3)' : '0 10px 30px rgba(59,93,59,0.1)',
                             }}
                             onClick={e => e.stopPropagation()}
                         >
@@ -1566,18 +1570,18 @@ export default function AdminFeedbackPage() {
                             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
                                 <div style={{
                                     width: 34, height: 34, borderRadius: 10,
-                                    background: 'rgba(140,175,140,.15)',
-                                    border: '1px solid rgba(140,175,140,.25)',
+                                    background: isDark ? 'rgba(140,175,140,.15)' : 'rgba(59,93,59,0.1)',
+                                    border: `1px solid ${isDark ? 'rgba(140,175,140,.25)' : 'rgba(59,93,59,0.2)'}`,
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                     fontSize: 16,
                                 }}>
                                     {modal.type === 'tag' ? '🏷️' : '👤'}
                                 </div>
                                 <div>
-                                    <p style={{ fontWeight: 700, fontSize: 15, color: 'var(--t-text-primary, #e8f0e8)', margin: 0, lineHeight: 1.2 }}>
+                                    <p style={{ fontWeight: 700, fontSize: 15, color: 'var(--t-text-primary)', margin: 0, lineHeight: 1.2 }}>
                                         {modal.type === 'tag' ? 'Add Tag' : 'Assign Ticket'}
                                     </p>
-                                    <p style={{ fontSize: 11, color: 'var(--t-text-muted, #6b7f6b)', margin: 0, marginTop: 2 }}>
+                                    <p style={{ fontSize: 11, color: 'var(--t-text-muted)', margin: 0, marginTop: 2 }}>
                                         {modal.type === 'tag' ? 'Label this enquiry for easier filtering' : 'Assign to a team member'}
                                     </p>
                                 </div>
@@ -1585,7 +1589,7 @@ export default function AdminFeedbackPage() {
 
                             {/* Input */}
                             <div style={{ marginBottom: 20 }}>
-                                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--t-text-muted, #6b7f6b)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 8 }}>
+                                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--t-text-muted)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 8 }}>
                                     {modal.type === 'tag' ? 'Tag name' : 'Agent name'}
                                 </label>
                                 <input
@@ -1601,15 +1605,15 @@ export default function AdminFeedbackPage() {
                                         borderRadius: 10,
                                         fontSize: 13.5,
                                         fontWeight: 500,
-                                        background: 'var(--page-bg, #141814)',
-                                        border: '1.5px solid var(--t-border, #2e3a2e)',
-                                        color: 'var(--t-text-primary, #e8f0e8)',
+                                        background: 'var(--t-page-bg)',
+                                        border: '1.5px solid var(--t-border)',
+                                        color: 'var(--t-text-primary)',
                                         outline: 'none',
                                         boxSizing: 'border-box',
                                         transition: 'border-color .15s, box-shadow .15s',
                                     }}
-                                    onFocus={e => { e.currentTarget.style.borderColor = 'rgba(140,175,140,.6)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(140,175,140,.12)'; }}
-                                    onBlur={e => { e.currentTarget.style.borderColor = 'var(--t-border, #2e3a2e)'; e.currentTarget.style.boxShadow = 'none'; }}
+                                    onFocus={e => { e.currentTarget.style.borderColor = 'var(--t-primary)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(140,175,140,.12)'; }}
+                                    onBlur={e => { e.currentTarget.style.borderColor = 'var(--t-border)'; e.currentTarget.style.boxShadow = 'none'; }}
                                 />
                             </div>
 
@@ -1678,12 +1682,12 @@ export default function AdminFeedbackPage() {
                                         flex: 1, padding: '9px 0', borderRadius: 10,
                                         fontSize: 13, fontWeight: 700,
                                         background: 'transparent',
-                                        border: '1.5px solid var(--t-border, #2e3a2e)',
-                                        color: 'var(--t-text-muted, #6b7f6b)',
+                                        border: '1.5px solid var(--t-border)',
+                                        color: 'var(--t-text-muted)',
                                         cursor: 'pointer', transition: 'all .15s',
                                     }}
-                                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(140,175,140,.4)'; e.currentTarget.style.color = 'var(--t-text-primary, #e8f0e8)'; }}
-                                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--t-border, #2e3a2e)'; e.currentTarget.style.color = 'var(--t-text-muted, #6b7f6b)'; }}
+                                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--t-primary)'; e.currentTarget.style.color = 'var(--t-text-primary)'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--t-border)'; e.currentTarget.style.color = 'var(--t-text-muted)'; }}
                                 >
                                     Cancel
                                 </button>
@@ -1693,11 +1697,11 @@ export default function AdminFeedbackPage() {
                                     style={{
                                         flex: 1, padding: '9px 0', borderRadius: 10,
                                         fontSize: 13, fontWeight: 700,
-                                        background: 'var(--color-primary, #8caf8c)',
+                                        background: 'var(--t-primary)',
                                         border: '1.5px solid transparent',
                                         color: '#fff',
                                         cursor: 'pointer', transition: 'all .15s',
-                                        boxShadow: '0 4px 14px rgba(140,175,140,.25)',
+                                        boxShadow: isDark ? '0 4px 14px rgba(140,175,140,.25)' : '0 4px 14px rgba(59,93,59,0.2)',
                                     }}
                                     onMouseEnter={e => { e.currentTarget.style.opacity = '0.88'; }}
                                     onMouseLeave={e => { e.currentTarget.style.opacity = '1'; }}

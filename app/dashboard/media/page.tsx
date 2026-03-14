@@ -8,6 +8,7 @@ import {
     Plus, Minus, Trash2, X, Loader2, Images, Save, ToggleLeft, ToggleRight,
     Edit2, Upload, GripVertical, Check, Eye, EyeOff, Settings, Clock, MousePointer2, ArrowRight, UploadCloud, AlertCircle, Repeat, MonitorPlay
 } from 'lucide-react';
+import { useTheme } from '@/context/ThemeContext';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
@@ -58,6 +59,7 @@ interface HeroSettings {
 const inputCls = "w-full rounded-xl border border-border bg-black/20 px-4 py-2.5 text-sm text-gold-soft placeholder:text-text-muted/40 focus:border-gold/30 focus:outline-none focus:ring-1 focus:ring-gold/10 transition-all duration-300 font-medium";
 
 export default function MediaLibraryPage() {
+    const { isDark } = useTheme();
     const [slides, setSlides] = useState<HeroSlide[]>([]);
     const [settings, setSettings] = useState<HeroSettings>({ slider_speed: 5000, arrow_visibility: 'hover', loop: true, slideshow_type: 'fade' });
     const [loading, setLoading] = useState(true);
@@ -259,22 +261,23 @@ export default function MediaLibraryPage() {
             </div>
 
             {/* Settings Bar */}
-            <div className="bg-gradient-to-br from-card-bg to-card-bg-elevated border border-border rounded-2xl p-5 shadow-xl backdrop-blur-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-fadeInUp" style={{ animationDelay: '100ms' }}>
-                <div className="flex items-center gap-2 text-gold font-serif font-bold text-sm tracking-widest uppercase">
-                    <Settings className="w-4 h-4 text-gold" /> System Dynamics
+            <div className={`border border-border rounded-3xl p-6 shadow-xl backdrop-blur-sm flex flex-col xl:flex-row xl:items-center justify-between gap-6 animate-fadeInUp ${isDark ? 'bg-gradient-to-br from-card-bg to-card-bg-elevated' : 'bg-white/80'}`} style={{ animationDelay: '100ms' }}>
+                <div className="flex items-center gap-3 text-gold font-serif font-bold text-base tracking-widest uppercase shrink-0">
+                    <Settings className={`w-5 h-5 ${isDark ? 'text-gold' : 'text-emerald-900'}`} />
+                    <span className={isDark ? 'text-gold' : 'text-emerald-950'}>System Dynamics</span>
                 </div>
 
-                <div className="flex flex-col sm:flex-row sm:items-center gap-6">
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-5 lg:justify-end flex-1">
                     {/* Speed Config */}
                     <div className="flex items-center gap-3">
-                        <label className="text-[9px] font-bold text-text-muted uppercase tracking-[0.2em] flex items-center gap-2 whitespace-nowrap">
-                            <Clock className="w-3.5 h-3.5 text-gold-soft" /> Temporal Flow
+                        <label className={`text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-2 whitespace-nowrap ${isDark ? 'text-text-muted' : 'text-emerald-900/60'}`}>
+                            <Clock className="w-3.5 h-3.5 text-gold" /> Temporal Flow
                         </label>
                         <select
                             value={settings.slider_speed}
                             disabled={savingSettings}
                             onChange={(e) => saveSettings({ ...settings, slider_speed: parseInt(e.target.value) })}
-                            className="bg-black/20 border border-border text-gold-soft text-[10px] font-bold uppercase tracking-widest rounded-lg px-3 py-1.5 focus:border-gold/30 focus:ring-1 focus:ring-gold/10 disabled:opacity-50 transition-all"
+                            className={`border text-[10px] font-bold uppercase tracking-widest rounded-lg px-3 py-2 focus:ring-1 focus:ring-gold/10 disabled:opacity-50 transition-all outline-none ${isDark ? 'bg-black/20 border-border text-gold-soft focus:border-gold/30' : 'bg-white border-gold/10 text-emerald-950 focus:border-gold/40 shadow-sm'}`}
                         >
                             <option value={3000}>Fast (3s)</option>
                             <option value={5000}>Normal (5s)</option>
@@ -285,14 +288,14 @@ export default function MediaLibraryPage() {
 
                     {/* Arrow Config */}
                     <div className="flex items-center gap-3">
-                        <label className="text-[9px] font-bold text-text-muted uppercase tracking-[0.2em] flex items-center gap-2 whitespace-nowrap">
-                            <MousePointer2 className="w-3.5 h-3.5 text-gold-soft" /> Navigation
+                        <label className={`text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-2 whitespace-nowrap ${isDark ? 'text-text-muted' : 'text-emerald-900/60'}`}>
+                            <MousePointer2 className="w-3.5 h-3.5 text-gold" /> Navigation
                         </label>
                         <select
                             value={settings.arrow_visibility}
                             disabled={savingSettings}
                             onChange={(e) => saveSettings({ ...settings, arrow_visibility: e.target.value as any })}
-                            className="bg-black/20 border border-border text-gold-soft text-[10px] font-bold uppercase tracking-widest rounded-lg px-3 py-1.5 focus:border-gold/30 focus:ring-1 focus:ring-gold/10 disabled:opacity-50 transition-all"
+                            className={`border text-[10px] font-bold uppercase tracking-widest rounded-lg px-3 py-2 focus:ring-1 focus:ring-gold/10 disabled:opacity-50 transition-all outline-none ${isDark ? 'bg-black/20 border-border text-gold-soft focus:border-gold/30' : 'bg-white border-gold/10 text-emerald-950 focus:border-gold/40 shadow-sm'}`}
                         >
                             <option value="hover">On Presence</option>
                             <option value="visible">Omnipresent</option>
@@ -302,14 +305,14 @@ export default function MediaLibraryPage() {
 
                     {/* Loop Config */}
                     <div className="flex items-center gap-3">
-                        <label className="text-[9px] font-bold text-text-muted uppercase tracking-[0.2em] flex items-center gap-2 whitespace-nowrap">
-                            <Repeat className="w-3.5 h-3.5 text-gold-soft" /> Cycle
+                        <label className={`text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-2 whitespace-nowrap ${isDark ? 'text-text-muted' : 'text-emerald-900/60'}`}>
+                            <Repeat className="w-3.5 h-3.5 text-gold" /> Cycle
                         </label>
                         <select
                             value={settings.loop ? 'true' : 'false'}
                             disabled={savingSettings}
                             onChange={(e) => saveSettings({ ...settings, loop: e.target.value === 'true' })}
-                            className="bg-black/20 border border-border text-gold-soft text-[10px] font-bold uppercase tracking-widest rounded-lg px-3 py-1.5 focus:border-gold/30 focus:ring-1 focus:ring-gold/10 disabled:opacity-50 transition-all"
+                            className={`border text-[10px] font-bold uppercase tracking-widest rounded-lg px-3 py-2 focus:ring-1 focus:ring-gold/10 disabled:opacity-50 transition-all outline-none ${isDark ? 'bg-black/20 border-border text-gold-soft focus:border-gold/30' : 'bg-white border-gold/10 text-emerald-950 focus:border-gold/40 shadow-sm'}`}
                         >
                             <option value="true">Infinite</option>
                             <option value="false">Finite</option>
@@ -318,14 +321,14 @@ export default function MediaLibraryPage() {
 
                     {/* Transition Config */}
                     <div className="flex items-center gap-3">
-                        <label className="text-[9px] font-bold text-text-muted uppercase tracking-[0.2em] flex items-center gap-2 whitespace-nowrap">
-                            <MonitorPlay className="w-3.5 h-3.5 text-gold-soft" /> Effect
+                        <label className={`text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-2 whitespace-nowrap ${isDark ? 'text-text-muted' : 'text-emerald-900/60'}`}>
+                            <MonitorPlay className="w-3.5 h-3.5 text-gold" /> Effect
                         </label>
                         <select
                             value={settings.slideshow_type}
                             disabled={savingSettings}
                             onChange={(e) => saveSettings({ ...settings, slideshow_type: e.target.value as any })}
-                            className="bg-black/20 border border-border text-gold-soft text-[10px] font-bold uppercase tracking-widest rounded-lg px-3 py-1.5 focus:border-gold/30 focus:ring-1 focus:ring-gold/10 disabled:opacity-50 transition-all"
+                            className={`border text-[10px] font-bold uppercase tracking-widest rounded-lg px-3 py-2 focus:ring-1 focus:ring-gold/10 disabled:opacity-50 transition-all outline-none ${isDark ? 'bg-black/20 border-border text-gold-soft focus:border-gold/30' : 'bg-white border-gold/10 text-emerald-950 focus:border-gold/40 shadow-sm'}`}
                         >
                             <option value="fade">Dissolve</option>
                             <option value="slide_right_to_left">Transversal Link</option>

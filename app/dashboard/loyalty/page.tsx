@@ -8,10 +8,13 @@ import {
     getAdminLoyaltyWallets,
     adjustAdminLoyaltyPoints,
     updateAdminLoyaltyTier,
+    createAdminLoyaltyTier,
     deleteAdminLoyaltyTier,
     updateAdminLoyaltyRule,
+    createAdminLoyaltyRule,
     deleteAdminLoyaltyRule,
     updateAdminLoyaltyPromotion,
+    createAdminLoyaltyPromotion,
     deleteAdminLoyaltyPromotion
 } from '@/lib/api';
 import {
@@ -97,6 +100,42 @@ export default function LoyaltyAdminPage() {
         setAdjReason('');
     };
 
+    const showRuleModal = (rule: any = null) => {
+        setSelectedItem(rule || {
+            rule_name: '',
+            rule_type: 'purchase',
+            points_amount: 0,
+            max_points: null,
+            priority: 0,
+            is_active: true
+        });
+        setModalType('rule');
+    };
+
+    const showTierModal = (tier: any = null) => {
+        setSelectedItem(tier || {
+            tier_name: '',
+            tier_order: 0,
+            min_points: 0,
+            points_multiplier: 1,
+            benefits: {}
+        });
+        setModalType('tier');
+    };
+
+    const showPromoModal = (promo: any = null) => {
+        setSelectedItem(promo || {
+            promotion_name: '',
+            promotion_type: 'bulk_discount',
+            multiplier: 1,
+            bonus_points: 0,
+            starts_at: '',
+            ends_at: '',
+            is_active: true
+        });
+        setModalType('promo');
+    };
+
     const handleDeleteTier = async (id: string) => {
         if (!confirm('Are you sure you want to delete this tier? This may affect customers currently assigned to it.')) return;
         try {
@@ -134,6 +173,66 @@ export default function LoyaltyAdminPage() {
                 toast.error(res.message || 'Failed to delete promotion');
             }
         } catch { toast.error('Error deleting promotion'); }
+    };
+
+    const handleSaveRule = async () => {
+        if (!selectedItem) return;
+        setIsProcessing(true);
+        try {
+            const isEdit = !!selectedItem.rule_id;
+            const res = isEdit 
+                ? await updateAdminLoyaltyRule(selectedItem.rule_id, selectedItem)
+                : await createAdminLoyaltyRule(selectedItem);
+            
+            if (res.success) {
+                toast.success(isEdit ? 'Rule updated' : 'Rule created');
+                setModalType(null);
+                fetchData();
+            } else {
+                toast.error(res.message || 'Failed to save rule');
+            }
+        } catch { toast.error('Error saving rule'); }
+        finally { setIsProcessing(false); }
+    };
+
+    const handleSaveTier = async () => {
+        if (!selectedItem) return;
+        setIsProcessing(true);
+        try {
+            const isEdit = !!selectedItem.tier_id;
+            const res = isEdit 
+                ? await updateAdminLoyaltyTier(selectedItem.tier_id, selectedItem)
+                : await createAdminLoyaltyTier(selectedItem);
+
+            if (res.success) {
+                toast.success(isEdit ? 'Tier updated' : 'Tier created');
+                setModalType(null);
+                fetchData();
+            } else {
+                toast.error(res.message || 'Failed to save tier');
+            }
+        } catch { toast.error('Error saving tier'); }
+        finally { setIsProcessing(false); }
+    };
+
+    const handleSavePromo = async () => {
+        if (!selectedItem) return;
+        setIsProcessing(true);
+        try {
+            const isEdit = !!selectedItem.promo_id;
+            const res = isEdit 
+                ? await updateAdminLoyaltyPromotion(selectedItem.promo_id, selectedItem)
+                : await createAdminLoyaltyPromotion(selectedItem);
+
+            if (res.success) {
+                toast.success(isEdit ? 'Promotion updated' : 'Promotion created');
+                setModalType(null);
+                fetchData();
+            } else {
+                toast.error(res.message || 'Failed to save promotion');
+            }
+        } catch { toast.error('Error saving promotion'); }
+        finally { setIsProcessing(false); }
     };
 
     const formatNumber = (num: number) => new Intl.NumberFormat('en-IN').format(num || 0);
@@ -227,7 +326,10 @@ export default function LoyaltyAdminPage() {
                         <div className="bg-card-bg border border-border rounded-xl overflow-hidden">
                             <div className="p-4 border-b border-border flex justify-between items-center bg-primary/10">
                                 <h3 className="font-serif font-bold text-text-primary">Loyalty Tiers</h3>
-                                <button className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-text-primary text-xs font-semibold rounded-lg border border-border transition-colors">
+                                <button 
+                                    onClick={() => showTierModal()}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-text-primary text-xs font-semibold rounded-lg border border-border transition-colors"
+                                >
                                     <Plus className="w-3.5 h-3.5" /> New Tier
                                 </button>
                             </div>
@@ -249,16 +351,20 @@ export default function LoyaltyAdminPage() {
                                                     <div className="h-8 w-8 rounded-lg bg-gold/10 flex items-center justify-center border border-gold/20">
                                                         <Star className="h-4 w-4 text-gold fill-gold/20" />
                                                     </div>
-                                                    <span className="font-bold text-text-primary">{t.name}</span>
+                                                    <span className="font-bold text-text-primary">{t.tier_name || t.name}</span>
                                                 </td>
                                                 <td className="px-5 py-4 text-text-primary font-mono">{t.min_points}</td>
-                                                <td className="px-5 py-4 text-emerald-400 font-bold">{t.point_multiplier}x</td>
+                                                <td className="px-5 py-4 text-emerald-400 font-bold">{t.points_multiplier || t.point_multiplier}x</td>
                                                 <td className="px-5 py-4 text-text-muted text-xs truncate max-w-[200px]">
-                                                    {t.benefits ? JSON.stringify(t.benefits) : 'None'}
+                                                    {t.benefits ? (typeof t.benefits === 'string' ? t.benefits : JSON.stringify(t.benefits)) : 'None'}
                                                 </td>
                                                 <td className="px-5 py-4 text-right">
                                                     <div className="flex justify-end gap-2 transition-opacity">
-                                                        <button className="p-1.5 hover:bg-gold/10 text-gold rounded-lg transition-colors" title="Edit Tier">
+                                                        <button 
+                                                            onClick={() => showTierModal(t)}
+                                                            className="p-1.5 hover:bg-gold/10 text-gold rounded-lg transition-colors" 
+                                                            title="Edit Tier"
+                                                        >
                                                             <Edit className="h-4 w-4" />
                                                         </button>
                                                         <button 
@@ -283,7 +389,10 @@ export default function LoyaltyAdminPage() {
                         <div className="bg-card-bg border border-border rounded-xl overflow-hidden">
                             <div className="p-4 border-b border-border flex justify-between items-center bg-primary/10">
                                 <h3 className="font-serif font-bold text-text-primary">Earning Rules</h3>
-                                <button className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-text-primary text-xs font-semibold rounded-lg border border-border transition-colors">
+                                <button 
+                                    onClick={() => showRuleModal()}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-text-primary text-xs font-semibold rounded-lg border border-border transition-colors"
+                                >
                                     <Plus className="w-3.5 h-3.5" /> New Rule
                                 </button>
                             </div>
@@ -302,13 +411,13 @@ export default function LoyaltyAdminPage() {
                                         {rules.map(r => (
                                             <tr key={r.rule_id} className="border-b border-border/50 hover:bg-white/5 group">
                                                 <td className="px-5 py-4">
-                                                    <span className="font-semibold text-text-primary capitalize">{(r.rule_type || r.action_type || '').replace(/_/g, ' ')}</span>
+                                                    <span className="font-semibold text-text-primary capitalize">{((r.rule_name || r.rule_type || r.action_type || '')).replace(/_/g, ' ')}</span>
                                                 </td>
                                                 <td className="px-5 py-4 text-emerald-400 font-bold">
-                                                    +{r.points_awarded} {r.points_type === 'percentage' ? '% order value' : 'pts fixed'}
+                                                    +{r.points_amount || r.points_awarded} {r.points_type === 'percentage' ? '% order value' : 'pts fixed'}
                                                 </td>
                                                 <td className="px-5 py-4 text-text-muted">
-                                                    {r.max_points_per_day ? `Max ${r.max_points_per_day}/day` : 'No daily limit'}
+                                                    {r.max_points ? `Max ${r.max_points}/day` : (r.max_points_per_day ? `Max ${r.max_points_per_day}/day` : 'No daily limit')}
                                                 </td>
                                                 <td className="px-5 py-4">
                                                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${r.is_active ? 'bg-emerald-500/20 text-emerald-400' : 'bg-gray-500/20 text-gray-400'
@@ -318,7 +427,11 @@ export default function LoyaltyAdminPage() {
                                                 </td>
                                                 <td className="px-5 py-4 text-right">
                                                     <div className="flex justify-end gap-2 transition-opacity">
-                                                        <button className="p-1.5 hover:bg-gold/10 text-gold rounded-lg transition-colors" title="Edit Rule">
+                                                        <button 
+                                                            onClick={() => showRuleModal(r)}
+                                                            className="p-1.5 hover:bg-gold/10 text-gold rounded-lg transition-colors" 
+                                                            title="Edit Rule"
+                                                        >
                                                             <Edit className="h-4 w-4" />
                                                         </button>
                                                         <button 
@@ -343,7 +456,10 @@ export default function LoyaltyAdminPage() {
                         <div className="bg-card-bg border border-border rounded-xl overflow-hidden">
                             <div className="p-4 border-b border-border flex justify-between items-center bg-primary/10">
                                 <h3 className="font-serif font-bold text-text-primary">Promotional Multipliers</h3>
-                                <button className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-text-primary text-xs font-semibold rounded-lg border border-border transition-colors">
+                                <button 
+                                    onClick={() => showPromoModal()}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-text-primary text-xs font-semibold rounded-lg border border-border transition-colors"
+                                >
                                     <Plus className="w-3.5 h-3.5" /> New Campaign
                                 </button>
                             </div>
@@ -368,10 +484,10 @@ export default function LoyaltyAdminPage() {
                                             return (
                                                 <tr key={p.promo_id} className="border-b border-border/50 hover:bg-white/5 group">
                                                     <td className="px-5 py-4">
-                                                        <span className="font-semibold text-text-primary">{p.name}</span>
+                                                        <span className="font-semibold text-text-primary">{p.promotion_name || p.name}</span>
                                                     </td>
                                                     <td className="px-5 py-4">
-                                                        {p.multiplier && <span className="text-emerald-400 font-bold mr-2">{p.multiplier}x Points</span>}
+                                                        {(p.multiplier > 1) && <span className="text-emerald-400 font-bold mr-2">{p.multiplier}x Points</span>}
                                                         {p.bonus_points > 0 && <span className="text-gold font-bold">+{p.bonus_points} Bonus</span>}
                                                     </td>
                                                     <td className="px-5 py-4 text-xs text-text-muted">
@@ -386,7 +502,11 @@ export default function LoyaltyAdminPage() {
                                                     </td>
                                                     <td className="px-5 py-4 text-right">
                                                         <div className="flex justify-end gap-2 transition-opacity">
-                                                            <button className="p-1.5 hover:bg-gold/10 text-gold rounded-lg transition-colors" title="Edit Campaign">
+                                                            <button 
+                                                                onClick={() => showPromoModal(p)}
+                                                                className="p-1.5 hover:bg-gold/10 text-gold rounded-lg transition-colors" 
+                                                                title="Edit Campaign"
+                                                            >
                                                                 <Edit className="h-4 w-4" />
                                                             </button>
                                                             <button 
@@ -472,7 +592,7 @@ export default function LoyaltyAdminPage() {
             {modalType === 'adjust' && selectedItem && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setModalType(null)} />
-                    <div className="relative bg-card-bg border border-border w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-fadeInUp">
+                    <div className="relative bg-[#1A1814] border border-border w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-fadeInUp">
                         <div className="p-6 border-b border-border bg-primary/5">
                             <h3 className="font-serif text-xl font-bold text-gold">Manual Point Adjustment</h3>
                             <p className="text-xs text-text-muted mt-1">Adjusting balance for <span className="text-gold-soft font-bold">{selectedItem.full_name || selectedItem.email}</span></p>
@@ -483,7 +603,7 @@ export default function LoyaltyAdminPage() {
                                 <label className="block text-[10px] font-bold uppercase tracking-widest text-text-muted mb-2">Point Delta (±)</label>
                                 <input 
                                     type="number"
-                                    value={adjPoints}
+                                    value={adjPoints || 0}
                                     onChange={(e) => setAdjPoints(parseInt(e.target.value) || 0)}
                                     placeholder="Use negative for debit"
                                     className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:border-gold outline-none transition-all font-mono"
@@ -494,7 +614,7 @@ export default function LoyaltyAdminPage() {
                             <div>
                                 <label className="block text-[10px] font-bold uppercase tracking-widest text-text-muted mb-2">Adjustment Reason</label>
                                 <textarea 
-                                    value={adjReason}
+                                    value={adjReason || ''}
                                     onChange={(e) => setAdjReason(e.target.value)}
                                     placeholder="Admin manual correction, customer service credit, etc."
                                     rows={3}
@@ -516,6 +636,282 @@ export default function LoyaltyAdminPage() {
                                 className="flex-1 bg-gold hover:bg-gold-muted disabled:opacity-50 text-primary py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all shadow-lg shadow-gold/20 flex justify-center items-center gap-2"
                             >
                                 {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply Adjustment'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* RULE MODAL */}
+            {modalType === 'rule' && selectedItem && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setModalType(null)} />
+                    <div className="relative bg-[#1A1814] border border-[#D4A847]/30 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-fadeInUp">
+                        <div className="p-6 border-b border-[#D4A847]/10 bg-[#D4A847]/5">
+                            <h3 className="font-serif text-xl font-bold text-[#D4A847]">{selectedItem.rule_id ? 'Edit Earning Rule' : 'Create New Rule'}</h3>
+                            <p className="text-xs text-text-muted mt-1">Configure how customers earn ritual points</p>
+                        </div>
+                        
+                        <div className="p-6 space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="col-span-2">
+                                    <label className="block text-[10px] font-bold uppercase tracking-widest text-text-muted mb-2">Rule Name / Display Title</label>
+                                    <input 
+                                        type="text"
+                                        value={selectedItem.rule_name || ''}
+                                        onChange={(e) => setSelectedItem({...selectedItem, rule_name: e.target.value})}
+                                        placeholder="e.g. Purchase Reward"
+                                        className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:border-gold outline-none transition-all"
+                                    />
+                                </div>
+                                <div className="col-span-2">
+                                    <label className="block text-[10px] font-bold uppercase tracking-widest text-text-muted mb-2">Action Type</label>
+                                    <select 
+                                        value={selectedItem.rule_type || 'purchase'}
+                                        onChange={(e) => setSelectedItem({...selectedItem, rule_type: e.target.value})}
+                                        className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:border-gold outline-none transition-all"
+                                    >
+                                        <option value="purchase">Purchase</option>
+                                        <option value="review">Review</option>
+                                        <option value="signup">Signup</option>
+                                        <option value="referral">Referral</option>
+                                        <option value="social_share">Social Share</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-bold uppercase tracking-widest text-text-muted mb-2">Points Awarded</label>
+                                    <input 
+                                        type="number"
+                                        value={selectedItem.points_amount || 0}
+                                        onChange={(e) => setSelectedItem({...selectedItem, points_amount: parseInt(e.target.value) || 0})}
+                                        className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:border-gold outline-none transition-all font-mono"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-bold uppercase tracking-widest text-text-muted mb-2">Priority</label>
+                                    <input 
+                                        type="number"
+                                        value={selectedItem.priority || 0}
+                                        onChange={(e) => setSelectedItem({...selectedItem, priority: parseInt(e.target.value) || 0})}
+                                        className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:border-gold outline-none transition-all font-mono"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-text-muted mb-2">Daily Limit (Max Points)</label>
+                                <input 
+                                    type="number"
+                                    value={selectedItem.max_points || ''}
+                                    onChange={(e) => setSelectedItem({...selectedItem, max_points: parseInt(e.target.value) || null})}
+                                    placeholder="No limit"
+                                    className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:border-gold outline-none transition-all font-mono"
+                                />
+                            </div>
+
+                            <div className="flex items-center gap-3 pt-2">
+                                <input 
+                                    type="checkbox"
+                                    id="rule-active"
+                                    checked={!!selectedItem.is_active}
+                                    onChange={(e) => setSelectedItem({...selectedItem, is_active: e.target.checked})}
+                                    className="w-4 h-4 accent-gold"
+                                />
+                                <label htmlFor="rule-active" className="text-sm text-text-primary font-medium">Rule is active and currently awarding points</label>
+                            </div>
+                        </div>
+
+                        <div className="p-6 bg-primary/5 border-t border-border flex gap-3">
+                            <button 
+                                onClick={() => setModalType(null)}
+                                className="flex-1 py-3 text-xs font-bold uppercase tracking-widest text-text-muted hover:text-text-primary transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                onClick={handleSaveRule}
+                                disabled={isProcessing}
+                                className="flex-1 bg-gold hover:bg-gold-muted disabled:opacity-50 text-primary py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all shadow-lg shadow-gold/20 flex justify-center items-center gap-2"
+                            >
+                                {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save Rule'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* TIER MODAL */}
+            {modalType === 'tier' && selectedItem && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setModalType(null)} />
+                    <div className="relative bg-[#1A1814] border border-[#D4A847]/30 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-fadeInUp">
+                        <div className="p-6 border-b border-[#D4A847]/10 bg-[#D4A847]/5">
+                            <h3 className="font-serif text-xl font-bold text-[#D4A847]">{selectedItem.tier_id ? 'Edit Tier' : 'Create New Tier'}</h3>
+                            <p className="text-xs text-text-muted mt-1">Configure status levels and point multipliers</p>
+                        </div>
+                        
+                        <div className="p-6 space-y-4">
+                            <div>
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-text-muted mb-2">Tier Name</label>
+                                <input 
+                                    type="text"
+                                    value={selectedItem.tier_name || ''}
+                                    onChange={(e) => setSelectedItem({...selectedItem, tier_name: e.target.value})}
+                                    placeholder="e.g. Gold Resident"
+                                    className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:border-gold outline-none transition-all"
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-[10px] font-bold uppercase tracking-widest text-text-muted mb-2">Min Lifetime Points</label>
+                                    <input 
+                                        type="number"
+                                        value={selectedItem.min_points || 0}
+                                        onChange={(e) => setSelectedItem({...selectedItem, min_points: parseInt(e.target.value) || 0})}
+                                        className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:border-gold outline-none transition-all font-mono"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-bold uppercase tracking-widest text-text-muted mb-2">Point Multiplier</label>
+                                    <input 
+                                        type="number"
+                                        step="0.1"
+                                        value={selectedItem.points_multiplier || 1}
+                                        onChange={(e) => setSelectedItem({...selectedItem, points_multiplier: parseFloat(e.target.value) || 1})}
+                                        className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:border-gold outline-none transition-all font-mono"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-text-muted mb-2">Benefits (Key-Value JSON)</label>
+                                <textarea 
+                                    value={typeof selectedItem.benefits === 'object' ? JSON.stringify(selectedItem.benefits, null, 2) : (selectedItem.benefits || '')}
+                                    onChange={(e) => {
+                                        try {
+                                            const val = JSON.parse(e.target.value);
+                                            setSelectedItem({...selectedItem, benefits: val});
+                                        } catch {
+                                            setSelectedItem({...selectedItem, benefits: e.target.value});
+                                        }
+                                    }}
+                                    rows={4}
+                                    placeholder='{"free_shipping": true, "early_access": true}'
+                                    className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:border-gold outline-none transition-all text-xs font-mono resize-none"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="p-6 bg-primary/5 border-t border-border flex gap-3">
+                            <button 
+                                onClick={() => setModalType(null)}
+                                className="flex-1 py-3 text-xs font-bold uppercase tracking-widest text-text-muted hover:text-text-primary transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                onClick={handleSaveTier}
+                                disabled={isProcessing}
+                                className="flex-1 bg-gold hover:bg-gold-muted disabled:opacity-50 text-primary py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all shadow-lg shadow-gold/20 flex justify-center items-center gap-2"
+                            >
+                                {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save Tier'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* PROMOTION MODAL */}
+            {modalType === 'promo' && selectedItem && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setModalType(null)} />
+                    <div className="relative bg-[#1A1814] border border-[#D4A847]/30 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-fadeInUp">
+                        <div className="p-6 border-b border-[#D4A847]/10 bg-[#D4A847]/5">
+                            <h3 className="font-serif text-xl font-bold text-[#D4A847]">{selectedItem.promo_id ? 'Edit Promotion' : 'Create New Promotion'}</h3>
+                            <p className="text-xs text-text-muted mt-1">Setup limited-time point boosts</p>
+                        </div>
+                        
+                        <div className="p-6 space-y-4">
+                            <div>
+                                <label className="block text-[10px] font-bold uppercase tracking-widest text-text-muted mb-2">Campaign Name</label>
+                                <input 
+                                    type="text"
+                                    value={selectedItem.promotion_name || ''}
+                                    onChange={(e) => setSelectedItem({...selectedItem, promotion_name: e.target.value})}
+                                    placeholder="e.g. Festival Season Boost"
+                                    className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:border-gold outline-none transition-all"
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-[10px] font-bold uppercase tracking-widest text-text-muted mb-2">Multiplier</label>
+                                    <input 
+                                        type="number"
+                                        step="0.1"
+                                        value={selectedItem.multiplier || 1}
+                                        onChange={(e) => setSelectedItem({...selectedItem, multiplier: parseFloat(e.target.value) || 1})}
+                                        className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:border-gold outline-none transition-all font-mono"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-bold uppercase tracking-widest text-text-muted mb-2">Bonus Points</label>
+                                    <input 
+                                        type="number"
+                                        value={selectedItem.bonus_points || 0}
+                                        onChange={(e) => setSelectedItem({...selectedItem, bonus_points: parseInt(e.target.value) || 0})}
+                                        className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:border-gold outline-none transition-all font-mono"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-[10px] font-bold uppercase tracking-widest text-text-muted mb-2">Starts At</label>
+                                    <input 
+                                        type="date"
+                                        value={selectedItem.starts_at ? new Date(selectedItem.starts_at).toISOString().split('T')[0] : ''}
+                                        onChange={(e) => setSelectedItem({...selectedItem, starts_at: e.target.value})}
+                                        className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:border-gold outline-none transition-all"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-bold uppercase tracking-widest text-text-muted mb-2">Ends At</label>
+                                    <input 
+                                        type="date"
+                                        value={selectedItem.ends_at ? new Date(selectedItem.ends_at).toISOString().split('T')[0] : ''}
+                                        onChange={(e) => setSelectedItem({...selectedItem, ends_at: e.target.value})}
+                                        className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:border-gold outline-none transition-all"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-3 pt-2">
+                                <input 
+                                    type="checkbox"
+                                    id="promo-active"
+                                    checked={!!selectedItem.is_active}
+                                    onChange={(e) => setSelectedItem({...selectedItem, is_active: e.target.checked})}
+                                    className="w-4 h-4 accent-gold"
+                                />
+                                <label htmlFor="promo-active" className="text-sm text-text-primary font-medium">Promotion is enabled</label>
+                            </div>
+                        </div>
+
+                        <div className="p-6 bg-primary/5 border-t border-border flex gap-3">
+                            <button 
+                                onClick={() => setModalType(null)}
+                                className="flex-1 py-3 text-xs font-bold uppercase tracking-widest text-text-muted hover:text-text-primary transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                onClick={handleSavePromo}
+                                disabled={isProcessing}
+                                className="flex-1 bg-gold hover:bg-gold-muted disabled:opacity-50 text-primary py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all shadow-lg shadow-gold/20 flex justify-center items-center gap-2"
+                            >
+                                {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save Promotion'}
                             </button>
                         </div>
                     </div>

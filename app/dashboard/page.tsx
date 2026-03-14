@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { getProducts, Product } from '@/lib/api';
+import { getProducts, getOrders, Product, Order } from '@/lib/api';
 import { getAnalyticsSummary, getSalesOverview, getPaymentBreakdown } from '@/lib/api/analytics';
 import type { AnalyticsSummary, SalesDataPoint, PaymentBreakdown } from '@/lib/api/analytics';
 import Link from 'next/link';
@@ -21,6 +21,7 @@ function formatINR(amount: number): string {
 
 export default function DashboardPage() {
     const [products, setProducts] = useState<Product[]>([]);
+    const [recentOrders, setRecentOrders] = useState<Order[]>([]);
     const [summary, setSummary] = useState<AnalyticsSummary | null>(null);
     const [salesData, setSalesData] = useState<SalesDataPoint[]>([]);
     const [paymentData, setPaymentData] = useState<PaymentBreakdown | null>(null);
@@ -33,12 +34,14 @@ export default function DashboardPage() {
             getAnalyticsSummary(),
             getSalesOverview('monthly'),
             getPaymentBreakdown(),
-            getProducts(),   // still needed for Recent Products list
-        ]).then(([summaryRes, salesRes, paymentRes, prods]) => {
+            getProducts(),   // for internal logic if needed
+            getOrders(),      // for recent fulfillments
+        ]).then(([summaryRes, salesRes, paymentRes, prods, ords]) => {
             setSummary(summaryRes);
             setSalesData(salesRes);
             setPaymentData(paymentRes);
             setProducts(prods);
+            setRecentOrders(ords.slice(0, 5));
             setLoading(false);
         });
     }, []);
@@ -196,44 +199,45 @@ export default function DashboardPage() {
                                     </div>
                                 </div>
                             ))
-                        ) : products.length === 0 ? (
+                        ) : recentOrders.length === 0 ? (
                             <div className="px-6 py-12 text-center">
                                 <p className="text-sm text-text-muted italic mb-4">No active protocols detected</p>
                                 <Link
-                                    href="/dashboard/products/add"
+                                    href="/dashboard/orders"
                                     className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-gold hover:bg-primary-light transition-all duration-300"
                                 >
-                                    <Plus className="h-4 w-4" /> Initialize Protocol
+                                    <ShoppingCart className="h-4 w-4" /> View Archives
                                 </Link>
                             </div>
                         ) : (
-                            products.slice(0, 5).map((product, i) => (
+                            recentOrders.map((order, i) => (
                                 <Link
-                                    key={product.product_id}
-                                    href={`/dashboard/products/edit/${product.slug || product.product_id}`}
+                                    key={order.id}
+                                    href="/dashboard/orders"
                                     className="grid grid-cols-[1fr_2fr_2fr_1fr_1fr] items-center px-6 py-4 hover:bg-primary/10 transition-all duration-300 group"
                                 >
-                                    <span className="text-xs font-mono text-text-muted">#PR-{product.product_id.toString().slice(-4)}</span>
+                                    <span className="text-xs font-mono text-text-muted">#ORD-{order.id.toString().slice(-4)}</span>
                                     <div className="flex items-center gap-3">
                                         <div className="flex-1 min-w-0">
                                             <p className="text-sm font-bold text-text-primary truncate group-hover:text-gold transition-colors duration-300">
-                                                —
+                                                {order.customer_name}
                                             </p>
                                         </div>
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <p className="text-xs font-medium text-text-secondary italic truncate">
-                                            {product.product_name}
+                                            {order.items?.length > 0 ? (order.items[0].product_name || 'Protocol Essence') : 'Generic Formula'}
+                                            {order.items?.length > 1 ? ` (+${order.items.length - 1} more)` : ''}
                                         </p>
                                     </div>
                                     <div>
-                                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg bg-primary/20 border border-border text-gold-soft">
-                                            Active
+                                        <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg border ${getStatusClasses(order.status)}`}>
+                                            {order.status}
                                         </span>
                                     </div>
                                     <div className="text-right">
                                         <p className="text-sm font-bold text-gold tracking-tight">
-                                            {formatINR(product.price ?? 0)}
+                                            {formatINR(order.total ?? 0)}
                                         </p>
                                     </div>
                                 </Link>

@@ -12,6 +12,7 @@ import toast from 'react-hot-toast';
 import CountryPicker from '@/components/CountryPicker';
 import SeoEditor from '@/components/SeoEditor';
 import type { SeoData } from '@/lib/api/seo';
+import { useTheme } from '@/context/ThemeContext';
 
 // ÔöÇÔöÇÔöÇ Constants ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 export type AttributeType = 'Volume' | 'Pack' | 'Flavor' | 'Vintage';
@@ -70,6 +71,7 @@ interface VariantRow {
 // ÔöÇÔöÇÔöÇ Component ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 export default function AddProductPage() {
     const router = useRouter();
+    const { isDark } = useTheme();
     const [currentStep, setCurrentStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
@@ -805,17 +807,17 @@ export default function AddProductPage() {
                                                 }
                                             }}
                                             className={`flex items-center gap-3 w-full px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 cursor-pointer ${isActive
-                                                ? 'bg-gold/[0.08] text-gold-soft border border-gold/20'
+                                                ? 'bg-gold/[0.08] text-gold-soft border border-gold/20 shadow-sm'
                                                 : isCompleted
                                                     ? 'text-gold-soft hover:bg-gold/[0.04] border border-transparent'
-                                                    : 'text-text-secondary hover:bg-white/[0.02] border border-transparent'
+                                                    : `text-text-secondary border border-transparent ${isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-black/[0.02]'}`
                                                 }`}
                                         >
                                             <div className={`flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold transition-all ${isCompleted
-                                                ? 'bg-gold text-white'
+                                                ? 'bg-gold text-white shadow-sm'
                                                 : isActive
-                                                    ? 'bg-[#3A1F0B] border-2 border-gold text-gold'
-                                                    : 'bg-white/5 border border-border text-text-muted'
+                                                    ? 'bg-primary border-2 border-gold text-white shadow-md'
+                                                    : `border border-border text-text-muted ${isDark ? 'bg-white/5' : 'bg-black/5'}`
                                                 }`}>
                                                 {isCompleted ? <Check className="w-3.5 h-3.5" /> : step.id}
                                             </div>
@@ -854,7 +856,7 @@ export default function AddProductPage() {
                                     <button
                                         type="button"
                                         onClick={goNext}
-                                        className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-[#E8D8B9] hover:bg-primary-light border border-gold/10 transition-all duration-300 shadow-lg shadow-primary/10"
+                                        className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark border border-gold/10 transition-all duration-300 shadow-lg shadow-primary/10"
                                     >
                                         Next
                                         <ArrowRight className="h-4 w-4" />
@@ -864,7 +866,7 @@ export default function AddProductPage() {
                                         type="button"
                                         onClick={handleSubmit}
                                         disabled={loading}
-                                        className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-[#E8D8B9] hover:bg-primary-light border border-gold/10 transition-all duration-300 shadow-lg shadow-primary/10 disabled:opacity-50"
+                                        className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark border border-gold/10 transition-all duration-300 shadow-lg shadow-primary/10 disabled:opacity-50"
                                     >
                                         <Check className="h-4 w-4" />
                                         {loading ? 'Creating...' : 'Create Product'}
@@ -1721,37 +1723,36 @@ export default function AddProductPage() {
                 </div>
             )}
 
-            {/* ── Create Category Modal ── */}
             {showCategoryModal && (
                 <div className="fixed inset-0 z-[998] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={() => setShowCategoryModal(false)}>
-                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden" onClick={e => e.stopPropagation()}>
-                        <div className="h-1 bg-gradient-to-r from-[#6B2737] to-[#D4A847]" />
+                    <div className="bg-card-bg rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-border" onClick={e => e.stopPropagation()}>
+                        <div className="h-1 bg-gradient-to-r from-primary to-gold" />
                         <div className="p-6">
                             <div className="flex items-center justify-between mb-5">
-                                <h3 className="font-serif font-bold text-gray-900 text-lg">Create New Category</h3>
+                                <h3 className="font-serif font-bold text-text-primary text-lg">Create New Category</h3>
                                 <button onClick={() => setShowCategoryModal(false)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors">
                                     <X className="h-4 w-4" />
                                 </button>
                             </div>
                             <div className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                                    <label className="block text-sm font-medium text-text-secondary mb-1">Name *</label>
                                     <input
                                         type="text"
                                         value={newCatForm.name}
                                         onChange={e => setNewCatForm({ ...newCatForm, name: e.target.value, slug: autoSlug(e.target.value) })}
-                                        className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm focus:border-[#D4A847]/40 focus:outline-none focus:ring-1 focus:ring-[#D4A847]/20 text-gray-900"
+                                        className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 text-text-primary bg-transparent"
                                         placeholder="e.g. Wellness"
                                         autoFocus
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Slug</label>
+                                    <label className="block text-sm font-medium text-text-secondary mb-1">Slug</label>
                                     <input
                                         type="text"
                                         value={newCatForm.slug}
                                         onChange={e => setNewCatForm({ ...newCatForm, slug: e.target.value })}
-                                        className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm focus:border-[#D4A847]/40 focus:outline-none focus:ring-1 focus:ring-[#D4A847]/20 text-gray-500"
+                                        className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 text-text-muted bg-transparent"
                                         placeholder="auto-generated-from-name"
                                     />
                                 </div>
@@ -1778,7 +1779,7 @@ export default function AddProductPage() {
                                     type="button"
                                     onClick={handleCreateCategory}
                                     disabled={catCreating}
-                                    className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-[#6B2737] py-2.5 text-sm font-semibold text-white hover:bg-[#5a2030] transition-colors disabled:opacity-60"
+                                    className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-primary py-2.5 text-sm font-semibold text-white hover:bg-primary-dark transition-colors disabled:opacity-60"
                                 >
                                     {catCreating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
                                     Create Category
@@ -1789,70 +1790,69 @@ export default function AddProductPage() {
                 </div>
             )}
 
-            {/* ── Create Subcategory Modal ── */}
             {showSubcategoryModal && (
                 <div className="fixed inset-0 z-[998] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={() => setShowSubcategoryModal(false)}>
-                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden" onClick={e => e.stopPropagation()}>
-                        <div className="h-1 bg-gradient-to-r from-[#D4A847] to-[#6B2737]" />
+                    <div className="bg-card-bg rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-border" onClick={e => e.stopPropagation()}>
+                        <div className="h-1 bg-gradient-to-r from-gold to-primary" />
                         <div className="p-6">
                             <div className="flex items-center justify-between mb-5">
-                                <h3 className="font-serif font-bold text-gray-900 text-lg">Create New Subcategory</h3>
-                                <button onClick={() => setShowSubcategoryModal(false)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors">
+                                <h3 className="font-serif font-bold text-text-primary text-lg">Create New Subcategory</h3>
+                                <button onClick={() => setShowSubcategoryModal(false)} className="p-1.5 rounded-lg hover:bg-white/5 text-text-muted hover:text-text-primary transition-colors">
                                     <X className="h-4 w-4" />
                                 </button>
                             </div>
                             <div className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                                    <label className="block text-sm font-medium text-text-secondary mb-1">Name *</label>
                                     <input
                                         type="text"
                                         value={newSubCatForm.name}
                                         onChange={e => setNewSubCatForm({ ...newSubCatForm, name: e.target.value, slug: autoSlug(e.target.value) })}
-                                        className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm focus:border-[#D4A847]/40 focus:outline-none focus:ring-1 focus:ring-[#D4A847]/20 text-gray-900"
+                                        className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 text-text-primary bg-transparent"
                                         placeholder="e.g. Cabernet Sauvignon"
                                         autoFocus
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Slug</label>
+                                    <label className="block text-sm font-medium text-text-secondary mb-1">Slug</label>
                                     <input
                                         type="text"
                                         value={newSubCatForm.slug}
                                         onChange={e => setNewSubCatForm({ ...newSubCatForm, slug: e.target.value })}
-                                        className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm focus:border-[#D4A847]/40 focus:outline-none focus:ring-1 focus:ring-[#D4A847]/20 text-gray-500"
+                                        className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 text-text-muted bg-transparent"
                                         placeholder="auto-generated-from-name"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                                    <label className="block text-sm font-medium text-text-secondary mb-1">Description</label>
                                     <textarea
                                         value={newSubCatForm.description}
                                         onChange={e => setNewSubCatForm({ ...newSubCatForm, description: e.target.value })}
                                         rows={3}
-                                        className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm focus:border-[#D4A847]/40 focus:outline-none focus:ring-1 focus:ring-[#D4A847]/20 resize-none text-gray-900"
+                                        className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 resize-none text-text-primary bg-transparent"
                                         placeholder="Brief description of this subcategory"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Parent Category *</label>
+                                    <label className="block text-sm font-medium text-text-secondary mb-1">Parent Category *</label>
                                     <select
                                         value={newSubCatForm.parent_id}
                                         onChange={e => setNewSubCatForm({ ...newSubCatForm, parent_id: e.target.value })}
-                                        className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm focus:border-[#D4A847]/40 focus:outline-none focus:ring-1 focus:ring-[#D4A847]/20 bg-white text-gray-900"
+                                        className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 bg-card-bg text-text-primary"
                                     >
                                         <option value="">Select parent category</option>
                                         {parentCategories.map(cat => (
                                             <option key={cat.category_id} value={cat.category_id}>{cat.name}</option>
                                         ))}
                                     </select>
-                                    <p className="text-xs text-gray-400 mt-1">The subcategory will be nested under this parent.</p>
+                                    <p className="text-xs text-text-muted mt-1">The subcategory will be nested under this parent.</p>
                                 </div>
                             </div>
                             <div className="flex gap-3 mt-6">
                                 <button
                                     type="button"
                                     onClick={() => setShowSubcategoryModal(false)}
-                                    className="flex-1 rounded-lg border border-gray-200 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+                                    className="flex-1 rounded-lg border border-border py-2.5 text-sm font-semibold text-text-secondary hover:bg-white/5 transition-colors"
                                 >
                                     Cancel
                                 </button>
@@ -1860,7 +1860,7 @@ export default function AddProductPage() {
                                     type="button"
                                     onClick={handleCreateSubcategory}
                                     disabled={subCatCreating}
-                                    className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-[#6B2737] py-2.5 text-sm font-semibold text-white hover:bg-[#5a2030] transition-colors disabled:opacity-60"
+                                    className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-primary py-2.5 text-sm font-semibold text-white hover:bg-primary-dark transition-colors disabled:opacity-60"
                                 >
                                     {subCatCreating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
                                     Create Subcategory

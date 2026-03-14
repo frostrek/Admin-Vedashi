@@ -27,7 +27,10 @@ export default function CustomersPage() {
                     return {
                         ...c,
                         total_orders: customerOrders.length,
-                        total_spent: customerOrders.reduce((sum, o) => sum + (o.total || 0), 0)
+                        total_spent: customerOrders.reduce((sum, o) => {
+                            if (o.status?.toUpperCase() === 'CANCELLED') return sum;
+                            return sum + Number(o.final_total || o.total || o.final_price || 0);
+                        }, 0)
                     };
                 });
                 console.log('[CustomersPage] Fetched customers:', withStats);

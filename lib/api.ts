@@ -142,6 +142,18 @@ export function formatINR(amount: number): string {
 
 /* ─── Profile Management ─── */
 
+export async function getAdminMe(): Promise<ApiResponse<Customer>> {
+    try {
+        const res = await authFetch(`${API_URL}/api/auth/me`, {
+            headers: authHeaders(),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to fetch current profile:', error);
+        return { success: false, message: 'Network error' };
+    }
+}
+
 export async function updateAdminProfile(id: string, updates: any): Promise<ApiResponse<any>> {
     try {
         const res = await authFetch(`${API_URL}/api/customers/${id}`, {
@@ -234,6 +246,7 @@ export interface Customer {
     full_name: string;
     email: string;
     phone?: string;
+    bio?: string;
     date_of_birth?: string;
     role: string;
     is_email_verified: boolean;
@@ -287,7 +300,7 @@ export async function getCustomerDetail(id: string): Promise<Customer | null> {
     }
 }
 
-export async function getCustomer360(id: string): Promise<{ profile: Customer; addresses: any[]; orders: any[]; dosha?: any } | null> {
+export async function getCustomer360(id: string): Promise<{ profile: Customer; addresses: any[]; orders: Order[]; dosha?: any } | null> {
     try {
         console.log(`[Admin API] getCustomer360 fetching for ID: ${id}`);
         const res = await fetch(`${API_URL}/api/admin/customers/${id}`, {
@@ -544,6 +557,9 @@ export interface Order {
     };
     items: OrderItem[];
     total: number;
+    final_total?: number;
+    grand_total?: number;
+    final_price?: number;
     subtotal?: number;
     status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
     payment_status?: string;
@@ -2411,6 +2427,17 @@ export async function adjustAdminLoyaltyPoints(customerId: string, points: numbe
     }
 }
 
+export async function createAdminLoyaltyTier(data: any) {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/loyalty/tiers`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify(data),
+        });
+        return await res.json();
+    } catch { return { success: false }; }
+}
+
 export async function updateAdminLoyaltyTier(tierId: string, data: any) {
     try {
         const res = await authFetch(`${API_URL}/api/admin/loyalty/tiers/${tierId}`, {
@@ -2427,6 +2454,17 @@ export async function deleteAdminLoyaltyTier(tierId: string) {
         const res = await authFetch(`${API_URL}/api/admin/loyalty/tiers/${tierId}`, {
             method: 'DELETE',
             headers: authHeaders(),
+        });
+        return await res.json();
+    } catch { return { success: false }; }
+}
+
+export async function createAdminLoyaltyRule(data: any) {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/loyalty/rules`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify(data),
         });
         return await res.json();
     } catch { return { success: false }; }
@@ -2453,6 +2491,17 @@ export async function deleteAdminLoyaltyRule(ruleId: string) {
     } catch { return { success: false }; }
 }
 
+export async function createAdminLoyaltyPromotion(data: any) {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/loyalty/promotions`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify(data),
+        });
+        return await res.json();
+    } catch { return { success: false }; }
+}
+
 export async function updateAdminLoyaltyPromotion(promoId: string, data: any) {
     try {
         const res = await authFetch(`${API_URL}/api/admin/loyalty/promotions/${promoId}`, {
@@ -2472,4 +2521,45 @@ export async function deleteAdminLoyaltyPromotion(promoId: string) {
         });
         return await res.json();
     } catch { return { success: false }; }
+}
+
+/* ─── GDPR ─── */
+
+export async function getAdminGdprRequests(): Promise<any[]> {
+    try {
+        const res = await authFetch(`${API_URL}/api/gdpr/requests`, {
+            headers: authHeaders(),
+        });
+        const json = await res.json();
+        return json.success ? json.data : [];
+    } catch (error) {
+        console.error('[Admin API] Failed to fetch GDPR requests:', error);
+        return [];
+    }
+}
+
+export async function getAdminGdprBreaches(): Promise<any[]> {
+    try {
+        const res = await authFetch(`${API_URL}/api/gdpr/breaches`, {
+            headers: authHeaders(),
+        });
+        const json = await res.json();
+        return json.success ? json.data : [];
+    } catch (error) {
+        console.error('[Admin API] Failed to fetch GDPR breaches:', error);
+        return [];
+    }
+}
+
+export async function getAdminGdprProcessors(): Promise<any[]> {
+    try {
+        const res = await authFetch(`${API_URL}/api/gdpr/processors`, {
+            headers: authHeaders(),
+        });
+        const json = await res.json();
+        return json.success ? json.data : [];
+    } catch (error) {
+        console.error('[Admin API] Failed to fetch GDPR processors:', error);
+        return [];
+    }
 }

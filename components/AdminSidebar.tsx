@@ -6,7 +6,7 @@ import { useAdminAuth } from '@/context/AdminAuthContext';
 import {
     LayoutDashboard, Package, ShoppingCart, Tag, LogOut, Leaf,
     ChevronLeft, Menu, Truck, Megaphone, BarChart, Settings, Users, X, Shield, Search, Ticket,
-    FileText, MessageSquare, Star, ShieldAlert, LayoutTemplate, Images, HelpCircle, BookOpen, Send, MonitorSmartphone, Activity, Layers, DollarSign, Gift
+    FileText, MessageSquare, Star, ShieldAlert, LayoutTemplate, Images, HelpCircle, Send, MonitorSmartphone, Activity, Layers, DollarSign, Gift
 } from 'lucide-react';
 const useState = require('react').useState;
 const useEffect = require('react').useEffect;
@@ -60,7 +60,6 @@ const optimizationNav = [
 
 const supportNav = [
     { href: '/dashboard/support/faqs', label: 'FAQ', icon: HelpCircle },
-    { href: '/dashboard/support/help-articles', label: 'Help Articles', icon: BookOpen },
     { href: '/dashboard/support/tickets', label: 'Support Tickets', icon: MessageSquare },
     { href: '/dashboard/support/knowledge-base', label: 'Knowledge Base', icon: FileText },
 ];

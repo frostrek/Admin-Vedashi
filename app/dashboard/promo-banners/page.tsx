@@ -5,6 +5,7 @@ import { getToken } from '@/lib/auth';
 import { authFetch, authHeaders } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, X, Loader2, Megaphone, Leaf, Save, AlertCircle } from 'lucide-react';
+import { useTheme } from '@/context/ThemeContext';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
@@ -29,6 +30,7 @@ const emptyBanner: Omit<PromoBanner, 'id' | 'created_at'> = {
 };
 
 export default function PromoBannersPage() {
+    const { isDark } = useTheme();
     const [banners, setBanners] = useState<PromoBanner[]>([]);
     const [loading, setLoading] = useState(true);
     const [modalOpen, setModalOpen] = useState(false);
@@ -122,7 +124,7 @@ export default function PromoBannersPage() {
         } catch { toast.error('Error toggling banner'); }
     };
 
-    const inputCls = "w-full rounded-2xl border border-border bg-black/40 px-5 py-3 text-sm text-gold-soft placeholder:text-text-muted/40 focus:border-gold/30 focus:outline-none focus:ring-1 focus:ring-gold/20 transition-all duration-300 shadow-inner";
+    const inputCls = `w-full rounded-2xl border border-border ${isDark ? 'bg-black/40' : 'bg-white'} px-5 py-3 text-sm ${isDark ? 'text-gold-soft' : 'text-emerald-950'} placeholder:text-text-muted/40 focus:border-gold/30 focus:outline-none focus:ring-1 focus:ring-gold/20 transition-all duration-300 shadow-inner`;
 
     return (
         <div className="p-10 space-y-10 animate-fadeIn">
@@ -137,7 +139,7 @@ export default function PromoBannersPage() {
                             Aura Announcements
                         </h1>
                     </div>
-                    <p className="text-gold-soft/60 text-[10px] font-bold uppercase tracking-[0.3em] pl-16">
+                    <p className={`${isDark ? 'text-gold-soft/60' : 'text-emerald-950/80'} text-[10px] font-bold uppercase tracking-[0.3em] pl-16`}>
                         Orchestrate global promotional vibrations across the storefront.
                     </p>
                 </div>
@@ -153,18 +155,18 @@ export default function PromoBannersPage() {
             </div>
 
             {/* Content Data Repository */}
-            <div className="bg-black/20 border border-border rounded-[2.5rem] shadow-2xl overflow-hidden backdrop-blur-md animate-fadeIn transition-all duration-500">
+            <div className={`${isDark ? 'bg-black/20 shadow-[0_0_50px_rgba(0,0,0,0.5)]' : 'bg-white/95 shadow-[0_0_40px_rgba(130,139,92,0.15)]'} border border-border rounded-[2.5rem] overflow-hidden backdrop-blur-xl animate-fadeIn transition-all duration-500`}>
                 {loading ? (
                     <div className="flex flex-col items-center justify-center p-32 space-y-4 animate-pulse">
                         <div className="w-16 h-16 rounded-full border-t-2 border-l-2 border-gold animate-spin" />
                         <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gold/60 text-center">Calibrating Promotional Vibrations...</p>
                     </div>
                 ) : banners.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center p-40 border-2 border-dashed border-border/40 rounded-[2.5rem] m-6 bg-black/10 text-text-muted">
+                    <div className={`flex flex-col items-center justify-center p-40 border-2 border-dashed border-border/40 rounded-[2.5rem] m-6 ${isDark ? 'bg-black/10' : 'bg-primary/5'} text-text-muted`}>
                         <Megaphone className="w-20 h-20 mb-8 opacity-20 text-gold" />
-                        <p className="text-xl font-serif font-bold text-gold-soft mb-2">Silent Frequencies</p>
-                        <p className="text-[10px] uppercase tracking-widest opacity-60">No promotional announcements have been manifested yet.</p>
-                        <button onClick={openCreate} className="mt-10 px-8 py-3 bg-primary border border-gold/20 text-gold text-[10px] font-bold uppercase tracking-widest rounded-xl hover:shadow-[0_0_20px_rgba(197,164,109,0.2)] transition-all duration-300">
+                        <p className={`text-xl font-serif font-bold ${isDark ? 'text-gold-soft' : 'text-emerald-950'} mb-2`}>Silent Frequencies</p>
+                        <p className={`text-[10px] uppercase tracking-widest ${isDark ? 'opacity-60' : 'text-emerald-900/40'}`}>No promotional announcements have been manifested yet.</p>
+                        <button onClick={openCreate} className={`mt-10 px-8 py-3 bg-primary border border-gold/20 text-gold text-[10px] font-bold uppercase tracking-widest rounded-xl hover:shadow-[0_0_20px_rgba(197,164,109,0.2)] transition-all duration-300`}>
                             Manifest First Aura
                         </button>
                     </div>
@@ -172,7 +174,7 @@ export default function PromoBannersPage() {
                     <div className="overflow-x-auto custom-scrollbar">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="border-b border-border bg-black/40 text-[10px] font-bold uppercase tracking-[0.2em] text-gold/40">
+                                <tr className={`border-b border-border ${isDark ? 'bg-black/40 text-gold/40' : 'bg-primary/10 text-emerald-950'} text-[11px] font-bold uppercase tracking-[0.2em]`}>
                                     <th className="px-8 py-6">Vibration Essence</th>
                                     <th className="px-8 py-6">State & Flow</th>
                                     <th className="px-8 py-6">Parameters</th>
@@ -180,21 +182,21 @@ export default function PromoBannersPage() {
                                     <th className="px-8 py-6 text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-white/5">
+                            <tbody className={`divide-y ${isDark ? 'divide-white/5' : 'divide-primary/10'}`}>
                                 {banners.map((b) => (
-                                    <tr key={b.id} className="group hover:bg-white/[0.02] transition-all duration-300">
+                                    <tr key={b.id} className={`group ${isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-primary/5'} transition-all duration-300`}>
                                         <td className="px-8 py-10">
-                                            <p className="text-gold-soft font-serif text-lg leading-relaxed max-w-md line-clamp-2 italic drop-shadow-md group-hover:text-gold transition-colors">
+                                            <p className={`${isDark ? 'text-gold-soft' : 'text-emerald-950'} font-serif text-lg leading-relaxed max-w-md line-clamp-2 italic drop-shadow-md group-hover:text-gold transition-colors`}>
                                                 "{b.message}"
                                             </p>
                                         </td>
                                         <td className="px-8 py-10">
                                             <div className="flex flex-col gap-2.5 items-start">
-                                                <span className={`inline-flex px-4 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest shadow-lg border ${b.is_active ? 'bg-gold/10 text-gold border-gold/30' : 'bg-black/40 text-text-muted/60 border-border/40'}`}>
+                                                <span className={`inline-flex px-4 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest shadow-lg border ${b.is_active ? (isDark ? 'bg-gold/10 text-gold border-gold/30' : 'bg-primary/10 text-primary border-primary/30') : (isDark ? 'bg-black/40 text-text-muted/60 border-border/40' : 'bg-white text-text-muted border-border')}`}>
                                                     {b.is_active ? 'Manifested' : 'Latent'}
                                                 </span>
-                                                <span className="text-[10px] text-text-muted uppercase tracking-wider font-bold opacity-60 flex items-center gap-2">
-                                                    <div className={`w-1.5 h-1.5 rounded-full ${b.flow === 'blink' ? 'bg-gold animate-pulse shadow-[0_0_5px_rgba(197,164,109,0.8)]' : 'bg-border'}`} />
+                                                <span className={`text-[10px] ${isDark ? 'text-text-muted' : 'text-emerald-950/70'} uppercase tracking-wider font-bold flex items-center gap-2`}>
+                                                    <div className={`w-1.5 h-1.5 rounded-full ${b.flow === 'blink' ? (isDark ? 'bg-gold animate-pulse shadow-[0_0_5px_rgba(197,164,109,0.8)]' : 'bg-primary animate-pulse shadow-[0_0_5px_rgba(59,93,59,0.3)]') : 'bg-border'}`} />
                                                     {b.flow.replace('-', ' ')} oscillation
                                                 </span>
                                             </div>
@@ -211,22 +213,22 @@ export default function PromoBannersPage() {
                                                         <span className="absolute -bottom-6 left-0 text-[8px] font-bold text-text-muted opacity-0 group-hover/color:opacity-100 transition-opacity">TEXT</span>
                                                     </div>
                                                 </div>
-                                                <div className="text-[10px] font-bold text-text-muted uppercase tracking-widest opacity-60">
-                                                    Cycle Count: <span className="text-gold-soft">{b.total_count || 0}</span>
+                                                <div className={`text-[10px] font-bold ${isDark ? 'text-text-muted' : 'text-emerald-950/70'} uppercase tracking-widest`}>
+                                                    Cycle Count: <span className={isDark ? 'text-gold-soft' : 'text-primary'}>{b.total_count || 0}</span>
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="px-8 py-10">
-                                            <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest opacity-40">
+                                            <p className={`text-[10px] font-bold ${isDark ? 'text-text-muted/40' : 'text-emerald-900/60'} uppercase tracking-widest`}>
                                                 {new Date(b.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
                                             </p>
                                         </td>
                                         <td className="px-8 py-10">
                                             <div className="flex items-center justify-end gap-3">
-                                                <button onClick={() => toggleActive(b)} title={b.is_active ? "Retract Vibration" : "Induce Vibration"} className={`p-3 rounded-2xl border transition-all duration-300 ${b.is_active ? 'bg-gold/10 border-gold/20 text-gold hover:bg-gold/20' : 'bg-black/40 border-border text-text-muted hover:text-gold-soft'}`}>
+                                                <button onClick={() => toggleActive(b)} title={b.is_active ? "Retract Vibration" : "Induce Vibration"} className={`p-3 rounded-2xl border transition-all duration-300 ${b.is_active ? (isDark ? 'bg-gold/10 border-gold/20 text-gold hover:bg-gold/20' : 'bg-primary/10 border-primary/20 text-primary hover:bg-primary/20') : (isDark ? 'bg-black/40 border-border text-text-muted hover:text-gold-soft' : 'bg-white border-border text-text-muted hover:bg-primary/5')}`}>
                                                     {b.is_active ? <ToggleRight className="w-6 h-6" /> : <ToggleLeft className="w-6 h-6" />}
                                                 </button>
-                                                <button onClick={() => openEdit(b)} className="p-3 rounded-2xl bg-black/40 border border-border text-text-muted hover:text-gold hover:border-gold/30 transition-all duration-300">
+                                                <button onClick={() => openEdit(b)} className={`p-3 rounded-2xl ${isDark ? 'bg-black/40 border-border text-text-muted hover:text-gold hover:border-gold/30' : 'bg-white border-border text-text-muted hover:text-primary hover:border-primary/30'} transition-all duration-300`}>
                                                     <Pencil className="w-5 h-5" />
                                                 </button>
                                                 <button onClick={() => handleDelete(b.id)} className="p-3 rounded-2xl bg-danger/10 border border-danger/20 text-danger hover:bg-danger/20 transition-all duration-300">
@@ -245,15 +247,15 @@ export default function PromoBannersPage() {
             {/* Configuration Modal */}
             {modalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-fadeIn">
-                    <div className="bg-gradient-to-br from-card-bg to-card-bg-elevated border border-border rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden animate-scaleIn">
-                        <div className="flex items-center justify-between p-8 border-b border-border bg-black/40 backdrop-blur-sm sticky top-0 z-10">
+                    <div className={`${isDark ? 'bg-gradient-to-br from-card-bg to-card-bg-elevated' : 'bg-white'} border border-border rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden animate-scaleIn`}>
+                        <div className={`flex items-center justify-between p-8 border-b border-border ${isDark ? 'bg-black/40' : 'bg-primary/5'} backdrop-blur-sm sticky top-0 z-10`}>
                             <div>
-                                <h2 className="text-2xl font-serif font-bold text-gold tracking-tight">
+                                <h2 className={`text-2xl font-serif font-bold ${isDark ? 'text-gold' : 'text-emerald-950'} tracking-tight`}>
                                     {editing ? 'Refine Aura' : 'Manifest New Aura'}
                                 </h2>
-                                <p className="text-[10px] text-gold/40 font-bold uppercase tracking-[0.2em] mt-1">Campaign Configuration</p>
+                                <p className={`text-[10px] ${isDark ? 'text-gold/40' : 'text-emerald-900/40'} font-bold uppercase tracking-[0.2em] mt-1`}>Campaign Configuration</p>
                             </div>
-                            <button onClick={() => setModalOpen(false)} className="p-3 rounded-full hover:bg-white/5 text-gold-soft hover:text-gold transition-all">
+                            <button onClick={() => setModalOpen(false)} className={`p-3 rounded-full hover:bg-white/5 ${isDark ? 'text-gold-soft hover:text-gold' : 'text-emerald-900/40 hover:text-primary'} transition-all`}>
                                 <X className="w-6 h-6" />
                             </button>
                         </div>
@@ -345,7 +347,7 @@ export default function PromoBannersPage() {
 
                             <div className="flex justify-end gap-3 pt-8 border-t border-border mt-10">
                                 <button type="button" onClick={() => setModalOpen(false)} disabled={saving}
-                                    className="px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest text-text-muted hover:text-gold hover:bg-white/5 transition-all rounded-xl">
+                                    className={`px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest text-text-muted ${isDark ? 'hover:text-gold' : 'hover:text-primary'} hover:bg-white/5 transition-all rounded-xl`}>
                                     Abort
                                 </button>
                                 <button type="submit" disabled={saving}

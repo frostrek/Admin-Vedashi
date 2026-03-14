@@ -7,22 +7,34 @@ import {
     Bell, Github, Twitter, Globe, Camera, Save, 
     Loader2, AlertCircle, CheckCircle2, Lock, 
     Smartphone, History, Activity, Calendar,
-    Package, Tag
+    Package
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 
 import { useTheme } from '@/context/ThemeContext';
 import { 
     updateAdminProfile, 
     changeAdminPassword, 
-    updateAdminProfileImage 
+    updateAdminProfileImage,
+    getAdminMe
 } from '@/lib/api';
 
 export default function ProfileStratumPage() {
     const { isDark } = useTheme();
     const { user } = useAdminAuth();
+    const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('identity');
+
+    // Profile data state
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
+    const [bio, setBio] = useState('');
+    const [createdAt, setCreatedAt] = useState<string | null>(null);
+    const [isActive, setIsActive] = useState(true);
+    const [pageLoading, setPageLoading] = useState(true);
 
     // Password form state
     const [currentPassword, setCurrentPassword] = useState('');
@@ -30,41 +42,54 @@ export default function ProfileStratumPage() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [securityLoading, setSecurityLoading] = useState(false);
 
-    // Mock states for demonstration (would normally be connected to an API)
-    const [name, setName] = useState(user?.name || '');
-    const [email, setEmail] = useState(user?.email || '');
-    const [phone, setPhone] = useState(user?.phone || '+91 98765 43210');
-    const [bio, setBio] = useState('Senior Alchemist of the Vedic Admin Panel. Orchestrating digital vibrations for universal health.');
-
     // Vibe Matrix state
     const [aura, setAura] = useState('Balanced');
     const [volume, setVolume] = useState(60);
 
     useEffect(() => {
+        const fetchProfile = async () => {
+            setPageLoading(true);
+            try {
+                const res = await getAdminMe();
+                if (res.success && res.data) {
+                    const profile = res.data;
+                    setName(profile.full_name || '');
+                    setEmail(profile.email || '');
+                    setPhone(profile.phone || '');
+                    setBio(profile.bio || 'Senior Alchemist of the Vedic Admin Panel. Orchestrating digital vibrations for universal health.');
+                    setCreatedAt(profile.created_at || null);
+                    setIsActive(!!profile.is_active);
+                }
+            } catch (err) {
+                console.error('Failed to fetch profile:', err);
+            } finally {
+                setPageLoading(false);
+            }
+        };
+
+        fetchProfile();
+
         // Load preferences from local storage if they exist
         const savedAura = localStorage.getItem('admin_aura');
         const savedVolume = localStorage.getItem('admin_volume');
-        const savedBio = localStorage.getItem('admin_bio');
-        const savedPhone = localStorage.getItem('admin_phone');
 
         if (savedAura) setAura(savedAura);
         if (savedVolume) setVolume(parseInt(savedVolume));
-        if (savedBio) setBio(savedBio);
-        if (savedPhone) setPhone(savedPhone);
     }, []);
 
     const handleSaveProfile = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!user?.customer_id) return toast.error('Admin record not found');
+        const customerId = user?.customer_id || (user as any)?.id;
+        if (!customerId) return toast.error('Admin record not found');
         
         setLoading(true);
         try {
-            const res = await updateAdminProfile(user.customer_id, {
+            const res = await updateAdminProfile(customerId as string, {
                 full_name: name,
                 phone: phone,
+                bio: bio,
             });
             if (res.success) {
-                localStorage.setItem('admin_bio', bio);
                 localStorage.setItem('admin_phone', phone);
                 toast.success('Identity resonance updated!');
             } else {
@@ -102,11 +127,12 @@ export default function ProfileStratumPage() {
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (!file || !user?.customer_id) return;
+        const customerId = user?.customer_id || (user as any)?.id;
+        if (!file || !customerId) return;
 
         setLoading(true);
         try {
-            const res = await updateAdminProfileImage(user.customer_id, file);
+            const res = await updateAdminProfileImage(customerId, file);
             if (res.success) {
                 toast.success('Avatar frequency updated');
                 // Normally we'd refresh the profile or update context
@@ -202,7 +228,7 @@ export default function ProfileStratumPage() {
                 <div className="lg:col-span-9">
                     <div className={`${isDark ? 'bg-black/70 backdrop-blur-xl border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)]' : 'bg-white/95 backdrop-blur-md border-gold/20 shadow-[0_0_40px_rgba(130,139,92,0.1)]'} border rounded-[2.5rem] overflow-hidden animate-fadeInUp`}>
                         {activeTab === 'identity' && (
-                            <form onSubmit={handleSaveProfile} className="p-10 space-y-10">
+                            <div className="p-10 space-y-10">
                                 <div className="flex flex-col md:flex-row gap-10 items-center border-b border-white/10 pb-10">
                                     <div className="relative group">
                                         <div className="w-36 h-36 rounded-full overflow-hidden border-4 border-gold shadow-[0_0_40px_rgba(197,164,109,0.3)] bg-primary/40 flex items-center justify-center">
@@ -210,92 +236,92 @@ export default function ProfileStratumPage() {
                                                 {name.charAt(0).toUpperCase()}
                                             </span>
                                         </div>
-                                        <label className="absolute bottom-1 right-1 p-3 bg-gold text-black rounded-full shadow-[0_0_15px_rgba(197,164,109,0.5)] hover:scale-110 active:scale-95 transition-all cursor-pointer">
-                                            <Camera className="w-4.5 h-4.5" />
-                                            <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
-                                        </label>
                                     </div>
-                                    <div className="flex-1 text-center md:text-left space-y-4">
+                                    <div className={`flex-1 text-center md:text-left space-y-4 ${pageLoading ? 'animate-pulse' : ''}`}>
                                         <div>
-                                            <h2 className={`text-3xl font-serif font-bold ${isDark ? 'text-gold' : 'text-emerald-950'} leading-tight drop-shadow-sm`}>{name}</h2>
+                                            <h2 className={`text-3xl font-serif font-bold ${isDark ? 'text-gold' : 'text-emerald-950'} leading-tight drop-shadow-sm`}>
+                                                {pageLoading ? 'Synchronizing Essence...' : name}
+                                            </h2>
                                             <p className={`text-[11px] ${isDark ? 'text-gold-soft/50' : 'text-emerald-900/40'} font-black uppercase tracking-[0.4em] mt-1`}>Administrator • Level 9 Specialist</p>
                                         </div>
                                         <div className="flex flex-wrap justify-center md:justify-start gap-4">
-                                            <span className="px-5 py-2 bg-emerald-500/10 text-emerald-400 text-[10px] font-black uppercase tracking-[0.2em] rounded-full border border-emerald-500/30 flex items-center gap-2.5 shadow-sm">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                                                Fully Resonated
+                                            <span className={`px-5 py-2 ${isActive ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-red-500/10 text-red-400 border-red-500/30'} text-[10px] font-black uppercase tracking-[0.2em] rounded-full border flex items-center gap-2.5 shadow-sm`}>
+                                                <div className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'}`} />
+                                                {isActive ? 'Fully Resonated' : 'Dormant Essence'}
                                             </span>
-                                            <span className="px-5 py-2 bg-blue-500/10 text-blue-400 text-[10px] font-black uppercase tracking-[0.2em] rounded-full border border-blue-500/30 flex items-center gap-2.5 shadow-sm">
+                                             <span className="px-5 py-2 bg-blue-500/10 text-blue-400 text-[10px] font-black uppercase tracking-[0.2em] rounded-full border border-blue-500/30 flex items-center gap-2.5 shadow-sm">
                                                 <Calendar className="w-3.5 h-3.5" />
-                                                Active Since Mar 2024
+                                                Active Since {createdAt ? new Date(createdAt).toLocaleDateString(undefined, { month: 'short', year: 'numeric' }) : 'Mar 2024'}
                                             </span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    <div className="space-y-2">
-                                        <label className={labelCls}>Soul Name</label>
-                                        <input 
-                                            type="text" 
-                                            value={name} 
-                                            onChange={(e) => setName(e.target.value)}
-                                            className={inputCls} 
-                                            placeholder="Enter your name"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className={labelCls}>Frequency (Email)</label>
-                                        <input 
-                                            type="email" 
-                                            value={email} 
-                                            disabled
-                                            className={`${inputCls} opacity-50 cursor-not-allowed`}
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className={labelCls}>Communication Line</label>
-                                        <div className="relative">
-                                            <Smartphone className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-gold/30" />
+                                <form onSubmit={handleSaveProfile} className="space-y-10">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        <div className="space-y-2">
+                                            <label className={labelCls}>Soul Name</label>
                                             <input 
-                                                type="tel" 
-                                                value={phone} 
-                                                onChange={(e) => setPhone(e.target.value)}
-                                                className={`${inputCls} pl-14`}
-                                                placeholder="+91..."
+                                                value={name}
+                                                onChange={(e) => setName(e.target.value)}
+                                                className={inputCls}
+                                                placeholder="Enter full name..."
                                             />
                                         </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className={labelCls}>Role Stratum</label>
-                                        <div className={`px-6 py-4 rounded-2xl border ${isDark ? 'border-white/10 bg-black/60 text-gold/60' : 'border-gold/10 bg-emerald-50 text-emerald-900/60'} text-sm font-bold uppercase tracking-[0.15em] italic font-serif`}>
-                                            Super Administrator (Unrestricted Access)
+                                        <div className="space-y-2">
+                                            <label className={labelCls}>Frequency (Email)</label>
+                                            <input 
+                                                value={email}
+                                                readOnly
+                                                disabled
+                                                className={inputCls + ' opacity-50 cursor-not-allowed'}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className={labelCls}>Communication Line</label>
+                                            <div className="relative">
+                                                <Smartphone className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-gold/30" />
+                                                <input 
+                                                    value={phone}
+                                                    onChange={(e) => setPhone(e.target.value)}
+                                                    className={inputCls + ' pl-14'}
+                                                    placeholder="+91 XXXXX XXXXX"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className={labelCls}>Role Stratum</label>
+                                            <div className={`px-6 py-4 rounded-2xl border ${isDark ? 'border-white/10 bg-black/60 text-gold/60' : 'border-gold/10 bg-emerald-50 text-emerald-900/60'} text-sm font-bold uppercase tracking-[0.15em] italic font-serif`}>
+                                                Super Administrator (Unrestricted Access)
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                <div className="space-y-2">
-                                    <label className={labelCls}>Identity Manuscript (Bio)</label>
-                                    <textarea 
-                                        rows={4}
-                                        value={bio}
-                                        onChange={(e) => setBio(e.target.value)}
-                                        className={`${inputCls} resize-none`}
-                                        placeholder="Tell your story..."
-                                    />
-                                </div>
+                                    <div className="space-y-2">
+                                        <label className={labelCls}>Identity Manuscript (Bio)</label>
+                                        <textarea 
+                                            value={bio}
+                                            onChange={(e) => setBio(e.target.value)}
+                                            className={inputCls + ' min-h-[120px] resize-none'}
+                                            placeholder="Whisper your administrative journey..."
+                                        />
+                                    </div>
 
-                                <div className="flex justify-end pt-6">
-                                    <button 
-                                        type="submit"
-                                        disabled={loading}
-                                        className="flex items-center gap-3 px-10 py-4 bg-primary border border-gold/20 text-gold text-[10px] font-bold uppercase tracking-[0.3em] rounded-2xl hover:shadow-[0_0_30px_rgba(197,164,109,0.3)] transition-all disabled:opacity-50 group"
-                                    >
-                                        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4 group-hover:scale-110 transition-transform" />}
-                                        Preserve Identity
-                                    </button>
-                                </div>
-                            </form>
+                                    <div className="flex justify-between items-center pt-6">
+                                        <p className="text-[10px] font-bold text-gold/30 uppercase tracking-widest italic">
+                                            Vibrations persist after local resonance save.
+                                        </p>
+                                        <button 
+                                            type="submit"
+                                            disabled={loading || pageLoading}
+                                            className="px-12 py-4 bg-gold hover:bg-gold-muted text-primary text-[10px] font-bold uppercase tracking-[0.3em] rounded-2xl transition-all shadow-xl shadow-gold/20 flex items-center gap-3 disabled:opacity-50"
+                                        >
+                                            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                                            Resonate Identity
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
                         )}
 
                         {activeTab === 'security' && (
@@ -457,8 +483,12 @@ export default function ProfileStratumPage() {
                                             <p className="text-[10px] font-black uppercase tracking-widest text-gold/40">No administrative vibrations recorded.</p>
                                         </div>
                                     ) : (
-                                        logs.map((log) => (
-                                            <div key={log.id} className="flex items-center gap-5 p-5 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-gold/20 hover:bg-white/[0.04] transition-all group">
+                                         logs.map((log) => (
+                                            <div 
+                                                key={log.id} 
+                                                onClick={() => router.push(`/dashboard/activity-logs?log_id=${log.id}`)}
+                                                className="flex items-center gap-5 p-5 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-gold/20 hover:bg-white/[0.04] transition-all group cursor-pointer"
+                                            >
                                                 <div className={`h-10 w-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/5 shadow-inner ${isDark ? 'text-gold' : 'text-emerald-900'}`}>
                                                     {log.action.includes('order') ? <Package className="w-5 h-5" /> : 
                                                      log.action.includes('setting') ? <Settings className="w-5 h-5" /> : 

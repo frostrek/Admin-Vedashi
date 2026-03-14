@@ -90,10 +90,10 @@ export default function AdminReviewsPage() {
         }
     };
 
-    const inputCls = `w-full rounded-2xl border ${isDark ? 'border-white/10 bg-black/80 text-gold-soft' : 'border-gold/20 bg-white/90 text-emerald-950 shadow-sm'} px-6 py-4 text-sm focus:border-gold/50 focus:outline-none transition-all`;
+    const inputCls = `w-full rounded-2xl border ${isDark ? 'border-white/10 bg-black/80 text-gold-soft' : 'border-gold/40 bg-white shadow-sm'} px-6 py-4 text-sm focus:border-gold focus:outline-none transition-all`;
 
     return (
-        <div className="p-6 max-w-5xl mx-auto space-y-5 animate-fadeIn min-h-screen">
+        <div className={`p-6 max-w-5xl mx-auto space-y-5 animate-fadeIn min-h-screen ${isDark ? '' : 'bg-white/60 backdrop-blur-xl rounded-[2.5rem] mt-4'}`}>
             {/* ── Page Header ── */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
                 <div>
@@ -101,9 +101,9 @@ export default function AdminReviewsPage() {
                         <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/20 border border-gold/20 shadow-md">
                             <Star className="w-5 h-5 text-gold fill-gold/20" />
                         </div>
-                        <h1 className={`text-2xl font-serif font-bold ${isDark ? 'text-gold' : 'text-emerald-950'} tracking-tighter`}>Reviews Moderation</h1>
+                        <h1 className={`text-2xl font-serif font-bold tracking-tighter ${isDark ? 'text-text-primary' : 'text-emerald-950'}`}>Reviews Moderation</h1>
                     </div>
-                    <p className={`text-[9px] font-bold uppercase tracking-[0.2em] ${isDark ? 'text-text-muted' : 'text-emerald-900/40'} ml-13`}>
+                    <p className={`text-[9px] font-bold uppercase tracking-[0.2em] ml-13 ${isDark ? 'text-text-muted' : 'text-emerald-900/60'}`}>
                         Monitor customer feedback and manage product resonance.
                     </p>
                 </div>
@@ -113,14 +113,14 @@ export default function AdminReviewsPage() {
             <div className="flex gap-4 border-b border-gold/10 pb-0">
                 <button
                     onClick={() => setActiveTab('all')}
-                    className={`pb-3 px-1 text-[10px] font-black uppercase tracking-[0.2em] transition-all relative ${activeTab === 'all' ? 'text-gold' : 'text-text-muted/40 hover:text-gold/60'}`}
+                    className={`pb-3 px-1 text-[10px] font-black uppercase tracking-[0.2em] transition-all relative ${activeTab === 'all' ? 'text-gold' : isDark ? 'text-text-muted hover:text-gold/60' : 'text-emerald-900/60 hover:text-emerald-900'}`}
                 >
                     All Reviews
                     {activeTab === 'all' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gold rounded-full shadow-[0_0_8px_#C5A46D]" />}
                 </button>
                 <button
                     onClick={() => setActiveTab('reports')}
-                    className={`pb-3 px-1 text-[10px] font-black uppercase tracking-[0.2em] transition-all relative ${activeTab === 'reports' ? 'text-gold' : 'text-text-muted/40 hover:text-gold/60'}`}
+                    className={`pb-3 px-1 text-[10px] font-black uppercase tracking-[0.2em] transition-all relative ${activeTab === 'reports' ? 'text-gold' : isDark ? 'text-text-muted hover:text-gold/60' : 'text-emerald-900/60 hover:text-emerald-900'}`}
                 >
                     Reported {reports.length > 0 && `(${reports.length})`}
                     {activeTab === 'reports' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gold rounded-full shadow-[0_0_8px_#C5A46D]" />}
@@ -133,17 +133,17 @@ export default function AdminReviewsPage() {
                     <div className="grid gap-6">
                         {loadingReviews ? (
                             <div className="py-20 flex flex-col items-center justify-center animate-pulse">
-                                <Search className="w-12 h-12 text-gold/20 mb-4" />
-                                <p className="text-[10px] font-black uppercase tracking-widest text-gold/40">Synchronizing Resonance...</p>
+                                <Search className="w-12 h-12 text-gold/30 mb-4" />
+                                <p className="text-[10px] font-black uppercase tracking-widest text-text-muted">Synchronizing Resonance...</p>
                             </div>
                         ) : reviews.length === 0 ? (
-                            <div className={`py-20 flex flex-col items-center justify-center rounded-[2.5rem] border-2 border-dashed ${isDark ? 'border-white/5 bg-white/[0.02]' : 'border-gold/20 bg-emerald-50/50'}`}>
-                                <MessageSquare className="w-12 h-12 text-gold/20 mb-4" />
-                                <p className="text-[10px] font-black uppercase tracking-widest text-gold/40">No reviews found in the chronicle.</p>
+                            <div className={`py-20 flex flex-col items-center justify-center rounded-[2.5rem] border-2 border-dashed ${isDark ? 'border-white/5 bg-white/[0.02]' : 'border-gold/40 bg-primary/5'}`}>
+                                <MessageSquare className="w-12 h-12 text-gold/30 mb-4" />
+                                <p className="text-[10px] font-black uppercase tracking-widest text-text-muted">No reviews found in the chronicle.</p>
                             </div>
                         ) : (
                             reviews.map((review: AdminReview) => (
-                                <div key={review.review_id} className={`${isDark ? 'bg-primary/20 border-primary/20' : 'bg-primary/5 border-primary/10'} border rounded-2xl p-4 md:p-5 transition-all hover:shadow-[0_4px_20px_rgba(59,93,59,0.05)] group overflow-hidden relative flex flex-col md:flex-row gap-4`}>
+                                <div key={review.review_id} className={`${isDark ? 'bg-primary/20 border-primary/20' : 'bg-white border-primary/20 shadow-[0_2px_15px_rgba(0,0,0,0.03)]'} border rounded-2xl p-4 md:p-5 transition-all hover:shadow-[0_4px_20px_rgba(59,93,59,0.05)] group overflow-hidden relative flex flex-col md:flex-row gap-4`}>
                                     {/* Green vertical accent */}
                                     <div className="absolute top-0 left-0 w-1 h-full bg-primary/40" />
                                     
@@ -155,23 +155,23 @@ export default function AdminReviewsPage() {
                                                         <Star key={i} size={8} className={i < review.rating ? 'text-gold fill-gold' : 'text-gold/20'} />
                                                     ))}
                                                 </div>
-                                                <h3 className={`text-base font-serif font-bold ${isDark ? 'text-gold-soft' : 'text-emerald-950'} tracking-tight`}>
+                                                <h3 className={`text-base font-serif font-bold tracking-tight ${isDark ? 'text-text-primary' : 'text-emerald-950'}`}>
                                                     {review.title}
                                                 </h3>
-                                                <div className={`flex flex-wrap items-center gap-x-2 gap-y-1 text-[8px] font-black uppercase tracking-widest ${isDark ? 'text-text-muted/60' : 'text-emerald-900/40'}`}>
-                                                    <span className="text-primary/80">{review.reviewer_name}</span>
+                                                <div className={`flex flex-wrap items-center gap-x-2 gap-y-1 text-[8px] font-black uppercase tracking-widest ${isDark ? 'text-text-muted' : 'text-emerald-900/80'}`}>
+                                                    <span className={isDark ? 'text-primary' : 'text-emerald-700'}>{review.reviewer_name}</span>
                                                     <span className="opacity-20">•</span>
                                                     <span>{new Date(review.created_at).toLocaleDateString()}</span>
                                                     <span className="opacity-20">•</span>
-                                                    <span className="text-gold/60">{review.product_name}</span>
+                                                    <span className={isDark ? 'text-gold' : 'text-primary'}>{review.product_name}</span>
                                                 </div>
                                             </div>
-                                            <div className={`px-2 py-0.5 rounded-md border ${isDark ? 'bg-white/5 border-white/10 text-gold-soft/60' : 'bg-white border-gold/10 text-emerald-900'} text-[7px] font-black uppercase tracking-widest h-fit`}>
+                                            <div className={`px-2 py-0.5 rounded-md border ${isDark ? 'bg-white/5 border-white/10 text-gold-soft/60' : 'bg-primary/10 border-primary/20 text-primary-dark'} text-[7px] font-black uppercase tracking-widest h-fit`}>
                                                 {review.helpful_count} Helpful
                                             </div>
                                         </div>
 
-                                        <p className={`text-[11px] leading-relaxed ${isDark ? 'text-gold-soft/70' : 'text-emerald-900/70'} mb-3 italic font-medium`}>
+                                        <p className={`text-[11px] leading-relaxed mb-3 italic font-medium ${isDark ? 'text-text-secondary' : 'text-emerald-900'}`}>
                                             "{review.body}"
                                         </p>
                                     </div>
@@ -181,10 +181,10 @@ export default function AdminReviewsPage() {
                                         {review.admin_reply ? (
                                             <div className="space-y-2">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="text-[8px] font-black uppercase tracking-[0.2em] text-gold/60 uppercase">Administrative Response</span>
-                                                    <div className="h-px flex-1 bg-gold/10" />
+                                                    <span className={`text-[8px] font-black uppercase tracking-[0.2em] uppercase ${isDark ? 'text-gold' : 'text-primary'}`}>Administrative Response</span>
+                                                    <div className={`h-px flex-1 ${isDark ? 'bg-gold/20' : 'bg-primary/20'}`} />
                                                 </div>
-                                                <p className={`text-xs ${isDark ? 'text-gold-soft/90' : 'text-emerald-950'} font-medium`}>{review.admin_reply}</p>
+                                                <p className={`text-xs font-medium ${isDark ? 'text-text-primary' : 'text-emerald-950'}`}>{review.admin_reply}</p>
                                             </div>
                                         ) : (
                                             replyingTo === review.review_id ? (
@@ -214,7 +214,7 @@ export default function AdminReviewsPage() {
                                             ) : (
                                                 <button
                                                     onClick={() => setReplyingTo(review.review_id)}
-                                                    className="w-full py-2.5 border border-dashed border-gold/10 rounded-xl text-[8px] font-black uppercase tracking-[0.2em] text-gold/40 hover:text-gold hover:border-gold/30 transition-all flex items-center justify-center gap-2"
+                                                    className={`w-full py-2.5 border border-dashed rounded-xl text-[8px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${isDark ? 'border-gold/30 text-text-muted hover:text-gold hover:border-gold' : 'border-primary/30 text-primary hover:bg-primary/5 hover:border-primary'}`}
                                                 >
                                                     <MessageSquare size={10} />
                                                     Add Reply
@@ -250,7 +250,7 @@ export default function AdminReviewsPage() {
                                                 <AlertTriangle size={12} />
                                                 <span className="text-[7px] font-black uppercase tracking-[0.2em]">Discord Reported</span>
                                             </div>
-                                            <p className={`text-[9px] font-black uppercase tracking-widest ${isDark ? 'text-text-muted' : 'text-emerald-900/40'}`}>
+                                            <p className="text-[9px] font-black uppercase tracking-widest text-text-muted">
                                                 By {report.reporter_name} • {new Date(report.created_at).toLocaleDateString()}
                                             </p>
                                         </div>
@@ -262,8 +262,8 @@ export default function AdminReviewsPage() {
                                     </div>
 
                                     <div className={`border-l-2 border-gold/20 pl-3 py-0.5 mb-4`}>
-                                        <p className={`text-[7px] uppercase tracking-widest font-black mb-1 ${isDark ? 'text-text-muted/60' : 'text-emerald-900/40'}`}>Original Vibration</p>
-                                        <p className={`text-[11px] italic ${isDark ? 'text-gold-soft/80' : 'text-emerald-950'} font-medium leading-relaxed`}>
+                                        <p className="text-[7px] uppercase tracking-widest font-black mb-1 text-text-muted">Original Vibration</p>
+                                        <p className="text-[11px] italic text-text-secondary font-medium leading-relaxed">
                                             "{report.review_body}"
                                         </p>
                                     </div>

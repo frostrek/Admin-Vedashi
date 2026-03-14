@@ -4,7 +4,8 @@ import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { 
-    getCustomerDetail, getOrders, formatINR, Customer, Order, updateCustomerStatus
+    getCustomerDetail, getOrders, formatINR, Customer, Order, updateCustomerStatus,
+    getCustomer360
 } from '@/lib/api';
 import { 
     User, Mail, Calendar, MapPin, ShoppingBag, CreditCard, 
@@ -35,22 +36,18 @@ export default function CustomerDetailPage() {
     const fetchData = () => {
         if (!id) return;
         setLoading(true);
-        Promise.all([
-            getCustomerDetail(id as string),
-            getOrders()
-        ]).then(([custData, allOrders]) => {
-            if (custData) {
-                setCustomer(custData);
-                // Filter orders for this customer email
-                const customerOrders = allOrders.filter(o => 
-                    o.customer_email.toLowerCase() === custData.email.toLowerCase()
-                ) as OrderDetail[];
-                setOrders(customerOrders.sort((a, b) => 
+        getCustomer360(id as string).then((data) => {
+            if (data) {
+                setCustomer(data.profile);
+                setOrders((data.orders || []).sort((a: any, b: any) => 
                     new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
                 ));
             } else {
                 router.push('/dashboard/customers');
             }
+        }).catch(err => {
+            console.error('Failed to fetch customer 360:', err);
+            router.push('/dashboard/customers');
         }).finally(() => setLoading(false));
     };
 
@@ -79,7 +76,11 @@ export default function CustomerDetailPage() {
     };
 
     const stats = useMemo(() => {
-        const totalSpent = orders.reduce((sum, o) => sum + (o.status?.toUpperCase() !== 'CANCELLED' ? Number(o.total || 0) : 0), 0);
+        const totalSpent = orders.reduce((sum, o) => {
+            if (o.status?.toUpperCase() === 'CANCELLED') return sum;
+            const amount = Number(o.final_total || o.total || o.final_price || 0);
+            return sum + amount;
+        }, 0);
         const totalOrders = orders.length;
         const aov = totalOrders > 0 ? totalSpent / totalOrders : 0;
         
