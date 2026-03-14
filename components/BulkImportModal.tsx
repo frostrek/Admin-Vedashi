@@ -116,8 +116,6 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
                 Category: "Wellness",
                 Sub_Category: "Capsules",
                 Country_of_Origin: "India",
-                Vintage_Year: "",
-                Alcohol_Percentage: "0",
                 Intended_Use: "Daily wellness",
                 Description: "A premium ayurvedic supplement for vitality and stress relief.",
                 Available_From: "",        // e.g. 2025-01-01

@@ -60,6 +60,8 @@ export default function OrdersPage() {
     const [itemsPerPage, setItemsPerPage] = useState(20);
     const [updatingPayments, setUpdatingPayments] = useState<Set<string>>(new Set());
     const [exportOpen, setExportOpen] = useState(false);
+    const [filterDateFrom, setFilterDateFrom] = useState('');
+    const [filterDateTo, setFilterDateTo] = useState('');
 
     // ─── Bulk selection state ──────────────────────────────────────
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -77,8 +79,16 @@ export default function OrdersPage() {
     const [refundProcessing, setRefundProcessing] = useState(false);
 
     useEffect(() => {
-        getOrders().then(setOrders);
-    }, []);
+        const fetchOrders = async () => {
+            const params: any = {};
+            if (filterDateFrom) params.dateFrom = filterDateFrom;
+            if (filterDateTo) params.dateTo = filterDateTo;
+            
+            const fetchedOrders = await getOrders(params);
+            setOrders(fetchedOrders);
+        };
+        fetchOrders();
+    }, [filterDateFrom, filterDateTo]);
 
     useEffect(() => {
         if (selectedOrder) {
@@ -423,6 +433,36 @@ export default function OrdersPage() {
                                 <option value="over_5000">Over ₹5,000</option>
                             </select>
                             <ChevronDown className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted pointer-events-none" />
+                        </div>
+
+                        <div className="flex items-center gap-2 flex-1 min-w-[300px] xl:flex-none">
+                            <div className="relative flex-1">
+                                <span className="absolute left-3 top-[-8px] bg-card-bg px-1 text-[10px] text-text-muted z-10">From</span>
+                                <input
+                                    type="date"
+                                    value={filterDateFrom}
+                                    onChange={e => { setFilterDateFrom(e.target.value); clearSelection(); }}
+                                    className="w-full rounded-lg border border-border bg-card-bg px-3 py-2 text-sm text-text-primary focus:border-gold/40 focus:outline-none transition-colors duration-300 cursor-pointer"
+                                />
+                            </div>
+                            <div className="relative flex-1">
+                                <span className="absolute left-3 top-[-8px] bg-card-bg px-1 text-[10px] text-text-muted z-10">To</span>
+                                <input
+                                    type="date"
+                                    value={filterDateTo}
+                                    onChange={e => { setFilterDateTo(e.target.value); clearSelection(); }}
+                                    className="w-full rounded-lg border border-border bg-card-bg px-3 py-2 text-sm text-text-primary focus:border-gold/40 focus:outline-none transition-colors duration-300 cursor-pointer"
+                                />
+                            </div>
+                            {(filterDateFrom || filterDateTo) && (
+                                <button 
+                                    onClick={() => { setFilterDateFrom(''); setFilterDateTo(''); clearSelection(); }}
+                                    className="p-2 text-text-muted hover:text-danger transition-colors"
+                                    title="Reset dates"
+                                >
+                                    <RotateCcw className="h-4 w-4" />
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>

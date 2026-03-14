@@ -19,6 +19,7 @@ export default function CategoryModal({ isOpen, onClose, onSubmit, editCategory,
     const [slug, setSlug] = useState('');
     const [description, setDescription] = useState('');
     const [parentId, setParentId] = useState('');
+    const [isActive, setIsActive] = useState(true);
     const [saving, setSaving] = useState(false);
     const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
 
@@ -43,12 +44,14 @@ export default function CategoryModal({ isOpen, onClose, onSubmit, editCategory,
             setSlug(editCategory.slug);
             setDescription(editCategory.description || '');
             setParentId(editCategory.parent_id || '');
+            setIsActive(editCategory.is_active ?? true);
             setSlugManuallyEdited(true);
         } else {
             setName('');
             setSlug('');
             setDescription('');
             setParentId('');
+            setIsActive(true);
             setSlugManuallyEdited(false);
         }
     }, [editCategory, isOpen]);
@@ -87,6 +90,7 @@ export default function CategoryModal({ isOpen, onClose, onSubmit, editCategory,
                 slug: slug.trim() || name.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
                 description: description.trim(),
                 parent_id: parentId || null,
+                is_active: isActive,
             };
             await onSubmit(payload);
         } finally {
@@ -185,6 +189,34 @@ export default function CategoryModal({ isOpen, onClose, onSubmit, editCategory,
                         <p className="mt-1 text-xs text-text-muted">
                             Leave empty to create a top-level category, or select a parent to create a subcategory.
                         </p>
+                    </div>
+
+                    {/* Active Status */}
+                    <div className="flex items-center justify-between py-2 border-t border-border mt-2">
+                        <div>
+                            <label className="block text-sm font-medium text-text-primary">
+                                Active Status
+                            </label>
+                            <p className="text-xs text-text-muted">
+                                If inactive, this category will be hidden from the storefront
+                            </p>
+                        </div>
+                        <button
+                            type="button"
+                            role="switch"
+                            aria-checked={isActive}
+                            onClick={() => setIsActive(!isActive)}
+                            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                                isActive ? 'bg-primary' : 'bg-gray-200'
+                            }`}
+                        >
+                            <span
+                                aria-hidden="true"
+                                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                                    isActive ? 'translate-x-5' : 'translate-x-0'
+                                }`}
+                            />
+                        </button>
                     </div>
 
                     {/* Actions */}

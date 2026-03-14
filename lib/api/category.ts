@@ -28,7 +28,7 @@ interface ApiResponse<T = unknown> {
 
 export async function getCategories(): Promise<Category[]> {
     try {
-        const res = await fetch(`${API_URL}/api/categories`, { credentials: 'include' });
+        const res = await fetch(`${API_URL}/api/categories?include_inactive=true`, { credentials: 'include' });
         const json: ApiResponse<Category[]> = await res.json();
         if (json.success && Array.isArray(json.data)) {
             return json.data.map((cat) => ({
