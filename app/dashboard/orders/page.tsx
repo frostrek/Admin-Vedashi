@@ -83,7 +83,7 @@ export default function OrdersPage() {
             const params: any = {};
             if (filterDateFrom) params.dateFrom = filterDateFrom;
             if (filterDateTo) params.dateTo = filterDateTo;
-            
+
             const fetchedOrders = await getOrders(params);
             setOrders(fetchedOrders);
         };
@@ -104,14 +104,14 @@ export default function OrdersPage() {
     const filtered = orders.filter(o => {
         const statusMatch = filterStatus === 'all' || o.status === filterStatus;
         const paymentMatch = filterPayment === 'all' || o.payment_status?.toLowerCase() === filterPayment.toLowerCase();
-        
+
         // Date filter
         let dateMatch = true;
         if (filterDate !== 'all') {
             const orderDate = new Date(o.created_at);
             const now = new Date();
             const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            
+
             if (filterDate === 'today') {
                 dateMatch = orderDate >= todayStart;
             } else if (filterDate === '7days') {
@@ -122,7 +122,7 @@ export default function OrdersPage() {
                 dateMatch = orderDate >= thirtyDaysAgo;
             }
         }
-        
+
         // Amount filter
         let amountMatch = true;
         if (filterAmount !== 'all') {
@@ -131,7 +131,7 @@ export default function OrdersPage() {
             else if (filterAmount === '1000_5000') amountMatch = amount >= 1000 && amount <= 5000;
             else if (filterAmount === 'over_5000') amountMatch = amount > 5000;
         }
-        
+
         let searchMatch = true;
         if (searchQuery.trim()) {
             const q = searchQuery.toLowerCase();
@@ -140,7 +140,7 @@ export default function OrdersPage() {
             const emailMatch = o.customer_email?.toLowerCase().includes(q);
             searchMatch = !!(idMatch || nameMatch || emailMatch);
         }
-        
+
         return statusMatch && paymentMatch && dateMatch && amountMatch && searchMatch;
     });
 
@@ -377,7 +377,7 @@ export default function OrdersPage() {
                             className="w-full rounded-lg border border-border bg-card-bg pl-10 pr-4 py-2.5 text-sm text-text-primary focus:border-gold/40 focus:outline-none transition-colors duration-300"
                         />
                     </div>
-                    
+
                     <div className="flex flex-wrap gap-3 flex-1 xl:justify-end w-full">
                         <div className="relative flex-1 min-w-[140px] xl:flex-none">
                             <select
@@ -392,7 +392,7 @@ export default function OrdersPage() {
                             </select>
                             <ChevronDown className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted pointer-events-none" />
                         </div>
-                        
+
                         <div className="relative flex-1 min-w-[140px] xl:flex-none">
                             <select
                                 value={filterPayment}
@@ -455,7 +455,7 @@ export default function OrdersPage() {
                                 />
                             </div>
                             {(filterDateFrom || filterDateTo) && (
-                                <button 
+                                <button
                                     onClick={() => { setFilterDateFrom(''); setFilterDateTo(''); clearSelection(); }}
                                     className="p-2 text-text-muted hover:text-danger transition-colors"
                                     title="Reset dates"
@@ -672,7 +672,7 @@ export default function OrdersPage() {
                         </tbody>
                     </table>
                 </div>
-                
+
                 {/* Pagination Controls */}
                 {filtered.length > 0 && (
                     <div className="flex items-center justify-between border-t border-border-subtle bg-page-bg/50 px-4 py-3 sm:px-6">
@@ -681,7 +681,7 @@ export default function OrdersPage() {
                                 <p className="text-sm text-text-secondary">
                                     Showing <span className="font-semibold text-text-primary">{((currentPage - 1) * itemsPerPage) + 1}</span> to <span className="font-semibold text-text-primary">{Math.min(currentPage * itemsPerPage, filtered.length)}</span> of <span className="font-semibold text-text-primary">{filtered.length}</span> orders
                                 </p>
-                                <select 
+                                <select
                                     className="text-xs bg-card-bg border border-border rounded px-2 py-1 text-text-primary cursor-pointer focus:outline-none focus:border-gold/50"
                                     value={itemsPerPage}
                                     onChange={(e) => {
@@ -705,7 +705,7 @@ export default function OrdersPage() {
                                         <span className="sr-only">Previous</span>
                                         <ChevronLeft className="h-4 w-4" aria-hidden="true" />
                                     </button>
-                                    
+
                                     {Array.from({ length: totalPages }, (_, i) => i + 1)
                                         .filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
                                         .map((p, i, arr) => (
@@ -715,15 +715,14 @@ export default function OrdersPage() {
                                                 )}
                                                 <button
                                                     onClick={() => handlePageChange(p)}
-                                                    className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 focus:outline-offset-0 transition-colors ${
-                                                        p === currentPage ? 'z-10 bg-gold/10 text-gold ring-1 ring-inset ring-gold/50' : 'text-text-primary ring-1 ring-inset ring-border hover:bg-gold/[0.05]'
-                                                    }`}
+                                                    className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 focus:outline-offset-0 transition-colors ${p === currentPage ? 'z-10 bg-gold/10 text-gold ring-1 ring-inset ring-gold/50' : 'text-text-primary ring-1 ring-inset ring-border hover:bg-gold/[0.05]'
+                                                        }`}
                                                 >
                                                     {p}
                                                 </button>
                                             </Fragment>
                                         ))}
-                                    
+
                                     <button
                                         onClick={() => handlePageChange(currentPage + 1)}
                                         disabled={currentPage === totalPages}
