@@ -108,24 +108,33 @@ export default function TopNavbar({ sidebarCollapsed }: TopNavbarProps) {
     useEffect(() => {
         const fetchAlerts = async () => {
             try {
-                const [ordersRes, stockRes, feedbackRes] = await Promise.all([
+                const results = await Promise.allSettled([
                     getOrders(),
                     getLowStockProducts(),
                     getAdminFeedback({ status: 'new' })
                 ]);
+
+                const ordersRes = results[0].status === 'fulfilled' ? results[0].value : [];
+                const stockRes = results[1].status === 'fulfilled' ? results[1].value : [];
+                const feedbackRes = results[2].status === 'fulfilled' ? results[2].value : { feedback: [], total: 0 };
+
+                if (results.some(r => r.status === 'rejected')) {
+                    console.warn("[TopNavbar] Some alerts failed to fetch:", results);
+                }
+
                 const dismissed = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('dismissed_alerts') || '[]') : [];
                 
-                const pendingOrders = ordersRes.filter(o => {
+                const pendingOrders = ordersRes.filter((o: any) => {
                     const id = o.order_id || o.id;
                     return o.status === 'pending' && !dismissed.includes(id);
                 }).length;
 
-                const lowStock = stockRes.filter(p => !dismissed.includes(p.product_id)).length;
+                const lowStock = stockRes.filter((p: any) => !dismissed.includes(p.product_id)).length;
                 const newEnquiries = feedbackRes.total || 0;
                 
                 setAlertsData({ orders: pendingOrders, products: lowStock, enquiries: newEnquiries });
             } catch (e) {
-                console.error("Failed to fetch alerts", e);
+                console.error("[TopNavbar] Fatal error in fetchAlerts", e);
             }
         };
 
@@ -377,47 +386,59 @@ export default function TopNavbar({ sidebarCollapsed }: TopNavbarProps) {
                                 </div>
                                 <div className="max-h-[300px] overflow-y-auto divide-y divide-border-subtle">
                                     {alertsData.orders > 0 && (
-                                        <div className="px-4 py-3 hover:bg-gold/[0.03] transition-colors cursor-pointer group">
-                                            <div className="flex gap-3">
-                                                <div className="h-8 w-8 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center flex-shrink-0">
-                                                    <ShoppingCart className="h-4 w-4" />
-                                                </div>
-                                                <div>
-                                                    <p className="text-xs font-semibold text-text-primary group-hover:text-gold transition-colors">Order Management</p>
-                                                    <p className="text-[11px] text-text-secondary mt-0.5 leading-tight">You have {alertsData.orders} pending overall order(s) awaiting fulfillment.</p>
-                                                    <p className="text-[9px] text-text-muted mt-1">Just now</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-                                    {alertsData.products > 0 && (
-                                        <div className="px-4 py-3 hover:bg-gold/[0.03] transition-colors cursor-pointer group">
-                                            <div className="flex gap-3">
-                                                <div className="h-8 w-8 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center flex-shrink-0">
-                                                    <Package className="h-4 w-4" />
-                                                </div>
-                                                <div>
-                                                    <p className="text-xs font-semibold text-text-primary group-hover:text-gold transition-colors">Product Management</p>
-                                                    <p className="text-[11px] text-text-secondary mt-0.5 leading-tight">You have {alertsData.products} product(s) running low on stock.</p>
-                                                    <p className="text-[9px] text-text-muted mt-1">Just now</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-                                    {alertsData.enquiries > 0 && (
-                                        <div className="px-4 py-3 hover:bg-gold/[0.03] transition-colors cursor-pointer group">
-                                            <div className="flex gap-3">
-                                                <div className="h-8 w-8 rounded-full bg-purple-500/10 text-purple-500 flex items-center justify-center flex-shrink-0">
-                                                    <Users className="h-4 w-4" />
-                                                </div>
-                                                <div>
-                                                    <p className="text-xs font-semibold text-text-primary group-hover:text-gold transition-colors">Customer Enquiries</p>
-                                                    <p className="text-[11px] text-text-secondary mt-0.5 leading-tight">You have {alertsData.enquiries} new customer enquiry/enquiries.</p>
-                                                    <p className="text-[9px] text-text-muted mt-1">Just now</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
+                                         <Link 
+                                             href="/dashboard/orders"
+                                             onClick={() => setNotifOpen(false)}
+                                             className="block px-4 py-3 hover:bg-gold/[0.03] transition-colors cursor-pointer group"
+                                         >
+                                             <div className="flex gap-3">
+                                                 <div className="h-8 w-8 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center flex-shrink-0">
+                                                     <ShoppingCart className="h-4 w-4" />
+                                                 </div>
+                                                 <div>
+                                                     <p className="text-xs font-semibold text-text-primary group-hover:text-gold transition-colors">Order Management</p>
+                                                     <p className="text-[11px] text-text-secondary mt-0.5 leading-tight">You have {alertsData.orders} pending overall order(s) awaiting fulfillment.</p>
+                                                     <p className="text-[9px] text-text-muted mt-1">Just now</p>
+                                                 </div>
+                                             </div>
+                                         </Link>
+                                     )}
+                                     {alertsData.products > 0 && (
+                                         <Link 
+                                             href="/dashboard/products"
+                                             onClick={() => setNotifOpen(false)}
+                                             className="block px-4 py-3 hover:bg-gold/[0.03] transition-colors cursor-pointer group"
+                                         >
+                                             <div className="flex gap-3">
+                                                 <div className="h-8 w-8 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center flex-shrink-0">
+                                                     <Package className="h-4 w-4" />
+                                                 </div>
+                                                 <div>
+                                                     <p className="text-xs font-semibold text-text-primary group-hover:text-gold transition-colors">Product Management</p>
+                                                     <p className="text-[11px] text-text-secondary mt-0.5 leading-tight">You have {alertsData.products} product(s) running low on stock.</p>
+                                                     <p className="text-[9px] text-text-muted mt-1">Just now</p>
+                                                 </div>
+                                             </div>
+                                         </Link>
+                                     )}
+                                     {alertsData.enquiries > 0 && (
+                                         <Link 
+                                             href="/dashboard/support/customer-enquiry"
+                                             onClick={() => setNotifOpen(false)}
+                                             className="block px-4 py-3 hover:bg-gold/[0.03] transition-colors cursor-pointer group"
+                                         >
+                                             <div className="flex gap-3">
+                                                 <div className="h-8 w-8 rounded-full bg-purple-500/10 text-purple-500 flex items-center justify-center flex-shrink-0">
+                                                     <Users className="h-4 w-4" />
+                                                 </div>
+                                                 <div>
+                                                     <p className="text-xs font-semibold text-text-primary group-hover:text-gold transition-colors">Customer Enquiries</p>
+                                                     <p className="text-[11px] text-text-secondary mt-0.5 leading-tight">You have {alertsData.enquiries} new customer enquiry/enquiries.</p>
+                                                     <p className="text-[9px] text-text-muted mt-1">Just now</p>
+                                                 </div>
+                                             </div>
+                                         </Link>
+                                     )}
                                     {alertsData.orders === 0 && alertsData.products === 0 && alertsData.enquiries === 0 && (
                                         <div className="px-4 py-6 text-center text-xs text-text-muted">
                                             No new alerts at this time.

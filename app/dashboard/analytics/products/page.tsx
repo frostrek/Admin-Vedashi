@@ -136,7 +136,7 @@ export default function ProductAnalyticsDashboard() {
             </div>
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 md:gap-6">
                 <div className="bg-card-bg rounded-2xl p-5 border border-border-subtle relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-gold/5 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
                     <div className="flex items-center justify-between mb-4">
@@ -166,7 +166,6 @@ export default function ProductAnalyticsDashboard() {
                         <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
                             <ShoppingCart className="h-5 w-5 text-blue-500" />
                         </div>
-                        <span className="text-xs font-medium text-text-muted">{formatNumber(overview?.total_orders || 0)} Orders</span>
                     </div>
                     <p className="text-sm text-text-muted font-medium uppercase tracking-wider mb-1">Avg Conversion</p>
                     <p className="text-2xl font-bold text-text-primary">{parseFloat(overview?.avg_conversion_rate || 0).toFixed(2)}%</p>
@@ -177,6 +176,28 @@ export default function ProductAnalyticsDashboard() {
                     <div className="flex items-center justify-between mb-4">
                         <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
                             <Star className="h-5 w-5 text-primary" />
+                        </div>
+                    </div>
+                    <p className="text-sm text-text-muted font-medium uppercase tracking-wider mb-1">Total Reviews</p>
+                    <p className="text-2xl font-bold text-text-primary">{formatNumber(overview?.total_reviews || 0)}</p>
+                </div>
+
+                <div className="bg-card-bg rounded-2xl p-5 border border-border-subtle relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="h-10 w-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
+                            <Activity className="h-5 w-5 text-purple-500" />
+                        </div>
+                    </div>
+                    <p className="text-sm text-text-muted font-medium uppercase tracking-wider mb-1">Total Wishlists</p>
+                    <p className="text-2xl font-bold text-text-primary">{formatNumber(overview?.total_wishlists || 0)}</p>
+                </div>
+
+                <div className="bg-card-bg rounded-2xl p-5 border border-border-subtle relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="h-10 w-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
+                            <Activity className="h-5 w-5 text-amber-500" />
                         </div>
                     </div>
                     <p className="text-sm text-text-muted font-medium uppercase tracking-wider mb-1">Avg Health Score</p>
