@@ -958,9 +958,8 @@ export async function updateDefaultVariant(productId: string, variantId: string)
 
 export async function getLowStockProducts(): Promise<Product[]> {
     try {
-        const res = await fetch(`${API_URL}/api/products/low-stock-alerts`, {
+        const res = await authFetch(`${API_URL}/api/products/low-stock-alerts`, {
             headers: authHeaders(),
-            credentials: 'include',
         });
         const json: ApiResponse<Product[]> = await res.json();
         return json.success && json.data ? json.data : [];
@@ -2040,7 +2039,7 @@ export async function getAdminFeedback(params?: { type?: string; status?: string
         if (params?.search) sp.set('search', params.search);
         if (params?.limit) sp.set('limit', String(params.limit));
         if (params?.offset) sp.set('offset', String(params.offset));
-        const res = await fetch(`${API_URL}/api/customer-enquiry/admin?${sp.toString()}`, { headers: authHeaders(), credentials: 'include' });
+        const res = await authFetch(`${API_URL}/api/customer-enquiry/admin?${sp.toString()}`, { headers: authHeaders() });
         const json = await res.json();
         return json.success ? json.data : { feedback: [], total: 0 };
     } catch { return { feedback: [], total: 0 }; }
