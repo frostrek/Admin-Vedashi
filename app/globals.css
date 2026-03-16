@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 /* ═══════════════════════════════════════════════════
    Vedashi Admin — Herbal Wellness Theme
@@ -499,4 +500,70 @@ body::before {
       var(--t-border) 80%,
       transparent 100%);
   margin: 1.5rem 0;
+}
+
+/* ─── Legal Content Rich Text Styling ─── */
+
+.legal-rich-text {
+  font-family: var(--font-sans);
+  line-height: 1.75;
+  color: var(--t-text-secondary);
+}
+
+.legal-rich-text h1, 
+.legal-rich-text h2, 
+.legal-rich-text h3, 
+.legal-rich-text h4 {
+  color: var(--t-text-primary);
+  font-family: var(--font-serif);
+  font-weight: 700;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  line-height: 1.3;
+}
+
+.legal-rich-text h1 { font-size: 2.25rem; }
+.legal-rich-text h2 { font-size: 1.875rem; border-bottom: 1px solid var(--t-border-subtle); padding-bottom: 0.5rem; }
+.legal-rich-text h3 { font-size: 1.5rem; }
+.legal-rich-text h4 { font-size: 1.25rem; }
+
+.legal-rich-text p {
+  margin-bottom: 1.25rem;
+}
+
+.legal-rich-text ul, 
+.legal-rich-text ol {
+  margin-bottom: 1.5rem;
+  padding-left: 1.5rem;
+}
+
+.legal-rich-text ul { list-style-type: disc; }
+.legal-rich-text ol { list-style-type: decimal; }
+
+.legal-rich-text li {
+  margin-bottom: 0.5rem;
+}
+
+.legal-rich-text strong, 
+.legal-rich-text b {
+  font-weight: 700;
+  color: var(--t-text-primary);
+}
+
+.legal-rich-text a {
+  color: var(--t-gold);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 600;
+  transition: color 0.15s ease;
+}
+
+.legal-rich-text a:hover {
+  color: var(--t-gold-muted);
+}
+
+.legal-rich-text hr {
+  margin: 3rem 0;
+  border: 0;
+  border-top: 1px solid var(--t-border-subtle);
 }

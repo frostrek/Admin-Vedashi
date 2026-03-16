@@ -2568,3 +2568,85 @@ export async function getAdminGdprProcessors(): Promise<any[]> {
         return [];
     }
 }
+
+/* ─── Legal Documents (Admin) ─── */
+
+export interface LegalDocument {
+    id: string;
+    slug: string;
+    title: string;
+    content: string;
+    version: string;
+    is_active: boolean;
+    published_at?: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export async function getAdminLegalDocuments(): Promise<LegalDocument[]> {
+    try {
+        const res = await authFetch(`${API_URL}/api/legal`, {
+            headers: authHeaders(),
+        });
+        const json = await res.json();
+        return json.success ? json.data : [];
+    } catch (error) {
+        console.error('[Admin API] Failed to fetch legal documents:', error);
+        return [];
+    }
+}
+
+export async function getAdminLegalDocumentById(id: string): Promise<LegalDocument | null> {
+    try {
+        const res = await authFetch(`${API_URL}/api/legal/${id}`, {
+            headers: authHeaders(),
+        });
+        const json = await res.json();
+        return json.success ? json.data : null;
+    } catch (error) {
+        console.error('[Admin API] Failed to fetch legal document by ID:', error);
+        return null;
+    }
+}
+
+export async function createAdminLegalDocument(data: Partial<LegalDocument>): Promise<{ success: boolean; data?: LegalDocument; message?: string }> {
+    try {
+        const res = await authFetch(`${API_URL}/api/legal`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify(data),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to create legal document:', error);
+        return { success: false, message: 'Network error' };
+    }
+}
+
+export async function updateAdminLegalDocument(id: string, data: Partial<LegalDocument>): Promise<{ success: boolean; data?: LegalDocument; message?: string }> {
+    try {
+        const res = await authFetch(`${API_URL}/api/legal/${id}`, {
+            method: 'PUT',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify(data),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to update legal document:', error);
+        return { success: false, message: 'Network error' };
+    }
+}
+
+export async function deleteAdminLegalDocument(id: string): Promise<boolean> {
+    try {
+        const res = await authFetch(`${API_URL}/api/legal/${id}`, {
+            method: 'DELETE',
+            headers: authHeaders(),
+        });
+        const json = await res.json();
+        return json.success;
+    } catch (error) {
+        console.error('[Admin API] Failed to delete legal document:', error);
+        return false;
+    }
+}
