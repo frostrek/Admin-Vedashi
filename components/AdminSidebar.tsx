@@ -49,6 +49,7 @@ const siteContentNav = [
     { href: '/dashboard/media', label: 'Visual Repository', icon: Images },
     { href: '/dashboard/header', label: 'Header Canvas', icon: MonitorSmartphone },
     { href: '/dashboard/footer', label: 'Footer Stratum', icon: LayoutTemplate },
+    { href: '/dashboard/legal', label: 'Legal Chronicles', icon: Shield },
 ];
 
 const optimizationNav = [

@@ -54,7 +54,10 @@ export default function SalesChart({
     onPeriodChange,
     loading = false,
 }: SalesChartProps) {
+    const { isDark } = useTheme();
     const [activePeriod, setActivePeriod] = useState(period);
+    
+    const colors = isDark ? CHART_COLORS.dark : CHART_COLORS.light;
 
     const handlePeriodChange = (p: string) => {
         setActivePeriod(p);
@@ -95,51 +98,51 @@ export default function SalesChart({
                     <AreaChart data={data} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
                         <defs>
                             <linearGradient id="salesGradient" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#8B7A3D" stopOpacity={0.4} />
-                                <stop offset="95%" stopColor="#8B7A3D" stopOpacity={0} />
+                                <stop offset="5%" stopColor={colors.stroke} stopOpacity={0.4} />
+                                <stop offset="95%" stopColor={colors.stroke} stopOpacity={0} />
                             </linearGradient>
                         </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(168, 146, 80, 0.05)" vertical={false} />
+                        <CartesianGrid strokeDasharray="3 3" stroke={colors.grid} vertical={false} />
                         <XAxis
                             dataKey="label"
                             axisLine={false}
                             tickLine={false}
-                            tick={{ fontSize: 10, fill: '#556B55', fontWeight: 600 }}
+                            tick={{ fontSize: 10, fill: colors.axis, fontWeight: 600 }}
                             dy={10}
                         />
                         <YAxis
                             axisLine={false}
                             tickLine={false}
-                            tick={{ fontSize: 10, fill: '#556B55', fontWeight: 600 }}
+                            tick={{ fontSize: 10, fill: colors.axis, fontWeight: 600 }}
                             tickFormatter={(v: number) => `₹${(v / 1000).toFixed(0)}k`}
                         />
                         <Tooltip
                             contentStyle={{
-                                background: 'rgba(15, 22, 15, 0.95)',
-                                border: '1px solid rgba(168, 146, 80, 0.2)',
+                                background: colors.tooltipBg,
+                                border: `1px solid ${colors.tooltipBorder}`,
                                 borderRadius: '12px',
-                                color: '#E8D8B9',
+                                color: colors.tooltipText,
                                 fontSize: '12px',
                                 padding: '10px 16px',
                                 backdropFilter: 'blur(10px)',
                                 boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
                             }}
-                            itemStyle={{ color: '#A89250', fontWeight: 700 }}
-                            labelStyle={{ color: '#E8D8B9', fontWeight: 800, marginBottom: 4, letterSpacing: '0.05em', textTransform: 'uppercase', fontSize: '10px' }}
+                            itemStyle={{ color: colors.tooltipLabel, fontWeight: 700 }}
+                            labelStyle={{ color: colors.tooltipText, fontWeight: 800, marginBottom: 4, letterSpacing: '0.05em', textTransform: 'uppercase', fontSize: '10px' }}
                             formatter={(val: number | undefined) => [`₹${(val ?? 0).toLocaleString('en-IN')}`, 'Synthesis Total']}
                         />
                         <Area
                             type="monotone"
                             dataKey="value"
-                            stroke="#A89250"
+                            stroke={colors.stroke}
                             strokeWidth={3}
                             fill="url(#salesGradient)"
                             dot={false}
                             activeDot={{
                                 r: 6,
-                                stroke: '#A89250',
+                                stroke: colors.stroke,
                                 strokeWidth: 3,
-                                fill: '#141C14',
+                                fill: colors.dotFill,
                             }}
                         />
                     </AreaChart>
