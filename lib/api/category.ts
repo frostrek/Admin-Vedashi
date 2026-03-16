@@ -40,6 +40,7 @@ export async function getCategories(): Promise<Category[]> {
                 image_url: cat.image_url ?? null,
                 sort_order: cat.sort_order ?? 0,
                 is_active: cat.is_active ?? true,
+                product_count: cat.product_count ?? 0,
             }));
         }
         return [];

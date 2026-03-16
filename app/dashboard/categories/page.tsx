@@ -361,16 +361,49 @@ export default function CategoriesPage() {
             <ConfirmModal
                 open={!!deleteTarget}
                 onClose={() => setDeleteTarget(null)}
-                title="Delete Category"
+                title={deleteTarget?.parent_id ? "Delete Subcategory" : "Delete Category"}
                 confirmLabel="Delete"
                 confirmVariant="danger"
                 loading={deleting}
                 onConfirm={handleDeleteConfirm}
             >
                 {deleteTarget && (
-                    <p>
-                        Are you sure you want to delete <strong>&quot;{deleteTarget.name}&quot;</strong>? This action cannot be undone.
-                    </p>
+                    <div className="space-y-4">
+                        <p className="text-text-primary">
+                            Are you sure you want to delete <strong>&quot;{deleteTarget.name}&quot;</strong>?
+                        </p>
+
+                        {deleteTarget.parent_id ? (
+                            <div className="p-3.5 bg-yellow-50/50 rounded-xl border border-yellow-200/50 flex gap-3.5 items-start">
+                                <div className="h-9 w-9 bg-yellow-100 rounded-lg flex items-center justify-center shrink-0">
+                                    <AlertTriangle className="h-5 w-5 text-yellow-600" />
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-sm font-medium text-yellow-900">
+                                        {deleteTarget.product_count || 0} items will be moved
+                                    </p>
+                                    <p className="text-sm text-yellow-800/80 leading-relaxed">
+                                        Deleting this subcategory will move all {deleteTarget.product_count || 0} items in it to the parent category:
+                                        <span className="block mt-1.5 font-bold text-yellow-950 font-serif tracking-tight text-base">
+                                            {parentNameMap[deleteTarget.parent_id] || 'the parent category'}
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="p-3.5 bg-red-50/50 rounded-xl border border-red-200/50 flex gap-3.5 items-start">
+                                <div className="h-9 w-9 bg-red-100 rounded-lg flex items-center justify-center shrink-0">
+                                    <AlertTriangle className="h-5 w-5 text-red-600" />
+                                </div>
+                                <div className="space-y-1 text-sm">
+                                    <p className="font-medium text-red-900">{deleteTarget.product_count || 0} items affected</p>
+                                    <p className="text-red-800/80 leading-relaxed">
+                                        Deleting this will leave <strong>{deleteTarget.product_count || 0} products</strong> uncategorized. This action cannot be undone.
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 )}
             </ConfirmModal>
         </div>
