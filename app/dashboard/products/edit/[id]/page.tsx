@@ -104,9 +104,8 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
         category_id: '',
         sub_category_id: '',
         country_of_origin: '',
-
-
-        intended_use: '',
+        form_type: '',
+        specialities: [] as string[],        intended_use: '',
         description: '',
         available_from_date: '',
         available_from_time: '',
@@ -199,6 +198,8 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                 category_id: finalCatId,
                 sub_category_id: finalSubCatId,
                 country_of_origin: product.country_of_origin || (product as any).specifications?.country_of_origin || '',
+                form_type: (product as any).form || '',
+                specialities: (product as any).specialities || [],
 
                 intended_use: product.intended_use || '',
                 description: product.description || '',
@@ -360,7 +361,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
         : [];
 
     // ÔöÇÔöÇÔöÇ Form helpers ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
-    const update = (field: string, value: string) => setForm(prev => ({ ...prev, [field]: value }));
+    const update = (field: string, value: any) => setForm(prev => ({ ...prev, [field]: value }));
 
     const handleCategoryChange = (value: string) => {
         update('category_id', value);
@@ -709,8 +710,11 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
             brand: form.brand.trim() || undefined,
             category_id: form.category_id || undefined,
             sub_category_id: form.sub_category_id || undefined,
+            country_of_origin: form.country_of_origin || undefined,
             description: form.description.trim() || undefined,
             intended_use: form.intended_use.trim() || undefined,
+            form: form.form_type || undefined,
+            specialities: form.specialities,
 
             sku: draftSku,
             status: 'draft',
@@ -815,10 +819,11 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
             brand: form.brand.trim() || undefined,
             category_id: form.category_id || undefined,
             sub_category_id: form.sub_category_id || undefined,
+            country_of_origin: form.country_of_origin || undefined,
             description: form.description.trim() || undefined,
             intended_use: form.intended_use.trim() || undefined,
-
-
+            form: form.form_type || undefined,
+            specialities: form.specialities.length > 0 ? form.specialities : undefined,
             // SKU from the default variant (required by products table unique constraint)
             sku: (variants.find(v => v.isDefault) ?? variants[0]).sku.trim(),
 
@@ -1266,8 +1271,44 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                     </div>
 
 
+                                    {/* Form Type */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-text-primary mb-1.5">Form</label>
+                                        <select
+                                            value={form.form_type}
+                                            onChange={e => update('form_type', e.target.value)}
+                                            className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 bg-white text-gray-900 transition-all"
+                                        >
+                                            <option value="">Select form</option>
+                                            {['Capsules', 'Tablets', 'Powder', 'Syrup', 'Oil', 'Churna'].map(f => (
+                                                <option key={f} value={f}>{f}</option>
+                                            ))}
+                                        </select>
+                                    </div>
 
-                                    {/* Intended Use - full width */}
+                                    {/* Specialities */}
+                                    <div className="sm:col-span-2">
+                                        <label className="block text-sm font-medium text-text-primary mb-1.5">Specialities</label>
+                                        <div className="flex flex-wrap gap-3">
+                                            {['Drug Free', 'Allergen Free', '100% Natural', 'Vegan', 'Ayurvedic', 'No Added Sugar'].map(spec => {
+                                                const isSelected = form.specialities.includes(spec);
+                                                return (
+                                                    <label key={spec} className={`flex items-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition-colors ${isSelected ? 'border-gold bg-gold/10' : 'border-border bg-white/5 hover:border-gold/40'}`}>
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={isSelected}
+                                                            onChange={e => {
+                                                                if (e.target.checked) update('specialities', [...form.specialities, spec]);
+                                                                else update('specialities', form.specialities.filter(s => s !== spec));
+                                                            }}
+                                                            className="w-4 h-4 rounded text-gold focus:ring-gold"
+                                                        />
+                                                        <span className="text-sm font-medium text-text-primary">{spec}</span>
+                                                    </label>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>                                    {/* Intended Use - full width */}
                                     <div className="sm:col-span-2">
                                         <label className="block text-sm font-medium text-text-primary mb-1.5">Intended Use</label>
                                         <input

@@ -260,7 +260,7 @@ export default function OrdersPage() {
                     let nextPaymentStatus = o.payment_status;
                     if (newStatus === 'delivered') {
                         nextPaymentStatus = 'PAID';
-                    } else if (o.payment_method === 'cod' && newStatus !== 'delivered') {
+                    } else if (o.payment_method === 'cod') {
                         nextPaymentStatus = 'UNPAID';
                     }
                     return { ...o, status: newStatus, payment_status: nextPaymentStatus };
@@ -274,7 +274,7 @@ export default function OrdersPage() {
                 let nextPaymentStatus = prev.payment_status;
                 if (newStatus === 'delivered') {
                     nextPaymentStatus = 'PAID';
-                } else if (prev.payment_method === 'cod' && newStatus !== 'delivered') {
+                } else if (prev.payment_method === 'cod') {
                     nextPaymentStatus = 'UNPAID';
                 }
                 return { ...prev, status: newStatus, payment_status: nextPaymentStatus };

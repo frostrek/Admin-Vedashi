@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Shield, AlertTriangle, FileText, Database, Plus, Search, Filter, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { getAdminGdprRequests, getAdminGdprBreaches, getAdminGdprProcessors } from '@/lib/api';
+import { getAdminGdprRequests, getAdminGdprBreaches, getAdminGdprProcessors, authFetch } from '@/lib/api';
 
 export default function GDPRDashboard() {
     const [activeTab, setActiveTab] = useState<'requests' | 'breaches' | 'processors'>('requests');
