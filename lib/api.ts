@@ -752,31 +752,46 @@ export async function bulkUpdateOrderPaymentStatus(orderIds: string[], paymentSt
 }
 
 export async function downloadInvoiceAdmin(orderId: string): Promise<{ success: boolean; message?: string }> {
-    try {
-        const url = `${API_URL}/api/invoices/${orderId}/download`;
-        const res = await fetch(url, { headers: authHeaders(), credentials: 'include' });
-        if (!res.ok) {
-            const data = await res.json().catch(() => null);
-            return { success: false, message: data?.message || 'Failed to download invoice' };
+    const maxRetries = 10;
+    const retryDelay = 3000; // 3 seconds
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            const url = `${API_URL}/api/invoices/${orderId}/download`;
+            const res = await fetch(url, { headers: authHeaders(), credentials: 'include' });
+            
+            if (!res.ok) {
+                if (res.status === 409 && attempt < maxRetries) {
+                    // Invoice is generating. Wait and retry automatically.
+                    await new Promise(resolve => setTimeout(resolve, retryDelay));
+                    continue;
+                }
+                const data = await res.json().catch(() => null);
+                return { success: false, message: data?.message || 'Failed to download invoice' };
+            }
+
+            const blob = await res.blob();
+            const disposition = res.headers.get('Content-Disposition') || '';
+            const nameMatch = disposition.match(/filename="?([^"]+)"?/);
+            const filename = nameMatch ? nameMatch[1] : `invoice_${orderId}.pdf`;
+
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+            return { success: true };
+        } catch (error) {
+            console.error('[Admin API] Failed to download invoice:', error);
+            if (attempt === maxRetries) {
+                return { success: false, message: 'Network error' };
+            }
+            await new Promise(resolve => setTimeout(resolve, retryDelay));
         }
-
-        const blob = await res.blob();
-        const disposition = res.headers.get('Content-Disposition') || '';
-        const nameMatch = disposition.match(/filename="?([^"]+)"?/);
-        const filename = nameMatch ? nameMatch[1] : `invoice_${orderId}.pdf`;
-
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(a.href);
-        return { success: true };
-    } catch (error) {
-        console.error('[Admin API] Failed to download invoice:', error);
-        return { success: false, message: 'Network error' };
     }
+    return { success: false, message: 'Max retries reached while generating invoice' };
 }
 
 /* ─── Payments & Refunds (Admin) ─── */

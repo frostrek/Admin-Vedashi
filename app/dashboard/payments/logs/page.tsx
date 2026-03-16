@@ -18,14 +18,24 @@ import {
     ArrowUpRight,
     TrendingUp,
     Hourglass,
-    AlertCircle
+    AlertCircle,
+    Eye,
+    X
 } from 'lucide-react';
+
+const DetailRow = ({ label, value, isDark }: { label: string, value: any, isDark: boolean }) => (
+    <div className={`p-3 rounded-xl border ${isDark ? 'bg-white/5 border-white/5' : 'bg-black/5 border-black/5'} flex flex-col gap-1`}>
+        <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted">{label}</span>
+        <span className={`text-sm font-medium ${isDark ? 'text-white/90' : 'text-black/80'} break-all`}>{value || 'N/A'}</span>
+    </div>
+);
 
 export default function PaymentLogsPage() {
     const { isDark } = useTheme();
     const [logs, setLogs] = useState<any[]>([]);
     const [total, setTotal] = useState(0);
     const [loading, setLoading] = useState(true);
+    const [selectedLog, setSelectedLog] = useState<any>(null);
 
     // Filters & Pagination
     const [page, setPage] = useState(1);
@@ -76,6 +86,18 @@ export default function PaymentLogsPage() {
     useEffect(() => {
         fetchLogs();
     }, [page, statusFilter, gatewayFilter]);
+
+    // Prevent body scrolling when modal is open
+    useEffect(() => {
+        if (selectedLog) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [selectedLog]);
 
     const handleSearchSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -226,6 +248,7 @@ export default function PaymentLogsPage() {
                                 <th className="px-8 py-6 border-b border-white/5 font-serif italic text-lg capitalize">Amount</th>
                                 <th className="px-8 py-6 border-b border-white/5">Gateway</th>
                                 <th className="px-10 py-6 border-b border-white/5 text-right">Status</th>
+                                <th className="px-8 py-6 border-b border-white/5 text-center">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
@@ -285,6 +308,15 @@ export default function PaymentLogsPage() {
                                                 {log.payment_status}
                                             </span>
                                         </td>
+                                        <td className="px-8 py-8 text-center">
+                                            <button 
+                                                onClick={() => setSelectedLog(log)}
+                                                className={`p-2 rounded-full transition-all ${isDark ? 'hover:bg-white/10 text-gold-soft' : 'hover:bg-black/5 text-emerald-900'} hover:scale-110 active:scale-95`}
+                                                title="View Details"
+                                            >
+                                                <Eye className="w-5 h-5" />
+                                            </button>
+                                        </td>
                                     </tr>
                                 ))
                             )}
@@ -317,6 +349,83 @@ export default function PaymentLogsPage() {
                     </div>
                 )}
             </div>
+
+            {/* ── Payment Details Modal ── */}
+            {selectedLog && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn">
+                    <div className={`relative w-full max-w-2xl rounded-[2rem] border overflow-hidden shadow-2xl ${isDark ? 'bg-[#0a0a0a] border-white/10' : 'bg-white border-emerald-900/10'} animate-fadeInUp flex flex-col max-h-[90vh]`}>
+                        {/* Header */}
+                        <div className={`flex items-center justify-between p-6 border-b ${isDark ? 'border-white/10 bg-black/40' : 'border-emerald-900/10 bg-emerald-50/50'}`}>
+                            <div className="flex items-center gap-3">
+                                <div className="p-2.5 bg-gold/10 rounded-xl border border-gold/20 shadow-sm">
+                                    <Receipt className="w-5 h-5 text-gold" />
+                                </div>
+                                <div>
+                                    <h2 className={`font-serif text-xl font-bold ${isDark ? 'text-gold' : 'text-emerald-950'}`}>Payment Details</h2>
+                                    <p className="text-[10px] font-bold uppercase tracking-wider text-text-muted mt-0.5">ID: {selectedLog.payment_id}</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setSelectedLog(null)}
+                                className={`p-2 rounded-full transition-all ${isDark ? 'hover:bg-white/10 text-text-muted hover:text-white' : 'hover:bg-black/5 text-emerald-900/60 hover:text-black'} active:scale-95`}
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-8 overflow-y-auto custom-scrollbar flex-1 space-y-8">
+                            {/* Summary Grid */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className={`p-4 rounded-xl border ${isDark ? 'bg-black/20 border-white/5' : 'bg-emerald-50 border-emerald-900/5'}`}>
+                                    <div className="text-[10px] uppercase font-bold text-text-muted mb-1">Amount</div>
+                                    <div className="text-xl font-serif font-bold text-gold italic">{formatINR(parseFloat(selectedLog.amount))}</div>
+                                </div>
+                                <div className={`p-4 rounded-xl border ${isDark ? 'bg-black/20 border-white/5' : 'bg-emerald-50 border-emerald-900/5'}`}>
+                                    <div className="text-[10px] uppercase font-bold text-text-muted mb-1">Status</div>
+                                    <span className={`inline-flex items-center px-3 py-1 mt-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${getStatusStyle(selectedLog.payment_status)}`}>
+                                        {getStatusIcon(selectedLog.payment_status)}
+                                        {selectedLog.payment_status}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Details List */}
+                            <div className="space-y-4">
+                                <h3 className={`text-[11px] font-bold uppercase tracking-wider ${isDark ? 'text-gold-soft' : 'text-emerald-900'} border-b ${isDark ? 'border-white/5' : 'border-emerald-900/10'} pb-2`}>Transaction Info</h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <DetailRow label="Order ID" value={selectedLog.order_id} isDark={isDark} />
+                                    <DetailRow label="Gateway" value={selectedLog.payment_gateway || selectedLog.payment_method} isDark={isDark} />
+                                    <DetailRow label="Transaction Ref" value={selectedLog.transaction_reference} isDark={isDark} />
+                                    <DetailRow label="Razorpay ID" value={selectedLog.razorpay_payment_id} isDark={isDark} />
+                                    <DetailRow label="Signature" value={selectedLog.razorpay_signature ? 'Present (Verified)' : null} isDark={isDark} />
+                                    <DetailRow label="Date" value={new Date(selectedLog.created_at).toLocaleString('en-IN', {
+                                        day: '2-digit', month: 'short', year: 'numeric',
+                                        hour: '2-digit', minute: '2-digit', second: '2-digit'
+                                    })} isDark={isDark} />
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <h3 className={`text-[11px] font-bold uppercase tracking-wider ${isDark ? 'text-gold-soft' : 'text-emerald-900'} border-b ${isDark ? 'border-white/5' : 'border-emerald-900/10'} pb-2`}>Customer Info</h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <DetailRow label="Customer ID" value={selectedLog.customer_id} isDark={isDark} />
+                                    <DetailRow label="Name" value={selectedLog.customer_name} isDark={isDark} />
+                                </div>
+                            </div>
+                            
+                            {selectedLog.failure_reason && (
+                                <div className="space-y-4">
+                                    <h3 className={`text-[11px] font-bold uppercase tracking-wider text-red-500 border-b border-red-500/10 pb-2`}>Failure Reason</h3>
+                                    <div className="p-4 bg-red-500/10 text-red-400 text-sm rounded-xl border border-red-500/20 font-medium">
+                                        {selectedLog.failure_reason}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
