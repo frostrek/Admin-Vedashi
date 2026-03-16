@@ -2355,26 +2355,40 @@ export async function reorderCollectionProducts(collectionId: string, productIds
 }
 
 
+export interface ActivityLog {
+    id: string;
+    actor_type: string;
+    actor_id: string;
+    actor_email: string;
+    action: string;
+    entity_type: string;
+    entity_id: string;
+    ip_address: string;
+    user_agent?: string;
+    metadata: any;
+    created_at: string;
+}
+
 /** Fetch administrative activity logs (Interaction Chronicles). */
-export async function getActivityLogs(params?: Record<string, string>): Promise<{ logs: any[]; pagination: any }> {
+export async function getActivityLogs(params?: Record<string, string>): Promise<{ logs: ActivityLog[]; pagination: any }> {
     try {
         const queryParams = params ? new URLSearchParams(params).toString() : '';
         const res = await authFetch(`${API_URL}/api/admin/activity-logs?${queryParams}`, {
             headers: authHeaders(),
         });
         const json = await res.json();
-        if (json.success && json.data) {
-            return {
-                logs: json.data.logs || [],
-                pagination: json.data.pagination || {}
-            };
+            if (json.success && json.data) {
+                return {
+                    logs: json.data.logs || [],
+                    pagination: json.data.pagination || { total: 0, page: 1, limit: 20, totalPages: 0 }
+                };
+            }
+            throw new Error(json.message || 'Failed to fetch activity logs');
+        } catch (error: any) {
+            console.error('[Admin API] getActivityLogs failed:', error);
+            throw error;
         }
-        return { logs: [], pagination: {} };
-    } catch (error) {
-        console.error('[Admin API] getActivityLogs failed:', error);
-        return { logs: [], pagination: {} };
     }
-}
 
 /* ─── Loyalty & Rewards (Admin) ─── */
 
@@ -2648,5 +2662,48 @@ export async function deleteAdminLegalDocument(id: string): Promise<boolean> {
     } catch (error) {
         console.error('[Admin API] Failed to delete legal document:', error);
         return false;
+    }
+}
+
+/* ─── GDPR Management (Admin) ─── */
+
+export async function createAdminGdprProcessor(data: any) {
+    try {
+        const res = await authFetch(`${API_URL}/api/gdpr/processors`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify(data),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to create GDPR processor:', error);
+        return { success: false };
+    }
+}
+
+export async function deleteAdminGdprProcessor(id: string) {
+    try {
+        const res = await authFetch(`${API_URL}/api/gdpr/processors/${id}`, {
+            method: 'DELETE',
+            headers: authHeaders(),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to delete GDPR processor:', error);
+        return { success: false };
+    }
+}
+
+export async function createAdminGdprBreach(data: any) {
+    try {
+        const res = await authFetch(`${API_URL}/api/gdpr/breach`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify(data),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to log GDPR breach:', error);
+        return { success: false };
     }
 }
