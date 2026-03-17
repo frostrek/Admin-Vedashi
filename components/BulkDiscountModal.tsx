@@ -89,6 +89,7 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
     const [customField, setCustomField] = useState<string>('');
     const [customValue, setCustomValue] = useState<any>('');
 
+    // Active Discounts State
     const [activeDiscounts, setActiveDiscounts] = useState<ActiveDiscount[]>([]);
     const [fetchingDiscounts, setFetchingDiscounts] = useState(false);
 
@@ -404,9 +405,7 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
                     </button>
                     <button
                         type="button"
-                        onClick={() => {
-                            setActiveTab('custom');
-                        }}
+                        onClick={() => setActiveTab('custom')}
                         className={`flex-1 pb-3 text-sm font-semibold transition-colors border-b-2 ${activeTab === 'custom'
                             ? 'text-gold border-gold'
                             : 'text-text-secondary border-transparent hover:text-gold-soft'
@@ -508,6 +507,20 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
                                         No options found.
                                     </div>
                                 )}
+                            </div>
+                        </div>
+                    )}
+
+                    {targetType === 'selected' && (
+                        <div className="p-4 rounded-lg bg-gold/5 border border-gold/20 flex items-center gap-3 mt-4 animate-fadeIn">
+                            <div className="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center text-gold">
+                                <Check className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h4 className="text-sm font-semibold text-gold font-serif">Targeting Selection</h4>
+                                <p className="text-xs text-text-muted">
+                                    This action will only apply to the {selectedIds.length} {selectedIds.length === 1 ? 'item' : 'items'} you've checkboxed.
+                                </p>
                             </div>
                         </div>
                     )}
@@ -686,6 +699,85 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
                             <p className="text-xs text-amber-500/80 mt-1">
                                 Note: This will permanently modify the base price of all matching variants. The change is immediate.
                             </p>
+                        </div>
+                    )}
+
+                    {activeTab === 'custom' && (
+                        <div className="space-y-4 animate-fadeIn">
+                            <div>
+                                <label className="block text-sm font-medium text-text-secondary mb-1">
+                                    Select Field <span className="text-red-500">*</span>
+                                </label>
+                                <select
+                                    value={customField}
+                                    onChange={(e) => {
+                                        const field = e.target.value;
+                                        setCustomField(field);
+                                        const fieldDef = CUSTOM_FIELDS.find(f => f.value === field);
+                                        if (fieldDef?.type === 'boolean') setCustomValue(false);
+                                        else if (fieldDef?.type === 'number') setCustomValue('');
+                                        else setCustomValue('');
+                                    }}
+                                    className="w-full rounded-lg border border-border bg-page-bg px-3 py-2.5 text-sm text-text-primary focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40 cursor-pointer"
+                                >
+                                    <option value="">Choose a field...</option>
+                                    {CUSTOM_FIELDS.map(f => (
+                                        <option key={f.value} value={f.value}>{f.label}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {customField && (
+                                <div>
+                                    <label className="block text-sm font-medium text-text-secondary mb-1">
+                                        New Value <span className="text-red-500">*</span>
+                                    </label>
+                                    {(() => {
+                                        const fieldDef = CUSTOM_FIELDS.find(f => f.value === customField);
+                                        if (fieldDef?.type === 'boolean') {
+                                            return (
+                                                <div className="flex items-center gap-3">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setCustomValue(!customValue)}
+                                                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-gold/40 focus:ring-offset-1 focus:ring-offset-card-bg ${customValue ? 'bg-gold' : 'bg-gray-400'
+                                                            }`}
+                                                    >
+                                                        <span
+                                                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${customValue ? 'translate-x-6' : 'translate-x-1'
+                                                                }`}
+                                                        />
+                                                    </button>
+                                                    <span className="text-sm text-text-primary">{customValue ? 'Enabled' : 'Disabled'}</span>
+                                                </div>
+                                            );
+                                        }
+                                        if (fieldDef?.type === 'select') {
+                                            return (
+                                                <select
+                                                    value={customValue}
+                                                    onChange={(e) => setCustomValue(e.target.value)}
+                                                    className="w-full rounded-lg border border-border bg-page-bg px-3 py-2.5 text-sm text-text-primary focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40 cursor-pointer"
+                                                >
+                                                    <option value="">Select status...</option>
+                                                    {fieldDef.options.map(opt => (
+                                                        <option key={opt} value={opt}>{opt.charAt(0).toUpperCase() + opt.slice(1)}</option>
+                                                    ))}
+                                                </select>
+                                            );
+                                        }
+                                        return (
+                                            <input
+                                                type={fieldDef?.type === 'number' ? 'number' : 'text'}
+                                                value={customValue}
+                                                onChange={(e) => setCustomValue(e.target.value)}
+                                                placeholder={`Enter new ${fieldDef?.label.toLowerCase()}...`}
+                                                className="w-full rounded-lg border border-border bg-page-bg px-4 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40"
+                                            />
+                                        );
+                                    })()}
+                                </div>
+                            )}
                         </div>
                     )}
 

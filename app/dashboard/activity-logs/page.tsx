@@ -2,24 +2,33 @@
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useAdminAuth } from '@/context/AdminAuthContext';
-import { Activity, ShieldAlert, RefreshCw, ChevronLeft, ChevronRight, Search, FileText, Eye, X, Copy, ExternalLink } from 'lucide-react';
+import { 
+    Activity, 
+    ShieldAlert, 
+    RefreshCw, 
+    ChevronLeft, 
+    ChevronRight, 
+    Search, 
+    FileText, 
+    Eye, 
+    X, 
+    Copy, 
+    ExternalLink, 
+    Filter,
+    Calendar,
+    Clock,
+    User,
+    Shield,
+    AlertCircle,
+    Info,
+    FileSearch,
+    Database,
+    Download
+} from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTheme } from '@/context/ThemeContext';
-import { getToken } from '@/lib/auth';
+import { getActivityLogs, type ActivityLog } from '@/lib/api';
 import toast from 'react-hot-toast';
-
-interface ActivityLog {
-    id: string;
-    actor_type: string;
-    actor_id: string;
-    actor_email: string;
-    action: string;
-    entity_type: string;
-    entity_id: string;
-    ip_address: string;
-    metadata: string | null;
-    created_at: string;
-}
 
 interface PaginationMeta {
     total: number;
@@ -37,6 +46,7 @@ function ActivityLogsPageContent() {
     const [logs, setLogs] = useState<ActivityLog[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeLog, setActiveLog] = useState<ActivityLog | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
     const formatMetadata = (metadata: any) => {
         if (!metadata) return '-';
@@ -61,35 +71,39 @@ function ActivityLogsPageContent() {
         totalPages: 0
     });
 
+    const inputCls = `w-full ${isDark ? 'bg-sidebar-bg border-border text-gold-soft' : 'bg-white border-gold/20 text-emerald-950'} border rounded-xl px-4 py-2 text-sm outline-none focus:border-gold transition-all shadow-inner`;
+
     const isAuthorized = user?.role === 'owner' || user?.role === 'admin';
 
     const fetchLogs = useCallback(async (pageStr = '1') => {
-        const token = getToken();
-        if (!token) return;
         setLoading(true);
-
-        const params = new URLSearchParams({
-            page: pageStr,
-            limit: pagination.limit.toString(),
-            ...(filterEmail && { actor_email: filterEmail }),
-            ...(filterEntity && { entity_type: filterEntity }),
-            ...(filterAction && { action: filterAction }),
-        });
+        setError(null);
 
         try {
-            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-            const res = await fetch(`${API_URL}/api/admin/activity-logs?${params}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            const filterParams: Record<string, string> = {
+                page: pageStr,
+                limit: pagination.limit.toString(),
+            };
 
-            if (!res.ok) throw new Error('Failed to fetch activity logs');
-            const data = await res.json();
+            if (filterEmail) filterParams.actor_email = filterEmail;
+            if (filterEntity) filterParams.entity_type = filterEntity;
+            if (filterAction) filterParams.action = filterAction;
 
-            setLogs(data.data.logs);
-            setPagination(data.data.pagination);
+            const res = await getActivityLogs(filterParams);
+
+            if (res && res.logs) {
+                setLogs(res.logs);
+                setPagination(res.pagination || { total: 0, page: 1, limit: 20, totalPages: 0 });
+            } else {
+                setLogs([]);
+                // Keep current pagination but set total to 0 if no results
+                setPagination(prev => ({ ...prev, total: 0, totalPages: 0 }));
+            }
         } catch (err: any) {
-            toast.error(err.message || 'Could not load activity logs');
-            console.error(err);
+            const msg = err.message || 'Could not load activity logs';
+            setError(msg);
+            toast.error(msg);
+            console.error('[ActivityLogs] fetch error:', err);
         } finally {
             setLoading(false);
         }
@@ -167,35 +181,46 @@ function ActivityLogsPageContent() {
 
             {/* Filters */}
             <form onSubmit={handleFilterSubmit} className={`grid grid-cols-1 sm:grid-cols-4 gap-4 p-6 ${isDark ? 'bg-card-bg border-border-subtle' : 'bg-white/80 border-gold/15 shadow-sm'} rounded-2xl border`}>
-                <div>
+                <div className="relative">
                     <label className={`text-[10px] font-black uppercase tracking-[0.2em] ${isDark ? 'text-gold' : 'text-emerald-900'} mb-2 block ml-1`}>Actor Email</label>
-                    <input
-                        type="email"
-                        placeholder="Search email..."
-                        value={filterEmail}
-                        onChange={(e) => setFilterEmail(e.target.value)}
-                        className={`w-full ${isDark ? 'bg-sidebar-bg border-border' : 'bg-white border-gold/10 text-emerald-950'} border rounded-xl px-4 py-2.5 text-sm outline-none focus:border-gold/50 transition-all shadow-inner`}
-                    />
+                    <div className="relative">
+                        <Search className={`absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 ${isDark ? 'text-gold/40' : 'text-emerald-900/40'}`} />
+                        <input
+                            type="text"
+                            placeholder="Search email..."
+                            value={filterEmail}
+                            onChange={(e) => setFilterEmail(e.target.value)}
+                            className={`${inputCls} !pl-10 !py-3`}
+                        />
+                    </div>
                 </div>
-                <div>
+
+                <div className="relative">
                     <label className={`text-[10px] font-black uppercase tracking-[0.2em] ${isDark ? 'text-gold' : 'text-emerald-900'} mb-2 block ml-1`}>Entity Type</label>
-                    <input
-                        type="text"
-                        placeholder="e.g., product, order"
-                        value={filterEntity}
-                        onChange={(e) => setFilterEntity(e.target.value)}
-                        className={`w-full ${isDark ? 'bg-sidebar-bg border-border' : 'bg-white border-gold/10 text-emerald-950'} border rounded-xl px-4 py-2.5 text-sm outline-none focus:border-gold/50 transition-all shadow-inner`}
-                    />
+                    <div className="relative">
+                        <Filter className={`absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 ${isDark ? 'text-gold/40' : 'text-emerald-900/40'}`} />
+                        <input
+                            type="text"
+                            placeholder="e.g., product, order"
+                            value={filterEntity}
+                            onChange={(e) => setFilterEntity(e.target.value)}
+                            className={`${inputCls} !pl-10 !py-3`}
+                        />
+                    </div>
                 </div>
-                <div>
+
+                <div className="relative">
                     <label className={`text-[10px] font-black uppercase tracking-[0.2em] ${isDark ? 'text-gold' : 'text-emerald-900'} mb-2 block ml-1`}>Action</label>
-                    <input
-                        type="text"
-                        placeholder="e.g., updated_order_status"
-                        value={filterAction}
-                        onChange={(e) => setFilterAction(e.target.value)}
-                        className={`w-full ${isDark ? 'bg-sidebar-bg border-border' : 'bg-white border-gold/10 text-emerald-950'} border rounded-xl px-4 py-2.5 text-sm outline-none focus:border-gold/50 transition-all shadow-inner`}
-                    />
+                    <div className="relative">
+                        <Filter className={`absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 ${isDark ? 'text-gold/40' : 'text-emerald-900/40'}`} />
+                        <input
+                            type="text"
+                            placeholder="e.g., created, updated"
+                            value={filterAction}
+                            onChange={(e) => setFilterAction(e.target.value)}
+                            className={`${inputCls} !pl-10 !py-3`}
+                        />
+                    </div>
                 </div>
                 <div className="flex items-end">
                     <button type="submit" className="w-full bg-gold/10 text-gold border border-gold/30 hover:bg-gold hover:text-black py-2.5 rounded-xl font-bold uppercase tracking-widest transition-all flex justify-center items-center gap-2 text-[10px] shadow-sm active:scale-95">
@@ -222,6 +247,21 @@ function ActivityLogsPageContent() {
                             {loading ? (
                                 <tr>
                                     <td colSpan={7} className="h-48 text-center text-text-muted italic text-xs tracking-widest animate-pulse">Synchronizing Chronicles...</td>
+                                </tr>
+                            ) : error ? (
+                                <tr>
+                                    <td colSpan={7} className="h-48 text-center">
+                                        <div className="flex flex-col items-center justify-center p-8 text-danger/60">
+                                            <ShieldAlert className="w-12 h-12 mb-4" />
+                                            <p className={`text-[10px] font-black uppercase tracking-widest`}>{error}</p>
+                                            <button 
+                                                onClick={() => fetchLogs('1')}
+                                                className="mt-4 text-[10px] font-bold uppercase tracking-widest text-gold hover:underline"
+                                            >
+                                                Try Again
+                                            </button>
+                                        </div>
+                                    </td>
                                 </tr>
                             ) : logs.length === 0 ? (
                                 <tr>
