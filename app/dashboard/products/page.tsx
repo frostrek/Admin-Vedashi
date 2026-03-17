@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect, useCallback, Fragment } from 'react';
+import { useState, useEffect, useCallback, Fragment, useMemo } from 'react';
 import Link from 'next/link';
-import { getProducts, deleteProduct, Product, getRankingOverrides, setRankingOverride, removeRankingOverride, RankingOverride, searchProductsAdmin, getProduct, updateVariantStatus, updateDefaultVariant, getDraftProducts } from '@/lib/api';
+import { getProducts, deleteProduct, Product, getRankingOverrides, setRankingOverride, removeRankingOverride, RankingOverride, searchProductsAdmin, getProduct, updateVariantStatus, updateDefaultVariant, getDraftProducts, updateProduct } from '@/lib/api';
 import { getCategories } from '@/lib/api/category';
 import { Category } from '@/types/category';
-import { Plus, Pencil, Trash2, Search, Package, Star, Loader2, Tag, ChevronDown, FileEdit, X, ChevronLeft, ChevronRight, Filter, SlidersHorizontal } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Package, Star, Loader2, Tag, ChevronDown, FileEdit, X, ChevronLeft, ChevronRight, Filter, SlidersHorizontal, UploadCloud } from 'lucide-react';
 import toast from 'react-hot-toast';
 import BulkDiscountModal from '@/components/BulkDiscountModal';
 import BulkImportModal from '@/components/BulkImportModal';
@@ -42,6 +42,11 @@ export default function ProductsListPage() {
     const [allCategories, setAllCategories] = useState<Category[]>([]);
     const [showFilters, setShowFilters] = useState(false);
 
+    // ─── Drafts filtering and selection ───
+    const [draftSearchQuery, setDraftSearchQuery] = useState('');
+    const [draftFilterCategory, setDraftFilterCategory] = useState('all');
+    const [selectedDraftIds, setSelectedDraftIds] = useState<Set<string>>(new Set());
+
     // ─── Custom Confirm Modal state ───
     const [confirmModal, setConfirmModal] = useState<{
         open: boolean;
@@ -49,11 +54,13 @@ export default function ProductsListPage() {
         message: string;
         onConfirm: () => void;
         confirmVariant?: 'danger' | 'primary';
+        confirmLabel?: string;
     }>({
         open: false,
         title: '',
         message: '',
         onConfirm: () => { },
+        confirmLabel: 'Confirm'
     });
     
     // Lock background scroll when Drafts modal is open
@@ -418,11 +425,17 @@ export default function ProductsListPage() {
             title: 'Delete Draft',
             message: `Are you sure you want to delete draft "${name}"? This cannot be undone.`,
             confirmVariant: 'danger',
+            confirmLabel: 'Delete',
             onConfirm: async () => {
                 const success = await deleteProduct(id);
                 if (success) {
                     toast.success('Draft deleted');
                     setDrafts(prev => prev.filter(d => d.product_id !== id));
+                    setSelectedDraftIds(prev => {
+                        const next = new Set(prev);
+                        next.delete(id);
+                        return next;
+                    });
                 } else {
                     toast.error('Failed to delete draft');
                 }
@@ -431,9 +444,100 @@ export default function ProductsListPage() {
         });
     };
 
+    const filteredDrafts = useMemo(() => {
+        let result = drafts;
+        if (draftFilterCategory !== 'all') {
+            if (draftFilterCategory === 'none') {
+                result = result.filter(d => !d.category);
+            } else {
+                result = result.filter(d => d.category === draftFilterCategory);
+            }
+        }
+        if (draftSearchQuery.trim()) {
+            const q = draftSearchQuery.toLowerCase();
+            result = result.filter(d => 
+                (d.product_name && d.product_name.toLowerCase().includes(q)) || 
+                (d.sku && d.sku.toLowerCase().includes(q)) ||
+                (d.category && d.category.toLowerCase().includes(q)) ||
+                (d.brand && d.brand.toLowerCase().includes(q))
+            );
+        }
+        return result;
+    }, [drafts, draftFilterCategory, draftSearchQuery]);
+
+    const handleToggleSelectDraft = (id: string) => {
+        setSelectedDraftIds(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
+            return next;
+        });
+    };
+
+    const handleToggleSelectAllDrafts = () => {
+        const allSelected = filteredDrafts.length > 0 && filteredDrafts.every(d => selectedDraftIds.has(d.product_id));
+        if (allSelected) {
+            setSelectedDraftIds(new Set());
+        } else {
+            setSelectedDraftIds(new Set(filteredDrafts.map(d => d.product_id)));
+        }
+    };
+
+    const handleBulkPublishDrafts = () => {
+        if (selectedDraftIds.size === 0) return;
+        setConfirmModal({
+            open: true,
+            title: 'Publish Selected Drafts',
+            message: `Are you sure you want to publish the ${selectedDraftIds.size} selected draft(s)? They will become active and visible to customers.`,
+            confirmVariant: 'primary',
+            confirmLabel: 'Publish',
+            onConfirm: async () => {
+                setDraftsLoading(true);
+                let successCount = 0;
+                for (const id of Array.from(selectedDraftIds)) {
+                    const { success } = await updateProduct(id, { status: 'active' });
+                    if (success) successCount++;
+                }
+                toast.success(`Published ${successCount} product(s)`);
+                setDrafts(prev => prev.filter(d => !selectedDraftIds.has(d.product_id)));
+                setSelectedDraftIds(new Set());
+                setConfirmModal(prev => ({ ...prev, open: false }));
+                setDraftsLoading(false);
+                loadProducts(); // Refresh the main listing
+            }
+        });
+    };
+
+    const handleBulkDeleteDrafts = () => {
+        if (selectedDraftIds.size === 0) return;
+        setConfirmModal({
+            open: true,
+            title: 'Delete Selected Drafts',
+            message: `Are you sure you want to delete ${selectedDraftIds.size} draft(s)? This cannot be undone.`,
+            confirmVariant: 'danger',
+            confirmLabel: 'Delete',
+            onConfirm: async () => {
+                setDraftsLoading(true);
+                let successCount = 0;
+                for (const id of Array.from(selectedDraftIds)) {
+                    const success = await deleteProduct(id);
+                    if (success) successCount++;
+                }
+                toast.success(`Deleted ${successCount} draft(s)`);
+                setDrafts(prev => prev.filter(d => !selectedDraftIds.has(d.product_id)));
+                setSelectedDraftIds(new Set());
+                setConfirmModal(prev => ({ ...prev, open: false }));
+                setDraftsLoading(false);
+            }
+        });
+    };
+
     const openDrafts = async () => {
         setDraftsOpen(true);
         setDraftsLoading(true);
+        setSelectedDraftIds(new Set());
+        setDraftSearchQuery('');
+        setDraftFilterCategory('all');
         const data = await getDraftProducts();
         setDrafts(data);
         setDraftsLoading(false);
@@ -537,7 +641,7 @@ export default function ProductsListPage() {
                 open={confirmModal.open}
                 onClose={() => setConfirmModal(prev => ({ ...prev, open: false }))}
                 title={confirmModal.title}
-                confirmLabel="Delete"
+                confirmLabel={confirmModal.confirmLabel || "Confirm"}
                 confirmVariant={confirmModal.confirmVariant}
                 onConfirm={confirmModal.onConfirm}
             >
@@ -565,7 +669,7 @@ export default function ProductsListPage() {
                                         <span className="inline-block w-2 h-2 rounded-full bg-gold animate-pulse" />
                                         {draftsLoading
                                             ? 'Syncing your herbal drafts...'
-                                            : `${drafts.length} draft${drafts.length !== 1 ? 's' : ''} saved — pick up where you left off.`}
+                                            : `${filteredDrafts.length} draft${filteredDrafts.length !== 1 ? 's' : ''} out of ${drafts.length} total.`}
                                     </p>
                                 </div>
                                 <button
@@ -575,7 +679,58 @@ export default function ProductsListPage() {
                                     <X className="h-5 w-5" />
                                 </button>
                             </div>
-                            <div className="mt-6 h-px bg-gradient-to-r from-border/0 via-border to-border/0" />
+
+                            {/* Filters and Bulk Actions */}
+                            <div className="mt-6 flex flex-col sm:flex-row gap-3 items-center justify-between">
+                                <div className="flex flex-1 gap-3 w-full sm:w-auto">
+                                    <div className="relative flex-1 sm:max-w-xs group">
+                                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted group-focus-within:text-gold transition-colors duration-200" />
+                                        <input
+                                            type="text"
+                                            value={draftSearchQuery}
+                                            onChange={e => setDraftSearchQuery(e.target.value)}
+                                            placeholder="Search drafts..."
+                                            className="w-full rounded-xl border border-border bg-card-bg/50 backdrop-blur-sm pl-9 pr-4 py-2 text-sm focus:border-gold/40 focus:ring-4 focus:ring-gold/5 focus:outline-none transition-all duration-300"
+                                        />
+                                    </div>
+                                    <div className="relative w-full sm:w-auto">
+                                        <select
+                                            value={draftFilterCategory}
+                                            onChange={e => setDraftFilterCategory(e.target.value)}
+                                            className="w-full sm:w-40 appearance-none rounded-xl border border-border bg-card-bg/50 px-3 py-2 pr-8 text-sm text-text-primary focus:border-gold/40 focus:outline-none cursor-pointer transition-colors"
+                                        >
+                                            <option value="all">All Categories</option>
+                                            <option value="none">Uncategorized</option>
+                                            {Array.from(new Set(drafts.map(d => d.category).filter(Boolean))).map(cat => (
+                                                <option key={cat!} value={cat!}>{cat}</option>
+                                            ))}
+                                        </select>
+                                        <ChevronDown className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted pointer-events-none" />
+                                    </div>
+                                </div>
+                                
+                                {selectedDraftIds.size > 0 && (
+                                    <div className="flex items-center flex-wrap gap-2 w-full sm:w-auto animate-fadeIn justify-end mt-2 sm:mt-0">
+                                        <span className="text-xs font-semibold text-text-muted mr-1">{selectedDraftIds.size} selected</span>
+                                        <button
+                                            onClick={handleBulkDeleteDrafts}
+                                            className="flex items-center gap-1.5 rounded-lg border border-danger/20 bg-danger/5 px-2.5 py-1.5 text-xs font-bold text-danger hover:bg-danger hover:text-white transition-all duration-300"
+                                            title="Delete Selected"
+                                        >
+                                            <Trash2 className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Delete</span>
+                                        </button>
+                                        <button
+                                            onClick={handleBulkPublishDrafts}
+                                            className="flex items-center gap-1.5 rounded-lg border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-bold text-primary hover:bg-primary hover:text-white transition-all duration-300"
+                                            title="Publish Selected"
+                                        >
+                                            <UploadCloud className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Publish</span>
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="mt-4 h-px bg-gradient-to-r from-border/0 via-border to-border/0" />
                         </div>
 
                         {/* Body */}
@@ -605,13 +760,45 @@ export default function ProductsListPage() {
                                         <Plus className="h-4 w-4" /> New Product
                                     </Link>
                                 </div>
+                            ) : filteredDrafts.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center py-20 gap-4">
+                                    <div className="h-16 w-16 rounded-full bg-primary/5 flex items-center justify-center border border-primary/10">
+                                        <Search className="h-7 w-7 text-primary/60" />
+                                    </div>
+                                    <div className="text-center">
+                                        <p className="text-lg font-serif font-semibold text-text-primary">No matching drafts</p>
+                                        <p className="text-sm text-text-muted mt-1 max-w-[280px]">
+                                            Try adjusting your search query or category filter.
+                                        </p>
+                                    </div>
+                                </div>
                             ) : (
                                 <div className="flex flex-col space-y-3 py-4">
-                                    {drafts.map(draft => (
+                                    <div className="flex items-center gap-3 px-4 pb-2 border-b border-border/40">
+                                        <input
+                                            type="checkbox"
+                                            checked={filteredDrafts.length > 0 && filteredDrafts.every(d => selectedDraftIds.has(d.product_id))}
+                                            onChange={handleToggleSelectAllDrafts}
+                                            className="h-4 w-4 rounded border-border text-primary focus:ring-primary/20 transition-all cursor-pointer"
+                                        />
+                                        <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">Select All</span>
+                                    </div>
+                                    {filteredDrafts.map(draft => (
                                         <div
                                             key={draft.product_id}
-                                            className="group flex items-center gap-4 py-3.5 px-4 bg-page-bg/30 hover:bg-white dark:hover:bg-primary/5 border border-transparent hover:border-border/40 rounded-2xl transition-all duration-300 hover:shadow-sm"
+                                            className={`group flex items-center gap-4 py-3.5 px-4 rounded-2xl transition-all duration-300 hover:shadow-sm border ${
+                                                selectedDraftIds.has(draft.product_id) 
+                                                    ? 'bg-primary/5 border-primary/30 dark:bg-primary/10' 
+                                                    : 'bg-page-bg/30 hover:bg-white dark:hover:bg-primary/5 border-transparent hover:border-border/40'
+                                            }`}
                                         >
+                                            {/* Checkbox */}
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedDraftIds.has(draft.product_id)}
+                                                onChange={() => handleToggleSelectDraft(draft.product_id)}
+                                                className="h-4 w-4 rounded border-border text-primary focus:ring-primary/20 transition-all cursor-pointer flex-shrink-0"
+                                            />
                                             {/* Thumbnail */}
                                             <div className="h-14 w-14 flex-shrink-0 rounded-xl bg-card-bg border border-border/50 flex items-center justify-center overflow-hidden shadow-inner">
                                                 {draft.images && draft.images.length > 0 ? (

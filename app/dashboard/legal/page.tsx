@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { FileText, Plus, Search, Filter, Loader2, Edit2, Trash2, CheckCircle, XCircle, History, Eye, ArrowUp, ArrowDown, Type, Heading1 } from 'lucide-react';
+import { FileText, Plus, Search, Filter, Loader2, Edit2, Trash2, CheckCircle, XCircle, History, Eye, ArrowUp, ArrowDown, Type, Heading1, Info } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { 
     getAdminLegalDocuments, 
@@ -179,7 +179,15 @@ export default function LegalManagement() {
                     <form onSubmit={handleSave} className="space-y-6">
                         <div className="grid sm:grid-cols-2 gap-6">
                             <div>
-                                <label className="block text-sm font-medium text-text-primary mb-1.5">Slug (URL Key) *</label>
+                                <label className="flex items-center gap-2 text-sm font-medium text-text-primary mb-1.5">
+                                    Slug (URL Key) *
+                                    <span className="relative group cursor-pointer inline-flex items-center">
+                                        <Info className="w-4 h-4 text-text-muted hover:text-gold transition-colors duration-300" />
+                                        <span className="absolute bottom-full left-0 origin-bottom-left mb-2 w-max max-w-xs px-3 py-2 text-xs font-medium text-white bg-neutral-900 border border-neutral-700 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-[99999]">
+                                            The URL path for this legal document (e.g., &apos;terms-of-service&apos;). Must be unique and use dashes for spaces.
+                                        </span>
+                                    </span>
+                                </label>
                                 <input 
                                     required 
                                     type="text" 
@@ -191,7 +199,15 @@ export default function LegalManagement() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-text-primary mb-1.5">Title (Display Name) *</label>
+                                <label className="flex items-center gap-2 text-sm font-medium text-text-primary mb-1.5">
+                                    Title (Display Name) *
+                                    <span className="relative group cursor-pointer inline-flex items-center">
+                                        <Info className="w-4 h-4 text-text-muted hover:text-gold transition-colors duration-300" />
+                                        <span className="absolute bottom-full right-0 origin-bottom-right mb-2 w-max max-w-xs px-3 py-2 text-xs font-medium text-white bg-neutral-900 border border-neutral-700 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-[99999]">
+                                            The human-readable title of the document (e.g., &apos;Terms of Service&apos;). This will be displayed as the page title.
+                                        </span>
+                                    </span>
+                                </label>
                                 <input 
                                     required 
                                     type="text" 
@@ -205,7 +221,15 @@ export default function LegalManagement() {
 
                         <div className="grid sm:grid-cols-2 gap-6">
                             <div>
-                                <label className="block text-sm font-medium text-text-primary mb-1.5">Version *</label>
+                                <label className="flex items-center gap-2 text-sm font-medium text-text-primary mb-1.5">
+                                    Version *
+                                    <span className="relative group cursor-pointer inline-flex items-center">
+                                        <Info className="w-4 h-4 text-text-muted hover:text-gold transition-colors duration-300" />
+                                        <span className="absolute bottom-full left-0 origin-bottom-left mb-2 w-max max-w-xs px-3 py-2 text-xs font-medium text-white bg-neutral-900 border border-neutral-700 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-[99999]">
+                                            The version number for this document (e.g., &apos;1.0.1&apos;). Updating the version helps track changes over time.
+                                        </span>
+                                    </span>
+                                </label>
                                 <input 
                                     required 
                                     type="text" 
@@ -231,7 +255,15 @@ export default function LegalManagement() {
 
                         <div>
                             <div className="flex items-center justify-between mb-4">
-                                <label className="block text-sm font-medium text-text-primary">Stuctured Content (Heading & Paragraph Blocks) *</label>
+                                <label className="flex items-center gap-2 text-sm font-medium text-text-primary">
+                                    Structured Content (Heading & Paragraph Blocks) *
+                                    <span className="relative group cursor-pointer inline-flex items-center">
+                                        <Info className="w-4 h-4 text-text-muted hover:text-gold transition-colors duration-300" />
+                                        <span className="absolute bottom-full left-0 origin-bottom-left mb-2 w-max max-w-xs px-3 py-2 text-xs font-medium text-white bg-neutral-900 border border-neutral-700 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-[99999]">
+                                            Build your document using content blocks. Use headings for sections and paragraphs for the actual text. You can reorder them as needed.
+                                        </span>
+                                    </span>
+                                </label>
                                 <div className="flex gap-2">
                                     <button 
                                         type="button"

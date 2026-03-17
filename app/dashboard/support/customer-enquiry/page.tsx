@@ -1531,8 +1531,8 @@ export default function AdminFeedbackPage() {
                                         onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.paddingLeft = '16px'; }}
                                     >
                                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 4 }}>
-                                            <span style={{ fontSize: 12.5, fontWeight: 700, color: isDark ? '#d4e8d4' : 'var(--t-text-primary)' }}>{res.name}</span>
-                                            <span style={{ fontSize: 10, fontWeight: 700, color: isDark ? '#8caf8c' : 'var(--t-primary)', opacity: 0.7, whiteSpace: 'nowrap', flexShrink: 0 }}>Insert →</span>
+                                            <span style={{ fontSize: 12.5, fontWeight: 700, color: isDark ? '#3b563bff' : 'var(--t-text-primary)' }}>{res.name}</span>
+                                            <span style={{ fontSize: 10, fontWeight: 800, color: isDark ? '#8caf8c' : 'var(--t-primary)', opacity: 0.7, whiteSpace: 'nowrap', flexShrink: 0 }}>Insert →</span>
                                         </div>
                                         <div style={{ fontSize: 11, color: isDark ? '#7a9f7a' : 'var(--t-text-secondary)', lineHeight: 1.5, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as any }}>{res.text}</div>
                                     </button>

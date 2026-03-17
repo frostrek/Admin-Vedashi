@@ -9,7 +9,7 @@ import {
     Save, RefreshCw, Layout, Link2, Eye, EyeOff,
     Instagram, Facebook, Twitter, Mail, MapPin, Phone, Clock,
     Youtube, Linkedin, AlertCircle, Building2, ExternalLink, Globe,
-    Newspaper, Shield, AlignLeft, GripVertical
+    Newspaper, Shield, AlignLeft, GripVertical, Info
 } from 'lucide-react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
@@ -86,9 +86,19 @@ const SectionCard = ({ icon: Icon, title, subtitle, children, defaultOpen = true
     );
 };
 
-const Field = ({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) => (
+const Field = ({ label, hint, info, children }: { label: string; hint?: string; info?: string; children: React.ReactNode }) => (
     <div className="space-y-2">
-        <label className="block text-[10px] font-bold text-text-muted uppercase tracking-[0.2em]">{label}</label>
+        <label className="flex items-center gap-2 text-[10px] font-bold text-text-muted uppercase tracking-[0.2em]">
+            {label}
+            {info && (
+                <span className="relative group cursor-pointer inline-flex items-center normal-case tracking-normal">
+                    <Info className="w-4 h-4 text-neutral-400 hover:text-gold transition-colors duration-300" />
+                    <span className="absolute bottom-full left-0 origin-bottom-left mb-2 w-max max-w-xs px-3 py-2 font-sans text-xs font-medium text-white bg-neutral-900 border border-neutral-700 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-[99999]">
+                        {info}
+                    </span>
+                </span>
+            )}
+        </label>
         {hint && <p className="text-[10px] text-text-muted/60 leading-relaxed font-medium">{hint}</p>}
         {children}
     </div>
@@ -248,7 +258,7 @@ export default function FooterManagementPage() {
                 <SectionCard icon={Building2} title="Branding Essence">
                     <div className="grid grid-cols-1 gap-8 mt-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <Field label="Logo Node" hint="The visual signature of your storefront. Manifested via direct URI.">
+                            <Field label="Logo Node" hint="The visual signature of your storefront. Manifested via direct URI." info="URL path to the footer logo image.">
                                 <input
                                     className={inputCls}
                                     value={footer?.company?.logo_url || ''}
@@ -256,7 +266,7 @@ export default function FooterManagementPage() {
                                     placeholder="https://example.com/logo.png"
                                 />
                             </Field>
-                            <Field label="Primary Tagline" hint="The spiritual resonance of your brand in a single phrase.">
+                            <Field label="Primary Tagline" hint="The spiritual resonance of your brand in a single phrase." info="A short catchy phrase appearing immediately below the logo.">
                                 <input
                                     className={inputCls}
                                     value={footer?.company?.tagline || ''}
@@ -265,7 +275,7 @@ export default function FooterManagementPage() {
                                 />
                             </Field>
                         </div>
-                        <Field label="Atmospheric Narrative" hint="A brief description of your journey to be displayed in the stratum.">
+                        <Field label="Atmospheric Narrative" hint="A brief description of your journey to be displayed in the stratum." info="Paragraph text summarizing the company's mission or description.">
                             <textarea
                                 className={textareaCls}
                                 rows={4}
@@ -274,7 +284,7 @@ export default function FooterManagementPage() {
                                 placeholder="Manifest the company's story here..."
                             />
                         </Field>
-                        <Field label="Chronological Signature" hint="The legal temporal marking for your creation.">
+                        <Field label="Chronological Signature" hint="The legal temporal marking for your creation." info="The copyright string appearing at the very bottom of the footer.">
                             <input
                                 className={inputCls}
                                 value={footer?.company?.copyright || ''}
@@ -455,7 +465,7 @@ export default function FooterManagementPage() {
                 {/* ── 4. Contact Info ───────────────────────────── */}
                 <SectionCard icon={Phone} title="Spiritual Availability">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
-                        <Field label="Sanctuary Address">
+                        <Field label="Sanctuary Address" info="The physical address of your business, displayed in the footer.">
                             <div className="relative group/input">
                                 <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gold/40 group-focus-within/input:text-gold transition-colors" />
                                 <input
@@ -466,7 +476,7 @@ export default function FooterManagementPage() {
                                 />
                             </div>
                         </Field>
-                        <Field label="Voice Frequency">
+                        <Field label="Voice Frequency" info="The primary contact phone number for customer support or inquiries.">
                             <div className="relative group/input">
                                 <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gold/40 group-focus-within/input:text-gold transition-colors" />
                                 <input
@@ -477,7 +487,7 @@ export default function FooterManagementPage() {
                                 />
                             </div>
                         </Field>
-                        <Field label="Digital Correspondence">
+                        <Field label="Digital Correspondence" info="The primary email address where customers can reach you.">
                             <div className="relative group/input">
                                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gold/40 group-focus-within/input:text-gold transition-colors" />
                                 <input
@@ -488,7 +498,7 @@ export default function FooterManagementPage() {
                                 />
                             </div>
                         </Field>
-                        <Field label="Temporal Alignment">
+                        <Field label="Temporal Alignment" info="Your business operating hours.">
                             <div className="relative group/input">
                                 <Clock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gold/40 group-focus-within/input:text-gold transition-colors" />
                                 <input
@@ -523,7 +533,7 @@ export default function FooterManagementPage() {
                                 </div>
                             </label>
                         </div>
-                        <Field label="Vibration Heading">
+                        <Field label="Vibration Heading" info="The main title for the newsletter subscription section.">
                             <input
                                 className={inputCls}
                                 value={footer?.newsletter?.heading || ''}
@@ -531,7 +541,7 @@ export default function FooterManagementPage() {
                                 placeholder="Stay In The Resonance"
                             />
                         </Field>
-                        <Field label="Vibration Subtext">
+                        <Field label="Vibration Subtext" info="Additional descriptive text encouraging users to subscribe.">
                             <input
                                 className={inputCls}
                                 value={footer?.newsletter?.subtext || ''}
@@ -591,7 +601,7 @@ export default function FooterManagementPage() {
                 {/* ── 7. Bottom Bar ─────────────────────────────── */}
                 <SectionCard icon={AlignLeft} title="Bottom Stratum Disclaimer" defaultOpen={false}>
                     <div className="mt-4 space-y-6">
-                        <Field label="Compliance / Dharma Disclaimer" hint="Manifested at the absolute foundation of the footer, e.g. wellness disclaimer.">
+                        <Field label="Compliance / Dharma Disclaimer" hint="Manifested at the absolute foundation of the footer, e.g. wellness disclaimer." info="Legal disclaimer text placed at the very bottom of the store for maximum visibility.">
                             <textarea
                                 className={`${textareaCls} min-h-[120px] italic leading-relaxed shadow-lg`}
                                 rows={4}

@@ -45,7 +45,7 @@ const marketingNav = [
 ];
 
 const siteContentNav = [
-    { href: '/dashboard/promo-banners', label: 'Aura Announcements', icon: Images },
+    { href: '/dashboard/promo-banners', label: 'Promotion Banners', icon: Images },
     { href: '/dashboard/media', label: 'Visual Repository', icon: Images },
     { href: '/dashboard/header', label: 'Header Canvas', icon: MonitorSmartphone },
     { href: '/dashboard/footer', label: 'Footer Stratum', icon: LayoutTemplate },

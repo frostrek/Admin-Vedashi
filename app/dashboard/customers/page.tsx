@@ -12,6 +12,8 @@ export default function CustomersPage() {
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [sortBy, setSortBy] = useState('newest');
 
     useEffect(() => {
         Promise.all([getCustomers(), getOrders()])
@@ -41,7 +43,20 @@ export default function CustomersPage() {
 
     const filtered = useMemo(() => {
         let list = customers;
-        // Role filter removed as per request to not show admins
+        
+        // Status filter
+        if (statusFilter !== 'all') {
+            list = list.filter(c => {
+                if (statusFilter === 'banned') return c.is_banned;
+                if (statusFilter === 'suspended') return c.is_suspended;
+                if (statusFilter === 'deleted') return c.is_deleted;
+                if (statusFilter === 'inactive') return !c.is_active && !c.is_banned && !c.is_suspended && !c.is_deleted;
+                if (statusFilter === 'active') return c.is_active && !c.is_banned && !c.is_suspended && !c.is_deleted;
+                return true;
+            });
+        }
+
+        // Text search
         if (searchQuery.trim()) {
             const q = searchQuery.toLowerCase();
             list = list.filter(c =>
@@ -49,8 +64,18 @@ export default function CustomersPage() {
                 c.email?.toLowerCase().includes(q)
             );
         }
+
+        // Sorting
+        list = [...list].sort((a, b) => {
+            if (sortBy === 'newest') return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+            if (sortBy === 'oldest') return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+            if (sortBy === 'orders_desc') return ((b as any).total_orders || 0) - ((a as any).total_orders || 0);
+            if (sortBy === 'spent_desc') return ((b as any).total_spent || 0) - ((a as any).total_spent || 0);
+            return 0;
+        });
+
         return list;
-    }, [customers, searchQuery]);
+    }, [customers, searchQuery, statusFilter, sortBy]);
 
     const statusBadge = (customer: Customer) => {
         if (customer.is_banned) return <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold bg-danger/15 text-danger"><XCircle className="h-3 w-3" />Banned</span>;
@@ -85,7 +110,33 @@ export default function CustomersPage() {
                     <h1 className="font-serif text-2xl font-bold text-gold-soft">Customers</h1>
                     <p className="text-sm text-text-secondary">{customers.length} total customers</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
+                    {/* Status Filter */}
+                    <select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                        className="rounded-lg border border-border bg-card-bg px-3 py-2 text-sm text-text-primary focus:border-gold/40 focus:outline-none transition-colors duration-300"
+                    >
+                        <option value="all">All Statuses</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="banned">Banned</option>
+                        <option value="suspended">Suspended</option>
+                        <option value="deleted">Deleted</option>
+                    </select>
+
+                    {/* Sort Filter */}
+                    <select
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
+                        className="rounded-lg border border-border bg-card-bg px-3 py-2 text-sm text-text-primary focus:border-gold/40 focus:outline-none transition-colors duration-300"
+                    >
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                        <option value="orders_desc">Most Orders</option>
+                        <option value="spent_desc">Highest Spend</option>
+                    </select>
+
                     {/* Search */}
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />

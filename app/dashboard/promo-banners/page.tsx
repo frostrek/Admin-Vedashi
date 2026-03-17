@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { getToken } from '@/lib/auth';
 import { authFetch, authHeaders } from '@/lib/api';
 import toast from 'react-hot-toast';
-import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, X, Loader2, Megaphone, Leaf, Save, AlertCircle } from 'lucide-react';
+import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, X, Loader2, Megaphone, Leaf, Save, AlertCircle, Info } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
@@ -12,7 +12,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 interface PromoBanner {
     id: string;
     message: string;
-    flow: 'static' | 'blink';
+    flow: 'static' | 'blink' | 'marquee-left' | 'marquee-right' | 'fade' | 'typewriter' | 'bounce' | 'glow';
     is_active: boolean;
     background_color: string;
     text_color: string;
@@ -136,11 +136,11 @@ export default function PromoBannersPage() {
                             <Megaphone className="w-8 h-8 text-gold" />
                         </div>
                         <h1 className="text-4xl font-serif font-bold text-gold tracking-tighter">
-                            Aura Announcements
+                            Promotion Banners
                         </h1>
                     </div>
                     <p className={`${isDark ? 'text-gold-soft/60' : 'text-emerald-950/80'} text-[10px] font-bold uppercase tracking-[0.3em] pl-16`}>
-                        Orchestrate global promotional vibrations across the storefront.
+                        Orchestrate global promotional banners across the storefront.
                     </p>
                 </div>
                 <button
@@ -150,7 +150,7 @@ export default function PromoBannersPage() {
                     <div className="p-1 bg-gold/20 rounded-lg group-hover:scale-110 transition-transform">
                         <Plus className="w-4 h-4" />
                     </div>
-                    Commence New Campaign
+                    Create New Banner
                 </button>
             </div>
 
@@ -175,10 +175,10 @@ export default function PromoBannersPage() {
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className={`border-b border-border ${isDark ? 'bg-black/40 text-gold/40' : 'bg-primary/10 text-emerald-950'} text-[11px] font-bold uppercase tracking-[0.2em]`}>
-                                    <th className="px-8 py-6">Vibration Essence</th>
-                                    <th className="px-8 py-6">State & Flow</th>
-                                    <th className="px-8 py-6">Parameters</th>
-                                    <th className="px-8 py-6">Origin</th>
+                                    <th className="px-8 py-6">Message</th>
+                                    <th className="px-8 py-6">Effect</th>
+                                    <th className="px-8 py-6">Colours</th>
+                                    <th className="px-8 py-6">Date</th>
                                     <th className="px-8 py-6 text-right">Actions</th>
                                 </tr>
                             </thead>
@@ -214,7 +214,7 @@ export default function PromoBannersPage() {
                                                     </div>
                                                 </div>
                                                 <div className={`text-[10px] font-bold ${isDark ? 'text-text-muted' : 'text-emerald-950/70'} uppercase tracking-widest`}>
-                                                    Cycle Count: <span className={isDark ? 'text-gold-soft' : 'text-primary'}>{b.total_count || 0}</span>
+                                                    Count: <span className={isDark ? 'text-gold-soft' : 'text-primary'}>{b.total_count || 0}</span>
                                                 </div>
                                             </div>
                                         </td>
@@ -251,7 +251,7 @@ export default function PromoBannersPage() {
                         <div className={`flex items-center justify-between p-8 border-b border-border ${isDark ? 'bg-black/40' : 'bg-primary/5'} backdrop-blur-sm sticky top-0 z-10`}>
                             <div>
                                 <h2 className={`text-2xl font-serif font-bold ${isDark ? 'text-gold' : 'text-emerald-950'} tracking-tight`}>
-                                    {editing ? 'Refine Aura' : 'Manifest New Aura'}
+                                    {editing ? 'Edit Banner' : 'Create Banner'}
                                 </h2>
                                 <p className={`text-[10px] ${isDark ? 'text-gold/40' : 'text-emerald-900/40'} font-bold uppercase tracking-[0.2em] mt-1`}>Campaign Configuration</p>
                             </div>
@@ -262,7 +262,15 @@ export default function PromoBannersPage() {
 
                         <form onSubmit={handleSave} className="p-8 space-y-8">
                             <div className="space-y-3">
-                                <label className="block text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] px-1">Annunciation <span className="text-danger">*</span></label>
+                                <label className="flex items-center gap-1.5 text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] px-1 pb-1">
+                                    Message <span className="text-danger">*</span>
+                                    <span className="group relative cursor-pointer flex items-center">
+                                        <Info className="w-3.5 h-3.5 text-text-muted/60 hover:text-gold transition-colors" />
+                                        <span className="absolute bottom-full mb-2 left-0 opacity-0 group-hover:opacity-100 transition-all pointer-events-none w-max max-w-[200px] bg-black text-white text-[9px] normal-case tracking-normal px-3 py-2 rounded-lg shadow-xl z-[99999]">
+                                            The main text displayed on your banner.
+                                        </span>
+                                    </span>
+                                </label>
                                 <textarea
                                     required
                                     rows={3}
@@ -280,7 +288,15 @@ export default function PromoBannersPage() {
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="space-y-6">
                                     <div className="space-y-3">
-                                        <label className="block text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] px-1">Oscillation</label>
+                                        <label className="flex items-center gap-1.5 text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] px-1 pb-1">
+                                            Effect
+                                            <span className="group relative cursor-pointer flex items-center">
+                                                <Info className="w-3.5 h-3.5 text-text-muted/60 hover:text-gold transition-colors" />
+                                                <span className="absolute bottom-full mb-2 left-0 opacity-0 group-hover:opacity-100 transition-all pointer-events-none w-max max-w-[150px] bg-black text-white text-[9px] normal-case tracking-normal px-3 py-2 rounded-lg shadow-xl z-[99999]">
+                                                    Animation effect applied to the text.
+                                                </span>
+                                            </span>
+                                        </label>
                                         <select
                                             value={form.flow}
                                             onChange={e => setForm({ ...form, flow: e.target.value as typeof form.flow })}
@@ -288,10 +304,24 @@ export default function PromoBannersPage() {
                                         >
                                             <option value="static">Static (Constant)</option>
                                             <option value="blink">Blink (Pulsating)</option>
+                                            <option value="marquee-left">Scrolling (Right to Left)</option>
+                                            <option value="marquee-right">Scrolling (Left to Right)</option>
+                                            <option value="fade">Fade (Smooth Pulse)</option>
+                                            <option value="typewriter">Typewriter (Reveal)</option>
+                                            <option value="bounce">Bounce (Playful)</option>
+                                            <option value="glow">Glow (Luminous)</option>
                                         </select>
                                     </div>
                                     <div className="space-y-3">
-                                        <label className="block text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] px-1">Cycle Count</label>
+                                        <label className="flex items-center gap-1.5 text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] px-1 pb-1">
+                                            Count
+                                            <span className="group relative cursor-pointer flex items-center">
+                                                <Info className="w-3.5 h-3.5 text-text-muted/60 hover:text-gold transition-colors" />
+                                                <span className="absolute bottom-full mb-2 left-0 opacity-0 group-hover:opacity-100 transition-all pointer-events-none w-max max-w-[170px] bg-black text-white text-[9px] normal-case tracking-normal px-3 py-2 rounded-lg shadow-xl z-[99999]">
+                                                    Number of times the text repeats.
+                                                </span>
+                                            </span>
+                                        </label>
                                         <input
                                             type="number"
                                             value={form.total_count}
@@ -303,7 +333,15 @@ export default function PromoBannersPage() {
                                 </div>
                                 <div className="space-y-6">
                                     <div className="space-y-3">
-                                        <label className="block text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] px-1">Background Essence</label>
+                                        <label className="flex items-center gap-1.5 text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] px-1 pb-1">
+                                            Background Colour
+                                            <span className="group relative cursor-pointer flex items-center">
+                                                <Info className="w-3.5 h-3.5 text-text-muted/60 hover:text-gold transition-colors" />
+                                                <span className="absolute bottom-full mb-2 right-0 opacity-0 group-hover:opacity-100 transition-all pointer-events-none w-max max-w-[180px] bg-black text-white text-[9px] normal-case tracking-normal px-3 py-2 rounded-lg shadow-xl z-[99999]">
+                                                    Background color of the banner container.
+                                                </span>
+                                            </span>
+                                        </label>
                                         <div className="relative group/color">
                                             <input
                                                 type="text"
@@ -323,7 +361,15 @@ export default function PromoBannersPage() {
                                         </div>
                                     </div>
                                     <div className="space-y-3">
-                                        <label className="block text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] px-1">Typographic Color</label>
+                                        <label className="flex items-center gap-1.5 text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] px-1 pb-1">
+                                            Text Color
+                                            <span className="group relative cursor-pointer flex items-center">
+                                                <Info className="w-3.5 h-3.5 text-text-muted/60 hover:text-gold transition-colors" />
+                                                <span className="absolute bottom-full mb-2 right-0 opacity-0 group-hover:opacity-100 transition-all pointer-events-none w-max max-w-[180px] bg-black text-white text-[9px] normal-case tracking-normal px-3 py-2 rounded-lg shadow-xl z-[99999]">
+                                                    Color of the text displayed.
+                                                </span>
+                                            </span>
+                                        </label>
                                         <div className="relative group/color">
                                             <input
                                                 type="text"

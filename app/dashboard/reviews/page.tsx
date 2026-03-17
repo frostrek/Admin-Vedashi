@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { 
     getAdminReviews, 
     getReviewReports, 
@@ -13,13 +13,13 @@ import toast from 'react-hot-toast';
 import { 
     Star, MessageSquare, AlertTriangle, 
     CheckCircle, XCircle, Search, Filter,
-    Loader2
+    Loader2, ChevronLeft, ChevronRight, X, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 
 export default function AdminReviewsPage() {
     const { isDark } = useTheme();
-    const [activeTab, setActiveTab] = useState<'all' | 'reports'>('all');
+    const [activeTab, setActiveTab] = useState<'all' | 'reports' | 'by_product'>('all');
 
     // Reviews State
     const [reviews, setReviews] = useState<AdminReview[]>([]);
@@ -27,13 +27,24 @@ export default function AdminReviewsPage() {
     const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
     const [replyingTo, setReplyingTo] = useState<string | null>(null);
 
+    // Filters and Pagination
+    const [searchQuery, setSearchQuery] = useState('');
+    const [ratingFilter, setRatingFilter] = useState('all');
+    const [sortBy, setSortBy] = useState('newest');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [expandedProducts, setExpandedProducts] = useState<Record<string, boolean>>({});
+    const itemsPerPage = 10;
+
     // Reports State
     const [reports, setReports] = useState<ReviewReport[]>([]);
     const [loadingReports, setLoadingReports] = useState(true);
 
     useEffect(() => {
-        if (activeTab === 'all') fetchReviews();
-        else fetchReports();
+        if (activeTab === 'all' || activeTab === 'by_product') {
+            if (reviews.length === 0) fetchReviews();
+        } else {
+            if (reports.length === 0) fetchReports();
+        }
     }, [activeTab]);
 
     const fetchReviews = async () => {
@@ -92,6 +103,185 @@ export default function AdminReviewsPage() {
 
     const inputCls = `w-full rounded-2xl border ${isDark ? 'border-white/10 bg-black/80 text-gold-soft' : 'border-gold/40 bg-white shadow-sm'} px-6 py-4 text-sm focus:border-gold focus:outline-none transition-all`;
 
+    // Reset pagination on filter change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery, ratingFilter, sortBy, activeTab]);
+
+    const filteredReviews = useMemo(() => {
+        let list = [...reviews];
+        
+        // Filter by text
+        if (searchQuery.trim()) {
+            const q = searchQuery.toLowerCase();
+            list = list.filter(r => 
+                (r.title?.toLowerCase() || '').includes(q) || 
+                (r.body?.toLowerCase() || '').includes(q) ||
+                (r.reviewer_name?.toLowerCase() || '').includes(q) ||
+                (r.product_name?.toLowerCase() || '').includes(q)
+            );
+        }
+
+        // Filter by rating
+        if (ratingFilter !== 'all') {
+            list = list.filter(r => r.rating === parseInt(ratingFilter));
+        }
+
+        // Sort
+        list.sort((a, b) => {
+            if (sortBy === 'newest') return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+            if (sortBy === 'oldest') return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+            if (sortBy === 'highest') return b.rating - a.rating;
+            if (sortBy === 'lowest') return a.rating - b.rating;
+            return 0;
+        });
+
+        return list;
+    }, [reviews, searchQuery, ratingFilter, sortBy]);
+
+    const groupedReviews = useMemo(() => {
+        return filteredReviews.reduce((acc, review) => {
+            if (!acc[review.product_name]) acc[review.product_name] = [];
+            acc[review.product_name].push(review);
+            return acc;
+        }, {} as Record<string, AdminReview[]>);
+    }, [filteredReviews]);
+
+    const paginatedAllReviews = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        return filteredReviews.slice(startIndex, startIndex + itemsPerPage);
+    }, [filteredReviews, currentPage]);
+
+    const paginatedGroupKeys = useMemo(() => {
+        const keys = Object.keys(groupedReviews);
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        return keys.slice(startIndex, startIndex + itemsPerPage);
+    }, [groupedReviews, currentPage]);
+
+    const totalPagesAll = Math.ceil(filteredReviews.length / itemsPerPage);
+    const totalPagesGroup = Math.ceil(Object.keys(groupedReviews).length / itemsPerPage);
+
+    const toggleProductExpanded = (productName: string) => {
+        setExpandedProducts(prev => ({
+            ...prev,
+            [productName]: !prev[productName]
+        }));
+    };
+
+    const renderPagination = (totalPages: number) => {
+        if (totalPages <= 1) return null;
+        return (
+            <div className="flex items-center justify-between border-t border-border pt-4 mt-6">
+                <p className={`text-[10px] font-black tracking-widest uppercase ${isDark ? 'text-text-muted' : 'text-emerald-900/60'}`}>
+                    Page {currentPage} of {totalPages}
+                </p>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                        className={`p-1.5 rounded-lg border flex items-center justify-center transition-all ${isDark ? 'border-primary/30 text-gold-soft hover:bg-primary/20 disabled:opacity-30 disabled:hover:bg-transparent' : 'border-gold/30 text-emerald-900 hover:bg-gold/10 disabled:opacity-30 disabled:hover:bg-transparent'}`}
+                    >
+                        <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button
+                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                        disabled={currentPage === totalPages}
+                        className={`p-1.5 rounded-lg border flex items-center justify-center transition-all ${isDark ? 'border-primary/30 text-gold-soft hover:bg-primary/20 disabled:opacity-30 disabled:hover:bg-transparent' : 'border-gold/30 text-emerald-900 hover:bg-gold/10 disabled:opacity-30 disabled:hover:bg-transparent'}`}
+                    >
+                        <ChevronRight className="w-4 h-4" />
+                    </button>
+                </div>
+            </div>
+        );
+    };
+
+    const renderReviewCard = (review: AdminReview, showProduct: boolean = true) => (
+        <div key={review.review_id} className={`${isDark ? 'bg-primary/20 border-primary/20' : 'bg-white border-primary/20 shadow-[0_2px_15px_rgba(0,0,0,0.03)]'} border rounded-2xl p-4 md:p-5 transition-all hover:shadow-[0_4px_20px_rgba(59,93,59,0.05)] group overflow-hidden relative flex flex-col md:flex-row gap-4`}>
+            {/* Green vertical accent */}
+            <div className="absolute top-0 left-0 w-1 h-full bg-primary/40" />
+            
+            <div className="flex-1 relative z-10">
+                <div className="flex flex-col md:flex-row justify-between items-start gap-2 mb-2">
+                    <div className="space-y-0.5">
+                        <div className="flex items-center gap-1 opacity-80">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                                <Star key={`${review.review_id}-star-${i}`} size={8} className={i < review.rating ? 'text-gold fill-gold' : 'text-gold/20'} />
+                            ))}
+                        </div>
+                        <h3 className={`text-base font-serif font-bold tracking-tight ${isDark ? 'text-text-primary' : 'text-emerald-950'}`}>
+                            {review.title}
+                        </h3>
+                        <div className={`flex flex-wrap items-center gap-x-2 gap-y-1 text-[8px] font-black uppercase tracking-widest ${isDark ? 'text-text-muted' : 'text-emerald-900/80'}`}>
+                            <span className={isDark ? 'text-primary' : 'text-emerald-700'}>{review.reviewer_name}</span>
+                            <span className="opacity-20">•</span>
+                            <span>{new Date(review.created_at).toLocaleDateString()}</span>
+                            {showProduct && (
+                                <>
+                                    <span className="opacity-20">•</span>
+                                    <span className={isDark ? 'text-gold' : 'text-primary'}>{review.product_name}</span>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                    <div className={`px-2 py-0.5 rounded-md border ${isDark ? 'bg-white/5 border-white/10 text-gold-soft/60' : 'bg-primary/10 border-primary/20 text-primary-dark'} text-[7px] font-black uppercase tracking-widest h-fit`}>
+                        {review.helpful_count} Helpful
+                    </div>
+                </div>
+
+                <p className={`text-[11px] leading-relaxed mb-3 italic font-medium ${isDark ? 'text-text-secondary' : 'text-emerald-900'}`}>
+                    "{review.body}"
+                </p>
+            </div>
+
+            {/* Reply Stratum */}
+            <div className={`w-full md:w-64 relative z-10 rounded-xl border ${isDark ? 'bg-black/20 border-white/5' : 'bg-primary/10 border-primary/20'} p-3 flex flex-col justify-center`}>
+                {review.admin_reply ? (
+                    <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                            <span className={`text-[8px] font-black uppercase tracking-[0.2em] ${isDark ? 'text-gold' : 'text-primary'}`}>Administrative Response</span>
+                            <div className={`h-px flex-1 ${isDark ? 'bg-gold/20' : 'bg-primary/20'}`} />
+                        </div>
+                        <p className={`text-xs font-medium ${isDark ? 'text-text-primary' : 'text-emerald-950'}`}>{review.admin_reply}</p>
+                    </div>
+                ) : (
+                    replyingTo === review.review_id ? (
+                        <div className="space-y-4">
+                            <textarea
+                                rows={3}
+                                className={`${inputCls} !py-3 !px-4 !rounded-xl !text-xs`}
+                                placeholder="Administrative resonance..."
+                                value={replyDrafts[review.review_id] || ''}
+                                onChange={(e) => handleReplyChange(review.review_id, e.target.value)}
+                            />
+                            <div className="flex justify-end gap-3">
+                                <button
+                                    onClick={() => setReplyingTo(null)}
+                                    className={`px-4 py-2 rounded-lg border ${isDark ? 'border-white/10 text-text-muted' : 'border-gold/10 text-emerald-900'} text-[9px] font-black uppercase tracking-widest hover:bg-gold/10 transition-all`}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={() => handleSubmitReply(review.review_id)}
+                                    className="px-6 py-2 bg-gold text-primary rounded-lg text-[9px] font-black uppercase tracking-widest transition-all"
+                                >
+                                    Deliver
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <button
+                            onClick={() => setReplyingTo(review.review_id)}
+                            className={`w-full py-2.5 border border-dashed rounded-xl text-[8px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${isDark ? 'border-gold/30 text-text-muted hover:text-gold hover:border-gold' : 'border-primary/30 text-primary hover:bg-primary/5 hover:border-primary'}`}
+                        >
+                            <MessageSquare size={10} />
+                            Add Reply
+                        </button>
+                    )
+                )}
+            </div>
+        </div>
+    );
+
     return (
         <div className={`p-6 max-w-5xl mx-auto space-y-5 animate-fadeIn min-h-screen ${isDark ? '' : 'bg-white/60 backdrop-blur-xl rounded-[2.5rem] mt-4'}`}>
             {/* ── Page Header ── */}
@@ -119,6 +309,13 @@ export default function AdminReviewsPage() {
                     {activeTab === 'all' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gold rounded-full shadow-[0_0_8px_#C5A46D]" />}
                 </button>
                 <button
+                    onClick={() => setActiveTab('by_product')}
+                    className={`pb-3 px-1 text-[10px] font-black uppercase tracking-[0.2em] transition-all relative ${activeTab === 'by_product' ? 'text-gold' : isDark ? 'text-text-muted hover:text-gold/60' : 'text-emerald-900/60 hover:text-emerald-900'}`}
+                >
+                    By Product
+                    {activeTab === 'by_product' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gold rounded-full shadow-[0_0_8px_#C5A46D]" />}
+                </button>
+                <button
                     onClick={() => setActiveTab('reports')}
                     className={`pb-3 px-1 text-[10px] font-black uppercase tracking-[0.2em] transition-all relative ${activeTab === 'reports' ? 'text-gold' : isDark ? 'text-text-muted hover:text-gold/60' : 'text-emerald-900/60 hover:text-emerald-900'}`}
                 >
@@ -126,6 +323,51 @@ export default function AdminReviewsPage() {
                     {activeTab === 'reports' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gold rounded-full shadow-[0_0_8px_#C5A46D]" />}
                 </button>
             </div>
+
+            {/* ── Filters ── */}
+            {(activeTab === 'all' || activeTab === 'by_product') && (
+                <div className="flex flex-col md:flex-row gap-3">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
+                        <input
+                            type="text"
+                            placeholder="Search in reviews..."
+                            value={searchQuery}
+                            onChange={e => setSearchQuery(e.target.value)}
+                            className={`w-full rounded-xl border ${isDark ? 'border-white/10 bg-black/20 text-text-primary' : 'border-gold/20 bg-white text-emerald-950'} pl-9 pr-8 py-2.5 text-sm focus:border-gold/40 focus:outline-none transition-all`}
+                        />
+                        {searchQuery && (
+                            <button onClick={() => setSearchQuery('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted hover:text-gold">
+                                <X className="h-3.5 w-3.5" />
+                            </button>
+                        )}
+                    </div>
+                    <div className="flex gap-3">
+                        <select
+                            value={ratingFilter}
+                            onChange={(e) => setRatingFilter(e.target.value)}
+                            className={`rounded-xl border ${isDark ? 'border-white/10 bg-black/20 text-text-primary' : 'border-gold/20 bg-white text-emerald-950'} px-3 py-2.5 text-sm focus:border-gold/40 focus:outline-none transition-all`}
+                        >
+                            <option value="all">All Ratings</option>
+                            <option value="5">5 Stars</option>
+                            <option value="4">4 Stars</option>
+                            <option value="3">3 Stars</option>
+                            <option value="2">2 Stars</option>
+                            <option value="1">1 Star</option>
+                        </select>
+                        <select
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value)}
+                            className={`rounded-xl border ${isDark ? 'border-white/10 bg-black/20 text-text-primary' : 'border-gold/20 bg-white text-emerald-950'} px-3 py-2.5 text-sm focus:border-gold/40 focus:outline-none transition-all`}
+                        >
+                            <option value="newest">Newest First</option>
+                            <option value="oldest">Oldest First</option>
+                            <option value="highest">Highest Rated</option>
+                            <option value="lowest">Lowest Rated</option>
+                        </select>
+                    </div>
+                </div>
+            )}
 
             {/* ── Content ── */}
             <div className="space-y-6">
@@ -136,94 +378,65 @@ export default function AdminReviewsPage() {
                                 <Search className="w-12 h-12 text-gold/30 mb-4" />
                                 <p className="text-[10px] font-black uppercase tracking-widest text-text-muted">Synchronizing Resonance...</p>
                             </div>
-                        ) : reviews.length === 0 ? (
+                        ) : filteredReviews.length === 0 ? (
                             <div className={`py-20 flex flex-col items-center justify-center rounded-[2.5rem] border-2 border-dashed ${isDark ? 'border-white/5 bg-white/[0.02]' : 'border-gold/40 bg-primary/5'}`}>
                                 <MessageSquare className="w-12 h-12 text-gold/30 mb-4" />
-                                <p className="text-[10px] font-black uppercase tracking-widest text-text-muted">No reviews found in the chronicle.</p>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-text-muted">No reviews found matching criteria.</p>
                             </div>
                         ) : (
-                            reviews.map((review: AdminReview) => (
-                                <div key={review.review_id} className={`${isDark ? 'bg-primary/20 border-primary/20' : 'bg-white border-primary/20 shadow-[0_2px_15px_rgba(0,0,0,0.03)]'} border rounded-2xl p-4 md:p-5 transition-all hover:shadow-[0_4px_20px_rgba(59,93,59,0.05)] group overflow-hidden relative flex flex-col md:flex-row gap-4`}>
-                                    {/* Green vertical accent */}
-                                    <div className="absolute top-0 left-0 w-1 h-full bg-primary/40" />
-                                    
-                                    <div className="flex-1 relative z-10">
-                                        <div className="flex flex-col md:flex-row justify-between items-start gap-2 mb-2">
-                                            <div className="space-y-0.5">
-                                                <div className="flex items-center gap-1 opacity-80">
-                                                    {Array.from({ length: 5 }).map((_, i) => (
-                                                        <Star key={i} size={8} className={i < review.rating ? 'text-gold fill-gold' : 'text-gold/20'} />
-                                                    ))}
-                                                </div>
-                                                <h3 className={`text-base font-serif font-bold tracking-tight ${isDark ? 'text-text-primary' : 'text-emerald-950'}`}>
-                                                    {review.title}
-                                                </h3>
-                                                <div className={`flex flex-wrap items-center gap-x-2 gap-y-1 text-[8px] font-black uppercase tracking-widest ${isDark ? 'text-text-muted' : 'text-emerald-900/80'}`}>
-                                                    <span className={isDark ? 'text-primary' : 'text-emerald-700'}>{review.reviewer_name}</span>
-                                                    <span className="opacity-20">•</span>
-                                                    <span>{new Date(review.created_at).toLocaleDateString()}</span>
-                                                    <span className="opacity-20">•</span>
-                                                    <span className={isDark ? 'text-gold' : 'text-primary'}>{review.product_name}</span>
-                                                </div>
-                                            </div>
-                                            <div className={`px-2 py-0.5 rounded-md border ${isDark ? 'bg-white/5 border-white/10 text-gold-soft/60' : 'bg-primary/10 border-primary/20 text-primary-dark'} text-[7px] font-black uppercase tracking-widest h-fit`}>
-                                                {review.helpful_count} Helpful
-                                            </div>
-                                        </div>
+                            <>
+                                {paginatedAllReviews.map((review: AdminReview) => renderReviewCard(review, true))}
+                                {renderPagination(totalPagesAll)}
+                            </>
+                        )}
+                    </div>
+                )}
 
-                                        <p className={`text-[11px] leading-relaxed mb-3 italic font-medium ${isDark ? 'text-text-secondary' : 'text-emerald-900'}`}>
-                                            "{review.body}"
-                                        </p>
-                                    </div>
-
-                                    {/* Reply Stratum */}
-                                    <div className={`w-full md:w-64 relative z-10 rounded-xl border ${isDark ? 'bg-black/20 border-white/5' : 'bg-primary/10 border-primary/20'} p-3 flex flex-col justify-center`}>
-                                        {review.admin_reply ? (
-                                            <div className="space-y-2">
-                                                <div className="flex items-center gap-2">
-                                                    <span className={`text-[8px] font-black uppercase tracking-[0.2em] uppercase ${isDark ? 'text-gold' : 'text-primary'}`}>Administrative Response</span>
-                                                    <div className={`h-px flex-1 ${isDark ? 'bg-gold/20' : 'bg-primary/20'}`} />
-                                                </div>
-                                                <p className={`text-xs font-medium ${isDark ? 'text-text-primary' : 'text-emerald-950'}`}>{review.admin_reply}</p>
-                                            </div>
-                                        ) : (
-                                            replyingTo === review.review_id ? (
-                                                <div className="space-y-4">
-                                                    <textarea
-                                                        rows={3}
-                                                        className={`${inputCls} !py-3 !px-4 !rounded-xl !text-xs`}
-                                                        placeholder="Administrative resonance..."
-                                                        value={replyDrafts[review.review_id] || ''}
-                                                        onChange={(e) => handleReplyChange(review.review_id, e.target.value)}
-                                                    />
-                                                    <div className="flex justify-end gap-3">
-                                                        <button
-                                                            onClick={() => setReplyingTo(null)}
-                                                            className={`px-4 py-2 rounded-lg border ${isDark ? 'border-white/10 text-text-muted' : 'border-gold/10 text-emerald-900'} text-[9px] font-black uppercase tracking-widest hover:bg-gold/10 transition-all`}
-                                                        >
-                                                            Cancel
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleSubmitReply(review.review_id)}
-                                                            className="px-6 py-2 bg-gold text-primary rounded-lg text-[9px] font-black uppercase tracking-widest transition-all"
-                                                        >
-                                                            Deliver
-                                                        </button>
+                {activeTab === 'by_product' && (
+                    <div className="grid gap-6">
+                        {loadingReviews ? (
+                            <div className="py-20 flex flex-col items-center justify-center animate-pulse">
+                                <Search className="w-12 h-12 text-gold/30 mb-4" />
+                                <p className="text-[10px] font-black uppercase tracking-widest text-text-muted">Synchronizing Resonance...</p>
+                            </div>
+                        ) : Object.keys(groupedReviews).length === 0 ? (
+                            <div className={`py-20 flex flex-col items-center justify-center rounded-[2.5rem] border-2 border-dashed ${isDark ? 'border-white/5 bg-white/[0.02]' : 'border-gold/40 bg-primary/5'}`}>
+                                <MessageSquare className="w-12 h-12 text-gold/30 mb-4" />
+                                <p className="text-[10px] font-black uppercase tracking-widest text-text-muted">No reviews found matching criteria.</p>
+                            </div>
+                        ) : (
+                            <>
+                                {paginatedGroupKeys.map((productName) => {
+                                    const productReviews = groupedReviews[productName];
+                                    const isExpanded = !!expandedProducts[productName];
+                                    return (
+                                        <div key={productName} className={`border ${isDark ? 'border-primary/20 bg-primary/20' : 'border-gold/20 bg-white shadow-sm'} rounded-2xl overflow-hidden group mb-4 transition-all duration-300`}>
+                                            <div 
+                                                onClick={() => toggleProductExpanded(productName)}
+                                                className={`p-4 md:p-5 cursor-pointer flex justify-between items-center outline-none ${isDark ? 'hover:bg-primary/30' : 'hover:bg-primary/5'} transition-colors select-none ${isExpanded ? (isDark ? 'border-b border-primary/20' : 'border-b border-gold/20') : ''}`}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`p-1.5 rounded-full ${isDark ? 'bg-primary/30 text-gold-soft' : 'bg-gold/10 text-primary'}`}>
+                                                        {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                                                     </div>
+                                                    <h3 className={`font-serif text-lg font-bold tracking-tight ${isDark ? 'text-gold-soft' : 'text-emerald-950'}`}>
+                                                        {productName}
+                                                    </h3>
                                                 </div>
-                                            ) : (
-                                                <button
-                                                    onClick={() => setReplyingTo(review.review_id)}
-                                                    className={`w-full py-2.5 border border-dashed rounded-xl text-[8px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${isDark ? 'border-gold/30 text-text-muted hover:text-gold hover:border-gold' : 'border-primary/30 text-primary hover:bg-primary/5 hover:border-primary'}`}
-                                                >
-                                                    <MessageSquare size={10} />
-                                                    Add Reply
-                                                </button>
-                                            )
-                                        )}
-                                    </div>
-                                </div>
-                            ))
+                                                <span className={`text-[9px] font-black uppercase tracking-widest z-10 ${isDark ? 'text-gold bg-gold/10' : 'text-primary bg-primary/10'} px-3 py-1.5 rounded-xl`}>
+                                                    {productReviews.length} Review{productReviews.length !== 1 ? 's' : ''}
+                                                </span>
+                                            </div>
+                                            {isExpanded && (
+                                                <div className={`p-4 md:p-5 grid gap-4 ${isDark ? 'bg-black/20' : 'bg-primary/5'} border-t-0 animate-fadeIn`}>
+                                                    {productReviews.map(review => renderReviewCard(review, false))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                                {renderPagination(totalPagesGroup)}
+                            </>
                         )}
                     </div>
                 )}

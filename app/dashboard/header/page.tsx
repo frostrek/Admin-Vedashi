@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import {
     Plus, Trash2, X, Loader2, ChevronDown, ChevronUp,
     Save, RefreshCw, Palette, Layout, Link2, Eye, EyeOff,
-    GripVertical, AlignLeft, MonitorSmartphone, Zap
+    GripVertical, AlignLeft, MonitorSmartphone, Zap, Info
 } from 'lucide-react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
@@ -80,22 +80,42 @@ const SectionCard = ({ icon: Icon, title, children, defaultOpen = true }: {
     );
 };
 
-const Field = ({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) => (
+const Field = ({ label, hint, info, children }: { label: string; hint?: string; info?: string; children: React.ReactNode }) => (
     <div className="space-y-2">
-        <label className="block text-[10px] font-bold text-text-muted uppercase tracking-[0.2em]">{label}</label>
+        <label className="flex items-center gap-2 text-[10px] font-bold text-text-muted uppercase tracking-[0.2em]">
+            {label}
+            {info && (
+                <span className="relative group cursor-pointer inline-flex items-center normal-case tracking-normal">
+                    <Info className="w-4 h-4 text-neutral-400 hover:text-gold transition-colors duration-300" />
+                    <span className="absolute bottom-full left-0 origin-bottom-left mb-2 w-max max-w-xs px-3 py-2 font-sans text-xs font-medium text-white bg-neutral-900 border border-neutral-700 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-[99999]">
+                        {info}
+                    </span>
+                </span>
+            )}
+        </label>
         {hint && <p className="text-[10px] text-text-muted/60 leading-relaxed font-medium">{hint}</p>}
         {children}
     </div>
 );
 
-const Toggle = ({ checked, onChange, label, sub }: { checked: boolean; onChange: (v: boolean) => void; label: string; sub?: string }) => (
+const Toggle = ({ checked, onChange, label, sub, info }: { checked: boolean; onChange: (v: boolean) => void; label: string; sub?: string; info?: string }) => (
     <label className="flex items-center gap-4 cursor-pointer select-none p-4 bg-black/20 rounded-2xl border border-border hover:bg-black/30 transition-all duration-300">
         <div className={`relative w-12 h-6 rounded-full transition-all duration-500 flex-shrink-0 ${checked ? 'bg-gold shadow-[0_0_10px_rgba(197,164,109,0.3)]' : 'bg-border'}`}>
             <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow-lg transition-transform duration-500 ease-out ${checked ? 'translate-x-6' : ''}`} />
             <input type="checkbox" className="sr-only" checked={checked} onChange={e => onChange(e.target.checked)} />
         </div>
         <div>
-            <p className="text-sm font-serif font-bold text-gold-soft tracking-wide">{label}</p>
+            <div className="flex items-center gap-2 text-sm font-serif font-bold text-gold-soft tracking-wide">
+                {label}
+                {info && (
+                    <span className="relative group cursor-pointer inline-flex items-center font-sans tracking-normal font-medium">
+                        <Info className="w-4 h-4 text-neutral-400 hover:text-gold transition-colors duration-300" />
+                        <span className="absolute bottom-full left-0 origin-bottom-left mb-2 w-max max-w-xs px-3 py-2 text-xs text-white bg-neutral-900 border border-neutral-700 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-[99999]">
+                            {info}
+                        </span>
+                    </span>
+                )}
+            </div>
             {sub && <p className="text-[10px] text-text-muted mt-0.5 font-medium uppercase tracking-widest">{sub}</p>}
         </div>
     </label>
@@ -103,8 +123,8 @@ const Toggle = ({ checked, onChange, label, sub }: { checked: boolean; onChange:
 
 const inputCls = "w-full rounded-xl border border-border bg-black/20 px-4 py-2.5 text-sm text-gold-soft placeholder:text-text-muted/40 focus:border-gold/30 focus:outline-none focus:ring-1 focus:ring-gold/10 transition-all duration-300 font-medium";
 
-const ColorField = ({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) => (
-    <Field label={label}>
+const ColorField = ({ label, value, info, onChange }: { label: string; value: string; info?: string; onChange: (v: string) => void }) => (
+    <Field label={label} info={info}>
         <div className="flex items-center gap-2">
             <div className="relative">
                 <input
@@ -278,6 +298,7 @@ export default function HeaderManagementPage() {
                             checked={header.settings?.use_backend_navbar ?? true}
                             onChange={v => update('settings', { ...header.settings, use_backend_navbar: v })}
                             label="Enable Dynamic Navbar Synthesis"
+                            info="When enabled, the storefront syncs with these settings rather than hardcoded configurations."
                             sub={
                                 (header.settings?.use_backend_navbar ?? true) 
                                 ? "ON: Storefront will dynamically fetch and display this canvas configuration." 
@@ -294,7 +315,7 @@ export default function HeaderManagementPage() {
                 <SectionCard icon={Layout} title="Branding">
                     <div className="grid grid-cols-2 gap-4 mt-4">
                         {/* Logo Upload */}
-                        <Field label="Logo Image" hint="Upload a PNG / SVG / WebP. Stored as base64 — no external URL needed.">
+                        <Field label="Logo Image" hint="Upload a PNG / SVG / WebP. Stored as base64 — no external URL needed." info="Upload the main logo for your storefront. High quality transparent PNG or SVG is recommended.">
                             <div className="space-y-4">
                                 <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-2xl cursor-pointer hover:border-gold/30 hover:bg-primary/5 transition-all duration-300 group">
                                     <div className="flex flex-col items-center gap-2 text-text-muted/60 group-hover:text-gold transition-colors">
@@ -329,7 +350,7 @@ export default function HeaderManagementPage() {
                             </div>
                         </Field>
 
-                        <Field label="Logo Alt Text">
+                        <Field label="Logo Alt Text" info="Alternative text for your logo. This is crucial for screen readers and search engine optimization.">
                             <input
                                 className={inputCls}
                                 value={header.branding.logo_alt}
@@ -365,16 +386,19 @@ export default function HeaderManagementPage() {
                                     label="Navbar Background"
                                     value={header.colors.navbar_bg}
                                     onChange={v => update('colors', { ...header.colors, navbar_bg: v })}
+                                    info="The primary background color of your main navigation bar."
                                 />
                                 <ColorField
                                     label="Navbar Text"
                                     value={header.colors.navbar_text}
                                     onChange={v => update('colors', { ...header.colors, navbar_text: v })}
+                                    info="The base color for text and links appearing within the navbar."
                                 />
                                 <ColorField
                                     label="Hover / Active Colour"
                                     value={header.colors.navbar_hover}
                                     onChange={v => update('colors', { ...header.colors, navbar_hover: v })}
+                                    info="The accent color applied when a user hovers over or activates a navigation link."
                                 />
                             </div>
                         </div>
@@ -385,16 +409,19 @@ export default function HeaderManagementPage() {
                                     label="Strip Background"
                                     value={header.colors.strip_bg}
                                     onChange={v => update('colors', { ...header.colors, strip_bg: v })}
+                                    info="The background color for the top information strip."
                                 />
                                 <ColorField
                                     label="Strip Text"
                                     value={header.colors.strip_text}
                                     onChange={v => update('colors', { ...header.colors, strip_text: v })}
+                                    info="The primary text color within the top information strip."
                                 />
                                 <ColorField
                                     label="Strip Accent (Hotline)"
                                     value={header.colors.strip_accent}
                                     onChange={v => update('colors', { ...header.colors, strip_accent: v })}
+                                    info="The highlight color specifically targeting contact numbers or important alerts in the strip."
                                 />
                             </div>
                         </div>
@@ -405,6 +432,7 @@ export default function HeaderManagementPage() {
                                     label="Cart Badge Background"
                                     value={header.colors.cart_badge_bg}
                                     onChange={v => update('colors', { ...header.colors, cart_badge_bg: v })}
+                                    info="The background color for the shopping cart item count badge."
                                 />
                             </div>
                         </div>
@@ -518,10 +546,11 @@ export default function HeaderManagementPage() {
                             onChange={v => update('strip', { ...header.strip, enabled: v })}
                             label="Manifest Sub-link Stratum"
                             sub="The secondary atmospheric layer below the primary navbar"
+                            info="Toggle to show or hide the top strip containing secondary links and announcements."
                         />
                         <div className={`space-y-4 transition-opacity ${!header.strip.enabled ? 'opacity-40 pointer-events-none' : ''}`}>
                             <div className="grid grid-cols-2 gap-4">
-                                <Field label="Centre Message">
+                                <Field label="Centre Message" info="A promotional or informational message displayed in the center of the top strip.">
                                     <input
                                         className={inputCls}
                                         value={header.strip.center_message}
@@ -529,7 +558,7 @@ export default function HeaderManagementPage() {
                                         placeholder="✦ Thank You for Choosing Us ✦"
                                     />
                                 </Field>
-                                <Field label="Hotline Number">
+                                <Field label="Hotline Number" info="The primary contact phone number prominently displayed in the top strip for user convenience.">
                                     <input
                                         className={inputCls}
                                         value={header.strip.hotline}
@@ -544,12 +573,14 @@ export default function HeaderManagementPage() {
                                     onChange={v => update('strip', { ...header.strip, show_track_orders: v })}
                                     label="Show Track Orders link"
                                     sub="Left side of the strip bar"
+                                    info="Displays a convenient link for users to track their existing orders."
                                 />
                                 <Toggle
                                     checked={header.strip.show_categories}
                                     onChange={v => update('strip', { ...header.strip, show_categories: v })}
                                     label="Show Categories dropdown"
                                     sub="Left side of the strip bar"
+                                    info="Provides a dropdown menu summarizing main shop categories within the strip bar."
                                 />
                             </div>
                         </div>
