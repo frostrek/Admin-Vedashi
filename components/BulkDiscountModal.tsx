@@ -405,7 +405,12 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
                     </button>
                     <button
                         type="button"
-                        onClick={() => setActiveTab('custom')}
+                        onClick={() => {
+                            setActiveTab('custom');
+                            if (targetType === 'category' || targetType === 'sub_category') {
+                                setTargetType('brand');
+                            }
+                        }}
                         className={`flex-1 pb-3 text-sm font-semibold transition-colors border-b-2 ${activeTab === 'custom'
                             ? 'text-gold border-gold'
                             : 'text-text-secondary border-transparent hover:text-gold-soft'
@@ -430,7 +435,9 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
                                 { value: 'brand', label: 'Brand', icon: Star },
                                 ...(selectedIds.length > 0 ? [{ value: 'selected' as const, label: `Selected (${selectedIds.length})`, icon: Check }] : []),
                                 { value: 'all', label: 'All Products', icon: Tag },
-                            ] as const).map(({ value, label, icon: Icon }) => (
+                            ] as const)
+                                .filter(t => activeTab !== 'custom' || (t.value !== 'category' && t.value !== 'sub_category'))
+                                .map(({ value, label, icon: Icon }) => (
                                 <label
                                     key={value}
                                     className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-all duration-200 ${targetType === value
@@ -750,6 +757,21 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
                                                     </button>
                                                     <span className="text-sm text-text-primary">{customValue ? 'Enabled' : 'Disabled'}</span>
                                                 </div>
+                                            );
+                                        }
+                                        if (fieldDef?.type === 'category' || fieldDef?.type === 'sub_category') {
+                                            const optionsList = fieldDef.type === 'category' ? categories : subCategories;
+                                            return (
+                                                <select
+                                                    value={customValue}
+                                                    onChange={(e) => setCustomValue(e.target.value)}
+                                                    className="w-full rounded-lg border border-border bg-page-bg px-3 py-2.5 text-sm text-text-primary focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40 cursor-pointer"
+                                                >
+                                                    <option value="">Select {fieldDef.label.toLowerCase()}...</option>
+                                                    {optionsList.map(opt => (
+                                                        <option key={opt} value={opt}>{opt}</option>
+                                                    ))}
+                                                </select>
                                             );
                                         }
                                         if (fieldDef?.type === 'select') {
