@@ -27,6 +27,8 @@ interface ActiveDiscount {
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 const CUSTOM_FIELDS = [
+    { value: 'category', label: 'Category', type: 'category' },
+    { value: 'sub_category', label: 'Subcategory', type: 'sub_category' },
     { value: 'brand', label: 'Brand', type: 'text' },
     { value: 'intended_use', label: 'Intended Use', type: 'text' },
     { value: 'status', label: 'Product Status', type: 'select', options: ['active', 'draft', 'archived'] },
@@ -426,7 +428,7 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
                                 { value: 'category', label: 'Category', icon: Layers },
                                 { value: 'sub_category', label: 'Subcategory', icon: Layers },
                                 { value: 'brand', label: 'Brand', icon: Star },
-                                { value: 'selected', label: `Selected (${selectedIds.length})`, icon: Check },
+                                ...(selectedIds.length > 0 ? [{ value: 'selected' as const, label: `Selected (${selectedIds.length})`, icon: Check }] : []),
                                 { value: 'all', label: 'All Products', icon: Tag },
                             ] as const).map(({ value, label, icon: Icon }) => (
                                 <label

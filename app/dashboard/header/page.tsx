@@ -153,6 +153,7 @@ export default function HeaderManagementPage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [activeSection, setActiveSection] = useState<string | null>(null);
+    const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
     const getCsrfToken = useCallback((): string | null => {
         if (typeof document === 'undefined') return null;
@@ -222,6 +223,27 @@ export default function HeaderManagementPage() {
         setHeader(prev => prev ? { ...prev, [section]: value } : prev);
     };
 
+    const handleDragStart = (index: number) => {
+        setDraggedIndex(index);
+    };
+
+    const handleDragOver = (e: React.DragEvent, index: number) => {
+        e.preventDefault();
+        if (draggedIndex === null || draggedIndex === index) return;
+
+        const links = [...(header?.nav_links || [])];
+        const draggedItem = links[draggedIndex];
+        links.splice(draggedIndex, 1);
+        links.splice(index, 0, draggedItem);
+        
+        setDraggedIndex(index);
+        update('nav_links', links);
+    };
+
+    const handleDragEnd = () => {
+        setDraggedIndex(null);
+    };
+
     const SaveBtn = ({ section }: { section: keyof HeaderData }) => (
         <button
             onClick={() => saveSection(section)}
@@ -266,7 +288,7 @@ export default function HeaderManagementPage() {
                         <h1 className="text-3xl font-serif font-bold text-gold tracking-tighter">Header Canvas</h1>
                     </div>
                     <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-muted">
-                        Configure your storefront architecture — links, visual synthesis, and branding.
+                        Configure your storefront architecture — navigation links and dynamic settings.
                     </p>
                 </div>
                 <div className="flex items-center gap-3 flex-shrink-0">
@@ -311,6 +333,7 @@ export default function HeaderManagementPage() {
                     </div>
                 </div>
 
+<<<<<<< HEAD
                 {/* ── 1. Branding ───────────────────────────────── */}
                 <SectionCard icon={Layout} title="Branding">
                     <div className="grid grid-cols-2 gap-4 mt-4">
@@ -471,6 +494,8 @@ export default function HeaderManagementPage() {
                         <div className="flex justify-end"><SaveBtn section="colors" /></div>
                     </div>
                 </SectionCard>
+=======
+>>>>>>> ba7ef74af5ff0d6d2f7c8c19f93ecef0889b8820
 
                 {/* ── 3. Navigation Links ───────────────────────── */}
                 <SectionCard icon={Link2} title="Navigation Protocol">
@@ -479,9 +504,19 @@ export default function HeaderManagementPage() {
                         {header.nav_links.map((link, i) => (
                             <div
                                 key={i}
-                                className={`grid grid-cols-[auto_1fr_1fr_auto_auto] gap-3 items-center p-4 rounded-2xl border transition-all duration-300 ${link.enabled ? 'border-border bg-black/20' : 'border-border/30 bg-black/10 opacity-40 shadow-inner'}`}
+                                draggable
+                                onDragStart={() => handleDragStart(i)}
+                                onDragOver={(e) => handleDragOver(e, i)}
+                                onDragEnd={handleDragEnd}
+                                className={`group grid grid-cols-[auto_1fr_1fr_auto_auto] gap-3 items-center p-4 rounded-2xl border transition-all duration-300 ${
+                                    draggedIndex === i 
+                                        ? 'opacity-50 border-gold bg-primary/10 scale-[0.98]' 
+                                        : link.enabled 
+                                            ? 'border-border bg-black/20' 
+                                            : 'border-border/30 bg-black/10 opacity-40 shadow-inner'
+                                } cursor-move hover:border-gold/30`}
                             >
-                                <GripVertical className="w-5 h-5 text-text-muted/30 cursor-grab hover:text-gold transition-colors" />
+                                <GripVertical className="w-5 h-5 text-text-muted/30 cursor-grab group-hover:text-gold transition-colors" />
                                 <input
                                     className={inputCls}
                                     value={link.label}
@@ -538,6 +573,7 @@ export default function HeaderManagementPage() {
                     </div>
                 </SectionCard>
 
+<<<<<<< HEAD
                 {/* ── 4. Strip Bar ──────────────────────────────── */}
                 <SectionCard icon={Zap} title="Sub-Link Stratum" defaultOpen={true}>
                     <div className="mt-4 space-y-4">
@@ -587,6 +623,8 @@ export default function HeaderManagementPage() {
                         <div className="flex justify-end"><SaveBtn section="strip" /></div>
                     </div>
                 </SectionCard>
+=======
+>>>>>>> ba7ef74af5ff0d6d2f7c8c19f93ecef0889b8820
 
             </div>
 

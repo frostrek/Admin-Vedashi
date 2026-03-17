@@ -66,36 +66,36 @@ export default function CategoriesPage() {
     const filteredCategories = useMemo(() => {
         return categories.filter((c) => {
             // Tab Filter
-            const matchesTab = 
-                filter === 'all' || 
-                (filter === 'parents' && !c.parent_id) || 
+            const matchesTab =
+                filter === 'all' ||
+                (filter === 'parents' && !c.parent_id) ||
                 (filter === 'subcategories' && !!c.parent_id);
-            
+
             // Status Filter
-            const matchesStatus = 
-                statusFilter === 'all' || 
-                (statusFilter === 'active' && c.is_active) || 
+            const matchesStatus =
+                statusFilter === 'all' ||
+                (statusFilter === 'active' && c.is_active) ||
                 (statusFilter === 'inactive' && !c.is_active);
-            
+
             // Search Query
             const query = searchQuery.toLowerCase().trim();
-            const matchesSearch = 
-                !query || 
-                c.name.toLowerCase().includes(query) || 
-                c.slug.toLowerCase().includes(query) || 
+            const matchesSearch =
+                !query ||
+                c.name.toLowerCase().includes(query) ||
+                c.slug.toLowerCase().includes(query) ||
                 (c.description || '').toLowerCase().includes(query);
 
             return matchesTab && matchesStatus && matchesSearch;
         });
     }, [categories, filter, searchQuery, statusFilter]);
 
-    const displayParents = useMemo(() => 
+    const displayParents = useMemo(() =>
         filteredCategories.filter(c => !c.parent_id),
-    [filteredCategories]);
+        [filteredCategories]);
 
-    const displaySubcategories = useMemo(() => 
+    const displaySubcategories = useMemo(() =>
         filteredCategories.filter(c => !!c.parent_id),
-    [filteredCategories]);
+        [filteredCategories]);
 
     /* ─── CRUD handlers ─── */
     const handleCreate = () => {
@@ -181,7 +181,7 @@ export default function CategoriesPage() {
                     className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark transition-colors"
 
                 >
-                    <Plus className="h-4 w-4" /> Add Category
+                    <Plus className="h-4 w-4" /> Add Category / Subcategory
                 </button>
             </div>
 
@@ -270,7 +270,7 @@ export default function CategoriesPage() {
                         onClick={handleCreate}
                         className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark transition-colors"
                     >
-                        <Plus className="h-4 w-4" /> Add Category
+                        <Plus className="h-4 w-4" /> Add Category / Subcategory
                     </button>
                 </div>
             )}
