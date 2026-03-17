@@ -718,7 +718,9 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
 
             sku: draftSku,
             status: 'draft',
-            specifications: form.country_of_origin ? { country_of_origin: form.country_of_origin } : undefined,
+            specifications: {
+                country_of_origin: form.country_of_origin || undefined,
+            },
             variants: variants
                 .filter(v => v.sku.trim() || v.variant_name.trim())
                 .map(v => {
@@ -752,6 +754,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                     }
 
                     return {
+                        variant_id: v.variant_id || undefined,
                         sku: v.sku.trim() || `${draftSku}-V${Math.random().toString(36).slice(2, 6)}`,
                         variant_name: combinedName || 'Draft Variant',
                         price: Number(v.price) || 0,
@@ -760,7 +763,18 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                         volume: v.volume || undefined,
                         pack: v.pack || undefined,
                         isDefault: v.isDefault,
+                        isActive: v.isActive,
+                        // Sale Management
                         sale_price: v.sale_price || undefined,
+                        sale_start_date: v.sale_start_date || undefined,
+                        sale_start_time: v.sale_start_time || undefined,
+                        sale_end_date: v.sale_end_date || undefined,
+                        sale_end_time: v.sale_end_time || undefined,
+                        // Dimensions + shelf life
+                        length_cm: v.length_cm || undefined,
+                        width_cm: v.width_cm || undefined,
+                        height_cm: v.height_cm || undefined,
+                        shelf_life: v.shelf_life || undefined,
                         // New fields
                         weight_g,
                         units_count,
@@ -773,12 +787,91 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                 }),
             available_from: form.available_from_date ? new Date(`${form.available_from_date}T${form.available_from_time || '00:00'}`).toISOString() : undefined,
             available_until: form.available_until_date ? new Date(`${form.available_until_date}T${form.available_until_time || '23:59'}`).toISOString() : undefined,
+            seo: Object.values(seoData).some(v => v) ? seoData : undefined,
         };
 
         setLoading(true);
         try {
             const result = await updateProduct(id, draftPayload as any);
             if (result.success) {
+                // ── Re-fetch product to get DB-assigned variant_ids after syncVariants ──
+                let dbVariants: any[] = [];
+                try {
+                    const refreshed = await getProduct(id, true);
+                    if (refreshed?.variants?.length) {
+                        dbVariants = refreshed.variants;
+                    }
+                } catch (e) {
+                    console.warn('[handleSaveAsDraft] Could not re-fetch variants for variant_id mapping:', e);
+                }
+
+                // ── Upload any NEW images & videos added during editing ──
+                const variantsToUpload = sharedImages ? [variants[0]] : variants;
+                let totalAssets = 0;
+                let uploadedAssets = 0;
+
+                for (const v of variantsToUpload) {
+                    totalAssets += v.images.filter((img: any) => img.file).length + v.videos.filter((vid: any) => vid.file).length;
+                }
+
+                if (totalAssets > 0) {
+                    toast.loading(`Uploading ${totalAssets} new asset(s)...`, { id: 'asset-upload' });
+                }
+
+                for (const v of variantsToUpload) {
+                    const dbVariant = dbVariants.find(dv => dv.variant_sku === v.sku) || null;
+                    const variantId = v.variant_id || dbVariant?.variant_id || undefined;
+
+                    // Upload images
+                    for (let imgIdx = 0; imgIdx < v.images.length; imgIdx++) {
+                        const img = v.images[imgIdx] as any;
+                        if (img.file) {
+                            try {
+                                const base64 = await fileToBase64(img.file);
+                                const uploadResult = await uploadProductImage(id, base64, {
+                                    file_name: img.file.name,
+                                    is_primary: imgIdx === 0,
+                                    sort_order: imgIdx,
+                                    media_type: 'image',
+                                    variant_id: variantId,
+                                    alt_text: img.alt_text
+                                });
+                                if (uploadResult.success) uploadedAssets++;
+                            } catch (e) { console.error(e); }
+                        } else if (img.asset_id) {
+                            try {
+                                await updateProductImage(id, img.asset_id, { alt_text: img.alt_text, is_primary: imgIdx === 0, sort_order: imgIdx, variant_id: variantId });
+                            } catch (e) { console.error(e); }
+                        }
+                    }
+
+                    // Upload videos
+                    for (let vidIdx = 0; vidIdx < v.videos.length; vidIdx++) {
+                        const vid = v.videos[vidIdx] as any;
+                        if (vid.file) {
+                            try {
+                                const base64 = await fileToBase64(vid.file);
+                                const uploadResult = await uploadProductImage(id, base64, {
+                                    file_name: vid.file.name,
+                                    is_primary: false,
+                                    sort_order: 100 + vidIdx,
+                                    media_type: 'video',
+                                    variant_id: variantId,
+                                });
+                                if (uploadResult.success) uploadedAssets++;
+                            } catch (e) { console.error(e); }
+                        } else if (vid.asset_id) {
+                            try {
+                                await updateProductImage(id, vid.asset_id, { is_primary: false, sort_order: 100 + vidIdx, variant_id: variantId });
+                            } catch (e) { console.error(e); }
+                        }
+                    }
+                }
+
+                if (totalAssets > 0) {
+                    toast.success(`Uploaded ${uploadedAssets}/${totalAssets} asset(s)`, { id: 'asset-upload' });
+                }
+
                 toast.success('Draft saved!');
                 router.push('/dashboard/products');
             } else {
@@ -824,13 +917,14 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
             intended_use: form.intended_use.trim() || undefined,
             form: form.form_type || undefined,
             specialities: form.specialities.length > 0 ? form.specialities : undefined,
+            status: productStatus === 'draft' ? 'active' : undefined,
             // SKU from the default variant (required by products table unique constraint)
             sku: (variants.find(v => v.isDefault) ?? variants[0]).sku.trim(),
 
-            // Country of origin ÔåÆ product_specifications
-            specifications: form.country_of_origin
-                ? { country_of_origin: form.country_of_origin }
-                : undefined,
+            // Country of origin + Dimensions + Shelf Life -> product_specifications
+            specifications: {
+                country_of_origin: form.country_of_origin || undefined,
+            },
 
             // Full variants array ÔÇö backend maps these to product_variants rows
                     variants: variants.map(v => {
@@ -1146,7 +1240,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                         className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-[#E8D8B9] hover:bg-primary-light border border-gold/10 transition-all duration-300 shadow-lg shadow-primary/10 disabled:opacity-50"
                                     >
                                         <Check className="h-4 w-4" />
-                                        {loading ? 'Saving...' : 'Save Changes'}
+                                        {loading ? 'Saving...' : productStatus === 'draft' ? 'Publish Product' : 'Save Changes'}
                                     </button>
                                 )}
 

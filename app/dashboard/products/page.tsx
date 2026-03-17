@@ -3,7 +3,9 @@
 import { useState, useEffect, useCallback, Fragment } from 'react';
 import Link from 'next/link';
 import { getProducts, deleteProduct, Product, getRankingOverrides, setRankingOverride, removeRankingOverride, RankingOverride, searchProductsAdmin, getProduct, updateVariantStatus, updateDefaultVariant, getDraftProducts } from '@/lib/api';
-import { Plus, Pencil, Trash2, Search, Package, Star, Loader2, Tag, ChevronDown, FileEdit, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { getCategories } from '@/lib/api/category';
+import { Category } from '@/types/category';
+import { Plus, Pencil, Trash2, Search, Package, Star, Loader2, Tag, ChevronDown, FileEdit, X, ChevronLeft, ChevronRight, Filter, SlidersHorizontal } from 'lucide-react';
 import toast from 'react-hot-toast';
 import BulkDiscountModal from '@/components/BulkDiscountModal';
 import BulkImportModal from '@/components/BulkImportModal';
@@ -20,6 +22,7 @@ export default function ProductsListPage() {
     const [search, setSearch] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [filterCategory, setFilterCategory] = useState<string>('all');
+    const [filterSubCategory, setFilterSubCategory] = useState<string>('all');
     const [filterStock, setFilterStock] = useState<string>('all');
     const [filterPrice, setFilterPrice] = useState<string>('all');
     const [filterBestSeller, setFilterBestSeller] = useState<string>('all');
@@ -34,7 +37,10 @@ export default function ProductsListPage() {
     const [bulkExportOpen, setBulkExportOpen] = useState(false);
     const [draftsOpen, setDraftsOpen] = useState(false);
     const [drafts, setDrafts] = useState<Product[]>([]);
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [draftsLoading, setDraftsLoading] = useState(false);
+    const [allCategories, setAllCategories] = useState<Category[]>([]);
+    const [showFilters, setShowFilters] = useState(false);
 
     // ─── Custom Confirm Modal state ───
     const [confirmModal, setConfirmModal] = useState<{
@@ -213,9 +219,20 @@ export default function ProductsListPage() {
 
     const loadProducts = async () => {
         setLoading(true);
-        const data = await getProducts();
-        setProducts(data);
-        setLoading(false);
+        try {
+            const [productsData, categoriesData] = await Promise.all([
+                getProducts(),
+                getCategories()
+            ]);
+            setProducts(productsData);
+            setAllCategories(categoriesData);
+        } catch (error) {
+            console.error('Error loading products/categories:', error);
+            const productsData = await getProducts();
+            setProducts(productsData);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const loadOverrides = useCallback(async () => {
@@ -254,7 +271,29 @@ export default function ProductsListPage() {
         let base = searchResults !== null ? searchResults : products;
         
         if (filterCategory !== 'all') {
-            base = base.filter(p => p.category === filterCategory);
+            if (filterCategory === 'none') {
+                base = base.filter(p => !p.category_id);
+            } else {
+                const targetCat = allCategories.find(c => c.name === filterCategory);
+                if (filterSubCategory !== 'all') {
+                    const targetSub = allCategories.find(c => c.name === filterSubCategory && c.parent_id === targetCat?.category_id);
+                    if (targetSub) {
+                        base = base.filter(p => p.category_id === targetSub.category_id);
+                    } else {
+                        // Fallback to name match for legacy/unmapped categories
+                        base = base.filter(p => p.category === filterSubCategory);
+                    }
+                } else {
+                    if (targetCat) {
+                        const idsToInclude = [targetCat.category_id];
+                        const children = allCategories.filter(c => c.parent_id === targetCat.category_id);
+                        children.forEach(child => idsToInclude.push(child.category_id));
+                        base = base.filter(p => (p.category_id && idsToInclude.includes(p.category_id)) || p.category === filterCategory);
+                    } else {
+                        base = base.filter(p => p.category === filterCategory);
+                    }
+                }
+            }
         }
         
         if (filterStock !== 'all') {
@@ -283,7 +322,7 @@ export default function ProductsListPage() {
         
         setFiltered(base);
         setCurrentPage(1); // Reset to first page when filters change
-    }, [products, searchResults, filterCategory, filterStock, filterPrice, filterBestSeller, overrideMap]);
+    }, [products, searchResults, filterCategory, filterSubCategory, filterStock, filterPrice, filterBestSeller, overrideMap, allCategories]);
 
     // --- Pagination helpers ---
     const totalPages = Math.ceil(filtered.length / itemsPerPage);
@@ -400,6 +439,33 @@ export default function ProductsListPage() {
         setDraftsLoading(false);
     };
 
+    const handleToggleSelect = (id: string) => {
+        setSelectedIds(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) {
+                next.delete(id);
+            } else {
+                next.add(id);
+            }
+            return next;
+        });
+    };
+
+    const handleToggleSelectAll = () => {
+        const currentPageIds = paginatedProducts.map(p => p.product_id);
+        const allSelected = currentPageIds.every(id => selectedIds.has(id));
+
+        setSelectedIds(prev => {
+            const next = new Set(prev);
+            if (allSelected) {
+                currentPageIds.forEach(id => next.delete(id));
+            } else {
+                currentPageIds.forEach(id => next.add(id));
+            }
+            return next;
+        });
+    };
+
     const getStockBadge = (qty: number) => {
         if (qty <= 0) return { text: 'Out of stock', className: 'bg-red-100 text-red-700 border-red-200' };
         if (qty <= LOW_STOCK_THRESHOLD) return { text: `${qty} left`, className: 'bg-amber-50 text-amber-700 border-amber-200' };
@@ -454,6 +520,7 @@ export default function ProductsListPage() {
                 isOpen={bulkDiscountOpen}
                 onClose={() => setBulkDiscountOpen(false)}
                 onApply={() => { loadProducts(); setBulkDiscountOpen(false); }}
+                selectedIds={Array.from(selectedIds)}
             />
             <BulkImportModal
                 isOpen={bulkImportOpen}
@@ -479,113 +546,120 @@ export default function ProductsListPage() {
 
             {/* ── Drafts Modal ── */}
             {draftsOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
                     {/* Backdrop */}
                     <div
-                        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+                        className="absolute inset-0 bg-primary/20 backdrop-blur-md transition-opacity duration-300"
                         onClick={() => setDraftsOpen(false)}
                     />
 
                     {/* Modal Card */}
-                    <div className="relative z-10 w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+                    <div className="relative z-10 w-full max-w-2xl bg-card-bg rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-border/50 animate-fadeInUp">
 
                         {/* Header */}
-                        <div className="px-7 pt-7 pb-5">
-                            <div className="flex items-start justify-between mb-1">
+                        <div className="px-8 pt-8 pb-6 bg-gradient-to-br from-page-bg to-card-bg">
+                            <div className="flex items-start justify-between">
                                 <div>
-                                    <h2 className="font-serif text-2xl font-bold text-[#8B4A1C]">Draft Products</h2>
-                                    <p className="text-sm text-[#9C7B5B] mt-1">
+                                    <h2 className="font-serif text-3xl font-bold text-primary">Draft Products</h2>
+                                    <p className="text-sm text-text-secondary mt-1.5 flex items-center gap-2">
+                                        <span className="inline-block w-2 h-2 rounded-full bg-gold animate-pulse" />
                                         {draftsLoading
-                                            ? 'Loading your drafts...'
+                                            ? 'Syncing your herbal drafts...'
                                             : `${drafts.length} draft${drafts.length !== 1 ? 's' : ''} saved — pick up where you left off.`}
                                     </p>
                                 </div>
                                 <button
                                     onClick={() => setDraftsOpen(false)}
-                                    className="rounded-full p-1.5 text-[#9C7B5B] hover:bg-[#F5EDE2] transition-colors"
+                                    className="rounded-full p-2 text-text-muted hover:bg-primary/5 hover:text-primary transition-all duration-300"
                                 >
                                     <X className="h-5 w-5" />
                                 </button>
                             </div>
-                            <div className="mt-5 border-t border-[#EDE0D0]" />
+                            <div className="mt-6 h-px bg-gradient-to-r from-border/0 via-border to-border/0" />
                         </div>
 
                         {/* Body */}
-                        <div className="flex-1 overflow-y-auto px-7 pb-3">
+                        <div className="flex-1 overflow-y-auto px-8 pb-4 custom-scrollbar">
                             {draftsLoading ? (
-                                <div className="flex flex-col gap-3 py-2">
+                                <div className="flex flex-col gap-4 py-4">
                                     {Array.from({ length: 3 }).map((_, i) => (
-                                        <div key={i} className="h-[72px] rounded-xl bg-[#FAF4ED] animate-pulse" />
+                                        <div key={i} className="h-20 rounded-xl bg-page-bg/50 animate-shimmer border border-border/30" />
                                     ))}
                                 </div>
                             ) : drafts.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center py-14 gap-3">
-                                    <div className="h-14 w-14 rounded-full bg-[#F5EDE2] flex items-center justify-center">
-                                        <FileEdit className="h-7 w-7 text-[#C49A6C]" />
+                                <div className="flex flex-col items-center justify-center py-20 gap-4">
+                                    <div className="h-20 w-20 rounded-full bg-primary/5 flex items-center justify-center border border-primary/10">
+                                        <FileEdit className="h-9 w-9 text-primary/60" />
                                     </div>
-                                    <p className="text-sm font-medium text-[#8B6B4A]">No drafts saved yet</p>
-                                    <p className="text-xs text-[#B09070] text-center max-w-[220px]">
-                                        Start filling a product form and click&nbsp;<strong>Save as Draft</strong>&nbsp;to continue later.
-                                    </p>
+                                    <div className="text-center">
+                                        <p className="text-lg font-serif font-semibold text-text-primary">No drafts saved yet</p>
+                                        <p className="text-sm text-text-muted mt-1 max-w-[280px]">
+                                            Start filling a product form and click&nbsp;<strong>Save as Draft</strong>&nbsp;to continue later.
+                                        </p>
+                                    </div>
                                     <Link
                                         href="/dashboard/products/add"
                                         onClick={() => setDraftsOpen(false)}
-                                        className="mt-1 inline-flex items-center gap-1.5 rounded-lg bg-[#8B4A1C] px-4 py-2 text-sm font-semibold text-[#F5EDE2] hover:bg-[#7A3F18] transition-colors"
+                                        className="mt-2 inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-[#E8D8B9] hover:bg-primary-dark transition-all duration-300 shadow-md hover:shadow-lg"
                                     >
                                         <Plus className="h-4 w-4" /> New Product
                                     </Link>
                                 </div>
                             ) : (
-                                <div className="flex flex-col divide-y divide-[#EDE0D0]">
+                                <div className="flex flex-col space-y-3 py-4">
                                     {drafts.map(draft => (
                                         <div
                                             key={draft.product_id}
-                                            className="group flex items-center gap-4 py-4 px-1 hover:bg-[#FAF4ED] rounded-xl transition-colors duration-150 -mx-1 px-2"
+                                            className="group flex items-center gap-4 py-3.5 px-4 bg-page-bg/30 hover:bg-white dark:hover:bg-primary/5 border border-transparent hover:border-border/40 rounded-2xl transition-all duration-300 hover:shadow-sm"
                                         >
                                             {/* Thumbnail */}
-                                            <div className="h-12 w-12 flex-shrink-0 rounded-xl bg-[#F5EDE2] border border-[#E8D5BC] flex items-center justify-center overflow-hidden">
+                                            <div className="h-14 w-14 flex-shrink-0 rounded-xl bg-card-bg border border-border/50 flex items-center justify-center overflow-hidden shadow-inner">
                                                 {draft.images && draft.images.length > 0 ? (
-                                                    <img src={draft.images[0]} alt={draft.product_name} className="h-12 w-12 object-cover" />
+                                                    <img src={draft.images[0]} alt={draft.product_name} className="h-14 w-14 object-cover" />
                                                 ) : (
-                                                    <span className="text-xl">🌿</span>
+                                                    <span className="text-2xl">🌱</span>
                                                 )}
                                             </div>
-
+ 
                                             {/* Info */}
                                             <div className="flex-1 min-w-0">
-                                                <p className="text-sm font-semibold text-[#4A2C1A] truncate">{draft.product_name}</p>
-                                                <div className="flex items-center gap-2 mt-0.5">
+                                                <p className="text-sm font-bold text-text-primary truncate transition-colors group-hover:text-primary">{draft.product_name}</p>
+                                                <div className="flex flex-wrap items-center gap-2 mt-1">
                                                     {draft.sku && (
-                                                        <span className="font-mono text-[10px] text-[#9C7B5B] bg-[#F5EDE2] px-1.5 py-0.5 rounded">
+                                                        <span className="font-mono text-[10px] font-bold text-gold-muted bg-gold/10 px-2 py-0.5 rounded-md border border-gold/5">
                                                             {draft.sku}
                                                         </span>
                                                     )}
                                                     {draft.category && (
-                                                        <span className="text-[10px] text-[#B09070]">{draft.category}</span>
+                                                        <span className="text-[10px] font-medium text-text-muted bg-page-bg px-2 py-0.5 rounded-md border border-border/40">
+                                                            {draft.category}
+                                                        </span>
                                                     )}
                                                 </div>
                                                 {draft.created_at && (
-                                                    <p className="text-[10px] text-[#C4A882] mt-0.5">
-                                                        Saved {new Date(draft.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                    <p className="text-[10px] text-text-muted/60 mt-1.5 flex items-center gap-1">
+                                                        <span>Last saved</span>
+                                                        <span className="h-1 w-1 rounded-full bg-border" />
+                                                        <span>{new Date(draft.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                                                     </p>
                                                 )}
                                             </div>
-
+ 
                                             {/* Actions */}
-                                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                                            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
                                                 <Link
                                                     href={`/dashboard/products/edit/${draft.slug || draft.product_id}`}
-                                                    className="flex items-center gap-1.5 rounded-lg bg-[#8B4A1C] px-3 py-1.5 text-xs font-semibold text-[#F5EDE2] hover:bg-[#7A3F18] transition-colors"
+                                                    className="flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-bold text-[#E8D8B9] hover:bg-primary-dark transition-all duration-300 shadow-sm"
                                                     title="Continue editing"
                                                 >
                                                     <Pencil className="h-3 w-3" /> Edit
                                                 </Link>
                                                 <button
                                                     onClick={() => handleDeleteDraft(draft.product_id, draft.product_name)}
-                                                    className="rounded-lg p-1.5 text-[#C49A6C] hover:text-red-500 hover:bg-red-50 transition-colors"
+                                                    className="rounded-lg p-2 text-text-muted hover:text-danger hover:bg-danger/5 transition-all duration-300"
                                                     title="Delete draft"
                                                 >
-                                                    <Trash2 className="h-4 w-4" />
+                                                    <Trash2 className="h-4.5 w-4.5" />
                                                 </button>
                                             </div>
                                         </div>
@@ -595,19 +669,22 @@ export default function ProductsListPage() {
                         </div>
 
                         {/* Footer */}
-                        <div className="px-7 py-5 border-t border-[#EDE0D0] flex items-center justify-between bg-[#FAF7F3]">
-                            <p className="text-xs text-[#B09070]">Drafts are not visible to customers.</p>
-                            <div className="flex items-center gap-3">
+                        <div className="px-8 py-6 border-t border-border/40 flex items-center justify-between bg-page-bg/50">
+                            <div className="flex items-center gap-2 text-text-muted">
+                                <span className="w-1.5 h-1.5 rounded-full bg-border" />
+                                <p className="text-xs font-medium">Drafts are not visible to customers.</p>
+                            </div>
+                            <div className="flex items-center gap-4">
                                 <button
                                     onClick={() => setDraftsOpen(false)}
-                                    className="text-sm font-medium text-[#9C7B5B] hover:text-[#6B3A14] transition-colors px-1"
+                                    className="text-sm font-semibold text-text-muted hover:text-primary transition-colors px-2"
                                 >
                                     Close
                                 </button>
                                 <Link
                                     href="/dashboard/products/add"
                                     onClick={() => setDraftsOpen(false)}
-                                    className="flex items-center gap-1.5 rounded-lg bg-[#8B4A1C] px-4 py-2 text-sm font-semibold text-[#F5EDE2] hover:bg-[#7A3F18] transition-colors"
+                                    className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-bold text-[#E8D8B9] hover:bg-primary-dark transition-all duration-300 shadow-sm"
                                 >
                                     <Plus className="h-4 w-4" /> New Product
                                 </Link>
@@ -617,71 +694,190 @@ export default function ProductsListPage() {
                 </div>
             )}
 
-
-
-            {/* Filters & Search */}
-            <div className="mb-4 flex flex-col xl:flex-row gap-3">
-                <div className="relative flex-1 max-w-md">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
+            {/* Filters & Search Row */}
+            <div className="mb-4 flex flex-col md:flex-row gap-3 items-center">
+                <div className="relative flex-1 group">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted group-focus-within:text-gold transition-colors duration-200" />
                     <input
                         type="text"
                         value={search}
                         onChange={e => setSearch(e.target.value)}
-                        placeholder="Search products..."
-                        className="w-full rounded-lg border border-border bg-card-bg pl-10 pr-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none transition-colors duration-300"
+                        placeholder="Search products by name, SKU or brand..."
+                        className="w-full rounded-xl border border-border bg-card-bg/50 backdrop-blur-sm pl-10 pr-4 py-2.5 text-sm focus:border-gold/40 focus:ring-4 focus:ring-gold/5 focus:outline-none transition-all duration-300"
                     />
                 </div>
-                <div className="flex flex-wrap gap-3 flex-1 xl:justify-end">
-                    <div className="relative">
-                        <select
-                            value={filterCategory}
-                            onChange={(e) => setFilterCategory(e.target.value)}
-                            className="appearance-none rounded-lg border border-border bg-card-bg px-3 py-2.5 pr-8 text-sm text-text-primary focus:border-gold/40 focus:outline-none cursor-pointer"
-                        >
-                            <option value="all">All Categories</option>
-                            {Array.from(new Set(products.map(p => p.category).filter(Boolean))).map(cat => (
-                                <option key={cat} value={cat}>{cat}</option>
-                            ))}
-                        </select>
-                        <ChevronDown className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted pointer-events-none" />
-                    </div>
-                    <div className="relative">
-                        <select
-                            value={filterStock}
-                            onChange={(e) => setFilterStock(e.target.value)}
-                            className="appearance-none rounded-lg border border-border bg-card-bg px-3 py-2.5 pr-8 text-sm text-text-primary focus:border-gold/40 focus:outline-none cursor-pointer"
-                        >
-                            <option value="all">All Stock Status</option>
-                            <option value="in_stock">In Stock</option>
-                            <option value="low_stock">Low Stock</option>
-                            <option value="out_of_stock">Out of Stock</option>
-                        </select>
-                        <ChevronDown className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted pointer-events-none" />
-                    </div>
-                    <div className="relative">
-                        <select
-                            value={filterPrice}
-                            onChange={(e) => setFilterPrice(e.target.value)}
-                            className="appearance-none rounded-lg border border-border bg-card-bg px-3 py-2.5 pr-8 text-sm text-text-primary focus:border-gold/40 focus:outline-none cursor-pointer"
-                        >
-                            <option value="all">All Prices</option>
-                            <option value="under_500">Under ₹500</option>
-                            <option value="500_1500">₹500 - ₹1500</option>
-                            <option value="over_1500">Over ₹1500</option>
-                        </select>
-                        <ChevronDown className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted pointer-events-none" />
-                    </div>
-                    <div className="relative">
-                        <select
-                            value={filterBestSeller}
-                            onChange={(e) => setFilterBestSeller(e.target.value)}
-                            className="appearance-none rounded-lg border border-border bg-card-bg px-3 py-2.5 pr-8 text-sm text-text-primary focus:border-gold/40 focus:outline-none cursor-pointer"
-                        >
-                            <option value="all">Any Status</option>
-                            <option value="best_seller">Best Sellers Only</option>
-                        </select>
-                        <ChevronDown className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted pointer-events-none" />
-                    </div>
+
+                <div className="relative">
+                    <button
+                        onClick={() => setShowFilters(!showFilters)}
+                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all duration-300 text-sm font-medium ${
+                            showFilters || [filterCategory, filterStock, filterPrice, filterBestSeller].some(f => f !== 'all') || filterCategory === 'none'
+                                ? 'bg-gold/10 border-gold/30 text-gold-muted ring-4 ring-gold/5'
+                                : 'bg-card-bg border-border text-text-secondary hover:border-gold/30 hover:text-gold-muted'
+                        }`}
+                    >
+                        <SlidersHorizontal className="h-4 w-4" />
+                        <span>Filters</span>
+                        {(() => {
+                            const count = [
+                                filterCategory !== 'all',
+                                filterSubCategory !== 'all',
+                                filterStock !== 'all',
+                                filterPrice !== 'all',
+                                filterBestSeller !== 'all'
+                            ].filter(Boolean).length;
+                            return count > 0 ? (
+                                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gold text-[10px] text-black font-bold animate-fadeIn">
+                                    {count}
+                                </span>
+                            ) : null;
+                        })()}
+                    </button>
+
+                    {/* Filter Overlay Popup */}
+                    {showFilters && (
+                        <>
+                            <div 
+                                className="fixed inset-0 z-[60] bg-black/5" 
+                                onClick={() => setShowFilters(false)}
+                            />
+                            <div className="absolute right-0 mt-2 w-80 z-[70] bg-card-bg border border-border rounded-2xl shadow-2xl p-5 overflow-hidden animate-fadeInUp">
+                                <div className="flex items-center justify-between mb-5">
+                                    <h3 className="text-sm font-semibold text-text-primary flex items-center gap-2">
+                                        <Filter className="h-4 w-4 text-gold" />
+                                        Refine Products
+                                    </h3>
+                                    <button 
+                                        onClick={() => {
+                                            setFilterCategory('all');
+                                            setFilterSubCategory('all');
+                                            setFilterStock('all');
+                                            setFilterPrice('all');
+                                            setFilterBestSeller('all');
+                                            setShowFilters(false);
+                                        }}
+                                        className="text-xs text-gold-muted hover:text-gold font-medium transition-colors"
+                                    >
+                                        Clear All
+                                    </button>
+                                </div>
+
+                                <div className="space-y-5">
+                                    {/* Category */}
+                                    <div className="space-y-2">
+                                        <label className="text-[11px] font-bold text-text-muted uppercase tracking-wider">Main Category</label>
+                                        <div className="relative">
+                                            <select
+                                                value={filterCategory}
+                                                onChange={(e) => {
+                                                    setFilterCategory(e.target.value);
+                                                    setFilterSubCategory('all');
+                                                }}
+                                                className="w-full appearance-none rounded-xl border border-border bg-card-bg/50 px-3 py-2.5 pr-8 text-sm text-text-primary focus:border-gold/40 focus:outline-none cursor-pointer transition-colors"
+                                            >
+                                                <option value="all">Every Category</option>
+                                                <option value="none">Uncategorized</option>
+                                                {allCategories.filter(cat => !cat.parent_id).map(cat => (
+                                                    <option key={cat.category_id} value={cat.name}>{cat.name}</option>
+                                                ))}
+                                                {Array.from(new Set(products.map(p => p.category).filter(cat => cat && !allCategories.some(ac => ac.name === cat)))).map(cat => (
+                                                    <option key={cat} value={cat!}>{cat}</option>
+                                                ))}
+                                            </select>
+                                            <ChevronDown className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted pointer-events-none" />
+                                        </div>
+                                    </div>
+
+                                    {/* Sub Category */}
+                                    {filterCategory !== 'all' && filterCategory !== 'none' && (
+                                        <div className="space-y-2 animate-fadeIn">
+                                            <label className="text-[11px] font-bold text-text-muted uppercase tracking-wider">Sub Category</label>
+                                            <div className="relative">
+                                                <select
+                                                    value={filterSubCategory}
+                                                    onChange={(e) => setFilterSubCategory(e.target.value)}
+                                                    className="w-full appearance-none rounded-xl border border-border bg-card-bg/50 px-3 py-2.5 pr-8 text-sm text-text-primary focus:border-gold/40 focus:outline-none cursor-pointer transition-colors"
+                                                >
+                                                    <option value="all">All Subgroups</option>
+                                                    {(() => {
+                                                        const parent = allCategories.find(c => c.name === filterCategory);
+                                                        if (!parent) return null;
+                                                        return allCategories
+                                                            .filter(c => c.parent_id === parent.category_id)
+                                                            .map(sub => (
+                                                                <option key={sub.category_id} value={sub.name}>{sub.name}</option>
+                                                            ));
+                                                    })()}
+                                                </select>
+                                                <ChevronDown className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted pointer-events-none" />
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        {/* Stock Status */}
+                                        <div className="space-y-2">
+                                            <label className="text-[11px] font-bold text-text-muted uppercase tracking-wider">Stock</label>
+                                            <div className="relative">
+                                                <select
+                                                    value={filterStock}
+                                                    onChange={(e) => setFilterStock(e.target.value)}
+                                                    className="w-full appearance-none rounded-xl border border-border bg-card-bg/50 px-3 py-2.5 pr-8 text-sm text-text-primary focus:border-gold/40 focus:outline-none cursor-pointer"
+                                                >
+                                                    <option value="all">Any</option>
+                                                    <option value="in_stock">Available</option>
+                                                    <option value="low_stock">Running Low</option>
+                                                    <option value="out_of_stock">Out</option>
+                                                </select>
+                                                <ChevronDown className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted pointer-events-none" />
+                                            </div>
+                                        </div>
+
+                                        {/* Pricing */}
+                                        <div className="space-y-2">
+                                            <label className="text-[11px] font-bold text-text-muted uppercase tracking-wider">Price Range</label>
+                                            <div className="relative">
+                                                <select
+                                                    value={filterPrice}
+                                                    onChange={(e) => setFilterPrice(e.target.value)}
+                                                    className="w-full appearance-none rounded-xl border border-border bg-card-bg/50 px-3 py-2.5 pr-8 text-sm text-text-primary focus:border-gold/40 focus:outline-none cursor-pointer"
+                                                >
+                                                    <option value="all">Any</option>
+                                                    <option value="under_500">&lt; ₹500</option>
+                                                    <option value="500_1500">₹500-1500</option>
+                                                    <option value="over_1500">&gt; ₹1500</option>
+                                                </select>
+                                                <ChevronDown className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted pointer-events-none" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Availability/Best Seller */}
+                                    <div className="space-y-2">
+                                        <label className="text-[11px] font-bold text-text-muted uppercase tracking-wider">Highlights</label>
+                                        <div className="relative">
+                                            <select
+                                                value={filterBestSeller}
+                                                onChange={(e) => setFilterBestSeller(e.target.value)}
+                                                className="w-full appearance-none rounded-xl border border-border bg-card-bg/50 px-3 py-2.5 pr-8 text-sm text-text-primary focus:border-gold/40 focus:outline-none cursor-pointer"
+                                            >
+                                                <option value="all">Show All Products</option>
+                                                <option value="best_seller">⭐ Best Sellers Only</option>
+                                            </select>
+                                            <ChevronDown className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted pointer-events-none" />
+                                        </div>
+                                    </div>
+
+                                    <button 
+                                        onClick={() => setShowFilters(false)}
+                                        className="w-full mt-2 bg-gold hover:bg-gold-dark text-black font-semibold py-3 rounded-xl transition-all duration-300 shadow-lg shadow-gold/10"
+                                    >
+                                        Apply Filters
+                                    </button>
+                                </div>
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
 
@@ -697,7 +893,17 @@ export default function ProductsListPage() {
                                 <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider">Price</th>
                                 <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider text-center">Best Seller</th>
                                 <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider">Stock</th>
-                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider text-right">Actions</th>
+                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider text-right">
+                                    <div className="flex items-center justify-end gap-3">
+                                        <input
+                                            type="checkbox"
+                                            checked={paginatedProducts.length > 0 && paginatedProducts.every(p => selectedIds.has(p.product_id))}
+                                            onChange={handleToggleSelectAll}
+                                            className="h-4 w-4 rounded border-border text-primary focus:ring-primary/30 transition-all duration-300 cursor-pointer accent-primary"
+                                        />
+                                        <span>Actions</span>
+                                    </div>
+                                </th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border-subtle">
@@ -756,11 +962,14 @@ export default function ProductsListPage() {
                                                     <span className="font-mono text-xs text-text-secondary">{product.sku}</span>
                                                 </td>
                                                 <td className="px-4 py-3">
-                                                    {product.category && (
-                                                        <span className="inline-block rounded-full bg-gold/10 px-2 py-0.5 text-[10px] font-medium text-gold-muted">
-                                                            {product.category}
-                                                        </span>
-                                                    )}
+                                                    {(() => {
+                                                        const catName = product.category || allCategories.find(c => c.category_id === product.category_id)?.name;
+                                                        return catName ? (
+                                                            <span className="inline-block rounded-full bg-gold/10 px-2 py-0.5 text-[10px] font-medium text-gold-muted">
+                                                                {catName}
+                                                            </span>
+                                                        ) : null;
+                                                    })()}
                                                 </td>
                                                 <td className="px-4 py-3 text-sm font-medium text-gold">
                                                     ₹{(product.price ?? 0).toLocaleString('en-IN')}
@@ -802,6 +1011,12 @@ export default function ProductsListPage() {
                                                 </td>
                                                 <td className="px-4 py-3">
                                                     <div className="flex items-center justify-end gap-1">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={selectedIds.has(product.product_id)}
+                                                            onChange={() => handleToggleSelect(product.product_id)}
+                                                            className="h-4 w-4 mr-2 rounded border-border text-primary focus:ring-primary/30 transition-all duration-300 cursor-pointer accent-primary"
+                                                        />
                                                         <Link
                                                             href={`/dashboard/products/edit/${product.slug || product.product_id}`}
                                                             className="rounded-lg p-2 text-text-muted hover:text-gold hover:bg-gold/[0.08] transition-all duration-300"
@@ -1000,7 +1215,7 @@ export default function ProductsListPage() {
                         </div>
                     </div>
                 )}
-            </div >
-        </div >
+            </div>
+        </div>
     );
 }

@@ -103,37 +103,84 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
     };
 
     const handleDownloadTemplate = (format: 'csv' | 'xlsx') => {
-        // Template columns match the Add Product page fields exactly
-        // General Info (Step 1) + Variant fields (Step 3)
+        // Template columns match the new 3-variant wide format exactly
         const data = [
             {
-                // ── Variant identifier ──────────────────────────
-                SKU: "VED-001",
-                Variant_Name: "60 Capsules Single",
                 // ── General / Product-level ─────────────────────
-                Product_Name: "Ashwagandha Prowess",
-                Brand: "Vedashi",
-                Category: "Wellness",
-                Sub_Category: "Capsules",
-                Country_of_Origin: "India",
-                Intended_Use: "Daily wellness",
-                Description: "A premium ayurvedic supplement for vitality and stress relief.",
-                Available_From: "",        // e.g. 2025-01-01
-                Available_Until: "",       // e.g. 2025-12-31
-                // ── Variant-level ───────────────────────────────
-                Volume: "750 ml",          // e.g. "750 ml" or "1 L"
-                Pack: "Single",            // e.g. Single / Pack of 6 / Case
-                Price: "450000",
-                Cost_Price: "300000",
-                Stock: "50",
-                Sale_Price: "",            // Leave blank for no sale
-                Sale_Start_Date: "",       // e.g. 2025-06-01
-                Sale_End_Date: "",         // e.g. 2025-06-30
-                Shelf_Life_Months: "",     // e.g. 24
-                Length_cm: "",
-                Width_cm: "",
-                Height_cm: "",
-                Weight_kg: "",
+                'Product Name': "Ashwagandha Prowess",
+                'Brand': "Vedashi",
+                'Category': "Wellness",
+                'Subcategory': "Capsules",
+                'Country of Origin': "India",
+                'Form': "Capsules",
+                'Speciality': "Ayurvedic",
+                'Speciality_2': "Organic",
+                'Speciality_3': "",
+                'Intended Use': "Daily wellness",
+                'Description': "A premium ayurvedic supplement for vitality and stress relief.",
+                
+                // ── Variant 1 ───────────────────────────────
+                'Variant_name1': "60 Capsules Single",
+                'SKU1': "VED-001",
+                'Price 1': "450",
+                'Stock 1': "50",
+                'weight 1': "150",
+                'weight_unit 1': "g",
+                'volume 1': "",
+                'volume_unit 1': "",
+                'Count 1': "60",
+                'Count_unit 1': "Capsules",
+                'Strength 1': "500",
+                'Strength_unit 1': "mg",
+                'Flavor 1': "",
+                'Pack_quantity 1': "1",
+                'Cost_price($) 1': "300",
+                'Shelf_life(months) 1': "24",
+                'Length 1': "10",
+                'width 1': "5",
+                'height 1': "5",
+
+                // ── Variant 2 ───────────────────────────────
+                'Variant_name 2': "120 Capsules Twin Pack",
+                'SKU 2': "VED-002",
+                'Price 2': "800",
+                'Stock 2': "30",
+                'weight 2': "300",
+                'weight_unit 2': "g",
+                'volume 2': "",
+                'volume_unit 2': "",
+                'Count 2': "120",
+                'Count_unit 2': "Capsules",
+                'Strength 2': "500",
+                'Strength_unit 2': "mg",
+                'Flavor 2': "",
+                'Pack_quantity 2': "2",
+                'Cost_price($) 2': "550",
+                'Shelf_life(months) 2': "24",
+                'Length 2': "10",
+                'width 2': "10",
+                'height 2': "5",
+
+                // ── Variant 3 ───────────────────────────────
+                'Variant_name 3': "",
+                'SKU 3': "",
+                'Price 3': "",
+                'Stock 3': "",
+                'weight 3': "",
+                'weight_unit 3': "",
+                'volume 3': "",
+                'volume_unit 3': "",
+                'Count 3': "",
+                'Count_unit 3': "",
+                'Strength 3': "",
+                'Strength_unit 3': "",
+                'Flavor 3': "",
+                'Pack_quantity 3': "",
+                'Cost_price($) 3': "",
+                'Shelf_life(months) 3': "",
+                'Length 3': "",
+                'width 3': "",
+                'height 3': ""
             }
         ];
 
@@ -225,11 +272,11 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
                                 <h3 className="text-sm font-semibold text-amber-800 mb-2">Important Instructions</h3>
                                 <ul className="text-sm text-amber-900/80 space-y-1.5 list-disc pl-4">
                                     <li>The file must be a valid <strong>.csv, .xlsx, or .xls</strong> file.</li>
-                                    <li><strong>SKU</strong>, <strong>Product_Name</strong>, <strong>Variant_Name</strong>, <strong>Volume</strong>, and <strong>Price</strong> are required for new products.</li>
+                                    <li><strong>SKU 1</strong>, <strong>Product Name</strong>, and <strong>Price 1</strong> are required for new products.</li>
                                     <li>If the SKU exists, the product will be <strong>updated</strong>. If not, a new product will be <strong>created</strong>.</li>
-                                    <li>To add <strong>multiple variants</strong> for one product, repeat the same <strong>Product_Name</strong> on multiple rows with different SKUs, Volumes, or Packs.</li>
+                                    <li>You can add up to <strong>3 variants</strong> per row (e.g., using SKU 1, SKU 2, SKU 3).</li>
                                     <li>New products are imported as <strong>Drafts</strong> by default for your review.</li>
-                                    <li>Volume format: <strong>750 ml</strong> or <strong>1 L</strong>. Pack example: <strong>Single</strong>, <strong>Pack of 6</strong>, <strong>Case</strong>.</li>
+                                    <li>Volume format: <strong>750 ml</strong>. Pack quantity: <strong>1</strong>, <strong>6</strong>, etc.</li>
                                 </ul>
                                 <div className="mt-5 flex items-center gap-3">
                                     <button
