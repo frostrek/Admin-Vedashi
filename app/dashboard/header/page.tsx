@@ -133,6 +133,7 @@ export default function HeaderManagementPage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [activeSection, setActiveSection] = useState<string | null>(null);
+    const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
     const getCsrfToken = useCallback((): string | null => {
         if (typeof document === 'undefined') return null;
@@ -202,6 +203,27 @@ export default function HeaderManagementPage() {
         setHeader(prev => prev ? { ...prev, [section]: value } : prev);
     };
 
+    const handleDragStart = (index: number) => {
+        setDraggedIndex(index);
+    };
+
+    const handleDragOver = (e: React.DragEvent, index: number) => {
+        e.preventDefault();
+        if (draggedIndex === null || draggedIndex === index) return;
+
+        const links = [...(header?.nav_links || [])];
+        const draggedItem = links[draggedIndex];
+        links.splice(draggedIndex, 1);
+        links.splice(index, 0, draggedItem);
+        
+        setDraggedIndex(index);
+        update('nav_links', links);
+    };
+
+    const handleDragEnd = () => {
+        setDraggedIndex(null);
+    };
+
     const SaveBtn = ({ section }: { section: keyof HeaderData }) => (
         <button
             onClick={() => saveSection(section)}
@@ -246,7 +268,7 @@ export default function HeaderManagementPage() {
                         <h1 className="text-3xl font-serif font-bold text-gold tracking-tighter">Header Canvas</h1>
                     </div>
                     <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-muted">
-                        Configure your storefront architecture — links, visual synthesis, and branding.
+                        Configure your storefront architecture — navigation links and dynamic settings.
                     </p>
                 </div>
                 <div className="flex items-center gap-3 flex-shrink-0">
@@ -290,159 +312,6 @@ export default function HeaderManagementPage() {
                     </div>
                 </div>
 
-                {/* ── 1. Branding ───────────────────────────────── */}
-                <SectionCard icon={Layout} title="Branding">
-                    <div className="grid grid-cols-2 gap-4 mt-4">
-                        {/* Logo Upload */}
-                        <Field label="Logo Image" hint="Upload a PNG / SVG / WebP. Stored as base64 — no external URL needed.">
-                            <div className="space-y-4">
-                                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-2xl cursor-pointer hover:border-gold/30 hover:bg-primary/5 transition-all duration-300 group">
-                                    <div className="flex flex-col items-center gap-2 text-text-muted/60 group-hover:text-gold transition-colors">
-                                        <Layout className="w-7 h-7" />
-                                        <span className="text-[10px] font-bold uppercase tracking-widest">Select Visual Asset</span>
-                                        <span className="text-[9px] opacity-60">PNG, SVG, WebP, JPG</span>
-                                    </div>
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        className="sr-only"
-                                        onChange={e => {
-                                            const file = e.target.files?.[0];
-                                            if (!file) return;
-                                            const reader = new FileReader();
-                                            reader.onload = ev => {
-                                                const result = ev.target?.result as string;
-                                                update('branding', { ...header.branding, logo_url: result });
-                                            };
-                                            reader.readAsDataURL(file);
-                                        }}
-                                    />
-                                </label>
-                                {header.branding.logo_url && (
-                                    <button
-                                        onClick={() => update('branding', { ...header.branding, logo_url: '' })}
-                                        className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-danger hover:text-danger/70 transition-colors"
-                                    >
-                                        <Trash2 className="w-3.5 h-3.5" /> Purge Asset
-                                    </button>
-                                )}
-                            </div>
-                        </Field>
-
-                        <Field label="Logo Alt Text">
-                            <input
-                                className={inputCls}
-                                value={header.branding.logo_alt}
-                                onChange={e => update('branding', { ...header.branding, logo_alt: e.target.value })}
-                                placeholder="Vedashi"
-                            />
-                        </Field>
-
-                        {/* Preview */}
-                        {header.branding.logo_url && (
-                            <div className="col-span-2 space-y-3">
-                                <p className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em]">Visual Preview</p>
-                                <div className="p-6 bg-black/40 rounded-2xl border border-border flex items-center justify-center gap-6 shadow-inner">
-                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <div className="bg-white/5 p-4 rounded-xl border border-white/10">
-                                        <img src={header.branding.logo_url} alt={header.branding.logo_alt} className="h-16 w-auto object-contain brightness-110 drop-shadow-md" />
-                                    </div>
-                                    <span className="text-[10px] font-bold uppercase tracking-widest text-gold/60">{header.branding.logo_alt}</span>
-                                </div>
-                            </div>
-                        )}
-                        <div className="col-span-2 flex justify-end"><SaveBtn section="branding" /></div>
-                    </div>
-                </SectionCard>
-
-                {/* ── 2. Colour Palette ─────────────────────────── */}
-                <SectionCard icon={Palette} title="Colour Management">
-                    <div className="mt-4 space-y-5">
-                        <div>
-                            <p className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3">Main Navbar</p>
-                            <div className="grid grid-cols-3 gap-4">
-                                <ColorField
-                                    label="Navbar Background"
-                                    value={header.colors.navbar_bg}
-                                    onChange={v => update('colors', { ...header.colors, navbar_bg: v })}
-                                />
-                                <ColorField
-                                    label="Navbar Text"
-                                    value={header.colors.navbar_text}
-                                    onChange={v => update('colors', { ...header.colors, navbar_text: v })}
-                                />
-                                <ColorField
-                                    label="Hover / Active Colour"
-                                    value={header.colors.navbar_hover}
-                                    onChange={v => update('colors', { ...header.colors, navbar_hover: v })}
-                                />
-                            </div>
-                        </div>
-                        <div>
-                            <p className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3">Strip Bar</p>
-                            <div className="grid grid-cols-3 gap-4">
-                                <ColorField
-                                    label="Strip Background"
-                                    value={header.colors.strip_bg}
-                                    onChange={v => update('colors', { ...header.colors, strip_bg: v })}
-                                />
-                                <ColorField
-                                    label="Strip Text"
-                                    value={header.colors.strip_text}
-                                    onChange={v => update('colors', { ...header.colors, strip_text: v })}
-                                />
-                                <ColorField
-                                    label="Strip Accent (Hotline)"
-                                    value={header.colors.strip_accent}
-                                    onChange={v => update('colors', { ...header.colors, strip_accent: v })}
-                                />
-                            </div>
-                        </div>
-                        <div>
-                            <p className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-3">UI Elements</p>
-                            <div className="grid grid-cols-3 gap-4">
-                                <ColorField
-                                    label="Cart Badge Background"
-                                    value={header.colors.cart_badge_bg}
-                                    onChange={v => update('colors', { ...header.colors, cart_badge_bg: v })}
-                                />
-                            </div>
-                        </div>
-                        {/* Live mini-preview */}
-                        <div className="space-y-4">
-                            <p className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em]">Real-time Synthesis</p>
-                            <div className="rounded-2xl overflow-hidden border border-border shadow-2xl scale-[0.98] origin-left">
-                                {/* Navbar preview */}
-                                <div className="flex items-center justify-between px-5 py-3" style={{ backgroundColor: header.colors.navbar_bg }}>
-                                    <span className="font-bold text-sm" style={{ color: header.colors.navbar_hover }}>Vedashi</span>
-                                    <div className="flex items-center gap-4">
-                                        {['Home', 'Shop', 'Blog'].map(l => (
-                                            <span key={l} className="text-xs font-semibold uppercase tracking-widest" style={{ color: header.colors.navbar_text }}>{l}</span>
-                                        ))}
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <div className="relative">
-                                            <div className="w-5 h-5 rounded-full" style={{ backgroundColor: header.colors.cart_badge_bg }}>
-                                                <span className="text-[9px] text-white flex items-center justify-center h-full font-bold">2</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                {/* Strip preview */}
-                                <div className="flex items-center justify-between px-5 py-1.5" style={{ backgroundColor: header.colors.strip_bg }}>
-                                    <span className="text-[11px] font-medium" style={{ color: header.colors.strip_text }}>Track Orders | Categories</span>
-                                    <span className="text-[11px] font-medium" style={{ color: header.colors.strip_text }}>
-                                        {header.strip.center_message}
-                                    </span>
-                                    <span className="text-[11px] font-semibold" style={{ color: header.colors.strip_accent }}>
-                                        ✆ {header.strip.hotline}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="flex justify-end"><SaveBtn section="colors" /></div>
-                    </div>
-                </SectionCard>
 
                 {/* ── 3. Navigation Links ───────────────────────── */}
                 <SectionCard icon={Link2} title="Navigation Protocol">
@@ -451,9 +320,19 @@ export default function HeaderManagementPage() {
                         {header.nav_links.map((link, i) => (
                             <div
                                 key={i}
-                                className={`grid grid-cols-[auto_1fr_1fr_auto_auto] gap-3 items-center p-4 rounded-2xl border transition-all duration-300 ${link.enabled ? 'border-border bg-black/20' : 'border-border/30 bg-black/10 opacity-40 shadow-inner'}`}
+                                draggable
+                                onDragStart={() => handleDragStart(i)}
+                                onDragOver={(e) => handleDragOver(e, i)}
+                                onDragEnd={handleDragEnd}
+                                className={`group grid grid-cols-[auto_1fr_1fr_auto_auto] gap-3 items-center p-4 rounded-2xl border transition-all duration-300 ${
+                                    draggedIndex === i 
+                                        ? 'opacity-50 border-gold bg-primary/10 scale-[0.98]' 
+                                        : link.enabled 
+                                            ? 'border-border bg-black/20' 
+                                            : 'border-border/30 bg-black/10 opacity-40 shadow-inner'
+                                } cursor-move hover:border-gold/30`}
                             >
-                                <GripVertical className="w-5 h-5 text-text-muted/30 cursor-grab hover:text-gold transition-colors" />
+                                <GripVertical className="w-5 h-5 text-text-muted/30 cursor-grab group-hover:text-gold transition-colors" />
                                 <input
                                     className={inputCls}
                                     value={link.label}
@@ -510,52 +389,6 @@ export default function HeaderManagementPage() {
                     </div>
                 </SectionCard>
 
-                {/* ── 4. Strip Bar ──────────────────────────────── */}
-                <SectionCard icon={Zap} title="Sub-Link Stratum" defaultOpen={true}>
-                    <div className="mt-4 space-y-4">
-                        <Toggle
-                            checked={header.strip.enabled}
-                            onChange={v => update('strip', { ...header.strip, enabled: v })}
-                            label="Manifest Sub-link Stratum"
-                            sub="The secondary atmospheric layer below the primary navbar"
-                        />
-                        <div className={`space-y-4 transition-opacity ${!header.strip.enabled ? 'opacity-40 pointer-events-none' : ''}`}>
-                            <div className="grid grid-cols-2 gap-4">
-                                <Field label="Centre Message">
-                                    <input
-                                        className={inputCls}
-                                        value={header.strip.center_message}
-                                        onChange={e => update('strip', { ...header.strip, center_message: e.target.value })}
-                                        placeholder="✦ Thank You for Choosing Us ✦"
-                                    />
-                                </Field>
-                                <Field label="Hotline Number">
-                                    <input
-                                        className={inputCls}
-                                        value={header.strip.hotline}
-                                        onChange={e => update('strip', { ...header.strip, hotline: e.target.value })}
-                                        placeholder="090 202 5806"
-                                    />
-                                </Field>
-                            </div>
-                            <div className="grid grid-cols-2 gap-3">
-                                <Toggle
-                                    checked={header.strip.show_track_orders}
-                                    onChange={v => update('strip', { ...header.strip, show_track_orders: v })}
-                                    label="Show Track Orders link"
-                                    sub="Left side of the strip bar"
-                                />
-                                <Toggle
-                                    checked={header.strip.show_categories}
-                                    onChange={v => update('strip', { ...header.strip, show_categories: v })}
-                                    label="Show Categories dropdown"
-                                    sub="Left side of the strip bar"
-                                />
-                            </div>
-                        </div>
-                        <div className="flex justify-end"><SaveBtn section="strip" /></div>
-                    </div>
-                </SectionCard>
 
             </div>
 

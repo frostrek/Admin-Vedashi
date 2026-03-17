@@ -1,7 +1,7 @@
 import { authFetch } from '@/lib/api';
 
 import React, { useState, useEffect } from 'react';
-import { X, Percent, Calendar, Tag, Layers, Star, ChevronDown, Loader2, ArrowUpCircle, ArrowDownCircle, DollarSign, Trash2 } from 'lucide-react';
+import { X, Percent, Calendar, Tag, Layers, Star, ChevronDown, Loader2, ArrowUpCircle, ArrowDownCircle, DollarSign, Trash2, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getToken } from '@/lib/auth';
 import { getProducts, Product } from '@/lib/api';
@@ -10,10 +10,11 @@ interface BulkDiscountModalProps {
     isOpen: boolean;
     onClose: () => void;
     onApply: () => void;
+    selectedIds?: string[];
 }
 
-type TargetType = 'category' | 'sub_category' | 'brand' | 'all';
-type BulkActionType = 'discount' | 'pricing';
+type TargetType = 'category' | 'sub_category' | 'brand' | 'all' | 'selected';
+type BulkActionType = 'discount' | 'pricing' | 'custom';
 type AdjustmentMode = 'increase' | 'decrease';
 type ValueType = 'percentage' | 'amount';
 
@@ -25,7 +26,29 @@ interface ActiveDiscount {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
-export default function BulkDiscountModal({ isOpen, onClose, onApply }: BulkDiscountModalProps) {
+const CUSTOM_FIELDS = [
+    { value: 'category', label: 'Category', type: 'category' },
+    { value: 'sub_category', label: 'Subcategory', type: 'sub_category' },
+    { value: 'brand', label: 'Brand', type: 'text' },
+    { value: 'intended_use', label: 'Intended Use', type: 'text' },
+    { value: 'status', label: 'Product Status', type: 'select', options: ['active', 'draft', 'archived'] },
+    { value: 'country_of_origin', label: 'Country of Origin', type: 'text' },
+    { value: 'form', label: 'Product Form', type: 'text' },
+    { value: 'specialities', label: 'Specialities', type: 'text' },
+    { value: 'is_featured', label: 'Featured', type: 'boolean' },
+    { value: 'is_on_sale', label: 'On Sale', type: 'boolean' },
+    { value: 'is_editor_pick', label: 'Editor Pick', type: 'boolean' },
+    { value: 'is_trending', label: 'Trending', type: 'boolean' },
+    { value: 'cost_price', label: 'Cost Price', type: 'number' },
+    { value: 'stock_quantity', label: 'Stock Quantity', type: 'number' },
+    { value: 'shelf_life_months', label: 'Shelf Life (Months)', type: 'number' },
+    { value: 'length_cm', label: 'Length (cm)', type: 'number' },
+    { value: 'width_cm', label: 'Width (cm)', type: 'number' },
+    { value: 'height_cm', label: 'Height (cm)', type: 'number' },
+    { value: 'weight_g', label: 'Weight (g)', type: 'number' },
+] as const;
+
+export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedIds = [] }: BulkDiscountModalProps) {
     // Lock background scroll when modal is open
     useEffect(() => {
         if (isOpen) {
@@ -62,7 +85,10 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply }: BulkDisc
     const [valueType, setValueType] = useState<ValueType>('percentage');
     const [priceValue, setPriceValue] = useState<string>('');
 
-    // Active Discounts State
+    // Custom State
+    const [customField, setCustomField] = useState<string>('');
+    const [customValue, setCustomValue] = useState<any>('');
+
     const [activeDiscounts, setActiveDiscounts] = useState<ActiveDiscount[]>([]);
     const [fetchingDiscounts, setFetchingDiscounts] = useState(false);
 
@@ -134,7 +160,7 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply }: BulkDisc
 
     const handleDiscountSubmit = async (action: 'apply' | 'remove', overrideTargetType?: TargetType, overrideTargetValue?: string) => {
         const payloadTargetType = overrideTargetType || targetType;
-        const payloadTargetValue = overrideTargetType ? overrideTargetValue : targetValue;
+        const payloadTargetValue = overrideTargetType ? overrideTargetValue : (targetType === 'selected' ? selectedIds : targetValue);
 
         let pct: number | undefined;
         if (action === 'apply') {
@@ -166,7 +192,7 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply }: BulkDisc
                 },
                 body: JSON.stringify({
                     targetType: payloadTargetType,
-                    targetValue: payloadTargetType === 'all' ? undefined : payloadTargetValue?.trim(),
+                    targetValue: payloadTargetType === 'all' ? undefined : (Array.isArray(payloadTargetValue) ? payloadTargetValue : payloadTargetValue?.trim()),
                     discountPercentage: pct,
                     saleStart: saleStart ? new Date(saleStart).toISOString() : undefined,
                     saleEnd: saleEnd ? new Date(saleEnd).toISOString() : undefined,
@@ -215,7 +241,7 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply }: BulkDisc
                 },
                 body: JSON.stringify({
                     targetType,
-                    targetValue: targetType === 'all' ? undefined : targetValue.trim(),
+                    targetValue: targetType === 'all' ? undefined : (targetType === 'selected' ? selectedIds : targetValue.trim()),
                     adjustmentMode,
                     valueType,
                     value: val,
@@ -240,10 +266,56 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply }: BulkDisc
         }
     };
 
+    const handleCustomSubmit = async () => {
+        const token = getToken();
+        if (!token) {
+            toast.error('You are not logged in. Please re-login.');
+            return false;
+        }
+
+        setLoading(true);
+        try {
+            const response = await authFetch(`${API_URL}/api/products/bulk-update`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    targetType,
+                    targetValue: targetType === 'all' ? undefined : (targetType === 'selected' ? selectedIds : targetValue.trim()),
+                    field: customField,
+                    value: customValue,
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                toast.success(data.message || 'Bulk update applied successfully!');
+                return true;
+            } else {
+                toast.error(data.message || 'Failed to apply bulk update.');
+                return false;
+            }
+        } catch (error) {
+            console.error('Bulk update error:', error);
+            toast.error('An error occurred while applying the custom update.');
+            return false;
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent | undefined, action: 'apply' | 'remove' = 'apply') => {
         if (e) e.preventDefault();
 
-        if (targetType !== 'all' && !targetValue.trim()) {
+        if (targetType === 'selected' && selectedIds.length === 0) {
+            toast.error('No products selected.');
+            return;
+        }
+
+        if (targetType !== 'all' && targetType !== 'selected' && !targetValue.trim()) {
             toast.error('Please select a target value.');
             return;
         }
@@ -251,8 +323,10 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply }: BulkDisc
         let success = false;
         if (activeTab === 'discount') {
             success = await handleDiscountSubmit(action);
-        } else {
+        } else if (activeTab === 'pricing') {
             success = await handlePricingSubmit();
+        } else {
+            success = await handleCustomSubmit();
         }
 
         if (success) {
@@ -263,6 +337,8 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply }: BulkDisc
             setSaleStart('');
             setSaleEnd('');
             setPriceValue('');
+            setCustomField('');
+            setCustomValue('');
             if (activeTab === 'discount') {
                 fetchActiveDiscounts();
             } else {
@@ -326,6 +402,18 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply }: BulkDisc
                     >
                         Bulk Pricing
                     </button>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setActiveTab('custom');
+                        }}
+                        className={`flex-1 pb-3 text-sm font-semibold transition-colors border-b-2 ${activeTab === 'custom'
+                            ? 'text-gold border-gold'
+                            : 'text-text-secondary border-transparent hover:text-gold-soft'
+                            }`}
+                    >
+                        Custom Update
+                    </button>
                 </div>
 
                 {/* Form Body */}
@@ -341,6 +429,7 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply }: BulkDisc
                                 { value: 'category', label: 'Category', icon: Layers },
                                 { value: 'sub_category', label: 'Subcategory', icon: Layers },
                                 { value: 'brand', label: 'Brand', icon: Star },
+                                ...(selectedIds.length > 0 ? [{ value: 'selected' as const, label: `Selected (${selectedIds.length})`, icon: Check }] : []),
                                 { value: 'all', label: 'All Products', icon: Tag },
                             ] as const).map(({ value, label, icon: Icon }) => (
                                 <label
@@ -366,7 +455,7 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply }: BulkDisc
                     </div>
 
                     {/* Target Value Dropdown */}
-                    {targetType !== 'all' && (
+                    {targetType !== 'all' && targetType !== 'selected' && (
                         <div className="relative">
                             <label className="block text-sm font-medium text-text-secondary mb-1">
                                 {targetType === 'category' ? 'Category' : targetType === 'sub_category' ? 'Subcategory' : 'Brand'}
@@ -630,9 +719,11 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply }: BulkDisc
                                 onClick={(e) => handleSubmit(e, 'apply')}
                                 disabled={
                                     loading ||
-                                    (!targetValue.trim() && targetType !== 'all') ||
+                                    (targetType !== 'all' && targetType !== 'selected' && !targetValue.trim()) ||
+                                    (targetType === 'selected' && selectedIds.length === 0) ||
                                     (activeTab === 'discount' && !discountPercentage) ||
-                                    (activeTab === 'pricing' && !priceValue)
+                                    (activeTab === 'pricing' && !priceValue) ||
+                                    (activeTab === 'custom' && (!customField || customValue === ''))
                                 }
                                 className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary-light text-[#E8D8B9] text-sm font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
@@ -642,7 +733,7 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply }: BulkDisc
                                         Applying...
                                     </>
                                 ) : (
-                                    activeTab === 'discount' ? 'Apply Discount' : 'Update Prices'
+                                    activeTab === 'discount' ? 'Apply Discount' : activeTab === 'pricing' ? 'Update Prices' : 'Update Fields'
                                 )}
                             </button>
                         </div>
