@@ -333,7 +333,6 @@ export default function HeaderManagementPage() {
                     </div>
                 </div>
 
-<<<<<<< HEAD
                 {/* ── 1. Branding ───────────────────────────────── */}
                 <SectionCard icon={Layout} title="Branding">
                     <div className="grid grid-cols-2 gap-4 mt-4">
@@ -494,8 +493,6 @@ export default function HeaderManagementPage() {
                         <div className="flex justify-end"><SaveBtn section="colors" /></div>
                     </div>
                 </SectionCard>
-=======
->>>>>>> ba7ef74af5ff0d6d2f7c8c19f93ecef0889b8820
 
                 {/* ── 3. Navigation Links ───────────────────────── */}
                 <SectionCard icon={Link2} title="Navigation Protocol">
@@ -573,7 +570,6 @@ export default function HeaderManagementPage() {
                     </div>
                 </SectionCard>
 
-<<<<<<< HEAD
                 {/* ── 4. Strip Bar ──────────────────────────────── */}
                 <SectionCard icon={Zap} title="Sub-Link Stratum" defaultOpen={true}>
                     <div className="mt-4 space-y-4">
@@ -623,8 +619,6 @@ export default function HeaderManagementPage() {
                         <div className="flex justify-end"><SaveBtn section="strip" /></div>
                     </div>
                 </SectionCard>
-=======
->>>>>>> ba7ef74af5ff0d6d2f7c8c19f93ecef0889b8820
 
             </div>
 
