@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useAdminAuth } from '@/context/AdminAuthContext';
 import {
     BarChart3,
@@ -11,7 +12,11 @@ import {
     AlertCircle,
     ChevronDown,
     Search,
-    Download
+    Download,
+    X,
+    Calendar,
+    Target,
+    Pencil
 } from 'lucide-react';
 import {
     LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area, ComposedChart
@@ -31,11 +36,29 @@ export default function ProductAnalyticsDashboard() {
     const [conversionData, setConversionData] = useState<any[]>([]);
     const [inventoryData, setInventoryData] = useState<any[]>([]);
 
+    // Modal State
+    const [selectedDate, setSelectedDate] = useState<string | null>(null);
+    const [selectedMetrics, setSelectedMetrics] = useState<any>(null);
+    const [modalTopSelling, setModalTopSelling] = useState<any[]>([]);
+    const [isModalLoading, setIsModalLoading] = useState(false);
+
     useEffect(() => {
         if (!isAuthenticated) return;
         fetchDashboardData();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isAuthenticated, dateRange]);
+
+    // Prevent background scrolling when modal is open
+    useEffect(() => {
+        if (selectedDate) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [selectedDate]);
 
     const fetchDashboardData = async () => {
         setIsLoading(true);
@@ -89,6 +112,59 @@ export default function ProductAnalyticsDashboard() {
 
     const formatNumber = (value: number) => {
         return new Intl.NumberFormat('en-IN').format(value);
+    };
+
+    const handleChartClick = async (data: any, type: 'revenue' | 'conversion') => {
+        // Recharts can pass the payload directly if clicked on Bar/Area, or the state if clicked on Chart
+        let payload = null;
+        if (data && data.activePayload && data.activePayload.length > 0) {
+            payload = data.activePayload[0].payload;
+        } else if (data && data.payload) {
+            payload = data.payload;
+        } else if (data && data.recorded_date) {
+            payload = data;
+        }
+
+        if (!payload) {
+            // Silently ignore clicks on chart background without payload
+            return;
+        }
+        
+        const rawDate = payload.recorded_date || payload.date || payload.displayDate;
+        
+        if (!rawDate) {
+            toast.error('Date data is missing for this point.');
+            return;
+        }
+        
+        // Prevent re-fetching if clicking the same date
+        if (selectedDate === rawDate) return;
+        
+        setSelectedDate(rawDate);
+        setSelectedMetrics({ ...payload, type, displayDate: payload.displayDate || rawDate });
+        setIsModalLoading(true);
+        setModalTopSelling([]);
+
+        try {
+            // Extract local YYYY-MM-DD from the `rawDate` instead of UTC string
+            // Postgres `DATE` sends e.g. "2026-03-15T18:30:00.000Z" for "2026-03-16" in IST
+            const d = new Date(rawDate);
+            const queryDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            const dateQuery = `?date_from=${queryDate}&date_to=${queryDate}&limit=5`;
+            // Also log the query params so we can debug if dates are messed up
+            console.log('Fetching details for date query:', dateQuery);
+            const topSellingRes = await productAnalyticsApi.getTopSelling(dateQuery);
+            if (topSellingRes.success && topSellingRes.data) {
+                // Filter out products with 0 sales and 0 revenue so we don't show empty drivers
+                const filtered = topSellingRes.data.filter((p: any) => p.units_sold > 0 || p.revenue > 0);
+                setModalTopSelling(filtered);
+            }
+        } catch (error) {
+            console.error('Error fetching detail analytics:', error);
+            toast.error('Failed to load daily details');
+        } finally {
+            setIsModalLoading(false);
+        }
     };
 
     if (isLoading) {
@@ -215,7 +291,7 @@ export default function ProductAnalyticsDashboard() {
                     <h2 className="text-sm font-semibold text-text-primary uppercase tracking-wider mb-6">Revenue & Sales Volume</h2>
                     <div className="h-80 w-full">
                         <ResponsiveContainer width="100%" height="100%">
-                            <ComposedChart data={revenueData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                            <ComposedChart data={revenueData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }} onClick={(data) => handleChartClick(data, 'revenue')} className="cursor-pointer">
                                 <defs>
                                     <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="#C9A86A" stopOpacity={0.3} />
@@ -235,7 +311,7 @@ export default function ProductAnalyticsDashboard() {
                                     labelStyle={{ color: 'var(--t-text-muted)', marginBottom: '4px' }}
                                 />
                                 <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
-                                <Area yAxisId="left" type="monotone" dataKey="revenue" fill="url(#colorRevenue)" stroke="#C9A86A" strokeWidth={2} name="revenue" />
+                                <Area yAxisId="left" type="monotone" dataKey="revenue" fill="url(#colorRevenue)" stroke="#C9A86A" strokeWidth={2} name="revenue" activeDot={{ onClick: (e: any, payload: any) => handleChartClick(payload?.payload || e?.payload || e, 'revenue'), cursor: 'pointer' }} />
                                 <Bar yAxisId="right" dataKey="units_sold" fill="#4B5563" radius={[4, 4, 0, 0]} barSize={20} name="Units Sold" />
                             </ComposedChart>
                         </ResponsiveContainer>
@@ -247,7 +323,7 @@ export default function ProductAnalyticsDashboard() {
                     <h2 className="text-sm font-semibold text-text-primary uppercase tracking-wider mb-6">Conversion Funnel</h2>
                     <div className="h-80 w-full">
                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={conversionData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                            <AreaChart data={conversionData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }} onClick={(data) => handleChartClick(data, 'conversion')} className="cursor-pointer">
                                 <defs>
                                     <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3} />
@@ -266,9 +342,9 @@ export default function ProductAnalyticsDashboard() {
                                     labelStyle={{ color: 'var(--t-text-muted)', marginBottom: '4px' }}
                                 />
                                 <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
-                                <Area type="monotone" dataKey="views" stackId="1" stroke="#3B82F6" fill="url(#colorViews)" name="Product Views" />
-                                <Area type="monotone" dataKey="add_to_cart" stackId="2" stroke="#8B5CF6" fill="url(#colorCarts)" name="Add to Cart" />
-                                <Area type="monotone" dataKey="purchases" stackId="3" stroke="#10B981" fill="#10B981" name="Purchases" />
+                                <Area type="monotone" dataKey="views" stackId="1" stroke="#3B82F6" fill="url(#colorViews)" name="Product Views" activeDot={{ onClick: (e: any, payload: any) => handleChartClick(payload?.payload || e?.payload || e, 'conversion'), cursor: 'pointer' }} />
+                                <Area type="monotone" dataKey="add_to_cart" stackId="2" stroke="#8B5CF6" fill="url(#colorCarts)" name="Add to Cart" activeDot={{ onClick: (e: any, payload: any) => handleChartClick(payload?.payload || e?.payload || e, 'conversion'), cursor: 'pointer' }} />
+                                <Area type="monotone" dataKey="purchases" stackId="3" stroke="#10B981" fill="#10B981" name="Purchases" activeDot={{ onClick: (e: any, payload: any) => handleChartClick(payload?.payload || e?.payload || e, 'conversion'), cursor: 'pointer' }} />
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>
@@ -289,6 +365,7 @@ export default function ProductAnalyticsDashboard() {
                                     <th className="px-5 py-3 font-medium">Product</th>
                                     <th className="px-5 py-3 font-medium text-right">Units Sold</th>
                                     <th className="px-5 py-3 font-medium text-right">Revenue</th>
+                                    <th className="px-5 py-3 w-16"></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -311,6 +388,11 @@ export default function ProductAnalyticsDashboard() {
                                         </td>
                                         <td className="px-5 py-3 text-right font-medium text-text-primary">{formatNumber(product.units_sold)}</td>
                                         <td className="px-5 py-3 text-right text-gold-soft">{formatCurrency(product.revenue)}</td>
+                                        <td className="px-5 py-3 text-right">
+                                            <Link href={`/dashboard/products/edit/${product.product_id}`} className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-page-bg hover:bg-gold/10 text-text-muted hover:text-gold transition-colors border border-border-subtle" title="Edit Product">
+                                                <Pencil className="w-4 h-4" />
+                                            </Link>
+                                        </td>
                                     </tr>
                                 )) : (
                                     <tr>
@@ -336,6 +418,7 @@ export default function ProductAnalyticsDashboard() {
                                     <th className="px-5 py-3 font-medium">Product</th>
                                     <th className="px-5 py-3 font-medium text-center">Health Score</th>
                                     <th className="px-5 py-3 font-medium text-right">Conv. Score</th>
+                                    <th className="px-5 py-3 w-16"></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -355,6 +438,11 @@ export default function ProductAnalyticsDashboard() {
                                             </div>
                                         </td>
                                         <td className="px-5 py-3 text-right text-text-muted">{parseFloat(product.conversion_score).toFixed(1)}</td>
+                                        <td className="px-5 py-3 text-right">
+                                            <Link href={`/dashboard/products/edit/${product.product_id}`} className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-page-bg hover:bg-danger/10 text-text-muted hover:text-danger transition-colors border border-border-subtle" title="Edit Product">
+                                                <Pencil className="w-4 h-4" />
+                                            </Link>
+                                        </td>
                                     </tr>
                                 )) : (
                                     <tr>
@@ -366,6 +454,143 @@ export default function ProductAnalyticsDashboard() {
                     </div>
                 </div>
             </div>
+
+            {/* Daily Details Modal */}
+            {selectedDate && selectedMetrics && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-card-bg w-full max-w-3xl rounded-3xl shadow-2xl border border-border-subtle overflow-hidden flex flex-col max-h-[90vh]">
+                        {/* Modal Header */}
+                        <div className="px-6 py-5 border-b border-border-subtle flex justify-between items-center bg-gradient-to-br from-page-bg to-card-bg">
+                            <div className="flex items-center gap-3">
+                                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
+                                    <Calendar className="h-5 w-5 text-primary" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-serif font-bold text-text-primary">Daily Breakdown</h3>
+                                    <p className="text-sm text-text-muted">{selectedMetrics.displayDate}</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setSelectedDate(null)}
+                                className="h-10 w-10 rounded-xl hover:bg-page-bg flex items-center justify-center text-text-muted hover:text-text-primary transition-colors border border-transparent hover:border-border-subtle"
+                            >
+                                <X className="h-5 w-5" />
+                            </button>
+                        </div>
+
+                        {/* Modal Body */}
+                        <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-8">
+                            {/* Key Metrics Row */}
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                {selectedMetrics.type === 'revenue' ? (
+                                    <>
+                                        <div className="bg-page-bg rounded-xl p-4 border border-border-subtle">
+                                            <p className="text-xs text-text-muted font-medium uppercase tracking-wider mb-1">Revenue</p>
+                                            <p className="text-xl font-bold text-gold-soft">{formatCurrency(selectedMetrics.revenue || 0)}</p>
+                                        </div>
+                                        <div className="bg-page-bg rounded-xl p-4 border border-border-subtle">
+                                            <p className="text-xs text-text-muted font-medium uppercase tracking-wider mb-1">Units Sold</p>
+                                            <p className="text-xl font-bold text-text-primary">{formatNumber(selectedMetrics.units_sold || 0)}</p>
+                                        </div>
+                                        <div className="bg-page-bg rounded-xl p-4 border border-border-subtle">
+                                            <p className="text-xs text-text-muted font-medium uppercase tracking-wider mb-1">Avg Order Val.</p>
+                                            <p className="text-xl font-bold text-text-primary">
+                                                {selectedMetrics.units_sold > 0 ? formatCurrency((selectedMetrics.revenue || 0) / selectedMetrics.units_sold) : '₹0'}
+                                            </p>
+                                        </div>
+                                        <div className="bg-page-bg rounded-xl p-4 border border-border-subtle">
+                                            <p className="text-xs text-text-muted font-medium uppercase tracking-wider mb-1">Transactions</p>
+                                            <p className="text-xl font-bold text-text-primary">{formatNumber(selectedMetrics.total_orders || 0)}</p>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className="bg-page-bg rounded-xl p-4 border border-border-subtle">
+                                            <p className="text-xs text-text-muted font-medium uppercase tracking-wider mb-1">Views</p>
+                                            <p className="text-xl font-bold text-blue-500">{formatNumber(selectedMetrics.views || 0)}</p>
+                                        </div>
+                                        <div className="bg-page-bg rounded-xl p-4 border border-border-subtle">
+                                            <p className="text-xs text-text-muted font-medium uppercase tracking-wider mb-1">Cart Adds</p>
+                                            <p className="text-xl font-bold text-purple-500">{formatNumber(selectedMetrics.add_to_cart || 0)}</p>
+                                        </div>
+                                        <div className="bg-page-bg rounded-xl p-4 border border-border-subtle">
+                                            <p className="text-xs text-text-muted font-medium uppercase tracking-wider mb-1">Purchases</p>
+                                            <p className="text-xl font-bold text-success">{formatNumber(selectedMetrics.purchases || 0)}</p>
+                                        </div>
+                                        <div className="bg-page-bg rounded-xl p-4 border border-border-subtle">
+                                            <p className="text-xs text-text-muted font-medium uppercase tracking-wider mb-1">Conversion</p>
+                                            <p className="text-xl font-bold text-text-primary">
+                                                {selectedMetrics.views > 0 ? ((selectedMetrics.purchases || 0) / selectedMetrics.views * 100).toFixed(1) : '0'}%
+                                            </p>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+
+                            {/* Top Selling Products Deep Dive */}
+                            <div>
+                                <div className="flex items-center gap-2 mb-4">
+                                    <Target className="h-4 w-4 text-primary" />
+                                    <h4 className="text-sm font-semibold text-text-primary uppercase tracking-wider">Top Drivers for this exact date</h4>
+                                </div>
+                                
+                                {isModalLoading ? (
+                                    <div className="flex items-center justify-center p-12 bg-page-bg rounded-xl border border-border-subtle border-dashed">
+                                        <div className="flex items-center gap-3 text-gold">
+                                            <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                                            <span className="text-sm font-medium">Fetching deep analytics...</span>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="bg-page-bg rounded-xl border border-border-subtle overflow-hidden">
+                                        <table className="w-full text-sm text-left">
+                                            <thead className="text-xs text-text-muted uppercase bg-card-bg border-b border-border-subtle">
+                                                <tr>
+                                                    <th className="px-5 py-3 font-medium">Product</th>
+                                                    <th className="px-5 py-3 font-medium text-right">Units Sold</th>
+                                                    <th className="px-5 py-3 font-medium text-right">Revenue Generated</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {modalTopSelling.length > 0 ? modalTopSelling.map((product) => (
+                                                    <tr key={product.product_id} className="border-b border-border-subtle/50 hover:bg-card-bg transition-colors last:border-0">
+                                                        <td className="px-5 py-3">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="w-8 h-8 rounded-lg bg-card-bg flex-shrink-0 overflow-hidden border border-border-subtle">
+                                                                    {product.thumbnail ? (
+                                                                        <img src={product.thumbnail.startsWith('data:') ? product.thumbnail : `${process.env.NEXT_PUBLIC_API_URL}${product.thumbnail}`} alt="" className="w-full h-full object-cover" />
+                                                                    ) : (
+                                                                        <div className="w-full h-full flex items-center justify-center text-text-muted"><Package className="h-3 w-3" /></div>
+                                                                    )}
+                                                                </div>
+                                                                <div className="min-w-0">
+                                                                    <p className="font-medium text-text-primary truncate max-w-[200px] text-xs leading-tight">{product.product_name}</p>
+                                                                    <p className="text-[10px] text-text-muted truncate max-w-[200px]">{product.brand}</p>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-5 py-3 text-right font-medium text-text-primary">{formatNumber(product.units_sold)}</td>
+                                                        <td className="px-5 py-3 text-right text-gold-soft">{formatCurrency(product.revenue)}</td>
+                                                    </tr>
+                                                )) : (
+                                                    <tr>
+                                                        <td colSpan={3} className="px-5 py-12 text-center text-text-muted">
+                                                            <div className="flex flex-col items-center gap-2">
+                                                                <AlertCircle className="h-5 w-5 text-text-muted/50" />
+                                                                <p>No sales activity recorded on this date.</p>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

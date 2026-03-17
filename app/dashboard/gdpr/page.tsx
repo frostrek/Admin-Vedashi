@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Shield, AlertTriangle, FileText, Database, Plus, Search, Filter, Loader2 } from 'lucide-react';
+import { Shield, AlertTriangle, FileText, Database, Plus, Search, Filter, Loader2, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { getAdminGdprRequests, getAdminGdprBreaches, getAdminGdprProcessors, authFetch } from '@/lib/api';
+import { getAdminGdprRequests, getAdminGdprBreaches, getAdminGdprProcessors, createAdminGdprProcessor, deleteAdminGdprProcessor, createAdminGdprBreach, authFetch } from '@/lib/api';
 
 export default function GDPRDashboard() {
     const [activeTab, setActiveTab] = useState<'requests' | 'breaches' | 'processors'>('requests');
@@ -13,6 +13,13 @@ export default function GDPRDashboard() {
     const [requests, setRequests] = useState<any[]>([]);
     const [breaches, setBreaches] = useState<any[]>([]);
     const [processors, setProcessors] = useState<any[]>([]);
+    const [isAddingProcessor, setIsAddingProcessor] = useState(false);
+    const [processorForm, setProcessorForm] = useState({
+        name: '',
+        purpose: '',
+        location: '',
+        dpa_signed: false
+    });
 
     const loadData = async () => {
         setLoading(true);
@@ -50,39 +57,59 @@ export default function GDPRDashboard() {
     const handleReportBreach = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const token = localStorage.getItem('ADMIN_TOKEN');
-            const res = await authFetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/gdpr/breach`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                    'X-CSRF-Token': (() => {
-                        const match = typeof document !== 'undefined' ? document.cookie.match(/(?:^|;\s*)_csrf=([^;]*)/) : null;
-                        return match ? decodeURIComponent(match[1]) : '';
-                    })()
-                },
-                body: JSON.stringify({
-                    incidentDate: breachForm.incidentDate,
-                    discoveryDate: breachForm.discoveryDate,
-                    natureOfBreach: breachForm.natureOfBreach,
-                    dataCategories: breachForm.dataCategories.split(',').map(s => s.trim()),
-                    approxRecords: parseInt(breachForm.approxRecords),
-                    consequences: breachForm.consequences,
-                    mitigation: breachForm.mitigation,
-                    dpaNotified: breachForm.dpaNotified,
-                    dpaNotifiedDate: breachForm.dpaNotified ? new Date().toISOString() : null
-                })
+            const res = await createAdminGdprBreach({
+                incidentDate: breachForm.incidentDate,
+                discoveryDate: breachForm.discoveryDate,
+                natureOfBreach: breachForm.natureOfBreach,
+                dataCategories: breachForm.dataCategories.split(',').map(s => s.trim()),
+                approxRecords: parseInt(breachForm.approxRecords),
+                consequences: breachForm.consequences,
+                mitigation: breachForm.mitigation,
+                dpaNotified: breachForm.dpaNotified,
+                dpaNotifiedDate: breachForm.dpaNotified ? new Date().toISOString() : null
             });
 
-            if (res.ok) {
+            if (res.success) {
                 toast.success('Breach report successfully logged.');
                 setIsReportingBreach(false);
                 loadData(); // Refresh list
             } else {
-                toast.error('Failed to report breach.');
+                toast.error(res.message || 'Failed to report breach.');
             }
         } catch (error) {
             toast.error('Network error reporting breach.');
+        }
+    };
+
+    const handleAddProcessor = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            const res = await createAdminGdprProcessor(processorForm);
+            if (res.success) {
+                toast.success('Processor added successfully.');
+                setIsAddingProcessor(false);
+                setProcessorForm({ name: '', purpose: '', location: '', dpa_signed: false });
+                loadData();
+            } else {
+                toast.error(res.message || 'Failed to add processor.');
+            }
+        } catch (error) {
+            toast.error('Network error adding processor.');
+        }
+    };
+
+    const handleDeleteProcessor = async (id: string) => {
+        if (!confirm('Are you sure you want to remove this data processor?')) return;
+        try {
+            const res = await deleteAdminGdprProcessor(id);
+            if (res.success) {
+                toast.success('Processor removed.');
+                loadData();
+            } else {
+                toast.error(res.message || 'Failed to remove processor.');
+            }
+        } catch (error) {
+            toast.error('Network error removing processor.');
         }
     };
 
@@ -211,7 +238,10 @@ export default function GDPRDashboard() {
                     <div className="space-y-4 animate-fadeIn">
                         <div className="flex items-center justify-between mb-6">
                             <h2 className="text-lg font-bold text-text-primary">Third-Party Processors</h2>
-                            <button className="flex items-center gap-2 rounded-xl bg-gold px-4 py-2 font-semibold text-white transition hover:bg-gold-soft shadow-lg shadow-gold/20 text-sm">
+                            <button 
+                                onClick={() => setIsAddingProcessor(true)}
+                                className="flex items-center gap-2 rounded-xl bg-gold px-4 py-2 font-semibold text-white transition hover:bg-gold-soft shadow-lg shadow-gold/20 text-sm"
+                            >
                                 <Plus className="h-4 w-4" /> Add Processor
                             </button>
                         </div>
@@ -227,12 +257,20 @@ export default function GDPRDashboard() {
                                     No processors registered.
                                 </div>
                             ) : processors.map(proc => (
-                                <div key={proc.processor_id || proc.id} className="border border-border-subtle rounded-xl p-5 bg-page-bg/50 hover:bg-page-bg transition">
+                                <div key={proc.processor_id || proc.id} className="group relative border border-border-subtle rounded-xl p-5 bg-page-bg/50 hover:bg-page-bg transition">
                                     <div className="flex justify-between items-start mb-3">
                                         <h3 className="text-text-primary font-bold">{proc.name}</h3>
-                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${(proc.dpa_signed || proc.dpa) ? 'bg-success/20 text-success' : 'bg-danger/20 text-danger'}`}>
-                                            DPA {(proc.dpa_signed || proc.dpa) ? 'Signed' : 'Missing'}
-                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${(proc.dpa_signed || proc.dpa) ? 'bg-success/20 text-success' : 'bg-danger/20 text-danger'}`}>
+                                                DPA {(proc.dpa_signed || proc.dpa) ? 'Signed' : 'Missing'}
+                                            </span>
+                                            <button 
+                                                onClick={() => handleDeleteProcessor(proc.processor_id || proc.id)}
+                                                className="opacity-0 group-hover:opacity-100 p-1.5 text-danger hover:bg-danger/10 rounded-lg transition"
+                                            >
+                                                <Trash2 className="h-3.5 w-3.5" />
+                                            </button>
+                                        </div>
                                     </div>
                                     <p className="text-13 text-text-secondary mb-1"><span className="text-text-muted font-bold uppercase text-[9px] tracking-wider">Purpose:</span> {proc.purpose}</p>
                                     <p className="text-13 text-text-secondary"><span className="text-text-muted font-bold uppercase text-[9px] tracking-wider">Location:</span> {proc.location}</p>
@@ -367,6 +405,88 @@ export default function GDPRDashboard() {
                     </div>
                 )}
             </div>
-        </div >
+
+            {/* ADD PROCESSOR MODAL */}
+            {isAddingProcessor && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsAddingProcessor(false)} />
+                    <div className="relative bg-card-bg border border-border-subtle w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-fadeInUp">
+                        <div className="p-6 border-b border-border-subtle bg-page-bg/30">
+                            <h3 className="text-xl font-bold text-text-primary">Add Data Processor</h3>
+                            <p className="text-xs text-text-muted mt-1">Register a third-party service that handles user data</p>
+                        </div>
+                        
+                        <form onSubmit={handleAddProcessor}>
+                            <div className="p-6 space-y-4">
+                                <div>
+                                    <label className="block text-xs font-bold uppercase tracking-widest text-text-secondary mb-2">Processor Name</label>
+                                    <input 
+                                        required
+                                        type="text"
+                                        value={processorForm.name}
+                                        onChange={(e) => setProcessorForm({...processorForm, name: e.target.value})}
+                                        placeholder="e.g. Stripe, AWS, Mailchimp"
+                                        className="w-full bg-card-bg border border-border-subtle rounded-xl px-4 py-3 text-text-primary focus:border-gold focus:outline-none transition-all"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold uppercase tracking-widest text-text-secondary mb-2">Primary Purpose</label>
+                                    <input 
+                                        required
+                                        type="text"
+                                        value={processorForm.purpose}
+                                        onChange={(e) => setProcessorForm({...processorForm, purpose: e.target.value})}
+                                        placeholder="e.g. Payment Gateway"
+                                        className="w-full bg-card-bg border border-border-subtle rounded-xl px-4 py-3 text-text-primary focus:border-gold focus:outline-none transition-all"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold uppercase tracking-widest text-text-secondary mb-2">Data Location</label>
+                                    <input 
+                                        required
+                                        type="text"
+                                        value={processorForm.location}
+                                        onChange={(e) => setProcessorForm({...processorForm, location: e.target.value})}
+                                        placeholder="e.g. USA, EEA, Global"
+                                        className="w-full bg-card-bg border border-border-subtle rounded-xl px-4 py-3 text-text-primary focus:border-gold focus:outline-none transition-all"
+                                    />
+                                </div>
+
+                                <div className="flex items-center gap-3 pt-2">
+                                    <label className="relative inline-flex items-center cursor-pointer">
+                                        <input 
+                                            type="checkbox" 
+                                            checked={processorForm.dpa_signed} 
+                                            onChange={(e) => setProcessorForm({...processorForm, dpa_signed: e.target.checked})} 
+                                            className="sr-only peer" 
+                                        />
+                                        <div className="w-11 h-6 bg-page-bg peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-text-muted after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-success peer-checked:after:bg-white border border-border-subtle"></div>
+                                    </label>
+                                    <span className="text-sm text-text-primary">Data Processing Agreement (DPA) Signed</span>
+                                </div>
+                            </div>
+
+                            <div className="p-6 bg-page-bg/30 border-t border-border-subtle flex gap-3">
+                                <button 
+                                    type="button"
+                                    onClick={() => setIsAddingProcessor(false)}
+                                    className="flex-1 py-3 text-xs font-bold uppercase tracking-widest text-text-muted hover:text-text-primary transition-colors bg-card-bg rounded-xl border border-border-subtle"
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    type="submit"
+                                    className="flex-1 bg-gold hover:bg-gold-soft text-white py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all shadow-lg shadow-gold/20"
+                                >
+                                    Add Processor
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+        </div>
     );
 }

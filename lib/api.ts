@@ -752,31 +752,46 @@ export async function bulkUpdateOrderPaymentStatus(orderIds: string[], paymentSt
 }
 
 export async function downloadInvoiceAdmin(orderId: string): Promise<{ success: boolean; message?: string }> {
-    try {
-        const url = `${API_URL}/api/invoices/${orderId}/download`;
-        const res = await fetch(url, { headers: authHeaders(), credentials: 'include' });
-        if (!res.ok) {
-            const data = await res.json().catch(() => null);
-            return { success: false, message: data?.message || 'Failed to download invoice' };
+    const maxRetries = 10;
+    const retryDelay = 3000; // 3 seconds
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            const url = `${API_URL}/api/invoices/${orderId}/download`;
+            const res = await fetch(url, { headers: authHeaders(), credentials: 'include' });
+            
+            if (!res.ok) {
+                if (res.status === 409 && attempt < maxRetries) {
+                    // Invoice is generating. Wait and retry automatically.
+                    await new Promise(resolve => setTimeout(resolve, retryDelay));
+                    continue;
+                }
+                const data = await res.json().catch(() => null);
+                return { success: false, message: data?.message || 'Failed to download invoice' };
+            }
+
+            const blob = await res.blob();
+            const disposition = res.headers.get('Content-Disposition') || '';
+            const nameMatch = disposition.match(/filename="?([^"]+)"?/);
+            const filename = nameMatch ? nameMatch[1] : `invoice_${orderId}.pdf`;
+
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+            return { success: true };
+        } catch (error) {
+            console.error('[Admin API] Failed to download invoice:', error);
+            if (attempt === maxRetries) {
+                return { success: false, message: 'Network error' };
+            }
+            await new Promise(resolve => setTimeout(resolve, retryDelay));
         }
-
-        const blob = await res.blob();
-        const disposition = res.headers.get('Content-Disposition') || '';
-        const nameMatch = disposition.match(/filename="?([^"]+)"?/);
-        const filename = nameMatch ? nameMatch[1] : `invoice_${orderId}.pdf`;
-
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(a.href);
-        return { success: true };
-    } catch (error) {
-        console.error('[Admin API] Failed to download invoice:', error);
-        return { success: false, message: 'Network error' };
     }
+    return { success: false, message: 'Max retries reached while generating invoice' };
 }
 
 /* ─── Payments & Refunds (Admin) ─── */
@@ -2355,26 +2370,40 @@ export async function reorderCollectionProducts(collectionId: string, productIds
 }
 
 
+export interface ActivityLog {
+    id: string;
+    actor_type: string;
+    actor_id: string;
+    actor_email: string;
+    action: string;
+    entity_type: string;
+    entity_id: string;
+    ip_address: string;
+    user_agent?: string;
+    metadata: any;
+    created_at: string;
+}
+
 /** Fetch administrative activity logs (Interaction Chronicles). */
-export async function getActivityLogs(params?: Record<string, string>): Promise<{ logs: any[]; pagination: any }> {
+export async function getActivityLogs(params?: Record<string, string>): Promise<{ logs: ActivityLog[]; pagination: any }> {
     try {
         const queryParams = params ? new URLSearchParams(params).toString() : '';
         const res = await authFetch(`${API_URL}/api/admin/activity-logs?${queryParams}`, {
             headers: authHeaders(),
         });
         const json = await res.json();
-        if (json.success && json.data) {
-            return {
-                logs: json.data.logs || [],
-                pagination: json.data.pagination || {}
-            };
+            if (json.success && json.data) {
+                return {
+                    logs: json.data.logs || [],
+                    pagination: json.data.pagination || { total: 0, page: 1, limit: 20, totalPages: 0 }
+                };
+            }
+            throw new Error(json.message || 'Failed to fetch activity logs');
+        } catch (error: any) {
+            console.error('[Admin API] getActivityLogs failed:', error);
+            throw error;
         }
-        return { logs: [], pagination: {} };
-    } catch (error) {
-        console.error('[Admin API] getActivityLogs failed:', error);
-        return { logs: [], pagination: {} };
     }
-}
 
 /* ─── Loyalty & Rewards (Admin) ─── */
 
@@ -2648,5 +2677,48 @@ export async function deleteAdminLegalDocument(id: string): Promise<boolean> {
     } catch (error) {
         console.error('[Admin API] Failed to delete legal document:', error);
         return false;
+    }
+}
+
+/* ─── GDPR Management (Admin) ─── */
+
+export async function createAdminGdprProcessor(data: any) {
+    try {
+        const res = await authFetch(`${API_URL}/api/gdpr/processors`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify(data),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to create GDPR processor:', error);
+        return { success: false };
+    }
+}
+
+export async function deleteAdminGdprProcessor(id: string) {
+    try {
+        const res = await authFetch(`${API_URL}/api/gdpr/processors/${id}`, {
+            method: 'DELETE',
+            headers: authHeaders(),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to delete GDPR processor:', error);
+        return { success: false };
+    }
+}
+
+export async function createAdminGdprBreach(data: any) {
+    try {
+        const res = await authFetch(`${API_URL}/api/gdpr/breach`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify(data),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to log GDPR breach:', error);
+        return { success: false };
     }
 }
