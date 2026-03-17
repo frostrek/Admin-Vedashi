@@ -1,7 +1,7 @@
 import { authFetch } from '@/lib/api';
 
 import React, { useState, useEffect } from 'react';
-import { X, Percent, Calendar, Tag, Layers, Star, ChevronDown, Loader2, ArrowUpCircle, ArrowDownCircle, DollarSign, Trash2 } from 'lucide-react';
+import { X, Percent, Calendar, Tag, Layers, Star, ChevronDown, Loader2, ArrowUpCircle, ArrowDownCircle, DollarSign, Trash2, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getToken } from '@/lib/auth';
 import { getProducts, Product } from '@/lib/api';
@@ -10,10 +10,11 @@ interface BulkDiscountModalProps {
     isOpen: boolean;
     onClose: () => void;
     onApply: () => void;
+    selectedIds?: string[];
 }
 
-type TargetType = 'category' | 'sub_category' | 'brand' | 'all';
-type BulkActionType = 'discount' | 'pricing';
+type TargetType = 'category' | 'sub_category' | 'brand' | 'all' | 'selected';
+type BulkActionType = 'discount' | 'pricing' | 'custom';
 type AdjustmentMode = 'increase' | 'decrease';
 type ValueType = 'percentage' | 'amount';
 
@@ -25,7 +26,27 @@ interface ActiveDiscount {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
-export default function BulkDiscountModal({ isOpen, onClose, onApply }: BulkDiscountModalProps) {
+const CUSTOM_FIELDS = [
+    { value: 'brand', label: 'Brand', type: 'text' },
+    { value: 'intended_use', label: 'Intended Use', type: 'text' },
+    { value: 'status', label: 'Product Status', type: 'select', options: ['active', 'draft', 'archived'] },
+    { value: 'country_of_origin', label: 'Country of Origin', type: 'text' },
+    { value: 'form', label: 'Product Form', type: 'text' },
+    { value: 'specialities', label: 'Specialities', type: 'text' },
+    { value: 'is_featured', label: 'Featured', type: 'boolean' },
+    { value: 'is_on_sale', label: 'On Sale', type: 'boolean' },
+    { value: 'is_editor_pick', label: 'Editor Pick', type: 'boolean' },
+    { value: 'is_trending', label: 'Trending', type: 'boolean' },
+    { value: 'cost_price', label: 'Cost Price', type: 'number' },
+    { value: 'stock_quantity', label: 'Stock Quantity', type: 'number' },
+    { value: 'shelf_life_months', label: 'Shelf Life (Months)', type: 'number' },
+    { value: 'length_cm', label: 'Length (cm)', type: 'number' },
+    { value: 'width_cm', label: 'Width (cm)', type: 'number' },
+    { value: 'height_cm', label: 'Height (cm)', type: 'number' },
+    { value: 'weight_g', label: 'Weight (g)', type: 'number' },
+] as const;
+
+export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedIds = [] }: BulkDiscountModalProps) {
     // Lock background scroll when modal is open
     useEffect(() => {
         if (isOpen) {
@@ -61,6 +82,10 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply }: BulkDisc
     const [adjustmentMode, setAdjustmentMode] = useState<AdjustmentMode>('increase');
     const [valueType, setValueType] = useState<ValueType>('percentage');
     const [priceValue, setPriceValue] = useState<string>('');
+
+    // Custom State
+    const [customField, setCustomField] = useState<string>('');
+    const [customValue, setCustomValue] = useState<any>('');
 
     // Active Discounts State
     const [activeDiscounts, setActiveDiscounts] = useState<ActiveDiscount[]>([]);
@@ -134,7 +159,7 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply }: BulkDisc
 
     const handleDiscountSubmit = async (action: 'apply' | 'remove', overrideTargetType?: TargetType, overrideTargetValue?: string) => {
         const payloadTargetType = overrideTargetType || targetType;
-        const payloadTargetValue = overrideTargetType ? overrideTargetValue : targetValue;
+        const payloadTargetValue = overrideTargetType ? overrideTargetValue : (targetType === 'selected' ? selectedIds : targetValue);
 
         let pct: number | undefined;
         if (action === 'apply') {
@@ -166,7 +191,7 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply }: BulkDisc
                 },
                 body: JSON.stringify({
                     targetType: payloadTargetType,
-                    targetValue: payloadTargetType === 'all' ? undefined : payloadTargetValue?.trim(),
+                    targetValue: payloadTargetType === 'all' ? undefined : (Array.isArray(payloadTargetValue) ? payloadTargetValue : payloadTargetValue?.trim()),
                     discountPercentage: pct,
                     saleStart: saleStart ? new Date(saleStart).toISOString() : undefined,
                     saleEnd: saleEnd ? new Date(saleEnd).toISOString() : undefined,
@@ -215,7 +240,7 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply }: BulkDisc
                 },
                 body: JSON.stringify({
                     targetType,
-                    targetValue: targetType === 'all' ? undefined : targetValue.trim(),
+                    targetValue: targetType === 'all' ? undefined : (targetType === 'selected' ? selectedIds : targetValue.trim()),
                     adjustmentMode,
                     valueType,
                     value: val,
@@ -240,10 +265,56 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply }: BulkDisc
         }
     };
 
+    const handleCustomSubmit = async () => {
+        const token = getToken();
+        if (!token) {
+            toast.error('You are not logged in. Please re-login.');
+            return false;
+        }
+
+        setLoading(true);
+        try {
+            const response = await authFetch(`${API_URL}/api/products/bulk-update`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    targetType,
+                    targetValue: targetType === 'all' ? undefined : (targetType === 'selected' ? selectedIds : targetValue.trim()),
+                    field: customField,
+                    value: customValue,
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                toast.success(data.message || 'Bulk update applied successfully!');
+                return true;
+            } else {
+                toast.error(data.message || 'Failed to apply bulk update.');
+                return false;
+            }
+        } catch (error) {
+            console.error('Bulk update error:', error);
+            toast.error('An error occurred while applying the custom update.');
+            return false;
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent | undefined, action: 'apply' | 'remove' = 'apply') => {
         if (e) e.preventDefault();
 
-        if (targetType !== 'all' && !targetValue.trim()) {
+        if (targetType === 'selected' && selectedIds.length === 0) {
+            toast.error('No products selected.');
+            return;
+        }
+
+        if (targetType !== 'all' && targetType !== 'selected' && !targetValue.trim()) {
             toast.error('Please select a target value.');
             return;
         }
@@ -251,8 +322,10 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply }: BulkDisc
         let success = false;
         if (activeTab === 'discount') {
             success = await handleDiscountSubmit(action);
-        } else {
+        } else if (activeTab === 'pricing') {
             success = await handlePricingSubmit();
+        } else {
+            success = await handleCustomSubmit();
         }
 
         if (success) {
@@ -263,6 +336,8 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply }: BulkDisc
             setSaleStart('');
             setSaleEnd('');
             setPriceValue('');
+            setCustomField('');
+            setCustomValue('');
             if (activeTab === 'discount') {
                 fetchActiveDiscounts();
             } else {
@@ -326,6 +401,16 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply }: BulkDisc
                     >
                         Bulk Pricing
                     </button>
+                    <button
+                        type="button"
+                        onClick={() => setActiveTab('custom')}
+                        className={`flex-1 pb-3 text-sm font-semibold transition-colors border-b-2 ${activeTab === 'custom'
+                            ? 'text-gold border-gold'
+                            : 'text-text-secondary border-transparent hover:text-gold-soft'
+                            }`}
+                    >
+                        Custom Update
+                    </button>
                 </div>
 
                 {/* Form Body */}
@@ -341,6 +426,7 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply }: BulkDisc
                                 { value: 'category', label: 'Category', icon: Layers },
                                 { value: 'sub_category', label: 'Subcategory', icon: Layers },
                                 { value: 'brand', label: 'Brand', icon: Star },
+                                { value: 'selected', label: `Selected (${selectedIds.length})`, icon: Check },
                                 { value: 'all', label: 'All Products', icon: Tag },
                             ] as const).map(({ value, label, icon: Icon }) => (
                                 <label
@@ -366,7 +452,7 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply }: BulkDisc
                     </div>
 
                     {/* Target Value Dropdown */}
-                    {targetType !== 'all' && (
+                    {targetType !== 'all' && targetType !== 'selected' && (
                         <div className="relative">
                             <label className="block text-sm font-medium text-text-secondary mb-1">
                                 {targetType === 'category' ? 'Category' : targetType === 'sub_category' ? 'Subcategory' : 'Brand'}
@@ -419,6 +505,20 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply }: BulkDisc
                                         No options found.
                                     </div>
                                 )}
+                            </div>
+                        </div>
+                    )}
+
+                    {targetType === 'selected' && (
+                        <div className="p-4 rounded-lg bg-gold/5 border border-gold/20 flex items-center gap-3 mt-4 animate-fadeIn">
+                            <div className="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center text-gold">
+                                <Check className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h4 className="text-sm font-semibold text-gold font-serif">Targeting Selection</h4>
+                                <p className="text-xs text-text-muted">
+                                    This action will only apply to the {selectedIds.length} {selectedIds.length === 1 ? 'item' : 'items'} you've checkboxed.
+                                </p>
                             </div>
                         </div>
                     )}
@@ -600,6 +700,85 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply }: BulkDisc
                         </div>
                     )}
 
+                    {activeTab === 'custom' && (
+                        <div className="space-y-4 animate-fadeIn">
+                            <div>
+                                <label className="block text-sm font-medium text-text-secondary mb-1">
+                                    Select Field <span className="text-red-500">*</span>
+                                </label>
+                                <select
+                                    value={customField}
+                                    onChange={(e) => {
+                                        const field = e.target.value;
+                                        setCustomField(field);
+                                        const fieldDef = CUSTOM_FIELDS.find(f => f.value === field);
+                                        if (fieldDef?.type === 'boolean') setCustomValue(false);
+                                        else if (fieldDef?.type === 'number') setCustomValue('');
+                                        else setCustomValue('');
+                                    }}
+                                    className="w-full rounded-lg border border-border bg-page-bg px-3 py-2.5 text-sm text-text-primary focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40 cursor-pointer"
+                                >
+                                    <option value="">Choose a field...</option>
+                                    {CUSTOM_FIELDS.map(f => (
+                                        <option key={f.value} value={f.value}>{f.label}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {customField && (
+                                <div>
+                                    <label className="block text-sm font-medium text-text-secondary mb-1">
+                                        New Value <span className="text-red-500">*</span>
+                                    </label>
+                                    {(() => {
+                                        const fieldDef = CUSTOM_FIELDS.find(f => f.value === customField);
+                                        if (fieldDef?.type === 'boolean') {
+                                            return (
+                                                <div className="flex items-center gap-3">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setCustomValue(!customValue)}
+                                                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-gold/40 focus:ring-offset-1 focus:ring-offset-card-bg ${customValue ? 'bg-gold' : 'bg-gray-400'
+                                                            }`}
+                                                    >
+                                                        <span
+                                                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${customValue ? 'translate-x-6' : 'translate-x-1'
+                                                                }`}
+                                                        />
+                                                    </button>
+                                                    <span className="text-sm text-text-primary">{customValue ? 'Enabled' : 'Disabled'}</span>
+                                                </div>
+                                            );
+                                        }
+                                        if (fieldDef?.type === 'select') {
+                                            return (
+                                                <select
+                                                    value={customValue}
+                                                    onChange={(e) => setCustomValue(e.target.value)}
+                                                    className="w-full rounded-lg border border-border bg-page-bg px-3 py-2.5 text-sm text-text-primary focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40 cursor-pointer"
+                                                >
+                                                    <option value="">Select status...</option>
+                                                    {fieldDef.options.map(opt => (
+                                                        <option key={opt} value={opt}>{opt.charAt(0).toUpperCase() + opt.slice(1)}</option>
+                                                    ))}
+                                                </select>
+                                            );
+                                        }
+                                        return (
+                                            <input
+                                                type={fieldDef?.type === 'number' ? 'number' : 'text'}
+                                                value={customValue}
+                                                onChange={(e) => setCustomValue(e.target.value)}
+                                                placeholder={`Enter new ${fieldDef?.label.toLowerCase()}...`}
+                                                className="w-full rounded-lg border border-border bg-page-bg px-4 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40"
+                                            />
+                                        );
+                                    })()}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
 
                     {/* Actions */}
                     <div className="flex justify-between gap-3 pt-4 shrink-0">
@@ -630,9 +809,11 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply }: BulkDisc
                                 onClick={(e) => handleSubmit(e, 'apply')}
                                 disabled={
                                     loading ||
-                                    (!targetValue.trim() && targetType !== 'all') ||
+                                    (targetType !== 'all' && targetType !== 'selected' && !targetValue.trim()) ||
+                                    (targetType === 'selected' && selectedIds.length === 0) ||
                                     (activeTab === 'discount' && !discountPercentage) ||
-                                    (activeTab === 'pricing' && !priceValue)
+                                    (activeTab === 'pricing' && !priceValue) ||
+                                    (activeTab === 'custom' && (!customField || customValue === ''))
                                 }
                                 className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary-light text-[#E8D8B9] text-sm font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
@@ -642,7 +823,7 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply }: BulkDisc
                                         Applying...
                                     </>
                                 ) : (
-                                    activeTab === 'discount' ? 'Apply Discount' : 'Update Prices'
+                                    activeTab === 'discount' ? 'Apply Discount' : activeTab === 'pricing' ? 'Update Prices' : 'Update Fields'
                                 )}
                             </button>
                         </div>
