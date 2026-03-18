@@ -6,6 +6,7 @@ import { ShoppingCart, Eye, X, Package, User, CreditCard, MapPin, RefreshCw, Dow
 import toast from 'react-hot-toast';
 import { PaymentToggle } from '@/components/PaymentToggle';
 import ExportModal from '@/components/orders/ExportModal';
+import PriceRangeSlider from '@/components/PriceRangeSlider';
 
 const statusOptions = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'] as const;
 const paymentStatusOptions = ['unpaid', 'paid', 'refunded', 'failed'] as const;
@@ -54,7 +55,8 @@ export default function OrdersPage() {
     const [filterStatus, setFilterStatus] = useState<string>('all');
     const [filterPayment, setFilterPayment] = useState<string>('all');
     const [filterDate, setFilterDate] = useState<string>('all');
-    const [filterAmount, setFilterAmount] = useState<string>('all');
+    const [amountRange, setAmountRange] = useState({ min: 0, max: 10000 });
+    const [absoluteMaxAmount, setAbsoluteMaxAmount] = useState(10000);
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(20);
@@ -125,11 +127,9 @@ export default function OrdersPage() {
 
         // Amount filter
         let amountMatch = true;
-        if (filterAmount !== 'all') {
+        if (amountRange.min > 0 || amountRange.max < absoluteMaxAmount) {
             const amount = o.total ?? 0;
-            if (filterAmount === 'under_1000') amountMatch = amount < 1000;
-            else if (filterAmount === '1000_5000') amountMatch = amount >= 1000 && amount <= 5000;
-            else if (filterAmount === 'over_5000') amountMatch = amount > 5000;
+            amountMatch = amount >= amountRange.min && amount <= amountRange.max;
         }
 
         let searchMatch = true;
@@ -147,7 +147,16 @@ export default function OrdersPage() {
     // Reset pagination when filters change
     useEffect(() => {
         setCurrentPage(1);
-    }, [filterStatus, filterPayment, filterDate, filterAmount, searchQuery]);
+    }, [filterStatus, filterPayment, filterDate, amountRange, searchQuery]);
+
+    useEffect(() => {
+        if (orders.length > 0) {
+            const max = Math.max(...orders.map(o => o.total ?? 0), 1000);
+            const roundedMax = Math.ceil(max / 1000) * 1000;
+            setAbsoluteMaxAmount(roundedMax);
+            setAmountRange(prev => ({ ...prev, max: roundedMax }));
+        }
+    }, [orders]);
 
     // --- Pagination helpers ---
     const totalPages = Math.ceil(filtered.length / itemsPerPage);
@@ -421,18 +430,20 @@ export default function OrdersPage() {
                             <ChevronDown className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted pointer-events-none" />
                         </div>
 
-                        <div className="relative flex-1 min-w-[140px] xl:flex-none">
-                            <select
-                                value={filterAmount}
-                                onChange={e => { setFilterAmount(e.target.value); clearSelection(); }}
-                                className="w-full appearance-none rounded-lg border border-border bg-card-bg px-3 py-2.5 pr-8 text-sm text-text-primary focus:border-gold/40 focus:outline-none transition-colors duration-300 cursor-pointer"
-                            >
-                                <option value="all">Any Amount</option>
-                                <option value="under_1000">Under ₹1,000</option>
-                                <option value="1000_5000">₹1,000 - ₹5,000</option>
-                                <option value="over_5000">Over ₹5,000</option>
-                            </select>
-                            <ChevronDown className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted pointer-events-none" />
+                        <div className="relative flex-1 min-w-[200px] xl:max-w-xs xl:flex-none">
+                            <div className="bg-card-bg rounded-lg border border-border px-3 py-1">
+                                <span className="text-[10px] text-text-muted uppercase font-bold">Amount Range</span>
+                                <PriceRangeSlider
+                                    min={0}
+                                    max={absoluteMaxAmount}
+                                    initialMin={amountRange.min}
+                                    initialMax={amountRange.max}
+                                    onChange={(min, max) => {
+                                        setAmountRange({ min, max });
+                                        clearSelection();
+                                    }}
+                                />
+                            </div>
                         </div>
 
                         <div className="flex items-center gap-2 flex-1 min-w-[300px] xl:flex-none">

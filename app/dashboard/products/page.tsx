@@ -5,13 +5,13 @@ import Link from 'next/link';
 import { getProducts, deleteProduct, Product, getRankingOverrides, setRankingOverride, removeRankingOverride, RankingOverride, searchProductsAdmin, getProduct, updateVariantStatus, updateDefaultVariant, getDraftProducts, updateProduct } from '@/lib/api';
 import { getCategories } from '@/lib/api/category';
 import { Category } from '@/types/category';
-import { Plus, Pencil, Trash2, Search, Package, Star, Loader2, Tag, ChevronDown, FileEdit, X, ChevronLeft, ChevronRight, Filter, SlidersHorizontal, UploadCloud } from 'lucide-react';
+import { Download, SlidersHorizontal, Filter, Package, Star, Loader2, Tag, ChevronDown, FileEdit, X, ChevronLeft, ChevronRight, Plus, Pencil, Trash2, Search, UploadCloud } from 'lucide-react';
 import toast from 'react-hot-toast';
 import BulkDiscountModal from '@/components/BulkDiscountModal';
 import BulkImportModal from '@/components/BulkImportModal';
 import BulkExportModal from '@/components/BulkExportModal';
 import ConfirmModal from '@/components/ConfirmModal';
-import { Download } from 'lucide-react';
+import PriceRangeSlider from '@/components/PriceRangeSlider';
 
 const LOW_STOCK_THRESHOLD = 10;
 
@@ -24,7 +24,8 @@ export default function ProductsListPage() {
     const [filterCategory, setFilterCategory] = useState<string>('all');
     const [filterSubCategory, setFilterSubCategory] = useState<string>('all');
     const [filterStock, setFilterStock] = useState<string>('all');
-    const [filterPrice, setFilterPrice] = useState<string>('all');
+    const [priceRange, setPriceRange] = useState({ min: 0, max: 10000 });
+    const [absoluteMaxPrice, setAbsoluteMaxPrice] = useState(10000);
     const [filterBestSeller, setFilterBestSeller] = useState<string>('all');
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(20);
@@ -242,6 +243,14 @@ export default function ProductsListPage() {
         }
     };
 
+    useEffect(() => {
+        if (products.length > 0) {
+            const max = Math.max(...products.map(p => p.price ?? 0), 1000);
+            setAbsoluteMaxPrice(Math.ceil(max / 100) * 100);
+            setPriceRange(prev => ({ ...prev, max: Math.ceil(max / 100) * 100 }));
+        }
+    }, [products]);
+
     const loadOverrides = useCallback(async () => {
         const overrides = await getRankingOverrides();
         const map = new Map<string, RankingOverride>();
@@ -313,13 +322,10 @@ export default function ProductsListPage() {
             });
         }
         
-        if (filterPrice !== 'all') {
+        if (priceRange.min > 0 || priceRange.max < absoluteMaxPrice) {
             base = base.filter(p => {
                 const price = p.price ?? 0;
-                if (filterPrice === 'under_500') return price < 500;
-                if (filterPrice === '500_1500') return price >= 500 && price <= 1500;
-                if (filterPrice === 'over_1500') return price > 1500;
-                return true;
+                return price >= priceRange.min && price <= priceRange.max;
             });
         }
         
@@ -329,7 +335,7 @@ export default function ProductsListPage() {
         
         setFiltered(base);
         setCurrentPage(1); // Reset to first page when filters change
-    }, [products, searchResults, filterCategory, filterSubCategory, filterStock, filterPrice, filterBestSeller, overrideMap, allCategories]);
+    }, [products, searchResults, filterCategory, filterSubCategory, filterStock, priceRange, absoluteMaxPrice, filterBestSeller, overrideMap, allCategories]);
 
     // --- Pagination helpers ---
     const totalPages = Math.ceil(filtered.length / itemsPerPage);
@@ -898,7 +904,7 @@ export default function ProductsListPage() {
                     <button
                         onClick={() => setShowFilters(!showFilters)}
                         className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all duration-300 text-sm font-medium ${
-                            showFilters || [filterCategory, filterStock, filterPrice, filterBestSeller].some(f => f !== 'all') || filterCategory === 'none'
+                            showFilters || [filterCategory, filterStock, filterBestSeller].some(f => f !== 'all') || filterCategory === 'none' || priceRange.min > 0 || priceRange.max < absoluteMaxPrice
                                 ? 'bg-gold/10 border-gold/30 text-gold-muted ring-4 ring-gold/5'
                                 : 'bg-card-bg border-border text-text-secondary hover:border-gold/30 hover:text-gold-muted'
                         }`}
@@ -910,7 +916,7 @@ export default function ProductsListPage() {
                                 filterCategory !== 'all',
                                 filterSubCategory !== 'all',
                                 filterStock !== 'all',
-                                filterPrice !== 'all',
+                                (priceRange.min > 0 || priceRange.max < absoluteMaxPrice),
                                 filterBestSeller !== 'all'
                             ].filter(Boolean).length;
                             return count > 0 ? (
@@ -928,80 +934,82 @@ export default function ProductsListPage() {
                                 className="fixed inset-0 z-[60] bg-black/5" 
                                 onClick={() => setShowFilters(false)}
                             />
-                            <div className="absolute right-0 mt-2 w-80 z-[70] bg-card-bg border border-border rounded-2xl shadow-2xl p-5 overflow-hidden animate-fadeInUp">
-                                <div className="flex items-center justify-between mb-5">
-                                    <h3 className="text-sm font-semibold text-text-primary flex items-center gap-2">
-                                        <Filter className="h-4 w-4 text-gold" />
-                                        Refine Products
-                                    </h3>
-                                    <button 
-                                        onClick={() => {
-                                            setFilterCategory('all');
-                                            setFilterSubCategory('all');
-                                            setFilterStock('all');
-                                            setFilterPrice('all');
-                                            setFilterBestSeller('all');
-                                            setShowFilters(false);
-                                        }}
-                                        className="text-xs text-gold-muted hover:text-gold font-medium transition-colors"
-                                    >
-                                        Clear All
-                                    </button>
+                            <div className="absolute right-0 mt-2 w-80 z-[70] bg-card-bg border border-border rounded-2xl shadow-2xl overflow-hidden animate-fadeInUp flex flex-col max-h-[80vh]">
+                                <div className="p-5 pb-4 border-b border-border/50 shrink-0">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-sm font-semibold text-text-primary flex items-center gap-2">
+                                            <Filter className="h-4 w-4 text-gold" />
+                                            Refine Products
+                                        </h3>
+                                        <button 
+                                            onClick={() => {
+                                                setFilterCategory('all');
+                                                setFilterSubCategory('all');
+                                                setFilterStock('all');
+                                                setPriceRange({ min: 0, max: absoluteMaxPrice });
+                                                setFilterBestSeller('all');
+                                                setShowFilters(false);
+                                            }}
+                                            className="text-xs text-gold-muted hover:text-gold font-medium transition-colors"
+                                        >
+                                            Clear All
+                                        </button>
+                                    </div>
                                 </div>
 
-                                <div className="space-y-5">
-                                    {/* Category */}
-                                    <div className="space-y-2">
-                                        <label className="text-[11px] font-bold text-text-muted uppercase tracking-wider">Main Category</label>
-                                        <div className="relative">
-                                            <select
-                                                value={filterCategory}
-                                                onChange={(e) => {
-                                                    setFilterCategory(e.target.value);
-                                                    setFilterSubCategory('all');
-                                                }}
-                                                className="w-full appearance-none rounded-xl border border-border bg-card-bg/50 px-3 py-2.5 pr-8 text-sm text-text-primary focus:border-gold/40 focus:outline-none cursor-pointer transition-colors"
-                                            >
-                                                <option value="all">Every Category</option>
-                                                <option value="none">Uncategorized</option>
-                                                {allCategories.filter(cat => !cat.parent_id).map(cat => (
-                                                    <option key={cat.category_id} value={cat.name}>{cat.name}</option>
-                                                ))}
-                                                {Array.from(new Set(products.map(p => p.category).filter(cat => cat && !allCategories.some(ac => ac.name === cat)))).map(cat => (
-                                                    <option key={cat} value={cat!}>{cat}</option>
-                                                ))}
-                                            </select>
-                                            <ChevronDown className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted pointer-events-none" />
-                                        </div>
-                                    </div>
-
-                                    {/* Sub Category */}
-                                    {filterCategory !== 'all' && filterCategory !== 'none' && (
-                                        <div className="space-y-2 animate-fadeIn">
-                                            <label className="text-[11px] font-bold text-text-muted uppercase tracking-wider">Sub Category</label>
+                                <div className="p-5 pt-4 overflow-y-auto flex-1 custom-scrollbar">
+                                    <div className="space-y-5">
+                                        {/* Category */}
+                                        <div className="space-y-2">
+                                            <label className="text-[11px] font-bold text-text-muted uppercase tracking-wider">Main Category</label>
                                             <div className="relative">
                                                 <select
-                                                    value={filterSubCategory}
-                                                    onChange={(e) => setFilterSubCategory(e.target.value)}
+                                                    value={filterCategory}
+                                                    onChange={(e) => {
+                                                        setFilterCategory(e.target.value);
+                                                        setFilterSubCategory('all');
+                                                    }}
                                                     className="w-full appearance-none rounded-xl border border-border bg-card-bg/50 px-3 py-2.5 pr-8 text-sm text-text-primary focus:border-gold/40 focus:outline-none cursor-pointer transition-colors"
                                                 >
-                                                    <option value="all">All Subgroups</option>
-                                                    {(() => {
-                                                        const parent = allCategories.find(c => c.name === filterCategory);
-                                                        if (!parent) return null;
-                                                        return allCategories
-                                                            .filter(c => c.parent_id === parent.category_id)
-                                                            .map(sub => (
-                                                                <option key={sub.category_id} value={sub.name}>{sub.name}</option>
-                                                            ));
-                                                    })()}
+                                                    <option value="all">Every Category</option>
+                                                    <option value="none">Uncategorized</option>
+                                                    {allCategories.filter(cat => !cat.parent_id).map(cat => (
+                                                        <option key={cat.category_id} value={cat.name}>{cat.name}</option>
+                                                    ))}
+                                                    {Array.from(new Set(products.map(p => p.category).filter(cat => cat && !allCategories.some(ac => ac.name === cat)))).map(cat => (
+                                                        <option key={cat} value={cat!}>{cat}</option>
+                                                    ))}
                                                 </select>
                                                 <ChevronDown className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted pointer-events-none" />
                                             </div>
                                         </div>
-                                    )}
 
-                                    <div className="grid grid-cols-2 gap-4">
+                                        {/* Sub Category */}
+                                        {filterCategory !== 'all' && filterCategory !== 'none' && (
+                                            <div className="space-y-2 animate-fadeIn">
+                                                <label className="text-[11px] font-bold text-text-muted uppercase tracking-wider">Sub Category</label>
+                                                <div className="relative">
+                                                    <select
+                                                        value={filterSubCategory}
+                                                        onChange={(e) => setFilterSubCategory(e.target.value)}
+                                                        className="w-full appearance-none rounded-xl border border-border bg-card-bg/50 px-3 py-2.5 pr-8 text-sm text-text-primary focus:border-gold/40 focus:outline-none cursor-pointer transition-colors"
+                                                    >
+                                                        <option value="all">All Subgroups</option>
+                                                        {(() => {
+                                                            const parent = allCategories.find(c => c.name === filterCategory);
+                                                            if (!parent) return null;
+                                                            return allCategories
+                                                                .filter(c => c.parent_id === parent.category_id)
+                                                                .map(sub => (
+                                                                    <option key={sub.category_id} value={sub.name}>{sub.name}</option>
+                                                                ));
+                                                        })()}
+                                                    </select>
+                                                    <ChevronDown className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted pointer-events-none" />
+                                                </div>
+                                            </div>
+                                        )}
+
                                         {/* Stock Status */}
                                         <div className="space-y-2">
                                             <label className="text-[11px] font-bold text-text-muted uppercase tracking-wider">Stock</label>
@@ -1023,44 +1031,31 @@ export default function ProductsListPage() {
                                         {/* Pricing */}
                                         <div className="space-y-2">
                                             <label className="text-[11px] font-bold text-text-muted uppercase tracking-wider">Price Range</label>
+                                            <PriceRangeSlider
+                                                min={0}
+                                                max={absoluteMaxPrice}
+                                                initialMin={priceRange.min}
+                                                initialMax={priceRange.max}
+                                                onChange={(min, max) => setPriceRange({ min, max })}
+                                            />
+                                        </div>
+
+                                        {/* Availability/Best Seller */}
+                                        <div className="space-y-2">
+                                            <label className="text-[11px] font-bold text-text-muted uppercase tracking-wider">Highlights</label>
                                             <div className="relative">
                                                 <select
-                                                    value={filterPrice}
-                                                    onChange={(e) => setFilterPrice(e.target.value)}
+                                                    value={filterBestSeller}
+                                                    onChange={(e) => setFilterBestSeller(e.target.value)}
                                                     className="w-full appearance-none rounded-xl border border-border bg-card-bg/50 px-3 py-2.5 pr-8 text-sm text-text-primary focus:border-gold/40 focus:outline-none cursor-pointer"
                                                 >
-                                                    <option value="all">Any</option>
-                                                    <option value="under_500">&lt; ₹500</option>
-                                                    <option value="500_1500">₹500-1500</option>
-                                                    <option value="over_1500">&gt; ₹1500</option>
+                                                    <option value="all">Show All Products</option>
+                                                    <option value="best_seller">⭐ Best Sellers Only</option>
                                                 </select>
                                                 <ChevronDown className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted pointer-events-none" />
                                             </div>
                                         </div>
                                     </div>
-
-                                    {/* Availability/Best Seller */}
-                                    <div className="space-y-2">
-                                        <label className="text-[11px] font-bold text-text-muted uppercase tracking-wider">Highlights</label>
-                                        <div className="relative">
-                                            <select
-                                                value={filterBestSeller}
-                                                onChange={(e) => setFilterBestSeller(e.target.value)}
-                                                className="w-full appearance-none rounded-xl border border-border bg-card-bg/50 px-3 py-2.5 pr-8 text-sm text-text-primary focus:border-gold/40 focus:outline-none cursor-pointer"
-                                            >
-                                                <option value="all">Show All Products</option>
-                                                <option value="best_seller">⭐ Best Sellers Only</option>
-                                            </select>
-                                            <ChevronDown className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted pointer-events-none" />
-                                        </div>
-                                    </div>
-
-                                    <button 
-                                        onClick={() => setShowFilters(false)}
-                                        className="w-full mt-2 bg-gold hover:bg-gold-dark text-black font-semibold py-3 rounded-xl transition-all duration-300 shadow-lg shadow-gold/10"
-                                    >
-                                        Apply Filters
-                                    </button>
                                 </div>
                             </div>
                         </>
