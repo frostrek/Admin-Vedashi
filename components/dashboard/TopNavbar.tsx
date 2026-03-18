@@ -377,7 +377,7 @@ export default function TopNavbar({ sidebarCollapsed }: TopNavbarProps) {
                         {notifOpen && (
                             <div className="absolute right-0 top-full mt-2 w-80 rounded-xl border border-border bg-card-bg-elevated shadow-2xl py-2 animate-slideDown z-50">
                                 <div className="px-4 py-2 border-b border-border flex justify-between items-center">
-                                    <h3 className="text-sm font-semibold text-text-primary">Alerts</h3>
+                                    <h3 className="font-serif text-sm font-semibold text-text-primary">Alerts</h3>
                                     {(alertsData.orders + alertsData.products + alertsData.enquiries) > 0 && (
                                         <span className="text-[10px] text-gold font-medium bg-gold/10 px-2 py-0.5 rounded-full">
                                             {alertsData.orders + alertsData.products + alertsData.enquiries} New

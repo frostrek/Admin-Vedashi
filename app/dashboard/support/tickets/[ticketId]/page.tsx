@@ -71,7 +71,7 @@ export default function AdminTicketDetailPage() {
             <div className="bg-card-bg border border-border rounded-xl p-6">
                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                     <div>
-                        <h1 className="text-xl font-bold text-gold mb-1">{ticket.subject}</h1>
+                        <h1 className="font-serif text-xl font-bold text-gold mb-1">{ticket.subject}</h1>
                         <div className="flex items-center gap-3 text-xs text-text-muted">
                             <span className="font-mono">{ticket.ticket_number}</span>
                             <span>{ticket.customer_name} ({ticket.customer_email})</span>
@@ -109,7 +109,7 @@ export default function AdminTicketDetailPage() {
 
             {/* Messages */}
             <div className="bg-card-bg border border-border rounded-xl p-6">
-                <h3 className="text-sm font-semibold text-gold-soft mb-4">Conversation ({messages.length})</h3>
+                <h3 className="font-serif text-sm font-semibold text-gold-soft mb-4">Conversation ({messages.length})</h3>
                 <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
                     {messages.map((msg: any) => {
                         const isAdmin = msg.sender_type === 'admin';

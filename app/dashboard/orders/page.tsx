@@ -991,8 +991,8 @@ export default function OrdersPage() {
                                     </div>
                                 )}
                                 <div className="flex justify-between pt-2 border-t border-border">
-                                    <span className="font-serif text-base font-bold text-gold">Grand Total</span>
-                                    <span className="font-serif text-base font-bold text-gold">
+                                    <span className="text-base font-bold text-gold">Grand Total</span>
+                                    <span className="text-base font-bold text-gold">
                                         {formatINR((selectedOrder as OrderDetail).grand_total ?? selectedOrder.total)}
                                     </span>
                                 </div>

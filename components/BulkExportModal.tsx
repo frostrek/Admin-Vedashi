@@ -323,7 +323,7 @@ export default function BulkExportModal({ isOpen, onClose, products }: BulkExpor
                             <FileText className="h-5 w-5 text-gold" />
                         </div>
                         <div>
-                            <h2 className="text-xl font-serif font-bold text-gold-soft">Bulk Export</h2>
+                            <h2 className="font-serif text-xl font-bold text-gold-soft">Bulk Export</h2>
                             <p className="text-xs text-text-secondary">Export inventory details to premium PDF</p>
                         </div>
                     </div>

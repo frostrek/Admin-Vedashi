@@ -141,7 +141,7 @@ export default function LegalManagement() {
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-serif font-bold text-text-primary mb-1 flex items-center gap-2">
+                    <h1 className="font-serif text-2xl font-bold text-text-primary mb-1 flex items-center gap-2">
                         <FileText className="h-6 w-6 text-gold" />
                         Legal Content Management
                     </h1>
@@ -165,7 +165,7 @@ export default function LegalManagement() {
             {isEditing ? (
                 <div className="bg-card-bg border border-border-subtle rounded-xl p-6 animate-fadeIn">
                     <div className="flex items-center justify-between mb-6 pb-4 border-b border-border-subtle">
-                        <h2 className="text-xl font-bold text-text-primary">
+                        <h2 className="font-serif text-xl font-bold text-text-primary">
                             {currentDoc?.id ? `Edit Version ${currentDoc.version}` : 'Create New Legal Document'}
                         </h2>
                         <button 
@@ -298,7 +298,7 @@ export default function LegalManagement() {
                                         ) : blocks.map((block, idx) => (
                                             <div key={idx}>
                                                 {block.type === 'heading' ? (
-                                                    <h3 className="text-2xl font-serif font-bold text-gray-900">{block.text || 'Untitled Heading'}</h3>
+                                                    <h3 className="font-serif text-2xl font-bold text-gray-900">{block.text || 'Untitled Heading'}</h3>
                                                 ) : (
                                                     <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{block.text || 'Empty paragraph content...'}</p>
                                                 )}
@@ -343,7 +343,7 @@ export default function LegalManagement() {
                                                     value={block.text}
                                                     onChange={e => updateBlock(idx, e.target.value)}
                                                     placeholder="Enter heading text..."
-                                                    className="w-full bg-card-bg border border-border-subtle rounded-lg px-4 py-2.5 text-lg font-serif font-bold text-text-primary focus:border-gold focus:outline-none"
+                                                    className="w-full bg-card-bg border border-border-subtle rounded-lg px-4 py-2.5 text-lg font-bold text-text-primary focus:border-gold focus:outline-none"
                                                 />
                                             ) : (
                                                 <textarea 
@@ -380,7 +380,7 @@ export default function LegalManagement() {
             ) : (
                 <div className="bg-card-bg border border-border-subtle rounded-xl p-6 min-h-[500px]">
                     <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-lg font-bold text-text-primary">Legal Documents & Versions</h2>
+                        <h2 className="font-serif text-lg font-bold text-text-primary">Legal Documents & Versions</h2>
                         <div className="flex gap-2">
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />

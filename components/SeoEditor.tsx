@@ -260,7 +260,7 @@ export default function SeoEditor({
                 {expanded && (
                     <div className="space-y-5 pl-4 border-l-2 border-gold/20 animate-fadeIn">
                         {/* OG */}
-                        <h4 className="text-sm font-semibold text-text-primary">Open Graph</h4>
+                        <h4 className="font-serif text-sm font-semibold text-text-primary">Open Graph</h4>
                         <div>
                             <div className="flex items-center justify-between mb-1.5">
                                 <label className="text-xs font-medium text-text-secondary">OG Title</label>
@@ -299,7 +299,7 @@ export default function SeoEditor({
                         </div>
 
                         {/* Twitter */}
-                        <h4 className="text-sm font-semibold text-text-primary pt-2">Twitter Card</h4>
+                        <h4 className="font-serif text-sm font-semibold text-text-primary pt-2">Twitter Card</h4>
                         <div>
                             <div className="flex items-center justify-between mb-1.5">
                                 <label className="text-xs font-medium text-text-secondary">Twitter Title</label>

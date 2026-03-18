@@ -131,7 +131,7 @@ export default function PaymentLogsPage() {
                         <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/20 border border-border shadow-lg">
                             <Receipt className="w-6 h-6 text-gold" />
                         </div>
-                        <h1 className="text-3xl font-serif font-bold text-gold tracking-tighter">Payments</h1>
+                        <h1 className="font-serif text-3xl font-bold text-gold tracking-tighter">Payments</h1>
                     </div>
                     <p className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-text-muted' : 'text-emerald-900/60'}`}>
                         Administrative payment auditing & reconciliation.
@@ -156,7 +156,7 @@ export default function PaymentLogsPage() {
                         </div>
                         <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Total Volume</span>
                     </div>
-                    <div className="text-2xl font-serif font-bold text-gold-soft">{formatINR(stats.totalVolume)}</div>
+                    <div className="text-2xl font-bold text-gold-soft">{formatINR(stats.totalVolume)}</div>
                 </div>
 
                 <div className="bg-gradient-to-br from-card-bg to-card-bg-elevated p-6 rounded-[2rem] border border-emerald-500/10 shadow-2xl relative overflow-hidden group">
@@ -167,7 +167,7 @@ export default function PaymentLogsPage() {
                         </div>
                         <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Successful</span>
                     </div>
-                    <div className="text-2xl font-serif font-bold text-gold-soft">{stats.successCount}</div>
+                    <div className="text-2xl font-bold text-gold-soft">{stats.successCount}</div>
                 </div>
 
                 <div className="bg-gradient-to-br from-card-bg to-card-bg-elevated p-6 rounded-[2rem] border border-amber-500/10 shadow-2xl relative overflow-hidden group">
@@ -178,7 +178,7 @@ export default function PaymentLogsPage() {
                         </div>
                         <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Pending</span>
                     </div>
-                    <div className="text-2xl font-serif font-bold text-gold-soft">{stats.pendingCount}</div>
+                    <div className="text-2xl font-bold text-gold-soft">{stats.pendingCount}</div>
                 </div>
 
                 <div className="bg-gradient-to-br from-card-bg to-card-bg-elevated p-6 rounded-[2rem] border border-red-500/10 shadow-2xl relative overflow-hidden group">
@@ -189,7 +189,7 @@ export default function PaymentLogsPage() {
                         </div>
                         <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Failed</span>
                     </div>
-                    <div className="text-2xl font-serif font-bold text-gold-soft">{stats.failedCount}</div>
+                    <div className="text-2xl font-bold text-gold-soft">{stats.failedCount}</div>
                 </div>
             </div>
 
@@ -245,7 +245,7 @@ export default function PaymentLogsPage() {
                             <tr className={`border-b border-white/10 ${isDark ? 'bg-black/40 text-gold' : 'bg-emerald-900/10 text-emerald-950'} text-[11px] font-bold uppercase tracking-wider`}>
                                 <th className="px-10 py-6 border-b border-white/5">Transaction</th>
                                 <th className="px-10 py-6 border-b border-white/5">Details</th>
-                                <th className="px-8 py-6 border-b border-white/5 font-serif italic text-lg capitalize">Amount</th>
+                                <th className="px-8 py-6 border-b border-white/5 italic text-lg capitalize">Amount</th>
                                 <th className="px-8 py-6 border-b border-white/5">Gateway</th>
                                 <th className="px-10 py-6 border-b border-white/5 text-right">Status</th>
                                 <th className="px-8 py-6 border-b border-white/5 text-center">Actions</th>
@@ -271,7 +271,7 @@ export default function PaymentLogsPage() {
                                 logs.map((log) => (
                                     <tr key={log.payment_id} className="group hover:bg-white/[0.02] transition-all duration-300">
                                         <td className="px-10 py-8">
-                                            <div className={`font-serif font-bold text-lg tracking-wider group-hover:text-gold transition-colors ${isDark ? 'text-gold-soft' : 'text-emerald-950'}`}>
+                                            <div className={`font-bold text-lg tracking-wider group-hover:text-gold transition-colors ${isDark ? 'text-gold-soft' : 'text-emerald-950'}`}>
                                                 {log.razorpay_payment_id || log.transaction_reference || 'N/A'}
                                             </div>
                                             <div className={`text-[10px] ${isDark ? 'text-gold-soft/50' : 'text-emerald-900/50'} mt-2 uppercase tracking-wide font-bold`}>
@@ -293,7 +293,7 @@ export default function PaymentLogsPage() {
                                             </div>
                                         </td>
                                         <td className="px-8 py-8">
-                                            <div className="text-xl font-serif font-bold text-gold italic drop-shadow-sm">
+                                            <div className="text-xl font-bold text-gold italic drop-shadow-sm">
                                                 {formatINR(parseFloat(log.amount))}
                                             </div>
                                         </td>
@@ -361,7 +361,7 @@ export default function PaymentLogsPage() {
                                     <Receipt className="w-5 h-5 text-gold" />
                                 </div>
                                 <div>
-                                    <h2 className={`font-serif text-xl font-bold ${isDark ? 'text-gold' : 'text-emerald-950'}`}>Payment Details</h2>
+                                    <h2 className={`text-xl font-bold ${isDark ? 'text-gold' : 'text-emerald-950'}`}>Payment Details</h2>
                                     <p className="text-[10px] font-bold uppercase tracking-wider text-text-muted mt-0.5">ID: {selectedLog.payment_id}</p>
                                 </div>
                             </div>
@@ -379,7 +379,7 @@ export default function PaymentLogsPage() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className={`p-4 rounded-xl border ${isDark ? 'bg-black/20 border-white/5' : 'bg-emerald-50 border-emerald-900/5'}`}>
                                     <div className="text-[10px] uppercase font-bold text-text-muted mb-1">Amount</div>
-                                    <div className="text-xl font-serif font-bold text-gold italic">{formatINR(parseFloat(selectedLog.amount))}</div>
+                                    <div className="text-xl font-bold text-gold italic">{formatINR(parseFloat(selectedLog.amount))}</div>
                                 </div>
                                 <div className={`p-4 rounded-xl border ${isDark ? 'bg-black/20 border-white/5' : 'bg-emerald-50 border-emerald-900/5'}`}>
                                     <div className="text-[10px] uppercase font-bold text-text-muted mb-1">Status</div>

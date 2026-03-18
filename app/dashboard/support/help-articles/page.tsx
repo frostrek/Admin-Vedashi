@@ -54,7 +54,7 @@ export default function AdminHelpArticlesPage() {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-gold">Help Articles</h1>
+                    <h1 className="font-serif text-2xl font-bold text-gold">Help Articles</h1>
                     <p className="text-sm text-text-muted mt-1">{articles.length} articles total</p>
                 </div>
                 <button
@@ -68,7 +68,7 @@ export default function AdminHelpArticlesPage() {
 
             {showForm && (
                 <form onSubmit={handleSubmit} className="bg-card-bg border border-border rounded-xl p-6 space-y-4">
-                    <h3 className="font-semibold text-gold-soft">{editId ? 'Edit Article' : 'New Article'}</h3>
+                    <h3 className="font-serif font-semibold text-gold-soft">{editId ? 'Edit Article' : 'New Article'}</h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <select value={form.section} onChange={(e) => setForm({ ...form, section: e.target.value })} className="bg-surface border border-border rounded-xl px-3 py-2 text-sm text-text">
                             {SECTIONS.map(s => <option key={s} value={s}>{s}</option>)}
@@ -98,7 +98,7 @@ export default function AdminHelpArticlesPage() {
                 Object.entries(grouped).map(([section, items]) => (
                     <div key={section} className="bg-card-bg border border-border rounded-xl overflow-hidden">
                         <div className="px-4 py-3 border-b border-border bg-surface">
-                            <h3 className="text-sm font-semibold text-gold-soft">{section} ({items.length})</h3>
+                            <h3 className="font-serif text-sm font-semibold text-gold-soft">{section} ({items.length})</h3>
                         </div>
                         <div className="divide-y divide-border">
                             {items.map((a: any) => (

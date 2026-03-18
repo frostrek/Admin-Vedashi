@@ -62,7 +62,7 @@ export default function SettingsPage() {
                         <Leaf className="h-6 w-6 text-[#E8D8B9]" />
                     </div>
                     <div>
-                        <h3 className="font-semibold text-text-primary">{user?.name || 'Admin'}</h3>
+                        <h3 className="font-serif font-semibold text-text-primary">{user?.name || 'Admin'}</h3>
                         <p className="text-sm text-text-secondary">{user?.email || '—'}</p>
                     </div>
                 </div>
@@ -99,7 +99,7 @@ export default function SettingsPage() {
 
                 <div className="space-y-4">
                     <div>
-                        <h3 className="text-sm font-semibold text-text-primary">Deactivate Account</h3>
+                        <h3 className="font-serif text-sm font-semibold text-text-primary">Deactivate Account</h3>
                         <p className="mt-1.5 text-sm text-text-secondary leading-relaxed">
                             Deactivating your account will temporarily disable access.
                             Your data will remain safe. You can reactivate anytime by logging in again.

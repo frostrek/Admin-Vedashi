@@ -208,7 +208,7 @@ export default function AdminReviewsPage() {
                                 <Star key={`${review.review_id}-star-${i}`} size={8} className={i < review.rating ? 'text-gold fill-gold' : 'text-gold/20'} />
                             ))}
                         </div>
-                        <h3 className={`text-base font-serif font-bold tracking-tight ${isDark ? 'text-text-primary' : 'text-emerald-950'}`}>
+                        <h3 className={`text-base font-bold tracking-tight ${isDark ? 'text-text-primary' : 'text-emerald-950'}`}>
                             {review.title}
                         </h3>
                         <div className={`flex flex-wrap items-center gap-x-2 gap-y-1 text-[8px] font-black uppercase tracking-widest ${isDark ? 'text-text-muted' : 'text-emerald-900/80'}`}>
@@ -291,7 +291,7 @@ export default function AdminReviewsPage() {
                         <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/20 border border-gold/20 shadow-md">
                             <Star className="w-5 h-5 text-gold fill-gold/20" />
                         </div>
-                        <h1 className={`text-2xl font-serif font-bold tracking-tighter ${isDark ? 'text-text-primary' : 'text-emerald-950'}`}>Reviews Moderation</h1>
+                        <h1 className={`text-2xl font-bold tracking-tighter ${isDark ? 'text-text-primary' : 'text-emerald-950'}`}>Reviews Moderation</h1>
                     </div>
                     <p className={`text-[9px] font-bold uppercase tracking-[0.2em] ml-13 ${isDark ? 'text-text-muted' : 'text-emerald-900/60'}`}>
                         Monitor customer feedback and manage product resonance.
@@ -419,7 +419,7 @@ export default function AdminReviewsPage() {
                                                     <div className={`p-1.5 rounded-full ${isDark ? 'bg-primary/30 text-gold-soft' : 'bg-gold/10 text-primary'}`}>
                                                         {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                                                     </div>
-                                                    <h3 className={`font-serif text-lg font-bold tracking-tight ${isDark ? 'text-gold-soft' : 'text-emerald-950'}`}>
+                                                    <h3 className={`text-lg font-bold tracking-tight ${isDark ? 'text-gold-soft' : 'text-emerald-950'}`}>
                                                         {productName}
                                                     </h3>
                                                 </div>

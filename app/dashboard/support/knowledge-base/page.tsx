@@ -56,7 +56,7 @@ export default function AdminKBPage() {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-gold">Knowledge Base</h1>
+                    <h1 className="font-serif text-2xl font-bold text-gold">Knowledge Base</h1>
                     <p className="text-sm text-text-muted mt-1">{categories.length} categories · {articles.length} articles</p>
                 </div>
                 <div className="flex gap-2">
@@ -72,7 +72,7 @@ export default function AdminKBPage() {
 
             {showCatForm && (
                 <form onSubmit={submitCat} className="bg-card-bg border border-border rounded-xl p-5 space-y-3">
-                    <h3 className="font-semibold text-gold-soft text-sm">New Category</h3>
+                    <h3 className="font-serif font-semibold text-gold-soft text-sm">New Category</h3>
                     <div className="grid grid-cols-3 gap-3">
                         <input value={cForm.name} onChange={e => setCForm({ ...cForm, name: e.target.value })} placeholder="Name" className="bg-surface border border-border rounded-xl px-3 py-2 text-sm text-text" required />
                         <input value={cForm.slug} onChange={e => setCForm({ ...cForm, slug: e.target.value })} placeholder="Slug (auto)" className="bg-surface border border-border rounded-xl px-3 py-2 text-sm text-text" />
@@ -84,7 +84,7 @@ export default function AdminKBPage() {
 
             {showArticleForm && (
                 <form onSubmit={submitArticle} className="bg-card-bg border border-border rounded-xl p-5 space-y-3">
-                    <h3 className="font-semibold text-gold-soft text-sm">{editId ? 'Edit Article' : 'New Article'}</h3>
+                    <h3 className="font-serif font-semibold text-gold-soft text-sm">{editId ? 'Edit Article' : 'New Article'}</h3>
                     <div className="grid grid-cols-3 gap-3">
                         <select value={aForm.category_id} onChange={e => setAForm({ ...aForm, category_id: e.target.value })} className="bg-surface border border-border rounded-xl px-3 py-2 text-sm text-text">
                             <option value="">No category</option>
@@ -106,7 +106,7 @@ export default function AdminKBPage() {
 
             {categories.length > 0 && (
                 <div className="bg-card-bg border border-border rounded-xl overflow-hidden">
-                    <div className="px-4 py-3 border-b border-border bg-surface"><h3 className="text-sm font-semibold text-gold-soft">Categories</h3></div>
+                    <div className="px-4 py-3 border-b border-border bg-surface"><h3 className="font-serif text-sm font-semibold text-gold-soft">Categories</h3></div>
                     <div className="divide-y divide-border">
                         {categories.map((c: any) => (
                             <div key={c.category_id} className="px-4 py-3 flex items-center justify-between">

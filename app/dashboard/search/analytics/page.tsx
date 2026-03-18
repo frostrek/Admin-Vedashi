@@ -153,7 +153,7 @@ export default function SearchAnalyticsPage() {
                 <div className="rounded-xl border border-border bg-gradient-to-br from-card-bg to-card-bg-elevated overflow-hidden">
                     <div className="px-5 py-4 border-b border-border-subtle flex items-center gap-2">
                         <TrendingUp className="w-4 h-4 text-gold" />
-                        <h3 className="text-sm font-semibold text-text-primary">Top Searched Terms</h3>
+                        <h3 className="font-serif text-sm font-semibold text-text-primary">Top Searched Terms</h3>
                         {stats.top_searches.length > 0 && (
                             <span className="ml-auto text-[10px] text-text-muted bg-page-bg rounded-full px-2 py-0.5">
                                 {stats.top_searches.length} terms
@@ -202,7 +202,7 @@ export default function SearchAnalyticsPage() {
                 <div className="rounded-xl border border-border bg-gradient-to-br from-card-bg to-card-bg-elevated overflow-hidden">
                     <div className="px-5 py-4 border-b border-border-subtle flex items-center gap-2">
                         <AlertCircle className="w-4 h-4 text-rose-400" />
-                        <h3 className="text-sm font-semibold text-text-primary">Zero-Result Searches</h3>
+                        <h3 className="font-serif text-sm font-semibold text-text-primary">Zero-Result Searches</h3>
                         {stats.zero_results.length > 0 && (
                             <span className="ml-auto text-[10px] text-rose-400 bg-rose-500/10 rounded-full px-2 py-0.5">
                                 {stats.zero_results.length} terms
@@ -248,7 +248,7 @@ export default function SearchAnalyticsPage() {
                 <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-2">
                         <Activity className="w-4 h-4 text-gold" />
-                        <h3 className="text-sm font-semibold text-text-primary">Search Volume</h3>
+                        <h3 className="font-serif text-sm font-semibold text-text-primary">Search Volume</h3>
                         <span className="text-[10px] text-text-muted">(Last {stats.period_days} days)</span>
                     </div>
                     {stats.daily_volume.length > 0 && (

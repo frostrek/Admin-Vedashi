@@ -163,7 +163,7 @@ function ActivityLogsPageContent() {
                         <div className={`flex items-center justify-center w-12 h-12 rounded-2xl ${isDark ? 'bg-primary/20 border-border' : 'bg-gold/10 border-gold/20'} border shadow-lg`}>
                             <Activity className="w-6 h-6 text-gold" />
                         </div>
-                        <h1 className={`text-3xl font-serif font-bold ${isDark ? 'text-gold' : 'text-emerald-950'} tracking-tighter`}>Interaction Chronicles</h1>
+                        <h1 className={`text-3xl font-bold ${isDark ? 'text-gold' : 'text-emerald-950'} tracking-tighter`}>Interaction Chronicles</h1>
                     </div>
                     <p className={`text-[10px] font-bold uppercase tracking-[0.2em] ${isDark ? 'text-text-muted' : 'text-emerald-900/40'} ml-1`}>
                         An irreversible audit trail of administrative vibrations and system evolutions.
@@ -355,7 +355,7 @@ function ActivityLogsPageContent() {
                                     <Activity className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <h2 className={`text-2xl font-bold font-serif tracking-tight ${isDark ? 'text-gold' : 'text-emerald-950'}`}>Chronicle Entry</h2>
+                                    <h2 className={`text-2xl font-bold tracking-tight ${isDark ? 'text-gold' : 'text-emerald-950'}`}>Chronicle Entry</h2>
                                     <p className={`text-[10px] uppercase font-black tracking-[0.3em] ${isDark ? 'text-gold/50' : 'text-emerald-900/40'}`}>Detail Analysis</p>
                                 </div>
                             </div>
@@ -371,13 +371,13 @@ function ActivityLogsPageContent() {
                             <div className="grid grid-cols-2 gap-10">
                                 <div className="space-y-1">
                                     <label className={`text-[10px] uppercase font-black tracking-[0.3em] ${isDark ? 'text-gold/60' : 'text-emerald-900/60'} mb-2 block`}>Origin Actor</label>
-                                    <div className={`text-lg font-bold font-serif ${isDark ? 'text-text' : 'text-emerald-950'}`}>{activeLog.actor_email || 'System Operation'}</div>
+                                    <div className={`text-lg font-bold ${isDark ? 'text-text' : 'text-emerald-950'}`}>{activeLog.actor_email || 'System Operation'}</div>
                                     <div className={`text-[11px] ${isDark ? 'text-text-muted/60' : 'text-emerald-900/40'} mt-1 font-mono uppercase tracking-widest break-all`}>ID: {activeLog.actor_id}</div>
                                     <div className={`text-[11px] ${isDark ? 'text-text-muted/60' : 'text-emerald-900/40'} font-mono uppercase tracking-widest mt-1 italic`}>Vibration Source: {activeLog.ip_address || 'LOCALHOST'}</div>
                                 </div>
                                 <div className="space-y-1">
                                     <label className={`text-[10px] uppercase font-black tracking-[0.3em] ${isDark ? 'text-gold/60' : 'text-emerald-900/60'} mb-2 block`}>Recorded At</label>
-                                    <div className={`text-lg font-bold font-serif ${isDark ? 'text-text' : 'text-emerald-950'}`}>{new Date(activeLog.created_at).toLocaleString()}</div>
+                                    <div className={`text-lg font-bold ${isDark ? 'text-text' : 'text-emerald-950'}`}>{new Date(activeLog.created_at).toLocaleString()}</div>
                                     <div className={`text-[11px] ${isDark ? 'text-text-muted/60' : 'text-emerald-900/50'} mt-2 p-2 ${isDark ? 'bg-gold/5 border-gold/10' : 'bg-emerald-50/50 border-gold/5'} rounded-lg border text-center uppercase tracking-widest font-bold`}>
                                         Vedic Timestamp: {activeLog.created_at.split('T')[0]}
                                     </div>
@@ -396,7 +396,7 @@ function ActivityLogsPageContent() {
                                     <div>
                                         <label className={`text-[10px] uppercase font-black tracking-[0.3em] ${isDark ? 'text-gold/60' : 'text-emerald-900/60'} mb-3 block`}>Entity Association</label>
                                         <div className="flex flex-col gap-2">
-                                            <span className={`text-3xl font-serif italic ${isDark ? 'text-gold' : 'text-emerald-900'}`}>{activeLog.entity_type || 'General System'}</span>
+                                            <span className={`text-3xl italic ${isDark ? 'text-gold' : 'text-emerald-900'}`}>{activeLog.entity_type || 'General System'}</span>
                                             <span className={`font-mono text-xs tracking-[0.1em] break-all p-2 rounded-lg ${isDark ? 'text-text-muted/70 bg-black/5' : 'text-emerald-900/60 bg-white shadow-sm'}`}>
                                                 {activeLog.entity_id || 'NO_ENTITY_ID'}
                                             </span>

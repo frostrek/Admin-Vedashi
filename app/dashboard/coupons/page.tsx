@@ -221,7 +221,7 @@ export default function CouponsPage() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-serif font-bold text-gold">Coupons</h1>
+                    <h1 className="font-serif text-2xl font-bold text-gold">Coupons</h1>
                     <p className="text-sm text-text-muted mt-1">Create and manage discount coupons</p>
                 </div>
                 <button
@@ -327,7 +327,7 @@ export default function CouponsPage() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
                     <div className="bg-card-bg border border-border rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
                         <div className="flex items-center justify-between p-5 border-b border-border sticky top-0 bg-card-bg z-10">
-                            <h2 className="text-lg font-serif font-bold text-gold">
+                            <h2 className="font-serif text-lg font-bold text-gold">
                                 {editing ? 'Edit Coupon' : 'Create Coupon'}
                             </h2>
                             <button onClick={() => setModalOpen(false)} className="text-text-muted hover:text-white"><X className="w-5 h-5" /></button>

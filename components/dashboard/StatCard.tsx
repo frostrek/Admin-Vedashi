@@ -44,7 +44,7 @@ export default function StatCard({
                 </div>
             ) : (
                 <>
-                    <p className="font-serif text-3xl font-bold text-gold tracking-tight">
+                    <p className="text-3xl font-bold text-gold tracking-tight">
                         {value}
                     </p>
                     <p className="mt-1 text-[11px] font-bold uppercase tracking-[0.1em] text-gold-soft group-hover:text-gold transition-colors duration-500">

@@ -64,7 +64,7 @@ export default function AdminTicketsPage() {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-text-primary">Support Tickets</h1>
+                    <h1 className="font-serif text-2xl font-bold text-text-primary">Support Tickets</h1>
                     <p className="text-sm text-text-muted mt-1">Manage customer support requests</p>
                 </div>
                 <button onClick={loadTickets} className="flex items-center gap-2 bg-card-bg border border-border px-4 py-2 rounded-xl text-sm text-text-muted hover:text-gold transition-colors">
