@@ -25,8 +25,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
     if (!isAuthenticated) {
         if (typeof window !== 'undefined') {
-            const storefrontUrl = process.env.NEXT_PUBLIC_STOREFRONT_URL || 'http://localhost:3000';
-            window.location.href = `${storefrontUrl}/login?logout=true`;
+            window.location.href = '/?logout=true';
         }
         return null;
     }

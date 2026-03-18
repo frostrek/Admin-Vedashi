@@ -35,14 +35,6 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<AdminUser | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const stored = localStorage.getItem(ADMIN_KEY);
-            if (stored) setUser(JSON.parse(stored));
-        }
-        setIsLoading(false);
-    }, []);
-
     const login = useCallback(async (email: string, password: string): Promise<LoginResponse> => {
         // Try real backend login first
         const result: LoginResult = await apiLogin(email, password);
@@ -69,18 +61,13 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
             return { success: true };
         }
 
-        // Fallback: simple admin auth for development (when backend is unreachable)
+        // Removed fallback: users must be able to reach real backend to login
+        // SILENT_DEV_FALLBACK_REMOVED: Users were getting 401s after silent fallback
         if (!result.success && result.error?.includes('Network error')) {
-            if (email && password.length >= 3) {
-                const adminUser: AdminUser = {
-                    email,
-                    name: email.split('@')[0],
-                    role: 'admin',
-                };
-                setUser(adminUser);
-                localStorage.setItem(ADMIN_KEY, JSON.stringify(adminUser));
-                return { success: true };
-            }
+            return { 
+                success: false, 
+                error: 'Backend unreachable. Please ensure the server is running on port 5000.' 
+            };
         }
 
         return { success: false, error: result.error || 'Invalid credentials' };
@@ -109,8 +96,31 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         return result;
     }, []);
 
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const stored = localStorage.getItem(ADMIN_KEY);
+            if (stored) {
+                setUser(JSON.parse(stored));
+            }
+        }
+        setIsLoading(false);
+
+        // Listen for global auth failures (e.g., failed refresh token)
+        const handleAuthFailure = () => {
+            console.warn('[AdminAuthContext] Auth failure detected, logging out...');
+            logout();
+        };
+
+        if (typeof window !== 'undefined') {
+            window.addEventListener('admin-auth-failure', handleAuthFailure);
+            return () => window.removeEventListener('admin-auth-failure', handleAuthFailure);
+        }
+    }, [logout]);
+
+    const isAuthenticatedState = !!user && (typeof window !== 'undefined' ? !!localStorage.getItem('admin_refresh_token') : true);
+
     return (
-        <AdminAuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, logout, deactivate }}>
+        <AdminAuthContext.Provider value={{ user, isAuthenticated: isAuthenticatedState, isLoading, login, logout, deactivate }}>
             {children}
         </AdminAuthContext.Provider>
     );
