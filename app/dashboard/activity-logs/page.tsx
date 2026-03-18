@@ -23,7 +23,8 @@ import {
     Info,
     FileSearch,
     Database,
-    Download
+    Download,
+    Trash2
 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTheme } from '@/context/ThemeContext';
@@ -71,11 +72,16 @@ function ActivityLogsPageContent() {
         totalPages: 0
     });
 
+    const isAuthorized = user?.role === 'owner' || user?.role === 'admin';
     const inputCls = `w-full ${isDark ? 'bg-sidebar-bg border-border text-gold-soft' : 'bg-white border-gold/20 text-emerald-950'} border rounded-xl px-4 py-2 text-sm outline-none focus:border-gold transition-all shadow-inner`;
 
-    const isAuthorized = user?.role === 'owner' || user?.role === 'admin';
-
-    const fetchLogs = useCallback(async (pageStr = '1') => {
+    // Stable fetch function that takes explicit values to avoid dependency on typing state
+    const fetchLogs = useCallback(async (
+        pageStr = '1', 
+        email = filterEmail, 
+        entity = filterEntity, 
+        action = filterAction
+    ) => {
         setLoading(true);
         setError(null);
 
@@ -85,9 +91,9 @@ function ActivityLogsPageContent() {
                 limit: pagination.limit.toString(),
             };
 
-            if (filterEmail) filterParams.actor_email = filterEmail;
-            if (filterEntity) filterParams.entity_type = filterEntity;
-            if (filterAction) filterParams.action = filterAction;
+            if (email) filterParams.actor_email = email;
+            if (entity) filterParams.entity_type = entity;
+            if (action) filterParams.action = action;
 
             const res = await getActivityLogs(filterParams);
 
@@ -96,7 +102,6 @@ function ActivityLogsPageContent() {
                 setPagination(res.pagination || { total: 0, page: 1, limit: 20, totalPages: 0 });
             } else {
                 setLogs([]);
-                // Keep current pagination but set total to 0 if no results
                 setPagination(prev => ({ ...prev, total: 0, totalPages: 0 }));
             }
         } catch (err: any) {
@@ -120,13 +125,16 @@ function ActivityLogsPageContent() {
         };
     }, [activeLog]);
 
+    // Initial load only
     useEffect(() => {
         if (isAuthorized) {
+            // We use a timeout to ensure state is settled or just call it once
             fetchLogs('1');
         } else {
             setLoading(false);
         }
-    }, [isAuthorized, fetchLogs]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isAuthorized]); // ONLY run when authorization changes (initial load)
 
     // Handle deep link to specific log
     useEffect(() => {
@@ -141,6 +149,14 @@ function ActivityLogsPageContent() {
     const handleFilterSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         fetchLogs('1');
+    };
+
+    const handleClearFilters = () => {
+        setFilterEmail('');
+        setFilterEntity('');
+        setFilterAction('');
+        // Trigger fetch with empty values immediately
+        fetchLogs('1', '', '', '');
     };
 
     if (!isAuthorized && !loading) {
@@ -222,9 +238,17 @@ function ActivityLogsPageContent() {
                         />
                     </div>
                 </div>
-                <div className="flex items-end">
-                    <button type="submit" className="w-full bg-gold/10 text-gold border border-gold/30 hover:bg-gold hover:text-black py-2.5 rounded-xl font-bold uppercase tracking-widest transition-all flex justify-center items-center gap-2 text-[10px] shadow-sm active:scale-95">
-                        <Search className="w-4 h-4" /> Filter Records
+                <div className="flex items-end gap-2">
+                    <button type="submit" className="flex-1 bg-gold/10 text-gold border border-gold/30 hover:bg-gold hover:text-black py-2.5 rounded-xl font-bold uppercase tracking-widest transition-all flex justify-center items-center gap-2 text-[10px] shadow-sm active:scale-95">
+                        <Search className="w-4 h-4" /> Filter
+                    </button>
+                    <button 
+                        type="button" 
+                        onClick={handleClearFilters}
+                        className={`p-2.5 rounded-xl border ${isDark ? 'border-border text-text-muted hover:text-gold' : 'border-gold/20 text-emerald-900/60 hover:text-gold'} transition-all`}
+                        title="Clear Filters"
+                    >
+                        <Trash2 className="w-4 h-4" />
                     </button>
                 </div>
             </form>

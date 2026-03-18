@@ -106,6 +106,8 @@ export default function TopNavbar({ sidebarCollapsed }: TopNavbarProps) {
 
     // Fetch dynamic alerts data
     useEffect(() => {
+        if (!user) return; // Only fetch alerts if user is logged in
+        
         const fetchAlerts = async () => {
             try {
                 const results = await Promise.allSettled([
@@ -113,7 +115,6 @@ export default function TopNavbar({ sidebarCollapsed }: TopNavbarProps) {
                     getLowStockProducts(),
                     getAdminFeedback({ status: 'new' })
                 ]);
-
                 const ordersRes = results[0].status === 'fulfilled' ? results[0].value : [];
                 const stockRes = results[1].status === 'fulfilled' ? results[1].value : [];
                 const feedbackRes = results[2].status === 'fulfilled' ? results[2].value : { feedback: [], total: 0 };
@@ -141,7 +142,7 @@ export default function TopNavbar({ sidebarCollapsed }: TopNavbarProps) {
         fetchAlerts();
         const interval = setInterval(fetchAlerts, 60000);
         return () => clearInterval(interval);
-    }, []);
+    }, [user]);
 
     // Filter pages by query
     const filteredPages = query.trim().length > 0

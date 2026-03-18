@@ -7,13 +7,15 @@ import {
     Users, Eye, Search, X, Mail, Phone, Calendar, Shield,
     CheckCircle2, XCircle, AlertTriangle, UserX, Loader2
 } from 'lucide-react';
+import SortableHeader, { SortDir, compare } from '@/components/SortableHeader';
 
 export default function CustomersPage() {
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
-    const [sortBy, setSortBy] = useState('newest');
+    const [sortKey, setSortKey] = useState<string | null>(null);
+    const [sortDir, setSortDir] = useState<SortDir>(null);
 
     useEffect(() => {
         Promise.all([getCustomers(), getOrders()])
@@ -66,16 +68,17 @@ export default function CustomersPage() {
         }
 
         // Sorting
-        list = [...list].sort((a, b) => {
-            if (sortBy === 'newest') return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-            if (sortBy === 'oldest') return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-            if (sortBy === 'orders_desc') return ((b as any).total_orders || 0) - ((a as any).total_orders || 0);
-            if (sortBy === 'spent_desc') return ((b as any).total_spent || 0) - ((a as any).total_spent || 0);
-            return 0;
-        });
+        if (sortKey && sortDir) {
+            list = [...list].sort((a, b) => compare(a, b, sortKey, sortDir));
+        }
 
         return list;
-    }, [customers, searchQuery, statusFilter, sortBy]);
+    }, [customers, searchQuery, statusFilter, sortKey, sortDir]);
+
+    const handleSort = (key: string, dir: SortDir) => {
+        setSortKey(dir ? key : null);
+        setSortDir(dir);
+    };
 
     const statusBadge = (customer: Customer) => {
         if (customer.is_banned) return <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold bg-danger/15 text-danger"><XCircle className="h-3 w-3" />Banned</span>;
@@ -125,18 +128,6 @@ export default function CustomersPage() {
                         <option value="deleted">Deleted</option>
                     </select>
 
-                    {/* Sort Filter */}
-                    <select
-                        value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value)}
-                        className="rounded-lg border border-border bg-card-bg px-3 py-2 text-sm text-text-primary focus:border-gold/40 focus:outline-none transition-colors duration-300"
-                    >
-                        <option value="newest">Newest First</option>
-                        <option value="oldest">Oldest First</option>
-                        <option value="orders_desc">Most Orders</option>
-                        <option value="spent_desc">Highest Spend</option>
-                    </select>
-
                     {/* Search */}
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
@@ -176,12 +167,12 @@ export default function CustomersPage() {
                     <table className="w-full text-left">
                         <thead>
                             <tr className="border-b border-border bg-page-bg">
-                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider">Patient Entity</th>
-                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider">Total Orders</th>
-                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider">Total Spent</th>
-                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider">Last Active</th>
+                                <SortableHeader label="Patient Entity" sortKey="full_name" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
+                                <SortableHeader label="Total Orders" sortKey="total_orders" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
+                                <SortableHeader label="Total Spent" sortKey="total_spent" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
+                                <SortableHeader label="Last Active" sortKey="last_login_at" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
                                 <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider">Status</th>
-                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider">Joined</th>
+                                <SortableHeader label="Joined" sortKey="created_at" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
                                 <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider text-right">Actions</th>
                             </tr>
                         </thead>

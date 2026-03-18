@@ -246,7 +246,7 @@ export default function LoyaltyAdminPage() {
                         <h1 className="text-2xl font-serif font-bold text-gold flex items-center gap-2">
                             <Gift className="h-6 w-6" /> Loyalty & Rewards
                         </h1>
-                        <p className="text-sm text-text-secondary mt-1 max-w-xl">Manage tiers, points rules, and exclusive promotions with ease.</p>
+                        <p className="text-sm text-text-primary mt-1 max-w-xl font-medium">Manage tiers, points rules, and exclusive promotions with ease.</p>
                     </div>
                 </div>
 
@@ -283,20 +283,20 @@ export default function LoyaltyAdminPage() {
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                 <div className="bg-card-bg border border-border rounded-xl p-5 hover:border-gold/30 transition-colors">
                                     <div className="flex justify-between items-center mb-2">
-                                        <p className="text-sm text-text-muted font-medium">Total Issued</p>
-                                        <div className="p-2 bg-emerald-500/10 rounded-lg"><TrendingUp className="h-4 w-4 text-emerald-400" /></div>
+                                        <p className="text-sm text-text-secondary font-bold">Total Issued</p>
+                                        <div className="p-2 bg-emerald-500/10 rounded-lg"><TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400" /></div>
                                     </div>
-                                    <h3 className="text-2xl font-bold text-text-primary mb-1 font-mono">{formatNumber(stats.stats?.total_points_issued || stats.total_points_issued)}</h3>
-                                    <p className="text-xs text-text-muted">Lifetime points credited</p>
+                                    <h3 className="text-2xl font-bold text-emerald-800 dark:text-text-primary mb-1 font-mono">{formatNumber(stats.stats?.total_points_issued || stats.total_points_issued)}</h3>
+                                    <p className="text-xs text-text-secondary font-medium">Lifetime points credited</p>
                                 </div>
                                 
                                 <div className="bg-card-bg border border-border rounded-xl p-5 hover:border-gold/30 transition-colors">
                                     <div className="flex justify-between items-center mb-2">
-                                        <p className="text-sm text-text-muted font-medium">Total Redeemed</p>
-                                        <div className="p-2 bg-blue-500/10 rounded-lg"><TrendingDown className="h-4 w-4 text-blue-400" /></div>
+                                        <p className="text-sm text-text-secondary font-bold">Total Redeemed</p>
+                                        <div className="p-2 bg-blue-500/10 rounded-lg"><TrendingDown className="h-4 w-4 text-blue-600 dark:text-blue-400" /></div>
                                     </div>
-                                    <h3 className="text-2xl font-bold text-text-primary mb-1 font-mono">{formatNumber(stats.stats?.total_points_redeemed || stats.total_points_redeemed)}</h3>
-                                    <p className="text-xs text-text-muted">Lifetime points burnt</p>
+                                    <h3 className="text-2xl font-bold text-blue-800 dark:text-text-primary mb-1 font-mono">{formatNumber(stats.stats?.total_points_redeemed || stats.total_points_redeemed)}</h3>
+                                    <p className="text-xs text-text-secondary font-medium">Lifetime points burnt</p>
                                 </div>
                                 
                                 <div 
@@ -338,12 +338,12 @@ export default function LoyaltyAdminPage() {
                             <div className="overflow-x-auto">
                                 <table className="w-full text-sm">
                                     <thead>
-                                        <tr className="border-b border-border text-text-secondary bg-primary/5">
-                                            <th className="text-left px-5 py-3 font-medium">Tier Name</th>
-                                            <th className="text-left px-5 py-3 font-medium">Min Lifetime Pts</th>
-                                            <th className="text-left px-5 py-3 font-medium">Multiplier</th>
-                                            <th className="text-left px-5 py-3 font-medium">Benefits</th>
-                                            <th className="text-right px-5 py-3 font-medium">Actions</th>
+                                        <tr className="border-b border-border text-text-primary bg-primary/10">
+                                            <th className="text-left px-5 py-4 font-bold uppercase tracking-wider text-[11px]">Tier Name</th>
+                                            <th className="text-left px-5 py-4 font-bold uppercase tracking-wider text-[11px]">Min Lifetime Pts</th>
+                                            <th className="text-left px-5 py-4 font-bold uppercase tracking-wider text-[11px]">Multiplier</th>
+                                            <th className="text-left px-5 py-4 font-bold uppercase tracking-wider text-[11px]">Benefits</th>
+                                            <th className="text-right px-5 py-4 font-bold uppercase tracking-wider text-[11px]">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -548,36 +548,36 @@ export default function LoyaltyAdminPage() {
                                     <tbody>
                                         {!wallets || wallets.length === 0 ? (
                                             <tr>
-                                                <td colSpan={5} className="px-5 py-10 text-center text-text-muted">No customer wallets found</td>
+                                                <td colSpan={5} className="px-5 py-10 text-center text-text-primary font-medium">No customer wallets found</td>
                                             </tr>
                                         ) : wallets.map((w: any) => (
-                                            <tr key={w.wallet_id} className="border-b border-border/50 hover:bg-white/5 group">
+                                            <tr key={w.wallet_id} className="border-b border-border/50 hover:bg-gold/5 group">
                                                 <td className="px-5 py-4">
                                                     <div className="flex flex-col">
-                                                        <span className="font-semibold text-text-primary">{w.full_name || 'Anonymous User'}</span>
-                                                        <span className="text-xs text-text-muted">{w.email}</span>
+                                                        <span className="font-bold text-text-primary">{w.full_name || 'Anonymous User'}</span>
+                                                        <span className="text-xs text-text-primary font-medium opacity-70">{w.email}</span>
                                                     </div>
                                                 </td>
                                                 <td className="px-5 py-4">
-                                                    <div className="flex items-center gap-1.5 text-emerald-400 font-mono font-bold text-lg">
+                                                    <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 font-mono font-bold text-lg">
                                                         {formatNumber(w.balance)}
-                                                        <span className="text-[10px] uppercase tracking-tighter text-text-muted">pts</span>
+                                                        <span className="text-[10px] uppercase font-black tracking-tighter text-text-secondary">pts</span>
                                                     </div>
                                                 </td>
                                                 <td className="px-5 py-4">
-                                                    <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border" style={{ borderColor: `${w.badge_color || '#D4A847'}44`, backgroundColor: `${w.badge_color || '#D4A847'}11`, color: w.badge_color || '#D4A847' }}>
+                                                    <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border shadow-sm" style={{ borderColor: `${w.badge_color || '#D4A847'}`, backgroundColor: `${w.badge_color || '#D4A847'}11`, color: w.badge_color || '#D4A847' }}>
                                                         {w.tier_name || 'Bronze'} Ritualist
                                                     </span>
                                                 </td>
-                                                <td className="px-5 py-4 text-text-muted text-xs">
+                                                <td className="px-5 py-4 text-text-secondary font-bold text-xs">
                                                     {w.updated_at ? new Date(w.updated_at).toLocaleDateString() : 'Never'}
                                                 </td>
                                                 <td className="px-5 py-4 text-right">
                                                     <button 
                                                         onClick={() => showAdjustModal(w)}
-                                                        className="text-gold text-xs font-bold hover:underline transition-opacity"
+                                                        className="bg-gold/10 hover:bg-gold text-gold hover:text-white px-4 py-1.5 rounded-lg text-xs font-bold uppercase tracking-widest transition-all border border-gold/30"
                                                     >
-                                                        Adjust Points
+                                                        Adjust
                                                     </button>
                                                 </td>
                                             </tr>
