@@ -101,7 +101,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         const token = getToken() || undefined;
         const result = await apiDeactivate(password, token);
         if (result.success) {
-            // Clear everything — user is now deactivated
+            // Clear everything — user is now deactivate
             setUser(null);
             localStorage.removeItem(ADMIN_KEY);
             clearAuth();
