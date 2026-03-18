@@ -8,7 +8,7 @@ interface CategoryModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSubmit: (payload: CreateCategoryPayload | UpdateCategoryPayload) => Promise<void>;
-    /** Pass null for "create" mode, pass a Category object for "edit" mode */
+    /** Pass null for "create" mode, pass a Category objects for "edit" mode */
     editCategory: Category | null;
     /** All categories (used to populate the parent dropdown) */
     categories: Category[];
@@ -24,7 +24,7 @@ export default function CategoryModal({ isOpen, onClose, onSubmit, editCategory,
     const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
 
     const isEdit = !!editCategory;
-    
+
     // Lock background scroll when modal is open
     useEffect(() => {
         if (isOpen) {
@@ -206,15 +206,13 @@ export default function CategoryModal({ isOpen, onClose, onSubmit, editCategory,
                             role="switch"
                             aria-checked={isActive}
                             onClick={() => setIsActive(!isActive)}
-                            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
-                                isActive ? 'bg-primary' : 'bg-gray-200'
-                            }`}
+                            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${isActive ? 'bg-primary' : 'bg-gray-200'
+                                }`}
                         >
                             <span
                                 aria-hidden="true"
-                                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                                    isActive ? 'translate-x-5' : 'translate-x-0'
-                                }`}
+                                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${isActive ? 'translate-x-5' : 'translate-x-0'
+                                    }`}
                             />
                         </button>
                     </div>
