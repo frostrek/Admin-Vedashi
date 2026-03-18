@@ -11,6 +11,7 @@ interface BulkDiscountModalProps {
     onClose: () => void;
     onApply: () => void;
     selectedIds?: string[];
+    selectedVariantIds?: string[];
 }
 
 type TargetType = 'category' | 'sub_category' | 'brand' | 'all' | 'selected';
@@ -48,7 +49,7 @@ const CUSTOM_FIELDS = [
     { value: 'weight_g', label: 'Weight (g)', type: 'number' },
 ] as const;
 
-export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedIds = [] }: BulkDiscountModalProps) {
+export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedIds = [], selectedVariantIds = [] }: BulkDiscountModalProps) {
     // Lock background scroll when modal is open
     useEffect(() => {
         if (isOpen) {
@@ -161,7 +162,11 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
 
     const handleDiscountSubmit = async (action: 'apply' | 'remove', overrideTargetType?: TargetType, overrideTargetValue?: string) => {
         const payloadTargetType = overrideTargetType || targetType;
-        const payloadTargetValue = overrideTargetType ? overrideTargetValue : (targetType === 'selected' ? selectedIds : targetValue);
+        const payloadTargetValue = overrideTargetType 
+            ? overrideTargetValue 
+            : (targetType === 'selected' 
+                ? { productIds: selectedIds, variantIds: selectedVariantIds } 
+                : targetValue);
 
         let pct: number | undefined;
         if (action === 'apply') {
@@ -193,7 +198,9 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
                 },
                 body: JSON.stringify({
                     targetType: payloadTargetType,
-                    targetValue: payloadTargetType === 'all' ? undefined : (Array.isArray(payloadTargetValue) ? payloadTargetValue : payloadTargetValue?.trim()),
+                    targetValue: payloadTargetType === 'all' 
+                        ? undefined 
+                        : (typeof payloadTargetValue === 'string' ? payloadTargetValue.trim() : payloadTargetValue),
                     discountPercentage: pct,
                     saleStart: saleStart ? new Date(saleStart).toISOString() : undefined,
                     saleEnd: saleEnd ? new Date(saleEnd).toISOString() : undefined,
@@ -242,7 +249,11 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
                 },
                 body: JSON.stringify({
                     targetType,
-                    targetValue: targetType === 'all' ? undefined : (targetType === 'selected' ? selectedIds : targetValue.trim()),
+                    targetValue: targetType === 'all' 
+                        ? undefined 
+                        : (targetType === 'selected' 
+                            ? { productIds: selectedIds, variantIds: selectedVariantIds } 
+                            : targetValue.trim()),
                     adjustmentMode,
                     valueType,
                     value: val,
@@ -284,7 +295,11 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
                 },
                 body: JSON.stringify({
                     targetType,
-                    targetValue: targetType === 'all' ? undefined : (targetType === 'selected' ? selectedIds : targetValue.trim()),
+                    targetValue: targetType === 'all' 
+                        ? undefined 
+                        : (targetType === 'selected' 
+                            ? { productIds: selectedIds, variantIds: selectedVariantIds } 
+                            : targetValue.trim()),
                     field: customField,
                     value: customValue,
                 })
@@ -311,8 +326,8 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
     const handleSubmit = async (e: React.FormEvent | undefined, action: 'apply' | 'remove' = 'apply') => {
         if (e) e.preventDefault();
 
-        if (targetType === 'selected' && selectedIds.length === 0) {
-            toast.error('No products selected.');
+        if (targetType === 'selected' && selectedIds.length === 0 && selectedVariantIds.length === 0) {
+            toast.error('No items selected.');
             return;
         }
 
@@ -433,7 +448,11 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
                                 { value: 'category', label: 'Category', icon: Layers },
                                 { value: 'sub_category', label: 'Subcategory', icon: Layers },
                                 { value: 'brand', label: 'Brand', icon: Star },
-                                ...(selectedIds.length > 0 ? [{ value: 'selected' as const, label: `Selected (${selectedIds.length})`, icon: Check }] : []),
+                                ...(selectedIds.length > 0 || selectedVariantIds.length > 0 ? [{ 
+                                    value: 'selected' as const, 
+                                    label: `Selected (${selectedIds.length}P / ${selectedVariantIds.length}V)`, 
+                                    icon: Check 
+                                }] : []),
                                 { value: 'all', label: 'All Products', icon: Tag },
                             ] as const)
                                 .filter(t => activeTab !== 'custom' || (t.value !== 'category' && t.value !== 'sub_category'))
@@ -526,7 +545,7 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
                             <div>
                                 <h4 className="text-sm font-semibold text-gold font-serif">Targeting Selection</h4>
                                 <p className="text-xs text-text-muted">
-                                    This action will only apply to the {selectedIds.length} {selectedIds.length === 1 ? 'item' : 'items'} you've checkboxed.
+                                    This action will apply to {selectedIds.length} products and {selectedVariantIds.length} specific variants you've checkboxed.
                                 </p>
                             </div>
                         </div>
