@@ -6,6 +6,7 @@ import { getProducts, deleteProduct, Product, getRankingOverrides, setRankingOve
 import { getCategories } from '@/lib/api/category';
 import { Category } from '@/types/category';
 import { Download, SlidersHorizontal, Filter, Package, Star, Loader2, Tag, ChevronDown, FileEdit, X, ChevronLeft, ChevronRight, Plus, Pencil, Trash2, Search, UploadCloud } from 'lucide-react';
+import SortableHeader, { SortDir, compare } from '@/components/SortableHeader';
 import toast from 'react-hot-toast';
 import BulkDiscountModal from '@/components/BulkDiscountModal';
 import BulkImportModal from '@/components/BulkImportModal';
@@ -42,6 +43,8 @@ export default function ProductsListPage() {
     const [draftsLoading, setDraftsLoading] = useState(false);
     const [allCategories, setAllCategories] = useState<Category[]>([]);
     const [showFilters, setShowFilters] = useState(false);
+    const [sortKey, setSortKey] = useState<string | null>(null);
+    const [sortDir, setSortDir] = useState<SortDir>(null);
 
     // ─── Drafts filtering and selection ───
     const [draftSearchQuery, setDraftSearchQuery] = useState('');
@@ -337,9 +340,19 @@ export default function ProductsListPage() {
         setCurrentPage(1); // Reset to first page when filters change
     }, [products, searchResults, filterCategory, filterSubCategory, filterStock, priceRange, absoluteMaxPrice, filterBestSeller, overrideMap, allCategories]);
 
-    // --- Pagination helpers ---
-    const totalPages = Math.ceil(filtered.length / itemsPerPage);
-    const paginatedProducts = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+    // --- Sort + Pagination helpers ---
+    const handleSort = (key: string, dir: SortDir) => {
+        setSortKey(dir ? key : null);
+        setSortDir(dir);
+    };
+
+    const sortedFiltered = useMemo(() => {
+        if (!sortKey || !sortDir) return filtered;
+        return [...filtered].sort((a, b) => compare(a, b, sortKey, sortDir));
+    }, [filtered, sortKey, sortDir]);
+
+    const totalPages = Math.ceil(sortedFiltered.length / itemsPerPage);
+    const paginatedProducts = sortedFiltered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
     const handlePageChange = (newPage: number) => {
         if (newPage >= 1 && newPage <= totalPages) {
@@ -1069,12 +1082,12 @@ export default function ProductsListPage() {
                     <table className="w-full text-left">
                         <thead>
                             <tr className="border-b border-border bg-page-bg">
-                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider">Product</th>
+                                <SortableHeader label="Product" sortKey="product_name" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
                                 <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider">SKU</th>
-                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider">Category</th>
-                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider">Price</th>
+                                <SortableHeader label="Category" sortKey="category" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
+                                <SortableHeader label="Price" sortKey="price" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
                                 <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider text-center">Best Seller</th>
-                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider">Stock</th>
+                                <SortableHeader label="Stock" sortKey="stock_quantity" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
                                 <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider text-right">
                                     <div className="flex items-center justify-end gap-3">
                                         <input

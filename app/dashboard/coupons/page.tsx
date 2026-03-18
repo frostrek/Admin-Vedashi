@@ -1,13 +1,14 @@
 'use client';
 import { authFetch } from '@/lib/api';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { getToken } from '@/lib/auth';
 import toast from 'react-hot-toast';
 import {
     Plus, Pencil, Trash2, Ticket, ToggleLeft, ToggleRight,
     X, Loader2, Percent, IndianRupee, Calendar, Hash,
 } from 'lucide-react';
+import SortableHeader, { SortDir, compare } from '@/components/SortableHeader';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
@@ -62,6 +63,8 @@ export default function CouponsPage() {
     const [editing, setEditing] = useState<Coupon | null>(null);
     const [form, setForm] = useState(emptyCoupon);
     const [saving, setSaving] = useState(false);
+    const [sortKey, setSortKey] = useState<string | null>(null);
+    const [sortDir, setSortDir] = useState<SortDir>(null);
     
     // Lock background scroll when modal is open
     useEffect(() => {
@@ -216,6 +219,16 @@ export default function CouponsPage() {
         return { discount: 0, final: sampleAmount, sample: sampleAmount, type: 'unknown' };
     };
 
+    const handleSort = (key: string, dir: SortDir) => {
+        setSortKey(dir ? key : null);
+        setSortDir(dir);
+    };
+
+    const sortedCoupons = useMemo(() => {
+        if (!sortKey || !sortDir) return coupons;
+        return [...coupons].sort((a, b) => compare(a, b, sortKey, sortDir));
+    }, [coupons, sortKey, sortDir]);
+
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -249,17 +262,17 @@ export default function CouponsPage() {
                         <table className="w-full text-sm">
                             <thead>
                                 <tr className="border-b border-border text-text-muted">
-                                    <th className="text-left px-4 py-3 font-medium">Code</th>
+                                    <SortableHeader label="Code" sortKey="code" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
                                     <th className="text-left px-4 py-3 font-medium">Discount</th>
-                                    <th className="text-left px-4 py-3 font-medium">Min Order</th>
-                                    <th className="text-left px-4 py-3 font-medium">Usage</th>
+                                    <SortableHeader label="Min Order" sortKey="min_order_amount" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
+                                    <SortableHeader label="Usage" sortKey="used_count" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
                                     <th className="text-left px-4 py-3 font-medium">Dates</th>
-                                    <th className="text-left px-4 py-3 font-medium">Status</th>
+                                    <SortableHeader label="Status" sortKey="is_active" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
                                     <th className="text-right px-4 py-3 font-medium">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {coupons.map(c => {
+                                {sortedCoupons.map(c => {
                                     const status = getStatus(c);
                                     return (
                                         <tr key={c.coupon_id} className="border-b border-border/50 hover:bg-gold/[0.03] transition-colors">

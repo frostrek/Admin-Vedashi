@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback, Fragment } from 'react';
+import { useState, useEffect, useCallback, Fragment, useMemo } from 'react';
 import { getOrders, getOrderById, updateOrderStatus as apiUpdateStatus, updatePaymentStatus as apiUpdatePayment, bulkUpdateOrderStatus, bulkUpdateOrderPaymentStatus, Order, downloadInvoiceAdmin, formatINR, getPaymentInfo, initiateRefund, getRefunds, PaymentInfo, RefundRecord } from '@/lib/api';
 import { ShoppingCart, Eye, X, Package, User, CreditCard, MapPin, RefreshCw, Download, FileText, RotateCcw, Banknote, Shield, CheckSquare, Square, ChevronDown, Zap, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import SortableHeader, { SortDir, compare } from '@/components/SortableHeader';
 import toast from 'react-hot-toast';
 import { PaymentToggle } from '@/components/PaymentToggle';
 import ExportModal from '@/components/orders/ExportModal';
@@ -64,6 +65,8 @@ export default function OrdersPage() {
     const [exportOpen, setExportOpen] = useState(false);
     const [filterDateFrom, setFilterDateFrom] = useState('');
     const [filterDateTo, setFilterDateTo] = useState('');
+    const [sortKey, setSortKey] = useState<string | null>(null);
+    const [sortDir, setSortDir] = useState<SortDir>(null);
 
     // ─── Bulk selection state ──────────────────────────────────────
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -158,9 +161,19 @@ export default function OrdersPage() {
         }
     }, [orders]);
 
-    // --- Pagination helpers ---
-    const totalPages = Math.ceil(filtered.length / itemsPerPage);
-    const paginatedOrders = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+    // --- Sort + Pagination helpers ---
+    const handleSort = (key: string, dir: SortDir) => {
+        setSortKey(dir ? key : null);
+        setSortDir(dir);
+    };
+
+    const sortedFiltered = useMemo(() => {
+        if (!sortKey || !sortDir) return filtered;
+        return [...filtered].sort((a, b) => compare(a, b, sortKey, sortDir));
+    }, [filtered, sortKey, sortDir]);
+
+    const totalPages = Math.ceil(sortedFiltered.length / itemsPerPage);
+    const paginatedOrders = sortedFiltered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
     const handlePageChange = (newPage: number) => {
         if (newPage >= 1 && newPage <= totalPages) {
@@ -170,14 +183,14 @@ export default function OrdersPage() {
     };
 
     // ─── Bulk selection helpers ────────────────────────────────────
-    const allFilteredSelected = filtered.length > 0 && filtered.every(o => selectedIds.has(o.id));
+    const allFilteredSelected = sortedFiltered.length > 0 && sortedFiltered.every(o => selectedIds.has(o.id));
     const someSelected = selectedIds.size > 0;
 
     const toggleSelectAll = () => {
         if (allFilteredSelected) {
             setSelectedIds(new Set());
         } else {
-            setSelectedIds(new Set(filtered.map(o => o.id)));
+            setSelectedIds(new Set(sortedFiltered.map(o => o.id)));
         }
     };
 
@@ -581,12 +594,12 @@ export default function OrdersPage() {
                                     </button>
                                 </th>
                                 <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider">Order ID</th>
-                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider">Customer</th>
+                                <SortableHeader label="Customer" sortKey="customer_name" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
                                 <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider">Items</th>
-                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider">Total</th>
+                                <SortableHeader label="Total" sortKey="total" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
                                 <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider">Payment</th>
-                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider">Status</th>
-                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider">Date</th>
+                                <SortableHeader label="Status" sortKey="status" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
+                                <SortableHeader label="Date" sortKey="created_at" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
                                 <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider text-right">Actions</th>
                             </tr>
                         </thead>
