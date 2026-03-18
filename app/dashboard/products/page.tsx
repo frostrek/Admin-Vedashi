@@ -38,6 +38,7 @@ export default function ProductsListPage() {
     const [draftsOpen, setDraftsOpen] = useState(false);
     const [drafts, setDrafts] = useState<Product[]>([]);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [selectedVariantIds, setSelectedVariantIds] = useState<Set<string>>(new Set());
     const [draftsLoading, setDraftsLoading] = useState(false);
     const [allCategories, setAllCategories] = useState<Category[]>([]);
     const [showFilters, setShowFilters] = useState(false);
@@ -124,6 +125,17 @@ export default function ProductsListPage() {
                     return { ...v, thumbnail_url, effectivelyDefault };
                 });
                 setProductVariants(prev => ({ ...prev, [productId]: fetchedVariants }));
+                
+                // If the product was already selected, make sure newly loaded variants are also selected
+                if (selectedIds.has(productId)) {
+                    setSelectedVariantIds(prev => {
+                        const next = new Set(prev);
+                        fetchedVariants.forEach((v: any) => {
+                            next.add(v.variant_id || v.sku);
+                        });
+                        return next;
+                    });
+                }
                 
                 // Update the main product row image to match the default variant discovered in details
                 const defaultVariant = fetchedVariants.find(v => v.effectivelyDefault);
@@ -544,20 +556,34 @@ export default function ProductsListPage() {
     };
 
     const handleToggleSelect = (id: string) => {
+        const isSelected = selectedIds.has(id);
+        
+        // 1. Update product selection state
         setSelectedIds(prev => {
             const next = new Set(prev);
-            if (next.has(id)) {
-                next.delete(id);
-            } else {
-                next.add(id);
-            }
+            if (isSelected) next.delete(id);
+            else next.add(id);
             return next;
         });
+
+        // 2. Sync variants: add/remove all current variants of this product to/from selection
+        const variants = productVariants[id] || [];
+        if (variants.length > 0) {
+            setSelectedVariantIds(prev => {
+                const next = new Set(prev);
+                variants.forEach((v: any) => {
+                    const vId = v.variant_id || v.sku;
+                    if (isSelected) next.delete(vId);
+                    else next.add(vId);
+                });
+                return next;
+            });
+        }
     };
 
     const handleToggleSelectAll = () => {
         const currentPageIds = paginatedProducts.map(p => p.product_id);
-        const allSelected = currentPageIds.every(id => selectedIds.has(id));
+        const allSelected = currentPageIds.length > 0 && currentPageIds.every(id => selectedIds.has(id));
 
         setSelectedIds(prev => {
             const next = new Set(prev);
@@ -565,6 +591,69 @@ export default function ProductsListPage() {
                 currentPageIds.forEach(id => next.delete(id));
             } else {
                 currentPageIds.forEach(id => next.add(id));
+            }
+            return next;
+        });
+
+        // Sync variants for all products being toggled
+        setSelectedVariantIds(prev => {
+            const next = new Set(prev);
+            currentPageIds.forEach(id => {
+                const variants = productVariants[id] || [];
+                variants.forEach((v: any) => {
+                    const vId = v.variant_id || v.sku;
+                    if (allSelected) next.delete(vId);
+                    else next.add(vId);
+                });
+            });
+            return next;
+        });
+    };
+
+    const handleToggleVariantSelect = (productId: string, variantId: string) => {
+        const isSelected = selectedVariantIds.has(variantId);
+        
+        setSelectedVariantIds(prev => {
+            const next = new Set(prev);
+            if (isSelected) next.delete(variantId);
+            else next.add(variantId);
+            return next;
+        });
+
+        // Sync product level: if we uncheck a variant, we should probably uncheck the product
+        // because "Select All" on the product implies all variants.
+        if (isSelected) {
+            setSelectedIds(prev => {
+                const next = new Set(prev);
+                next.delete(productId);
+                return next;
+            });
+        } else {
+            // Check if all other variants for this product are also selected now
+            const variants = productVariants[productId] || [];
+            const allElseSelected = variants.every((v: any) => {
+                const vId = v.variant_id || v.sku;
+                return vId === variantId || selectedVariantIds.has(vId);
+            });
+            if (allElseSelected) {
+                setSelectedIds(prev => {
+                    const next = new Set(prev).add(productId);
+                    return next;
+                });
+            }
+        }
+    };
+
+    const handleToggleAllVariants = (productId: string) => {
+        const variantIds = productVariants[productId]?.map((v: any) => v.variant_id || v.sku) || [];
+        const allSelected = variantIds.length > 0 && variantIds.every((id: string) => selectedVariantIds.has(id));
+
+        setSelectedVariantIds(prev => {
+            const next = new Set(prev);
+            if (allSelected) {
+                variantIds.forEach((id: string) => next.delete(id));
+            } else {
+                variantIds.forEach((id: string) => next.add(id));
             }
             return next;
         });
@@ -625,6 +714,7 @@ export default function ProductsListPage() {
                 onClose={() => setBulkDiscountOpen(false)}
                 onApply={() => { loadProducts(); setBulkDiscountOpen(false); }}
                 selectedIds={Array.from(selectedIds)}
+                selectedVariantIds={Array.from(selectedVariantIds)}
             />
             <BulkImportModal
                 isOpen={bulkImportOpen}
@@ -1239,7 +1329,17 @@ export default function ProductsListPage() {
                                                                             <th className="px-4 py-2 font-medium text-text-secondary text-xs uppercase tracking-wider">Specification</th>
                                                                             <th className="px-4 py-2 font-medium text-text-secondary text-xs uppercase tracking-wider">Price</th>
                                                                             <th className="px-4 py-2 font-medium text-text-secondary text-xs uppercase tracking-wider">Stock</th>
-                                                                            <th className="px-4 py-2 font-medium text-text-secondary text-xs uppercase tracking-wider text-right">Status</th>
+                                                                            <th className="px-4 py-2 font-medium text-text-secondary text-xs uppercase tracking-wider text-right">
+                                                                                <div className="flex items-center justify-end gap-3">
+                                                                                    <input
+                                                                                        type="checkbox"
+                                                                                        checked={productVariants[product.product_id]?.length > 0 && productVariants[product.product_id].every((v: any) => selectedVariantIds.has(v.variant_id || v.sku))}
+                                                                                        onChange={() => handleToggleAllVariants(product.product_id)}
+                                                                                        className="h-4 w-4 rounded border-border text-primary focus:ring-primary/30 transition-all duration-300 cursor-pointer accent-primary"
+                                                                                    />
+                                                                                    <span>Status</span>
+                                                                                </div>
+                                                                            </th>
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody className="divide-y divide-border-subtle">
@@ -1273,6 +1373,12 @@ export default function ProductsListPage() {
                                                                                     </td>
                                                                                     <td className="px-4 py-2 text-right">
                                                                                         <div className="flex items-center justify-end gap-3">
+                                                                                            <input
+                                                                                                type="checkbox"
+                                                                                                checked={selectedVariantIds.has(targetId)}
+                                                                                                onChange={() => handleToggleVariantSelect(product.product_id, targetId)}
+                                                                                                className="h-4 w-4 rounded border-border text-primary focus:ring-primary/30 transition-all duration-300 cursor-pointer accent-primary"
+                                                                                            />
                                                                                             <button
                                                                                                 onClick={() => handleSetDefaultVariant(product.product_id, targetId, !!v.effectivelyDefault, v.is_active !== false)}
                                                                                                 className={`focus:outline-none transition-all duration-300 
