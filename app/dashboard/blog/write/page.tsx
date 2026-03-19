@@ -266,7 +266,7 @@ function WritePostContent() {
                                 onChange={e => setBody(e.target.value)}
                                 rows={18}
                                 className="w-full rounded-lg border border-border bg-page-bg px-4 py-4 text-sm text-text-primary focus:border-gold/50 focus:outline-none font-mono"
-                                placeholder="<h2 className="font-serif">Section 1</h2><p>Content goes here...</p>"
+                                placeholder="<h2 className='font-serif'>Section 1</h2><p>Content goes here...</p>"
                             />
                         </div>
                     </div>
