@@ -31,6 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <AdminAuthProvider>
             <Toaster
               position="top-right"
+              containerStyle={{ zIndex: 999999 }}
               toastOptions={{
                 className: 'theme-toast',
                 style: {

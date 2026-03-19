@@ -131,6 +131,11 @@ export async function authFetch(input: RequestInfo | URL, init?: RequestInit): P
             );
             if (cachedCsrfToken) newHeaders['X-CSRF-Token'] = cachedCsrfToken;
             res = await fetch(input, { ...fetchInit, headers: newHeaders });
+        } else {
+            // Session expired and refresh failed
+            if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('admin-auth-failure'));
+            }
         }
     }
     return res;
