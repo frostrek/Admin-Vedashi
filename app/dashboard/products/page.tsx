@@ -105,25 +105,32 @@ export default function ProductsListPage() {
                 const fetchedVariants = variants.map((v: any, index: number) => {
                     // Logic: if only 1 variant, or no variant is marked default, treat first one as default for UI
                     const effectivelyDefault = v.is_default || (variants.length === 1) || (!hasDefault && index === 0);
-                    // Find matching image from assets using the same logic as the edit page
+                    // Logic: Specific Variant -> Default Variant -> Product Level
                     const allAssets = details.assets || [];
-                    let specificImages = allAssets.filter((a: any) => {
+                    const defaultVariantId = variants.find((v: any) => v.is_default)?.variant_id;
+
+                    const getFilteredAssets = (vid: string | null) => allAssets.filter((a: any) => {
                         const mt = (a.media_type || a.mime_type || '').toLowerCase();
                         const isImage = !mt.startsWith('video');
-                        return isImage && a.variant_id === v.variant_id;
+                        return isImage && a.variant_id === vid;
                     });
 
-                    // Fallback to product images (no variant_id) if no variant-specific images exist
-                    if (specificImages.length === 0) {
-                        specificImages = allAssets.filter((a: any) => {
-                            const mt = (a.media_type || a.mime_type || '').toLowerCase();
-                            const isImage = !mt.startsWith('video');
-                            return isImage && !a.variant_id;
-                        });
+                    let bestImages = getFilteredAssets(v.variant_id); // 1. Specific
+                    if (bestImages.length === 0) {
+                        bestImages = getFilteredAssets(null); // 2. Fallback to Product Level
+                    }
+                    if (bestImages.length === 0 && defaultVariantId && v.variant_id !== defaultVariantId) {
+                        bestImages = getFilteredAssets(defaultVariantId); // 3. Fallback to Default Variant
                     }
 
-                    const thumbnail_url = specificImages.length > 0
-                        ? (specificImages[0].base64_data || specificImages[0].asset_url)
+                    // Sort bestImages to respect is_primary and sort_order if they exist
+                    bestImages.sort((a: any, b: any) => {
+                        if (a.is_primary !== b.is_primary) return a.is_primary ? -1 : 1;
+                        return (a.sort_order || 0) - (b.sort_order || 0);
+                    });
+
+                    const thumbnail_url = bestImages.length > 0
+                        ? (bestImages[0].cdn_url || bestImages[0].asset_url || bestImages[0].base64_data)
                         : null;
 
                     return { ...v, thumbnail_url, effectivelyDefault };
