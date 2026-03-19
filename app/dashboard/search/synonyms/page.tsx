@@ -187,7 +187,7 @@ export default function SynonymsPage() {
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="bg-page-bg border-b border-border-subtle text-xs font-semibold text-text-muted uppercase tracking-wider">
+                            <tr className="bg-page-bg border-b border-border-subtle text-xs font-semibold text-text-muted uppercase">
                                 <th className="px-6 py-4">Keyword</th>
                                 <th className="px-6 py-4">Synonyms</th>
                                 <th className="px-6 py-4 text-center">Status</th>
@@ -233,7 +233,7 @@ export default function SynonymsPage() {
                                         <td className="px-6 py-4 text-center">
                                             <button
                                                 onClick={() => toggleStatus(syn)}
-                                                className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all duration-300 ${syn.is_active
+                                                className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase transition-all duration-300 ${syn.is_active
                                                     ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20'
                                                     : 'bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500/20'
                                                     }`}
@@ -276,13 +276,13 @@ export default function SynonymsPage() {
                     <div className="bg-card-bg rounded-2xl shadow-2xl w-full max-w-md border border-border overflow-hidden animate-in zoom-in-95 duration-200">
                         <div className="p-6 border-b border-border-subtle relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-gold/5 rounded-full blur-2xl transform translate-x-1/2 -translate-y-1/2"></div>
-                            <h2 className="font-serif text-xl font-bold text-gold-soft relative z-10">
+                            <h4 className="font-serif text-xl font-bold text-gold-soft relative z-10">
                                 {isEditing ? 'Edit Synonym' : 'Add Synonym'}
-                            </h2>
+                            </h4>
                         </div>
                         <div className="p-6 space-y-5">
                             <div>
-                                <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
+                                <label className="block text-xs font-semibold uppercase text-text-muted mb-2">
                                     Target Keyword
                                 </label>
                                 <input
@@ -295,7 +295,7 @@ export default function SynonymsPage() {
                                 <p className="text-[11px] text-text-muted/70 mt-1.5 ml-1">The main search term customers use.</p>
                             </div>
                             <div>
-                                <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
+                                <label className="block text-xs font-semibold uppercase text-text-muted mb-2">
                                     Synonyms (comma separated)
                                 </label>
                                 <textarea

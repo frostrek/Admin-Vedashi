@@ -116,12 +116,12 @@ export default function AdminBlogPostsPage() {
                     <table className="w-full text-left whitespace-nowrap">
                         <thead>
                             <tr className="border-b border-border bg-page-bg/50">
-                                <th className="px-5 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider">Post</th>
-                                <th className="px-5 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider">Status</th>
-                                <th className="px-5 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider">Type / Category</th>
-                                <th className="px-5 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider">Stats</th>
-                                <th className="px-5 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider">Date</th>
-                                <th className="px-5 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider text-right">Actions</th>
+                                <th className="px-5 py-3 text-xs font-semibold text-gold-muted uppercase">Post</th>
+                                <th className="px-5 py-3 text-xs font-semibold text-gold-muted uppercase">Status</th>
+                                <th className="px-5 py-3 text-xs font-semibold text-gold-muted uppercase">Type / Category</th>
+                                <th className="px-5 py-3 text-xs font-semibold text-gold-muted uppercase">Stats</th>
+                                <th className="px-5 py-3 text-xs font-semibold text-gold-muted uppercase">Date</th>
+                                <th className="px-5 py-3 text-xs font-semibold text-gold-muted uppercase text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border-subtle">

@@ -47,7 +47,7 @@ export default function SettingsPage() {
         <div className="max-w-2xl mx-auto space-y-8">
             {/* Page Header */}
             <div>
-                <h1 className="font-serif text-2xl font-bold text-gold-soft tracking-wide">
+                <h1 className="font-serif text-2xl font-bold text-gold-soft">
                     Account Settings
                 </h1>
                 <p className="mt-1 text-sm text-text-secondary">
@@ -62,18 +62,18 @@ export default function SettingsPage() {
                         <Leaf className="h-6 w-6 text-[#E8D8B9]" />
                     </div>
                     <div>
-                        <h3 className="font-serif font-semibold text-text-primary">{user?.name || 'Admin'}</h3>
+                        <h4 className="font-serif font-semibold text-text-primary">{user?.name || 'Admin'}</h4>
                         <p className="text-sm text-text-secondary">{user?.email || '—'}</p>
                     </div>
                 </div>
                 <div className="h-[1px] bg-gradient-to-r from-transparent via-gold/15 to-transparent" />
                 <div className="mt-4 grid grid-cols-2 gap-4">
                     <div>
-                        <p className="text-xs text-text-secondary uppercase tracking-wider">Role</p>
+                        <p className="text-xs text-text-secondary uppercase">Role</p>
                         <p className="mt-0.5 text-sm font-medium text-text-primary capitalize">{user?.role || 'admin'}</p>
                     </div>
                     <div>
-                        <p className="text-xs text-text-secondary uppercase tracking-wider">Status</p>
+                        <p className="text-xs text-text-secondary uppercase">Status</p>
                         <span className="mt-0.5 inline-flex items-center gap-1.5 text-sm font-medium text-emerald-400">
                             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                             Active
@@ -89,9 +89,9 @@ export default function SettingsPage() {
                         <Shield className="h-4.5 w-4.5 text-[#D4A0A0]" />
                     </div>
                     <div>
-                        <h2 className="font-serif text-lg font-bold text-[#E8C8C8] tracking-wide">
+                        <h4 className="font-serif text-lg font-bold text-[#E8C8C8]">
                             Danger Zone
-                        </h2>
+                        </h4>
                     </div>
                 </div>
 
@@ -99,7 +99,7 @@ export default function SettingsPage() {
 
                 <div className="space-y-4">
                     <div>
-                        <h3 className="font-serif text-sm font-semibold text-text-primary">Deactivate Account</h3>
+                        <h4 className="font-serif text-sm font-semibold text-text-primary">Deactivate Account</h4>
                         <p className="mt-1.5 text-sm text-text-secondary leading-relaxed">
                             Deactivating your account will temporarily disable access.
                             Your data will remain safe. You can reactivate anytime by logging in again.

@@ -91,8 +91,8 @@ export default function AdminLoginPage() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary-light shadow-2xl shadow-primary/30 border border-gold/15">
             <span className="text-2xl font-bold text-gold">V</span>
           </div>
-          <h1 className="font-serif text-2xl font-bold text-gold-soft tracking-wide uppercase">Vedashi Admin</h1>
-          <p className="mt-1 text-sm text-text-secondary">Sign in to manage your store</p>
+          <h1 className="font-serif text-2xl font-bold text-[#A89250] tracking-wide uppercase">Vedashi Admin</h1>
+          <p className="mt-1 text-sm text-[#A89250]/60">Sign in to manage your store</p>
         </div>
 
         <form onSubmit={handleSubmit} className="rounded-2xl border border-border bg-gradient-to-br from-card-bg to-card-bg-elevated p-6 shadow-2xl shadow-black/30">
@@ -124,7 +124,7 @@ export default function AdminLoginPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-primary transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A89250]/50 hover:text-[#A89250] transition-colors"
                 tabIndex={-1}
               >
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -161,7 +161,7 @@ export default function AdminLoginPage() {
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10 border border-gold/15">
               <RefreshCw className="h-7 w-7 text-gold" />
             </div>
-            <p className="text-sm text-text-secondary leading-relaxed">
+            <p className="text-sm text-[#A89250]/60 leading-relaxed">
               Your account is currently deactivated.
               <br />
               Would you like to reactivate it and regain access?
@@ -170,7 +170,7 @@ export default function AdminLoginPage() {
 
           {/* Email hint */}
           <div className="rounded-lg bg-hover/50 border border-border px-3 py-2.5">
-            <p className="text-xs text-text-secondary">Account</p>
+            <p className="text-xs text-[#A89250]/40">Account</p>
             <p className="text-sm font-medium text-text-primary mt-0.5">{deactivatedEmail}</p>
           </div>
         </div>

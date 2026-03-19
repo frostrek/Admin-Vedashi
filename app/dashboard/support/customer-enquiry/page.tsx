@@ -508,25 +508,25 @@ export default function AdminFeedbackPage() {
                                 <MessageSquare className="w-4 h-4 text-primary" />
                             </div>
                             <div>
-                                <h1 className="font-serif text-[15px] lg:text-[18px] font-bold text-text-primary leading-none mb-0.5">
+                                <h1 className="font-serif text-lg lg:text-2xl font-bold text-[#A89250] leading-none mb-1">
                                     Customer Enquiries
                                 </h1>
-                                <p className="hidden sm:block text-[10.5px] text-text-muted leading-none font-medium">
+                                <p className="hidden sm:block text-xs text-[#A89250]/60 leading-none font-semibold">
                                     Manage and resolve support requests
                                 </p>
                             </div>
                         </div>
                         <div className="hidden xl:flex items-center gap-2 pl-2">
-                            <span className="flex items-center gap-1.5 text-[11px] font-bold
-                                             bg-info/10 text-info border border-info/20 px-3 py-1 rounded-full relative">
+                            <span className="flex items-center gap-1.5 text-xs font-bold
+                                             bg-info/10 text-info border border-info/20 px-3 py-1.5 rounded-full relative">
                                 <span className="relative w-1.5 h-1.5">
                                     <span className="absolute inset-0 rounded-full bg-info vd-blink" />
                                     <span className="absolute inset-0 rounded-full bg-info vd-pulse-ring" />
                                 </span>
                                 {newCount} Pending
                             </span>
-                            <span className="flex items-center gap-1.5 text-[11px] font-bold
-                                             bg-success/10 text-success border border-success/20 px-3 py-1 rounded-full">
+                            <span className="flex items-center gap-1.5 text-xs font-bold
+                                             bg-success/10 text-success border border-success/20 px-3 py-1.5 rounded-full">
                                 <span className="w-1.5 h-1.5 rounded-full bg-success" />
                                 {doneCount} Resolved
                             </span>
@@ -572,26 +572,26 @@ export default function AdminFeedbackPage() {
 
                         {/* Mobile stats strip */}
                         <div className="flex lg:hidden items-center gap-2 px-4 py-2 border-b border-border bg-card-bg/80">
-                            <span className="flex items-center gap-1.5 text-[11px] font-bold
-                                             bg-info/10 text-info border border-info/20 px-2.5 py-1 rounded-full">
+                            <span className="flex items-center gap-1.5 text-xs font-bold
+                                             bg-info/10 text-info border border-info/20 px-2.5 py-1.5 rounded-full">
                                 <span className="w-1.5 h-1.5 rounded-full bg-info vd-blink" />
                                 {newCount} Pending
                             </span>
-                            <span className="flex items-center gap-1.5 text-[11px] font-bold
-                                             bg-success/10 text-success border border-success/20 px-2.5 py-1 rounded-full">
+                            <span className="flex items-center gap-1.5 text-xs font-bold
+                                             bg-success/10 text-success border border-success/20 px-2.5 py-1.5 rounded-full">
                                 <span className="w-1.5 h-1.5 rounded-full bg-success" />
                                 {doneCount} Resolved
                             </span>
-                            <span className="ml-auto text-[10px] font-bold text-text-muted">{filtered.length} total</span>
+                            <span className="ml-auto text-xs font-bold text-[#A89250]/60">{filtered.length} total</span>
                         </div>
 
                         <div className="hidden lg:flex items-center justify-between px-4 pt-3 pb-0 shrink-0">
-                            <span className="text-[10px] font-bold uppercase tracking-[.18em] text-text-muted">
+                            <span className="text-xs font-bold uppercase text-[#A89250]/60">
                                 Inbox
-                                <span className="ml-2 text-[9px] font-bold bg-primary/15 text-primary border border-primary/25
-                                                 px-1.5 py-0.5 rounded-full">{filtered.length}</span>
+                                <span className="ml-2 text-xs font-bold bg-primary/15 text-primary border border-primary/25
+                                                 px-2 py-0.5 rounded-full">{filtered.length}</span>
                             </span>
-                            <span className="text-[9.5px] text-text-muted/40 font-medium select-none">drag edge to resize</span>
+                            <span className="text-xs text-[#A89250]/30 font-bold select-none">drag edge to resize</span>
                         </div>
 
                         {/* Search + filters */}
@@ -612,10 +612,10 @@ export default function AdminFeedbackPage() {
                                 {['all','new','reviewed','resolved','dismissed'].map(s => (
                                     <button key={s}
                                         onClick={() => setFilters(f => ({ ...f, status: s }))}
-                                        className={`shrink-0 px-3 py-1 rounded-full text-[11px] font-bold border transition-all
+                                        className={`shrink-0 px-4 py-1.5 rounded-full text-xs font-bold border transition-all
                                                     ${filters.status === s
                                                         ? 'bg-primary/20 text-primary border-primary/40'
-                                                        : 'bg-card-bg-elevated text-text-muted border-border hover:border-primary/30'}`}>
+                                                        : 'bg-card-bg-elevated text-[#A89250]/60 border-border hover:border-primary/30'}`}>
                                         {s === 'all' ? 'All' : STATUS_CONFIG[s]?.label}
                                     </button>
                                 ))}
@@ -694,23 +694,23 @@ export default function AdminFeedbackPage() {
                                                 <div className="flex items-start justify-between gap-2 mb-1">
                                                     <span
                                                         onClick={e => { e.stopPropagation(); fb.customer_id && openProfile(fb.customer_id); }}
-                                                        className={`font-bold text-[13.5px] text-text-primary truncate
+                                                        className={`font-bold text-sm text-[#A89250] truncate
                                                                     ${fb.customer_id ? 'hover:text-primary cursor-pointer transition-colors' : ''}`}>
                                                         {fb.name || 'Anonymous'}
                                                     </span>
-                                                    <span className="text-[10.5px] text-text-muted whitespace-nowrap font-medium shrink-0">
+                                                    <span className="text-xs text-[#A89250]/60 whitespace-nowrap font-bold shrink-0">
                                                         {timeAgo(fb.created_at)}
                                                     </span>
                                                 </div>
-                                                <p className="text-[12.5px] text-text-secondary font-medium leading-snug mb-2.5 truncate flex items-center gap-1.5">
+                                                <p className="text-sm text-[#A89250]/80 font-medium leading-snug mb-2.5 truncate flex items-center gap-1.5">
                                                     <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${fb.status === 'new' ? 'bg-info vd-blink' : 'bg-border'}`} />
                                                     {fb.subject || (fb.type || 'General').replace('_', ' ')}
                                                 </p>
                                                 <div className="flex items-center justify-between">
-                                                    <span className={`flex items-center gap-1 text-[10.5px] font-semibold uppercase tracking-wide ${tc.colorCls}`}>
+                                                    <span className={`flex items-center gap-1 text-xs font-bold uppercase ${tc.colorCls}`}>
                                                         <TI className="w-3 h-3" /> {tc.label}
                                                     </span>
-                                                    <span className={`inline-flex items-center gap-1 text-[10px] font-bold
+                                                    <span className={`inline-flex items-center gap-1 text-xs font-bold
                                                                       px-2.5 py-0.5 rounded-full border ${sc.badgeCls}`}>
                                                         <span className={`w-1.5 h-1.5 rounded-full ${sc.dotCls}`} />
                                                         {sc.label}
@@ -719,17 +719,17 @@ export default function AdminFeedbackPage() {
                                                 {(tags.length > 0 || assignee) && (
                                                     <div className="flex flex-wrap gap-1.5 mt-2.5">
                                                         {tags.map((t: string) => (
-                                                            <span key={t} className="text-[10px] font-semibold px-2 py-0.5
+                                                            <span key={t} className="text-xs font-bold px-2.5 py-1
                                                                                      bg-card-bg-elevated border border-border
-                                                                                     text-text-muted rounded-md uppercase tracking-wide">
+                                                                                     text-[#A89250]/60 rounded-md uppercase">
                                                                 {t}
                                                             </span>
                                                         ))}
                                                         {assignee && (
-                                                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md
+                                                            <span className="text-xs font-bold px-2.5 py-1 rounded-md
                                                                              bg-gold/10 text-gold-muted dark:text-gold border border-gold/25
                                                                              flex items-center gap-1">
-                                                                <User className="w-2.5 h-2.5" /> {assignee}
+                                                                <User className="w-3 h-3" /> {assignee}
                                                             </span>
                                                         )}
                                                     </div>
@@ -745,18 +745,18 @@ export default function AdminFeedbackPage() {
 
                         {/* Footer */}
                         <div className="px-4 py-3 border-t border-border bg-card-bg shrink-0
-                                        flex items-center justify-between text-[11px] font-semibold text-text-muted">
+                                        flex items-center justify-between text-xs font-bold text-[#A89250]/60">
                             <span>
                                 {checkedIds.length > 0
                                     ? `${checkedIds.length} selected`
                                     : `Showing 1–${Math.min(filtered.length,25)} of ${filtered.length}`}
                             </span>
                             <div className="flex items-center gap-1">
-                                <button className="w-7 h-7 flex items-center justify-center rounded-lg
-                                                   bg-primary/20 text-primary font-bold text-[12px]
+                                <button className="w-8 h-8 flex items-center justify-center rounded-lg
+                                                   bg-primary/20 text-primary font-bold text-xs
                                                    hover:bg-primary/30 transition-colors">1</button>
-                                <button className="w-7 h-7 flex items-center justify-center rounded-lg
-                                                   hover:bg-card-bg-elevated text-text-muted transition-colors">2</button>
+                                <button className="w-8 h-8 flex items-center justify-center rounded-lg
+                                                   hover:bg-card-bg-elevated text-[#A89250]/40 transition-colors">2</button>
                                 <span className="mx-1">…</span>
                             </div>
                         </div>
@@ -791,17 +791,17 @@ export default function AdminFeedbackPage() {
                                         </button>
                                         <div className="hidden lg:flex p-2 rounded-xl bg-card-bg-elevated border border-border shrink-0
                                                         transition-transform hover:scale-110 duration-200">
-                                            {(() => { const tc = TYPE_CONFIG[selected.type] || TYPE_CONFIG.other; return <tc.icon className={`w-4.5 h-4.5 ${isDark ? tc.colorCls : tc.colorCls.replace('text-', 'text-emerald-')}`} style={{width:18,height:18}} />; })()}
+                                            {(() => { const tc = TYPE_CONFIG[selected.type] || TYPE_CONFIG.other; return <tc.icon className={`w-4.5 h-4.5 ${isDark ? tc.colorCls : tc.colorCls.replace('text-', 'text-[#A89250]-')}`} style={{width:18,height:18}} />; })()}
                                         </div>
                                         <div className="min-w-0">
-                                            <h2 className="font-serif text-[16px] font-bold text-text-primary
-                                                           flex items-center gap-2 leading-tight truncate">
+                                            <h4 className={`font-serif text-lg font-bold leading-tight truncate ${isDark ? 'text-text-primary' : 'text-[#A89250]'}
+                                                           flex items-center gap-2`}>
                                                 <span className="truncate">{selected.subject || (selected.type || 'Enquiry').replace('_', ' ')}</span>
-                                                <span className="text-text-muted text-[12px] font-semibold shrink-0">
+                                                <span className={`${isDark ? 'text-text-muted' : 'text-[#A89250]/50'} text-sm font-bold shrink-0`}>
                                                     #{selected.feedback_id.substring(0,6).toUpperCase()}
                                                 </span>
-                                            </h2>
-                                            <div className="flex items-center gap-2 mt-0.5 text-[11px] text-text-muted font-medium flex-wrap">
+                                            </h4>
+                                            <div className="flex items-center gap-2 mt-1 text-xs text-[#A89250]/60 font-bold flex-wrap">
                                                 <span className="capitalize">{(selected.type||'General').replace('_',' ')}</span>
                                                 <span className="w-1 h-1 rounded-full bg-border" />
                                                 <span>PID-{selected.feedback_id.substring(0,3).toUpperCase()}</span>
@@ -809,8 +809,8 @@ export default function AdminFeedbackPage() {
                                                     <>
                                                         <span className="w-1 h-1 rounded-full bg-border" />
                                                         <span className="flex items-center gap-1 font-bold text-gold
-                                                                         bg-gold/10 border border-gold/20 px-2 py-0.5 rounded-md">
-                                                            <User className="w-3 h-3" />{localAssign[selected.feedback_id]}
+                                                                         bg-gold/10 border border-gold/20 px-2.5 py-1 rounded-md">
+                                                            <User className="w-3.5 h-3.5" />{localAssign[selected.feedback_id]}
                                                         </span>
                                                     </>
                                                 )}
@@ -832,7 +832,7 @@ export default function AdminFeedbackPage() {
                                         <button onClick={() => toast('Ticket locked.', { icon: '🔒' })}
                                             className="p-2 rounded-lg text-text-muted hover:text-text-primary
                                                        hover:bg-card-bg-elevated transition-all vd-btn-press">
-                                            <Lock className={`w-4 h-4 ${isDark ? '' : 'text-emerald-900/60'}`} />
+                                            <Lock className={`w-4 h-4 ${isDark ? '' : 'text-[#A89250]/60'}`} />
                                         </button>
                                         <div className="h-5 w-px bg-border" />
                                         <button onClick={handleAssign}
@@ -860,8 +860,8 @@ export default function AdminFeedbackPage() {
 
                                 <div className="flex items-center gap-4">
                                     <div className="flex-1 h-px vd-divider-line" />
-                                    <span className="text-[10.5px] font-bold uppercase tracking-[.15em] text-text-muted
-                                                     bg-card-bg border border-border px-3 py-1.5 rounded-full whitespace-nowrap">
+                                    <span className="text-xs font-bold uppercase text-[#A89250]/60
+                                                     bg-card-bg border border-border px-4 py-2 rounded-full whitespace-nowrap">
                                         {new Date(selected.created_at).toLocaleDateString('en-US', {
                                             weekday:'long', month:'long', day:'numeric'
                                         }).toUpperCase()}
@@ -881,18 +881,18 @@ export default function AdminFeedbackPage() {
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2 mb-2">
                                             <span onClick={() => selected.customer_id && openProfile(selected.customer_id)}
-                                                className={`font-bold text-[13px] text-text-primary
+                                                className={`font-bold text-sm ${isDark ? 'text-text-primary' : 'text-[#A89250]'}
                                                             ${selected.customer_id ? 'cursor-pointer hover:text-primary transition-colors' : ''}`}>
                                                 {selected.name || 'Customer'}
                                             </span>
-                                            <span className="text-[11px] text-text-muted font-medium">
+                                            <span className="text-xs text-[#A89250]/50 font-bold">
                                                 {new Date(selected.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}
                                             </span>
                                             {selected.customer_id && (
                                                 <button onClick={() => openProfile(selected.customer_id)}
-                                                    className="ml-auto text-[10.5px] font-bold text-gold/60 hover:text-gold
-                                                               flex items-center gap-1 transition-colors vd-btn-press">
-                                                    <User className="w-3 h-3" /> 360° View
+                                                    className="ml-auto text-xs font-bold text-gold hover:text-gold-dark
+                                                               flex items-center gap-1.5 transition-colors vd-btn-press bg-gold/5 px-2.5 py-1 rounded-lg border border-gold/10">
+                                                    <User className="w-3.5 h-3.5" /> View 360°
                                                 </button>
                                             )}
                                         </div>
@@ -910,15 +910,15 @@ export default function AdminFeedbackPage() {
                                         <div key={reply.reply_id||i} className="ml-14 max-w-3xl vd-msg-l">
                                             <div className="vd-bubble-note rounded-2xl p-4">
                                                 <div className="flex items-center gap-2 mb-2">
-                                                    <span className="bg-warning/20 text-warning text-[9px] font-bold uppercase
-                                                                     tracking-widest px-2 py-0.5 rounded-md border border-warning/30">
+                                                    <span className="bg-warning/20 text-warning text-[11px] font-bold uppercase
+                                                                     px-2 py-0.5 rounded-md border border-warning/30">
                                                         Internal Note
                                                     </span>
-                                                    <span className="text-[11px] text-warning/60 font-medium">
+                                                    <span className="text-[12px] text-warning/60 font-medium">
                                                         {timeAgo(reply.timestamp)} · Admin
                                                     </span>
                                                 </div>
-                                                <p className="text-[13.5px] text-warning leading-relaxed italic font-medium whitespace-pre-wrap">
+                                                <p className="text-[14px] text-warning leading-relaxed italic font-medium whitespace-pre-wrap">
                                                     "{reply.message}"
                                                 </p>
                                             </div>
@@ -945,8 +945,8 @@ export default function AdminFeedbackPage() {
                                         <div key={reply.reply_id||i} className="flex gap-4 justify-end vd-msg-r">
                                             <div className="flex-1 flex flex-col items-end max-w-3xl">
                                                 <div className="flex items-center gap-2 mb-2">
-                                                    <span className="text-[11px] text-text-muted font-medium">{timeAgo(reply.timestamp)}</span>
-                                                    <span className="font-bold text-[13px] text-text-primary">
+                                                    <span className="text-[12px] text-[#A89250]/50 font-medium">{timeAgo(reply.timestamp)}</span>
+                                                    <span className={`font-bold text-[13px] ${isDark ? 'text-text-primary' : 'text-[#A89250]'}`}>
                                                         {reply.replier_id === 'SYSTEM-BOT' ? 'Vedashi Bot' : 'You (Agent)'}
                                                     </span>
                                                 </div>
@@ -998,14 +998,14 @@ export default function AdminFeedbackPage() {
                                             { id: 'note',  Icon: Lock, label: 'Private Note'       },
                                         ] as const).map(({ id, Icon, label }) => (
                                             <button key={id} onClick={() => setReplyType(id)}
-                                                className={`relative px-4 py-2.5 text-[12px] font-bold transition-all
-                                                            flex items-center gap-1.5
+                                                className={`relative px-5 py-3 text-xs font-bold transition-all
+                                                            flex items-center gap-2
                                                             ${replyType === id
                                                                 ? id === 'reply' ? 'text-primary' : 'text-warning'
-                                                                : 'text-text-muted hover:text-text-secondary'}`}>
-                                                <Icon className="w-3.5 h-3.5" />{label}
+                                                                : 'text-[#A89250]/60 hover:text-[#A89250]'}`}>
+                                                <Icon className="w-4 h-4" />{label}
                                                 {replyType === id && (
-                                                    <span className={`absolute bottom-0 left-3 right-3 h-[2px] rounded-full
+                                                    <span className={`absolute bottom-0 left-4 right-4 h-[2.5px] rounded-full
                                                                       ${id === 'reply' ? 'bg-primary' : 'bg-warning'}`} />
                                                 )}
                                             </button>
@@ -1016,7 +1016,7 @@ export default function AdminFeedbackPage() {
                                             {['🙏', '✅', '⚠️'].map(e => (
                                                 <button key={e}
                                                     onClick={() => setReplyText(p => p + e)}
-                                                    className="w-7 h-7 text-[14px] rounded-lg hover:bg-card-bg-elevated
+                                                    className="w-7 h-7 text-sm rounded-lg hover:bg-card-bg-elevated
                                                                flex items-center justify-center transition-all hover:scale-110 vd-btn-press">
                                                     {e}
                                                 </button>
@@ -1030,15 +1030,15 @@ export default function AdminFeedbackPage() {
                                             ref={templateBtnRef}
                                             type="button"
                                             onClick={openTemplates}
-                                            className={`flex items-center gap-1.5 px-3 py-2.5 text-[11px] font-bold
-                                                       uppercase tracking-wide transition-all rounded-lg
+                                            className={`flex items-center gap-2 px-4 py-3 text-xs font-bold
+                                                       uppercase transition-all rounded-lg
                                                        ${showTemplates
                                                            ? 'text-gold bg-gold/10 border border-gold/20'
-                                                           : 'text-text-muted hover:text-text-primary hover:bg-card-bg-elevated/60'}`}>
+                                                           : 'text-[#A89250]/60 hover:text-[#A89250] hover:bg-card-bg-elevated/60'}`}>
                                             Templates
                                             {showTemplates
-                                                ? <ChevronUp className="w-3 h-3" />
-                                                : <ChevronDown className="w-3 h-3" />
+                                                ? <ChevronUp className="w-4 h-4" />
+                                                : <ChevronDown className="w-4 h-4" />
                                             }
                                         </button>
                                     </div>
@@ -1104,7 +1104,7 @@ export default function AdminFeedbackPage() {
                                             flex items-center justify-center mb-6 mt-[-10%] vd-float">
                                 <MessageSquare className="w-8 h-8 text-primary/30" />
                             </div>
-                            <h2 className="font-serif text-xl font-bold text-text-primary mb-2">No conversation selected</h2>
+                            <h4 className="font-serif text-xl font-bold text-text-primary mb-2">No conversation selected</h4>
                             <p className="text-[13px] text-text-muted max-w-xs leading-relaxed">
                                 Select an enquiry from the left to view the conversation, reply, or add internal notes.
                             </p>
@@ -1117,7 +1117,7 @@ export default function AdminFeedbackPage() {
                 ══════════════════════════════════════ */}
                 {profileId && (
                     <div className="fixed inset-0 z-[100] flex items-stretch justify-end">
-                        <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] vd-fade"
+                        <div className={`absolute inset-0 ${isDark ? 'bg-black/60' : 'bg-[#A89250]/60'} backdrop-blur-[2px] vd-fade`}
                              onClick={closeProfile} />
 
                         <div className={`relative w-full max-w-[480px] h-full bg-card-bg shadow-2xl
@@ -1144,7 +1144,7 @@ export default function AdminFeedbackPage() {
                                         <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
 
                                         <div className="relative flex items-center justify-between px-5 pt-5 pb-0">
-                                            <span className="text-[10px] font-bold uppercase tracking-[.2em] text-text-muted flex items-center gap-1.5">
+                                            <span className="text-[12px] font-bold uppercase text-[#A89250]/40 flex items-center gap-1.5">
                                                 <span className="relative w-1.5 h-1.5">
                                                     <span className="absolute inset-0 rounded-full bg-primary vd-blink" />
                                                     <span className="absolute inset-0 rounded-full bg-primary vd-pulse-ring" />
@@ -1169,23 +1169,23 @@ export default function AdminFeedbackPage() {
                                                                   ${c360.profile?.account_status==='ACTIVE' ? 'bg-success' : 'bg-warning'}`} />
                                             </div>
                                             <div className="min-w-0 flex-1">
-                                                <h3 className="font-serif text-[19px] font-bold text-text-primary leading-snug truncate">
+                                                <h4 className={`font-serif text-[19px] font-bold leading-snug truncate ${isDark ? 'text-text-primary' : 'text-[#A89250]'}`}>
                                                     {c360.profile?.full_name || 'Customer'}
-                                                </h3>
-                                                <p className="text-[11.5px] text-text-muted font-medium truncate mt-0.5">
+                                                </h4>
+                                                <p className={`text-[12.5px] font-medium truncate mt-0.5 ${isDark ? 'text-text-muted' : 'text-[#A89250]/60'}`}>
                                                     {c360.profile?.email}
                                                 </p>
                                                 <div className="flex flex-wrap items-center gap-1.5 mt-2">
-                                                    <span className={`text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border
+                                                    <span className={`text-[11px] font-bold uppercase px-2 py-0.5 rounded-full border
                                                                       ${c360.profile?.account_status==='ACTIVE'
                                                                         ? 'bg-success/12 text-success border-success/25'
                                                                         : 'bg-warning/12 text-warning border-warning/25'}`}>
                                                         {c360.profile?.account_status||'ACTIVE'}
                                                     </span>
-                                                    <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border bg-primary/12 text-primary border-primary/25">
+                                                    <span className="text-[11px] font-bold uppercase px-2 py-0.5 rounded-full border bg-primary/12 text-primary border-primary/25">
                                                         {c360.profile?.role||'Customer'}
                                                     </span>
-                                                    <span className="text-[10px] text-text-muted font-medium flex items-center gap-1 ml-auto">
+                                                    <span className="text-[11px] text-[#A89250]/50 font-medium flex items-center gap-1 ml-auto">
                                                         <Calendar className="w-3 h-3" />
                                                         Since {new Date(c360.profile?.created_at).toLocaleDateString('en-IN',{month:'short',year:'numeric'})}
                                                     </span>
@@ -1205,8 +1205,8 @@ export default function AdminFeedbackPage() {
                                                     <div className={`w-7 h-7 rounded-lg ${s.bg} flex items-center justify-center mx-auto mb-2`}>
                                                         <s.Icon className={`w-3.5 h-3.5 ${s.cls}`} />
                                                     </div>
-                                                    <div className="font-bold text-[16px] text-text-primary leading-none">{s.value}</div>
-                                                    <div className="text-[9px] font-semibold text-text-muted uppercase tracking-wide mt-1">{s.label}</div>
+                                                    <div className="font-bold text-[16px] text-[#A89250] leading-none">{s.value}</div>
+                                                    <div className="text-[11px] font-bold text-[#A89250]/60 uppercase mt-1">{s.label}</div>
                                                 </div>
                                             ))}
                                         </div>
@@ -1238,7 +1238,7 @@ export default function AdminFeedbackPage() {
                                                 <section>
                                                     <div className="flex items-center gap-2 mb-3">
                                                         <User className="w-3.5 h-3.5 text-primary" />
-                                                        <span className="text-[10px] font-bold uppercase tracking-[.18em] text-text-muted">Contact Details</span>
+                                                        <span className="text-[12px] font-bold uppercase text-[#A89250]/40">Contact Details</span>
                                                     </div>
                                                     <div className="grid grid-cols-2 gap-2.5">
                                                         {[
@@ -1252,9 +1252,9 @@ export default function AdminFeedbackPage() {
                                                                            hover:border-primary/35 hover:bg-primary/4 transition-all vd-in s${i+1}`}>
                                                                 <div className="flex items-center gap-1.5 mb-2">
                                                                     <Icon className="w-3.5 h-3.5 text-primary/70" />
-                                                                    <span className="text-[9px] font-bold text-text-muted uppercase tracking-widest">{label}</span>
+                                                                    <span className="text-[11px] font-bold text-[#A89250]/60 uppercase">{label}</span>
                                                                 </div>
-                                                                <p className="text-[12.5px] font-semibold text-text-primary truncate leading-snug">{value}</p>
+                                                                <p className="text-[12.5px] font-bold text-[#A89250] truncate leading-snug">{value}</p>
                                                             </div>
                                                         ))}
                                                     </div>
@@ -1272,15 +1272,15 @@ export default function AdminFeedbackPage() {
                                                         <section className="vd-in s3">
                                                             <div className="flex items-center gap-2 mb-3">
                                                                 <Heart className="w-3.5 h-3.5 text-primary" />
-                                                                <span className="text-[10px] font-bold uppercase tracking-[.18em] text-text-muted">Ayurvedic Prakriti</span>
+                                                                <span className="text-[12px] font-bold uppercase text-[#A89250]/40">Ayurvedic Prakriti</span>
                                                             </div>
                                                             <div className={`rounded-2xl border border-border/60 p-5 relative overflow-hidden ${dc.bg}`}>
                                                                 <div className="absolute -bottom-2 -right-2 text-7xl opacity-[0.07] pointer-events-none select-none rotate-[-15deg]">{dc.glyph}</div>
                                                                 <div className="flex items-start justify-between mb-4">
                                                                     <div>
-                                                                        <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest mb-1">Dominant Dosha</p>
+                                                                        <p className="text-[11px] font-bold text-[#A89250]/50 uppercase mb-1">Dominant Dosha</p>
                                                                         <p className={`text-[22px] font-bold ${dc.text} leading-tight`}>{dom} Prakriti</p>
-                                                                        <p className="text-[10.5px] text-text-muted mt-1 font-medium">
+                                                                        <p className="text-[12px] text-[#A89250]/60 mt-1 font-bold">
                                                                             Profiled {new Date(c360.dosha.created_at).toLocaleDateString('en-IN',{month:'short',day:'numeric',year:'numeric'})}
                                                                         </p>
                                                                     </div>
@@ -1290,8 +1290,8 @@ export default function AdminFeedbackPage() {
                                                                     {scores.map((s,i) => (
                                                                         <div key={s.name} className={`vd-in s${i+1}`}>
                                                                             <div className="flex justify-between items-center mb-1.5">
-                                                                                <span className={`text-[11px] font-bold ${s.text}`}>{s.name}</span>
-                                                                                <span className={`text-[11px] font-bold tabular-nums ${s.text}`}>{s.pct}%</span>
+                                                                                <span className={`text-[12px] font-bold ${s.text}`}>{s.name}</span>
+                                                                                <span className={`text-[12px] font-bold tabular-nums ${s.text}`}>{s.pct}%</span>
                                                                             </div>
                                                                             <div className="w-full rounded-full overflow-hidden" style={{height:6,background:'rgba(255,255,255,0.07)'}}>
                                                                                 <div className={`vd-bar ${s.bar}`} style={{'--w':`${s.pct}%`,borderRadius:99} as any} />
@@ -1299,7 +1299,7 @@ export default function AdminFeedbackPage() {
                                                                         </div>
                                                                     ))}
                                                                 </div>
-                                                                <button className={`mt-4 text-[11.5px] font-bold ${dc.text} flex items-center gap-1.5 group transition-all`}>
+                                                                <button className={`mt-4 text-[12px] font-bold ${dc.text} flex items-center gap-1.5 group transition-all`}>
                                                                     Full Consultation
                                                                     <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                                                                 </button>
@@ -1315,7 +1315,7 @@ export default function AdminFeedbackPage() {
                                                 <div className="flex items-center justify-between mb-4">
                                                     <div className="flex items-center gap-2">
                                                         <ShoppingBag className="w-3.5 h-3.5 text-primary" />
-                                                        <span className="text-[10px] font-bold uppercase tracking-[.18em] text-text-muted">Order History</span>
+                                                        <span className="text-[12px] font-bold uppercase text-emerald-900/40">Order History</span>
                                                     </div>
                                                     <span className="text-[11px] text-text-muted font-semibold bg-card-bg-elevated border border-border px-2 py-0.5 rounded-full">
                                                         {c360.orders?.length||0} total
@@ -1336,16 +1336,16 @@ export default function AdminFeedbackPage() {
                                                                     </div>
                                                                     <div className="flex-1 min-w-0">
                                                                         <div className="flex items-center justify-between mb-0.5">
-                                                                            <p className="text-[13px] font-bold text-text-primary">#{order.order_number}</p>
-                                                                            <p className="text-[13px] font-bold text-text-primary tabular-nums">{formatINR(order.final_total)}</p>
+                                                                            <p className="text-[13px] font-bold text-emerald-950">#{order.order_number}</p>
+                                                                            <p className="text-[13px] font-bold text-emerald-950 tabular-nums">{formatINR(order.final_total)}</p>
                                                                         </div>
                                                                         <div className="flex items-center justify-between">
-                                                                            <p className="text-[11px] text-text-muted font-medium">
+                                                                            <p className="text-[12px] text-emerald-900/60 font-bold">
                                                                                 {new Date(order.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}
                                                                                 <span className="mx-1 opacity-50">·</span>
                                                                                 {order.item_count} items
                                                                             </p>
-                                                                            <span className={`text-[9px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border
+                                                                            <span className={`text-[11px] font-bold uppercase px-2 py-0.5 rounded-full border
                                                                                 ${order.order_status==='DELIVERED' ? 'bg-success/10 text-success border-success/20'
                                                                                 : order.order_status==='CANCELLED' ? 'bg-danger/10 text-danger border-danger/20'
                                                                                 : 'bg-warning/10 text-warning border-warning/20'}`}>
@@ -1374,7 +1374,7 @@ export default function AdminFeedbackPage() {
                                                 <div className="flex items-center justify-between mb-4">
                                                     <div className="flex items-center gap-2">
                                                         <MapPin className="w-3.5 h-3.5 text-primary" />
-                                                        <span className="text-[10px] font-bold uppercase tracking-[.18em] text-text-muted">Saved Addresses</span>
+                                                        <span className="text-[12px] font-bold uppercase text-emerald-900/40">Saved Addresses</span>
                                                     </div>
                                                     <span className="text-[11px] text-text-muted font-semibold bg-card-bg-elevated border border-border px-2 py-0.5 rounded-full">
                                                         {c360.addresses?.length||0} saved
@@ -1394,19 +1394,19 @@ export default function AdminFeedbackPage() {
                                                                         <div className="w-7 h-7 rounded-lg bg-primary/15 border border-primary/20 flex items-center justify-center shrink-0">
                                                                             <MapPin className="w-3.5 h-3.5 text-primary" />
                                                                         </div>
-                                                                        <p className="text-[13px] font-bold text-text-primary">{addr.full_name}</p>
+                                                                        <p className="text-[13px] font-bold text-emerald-950">{addr.full_name}</p>
                                                                     </div>
                                                                     {addr.is_default && (
-                                                                        <span className="text-[8.5px] font-bold uppercase tracking-widest bg-primary/20 text-primary border border-primary/30 px-2 py-0.5 rounded-full">Default</span>
+                                                                        <span className="text-[11px] font-bold uppercase bg-primary/20 text-primary border border-primary/30 px-2 py-0.5 rounded-full">Default</span>
                                                                     )}
                                                                 </div>
-                                                                <p className="text-[11.5px] text-text-muted leading-relaxed font-medium pl-9">
+                                                                <p className="text-[12px] text-emerald-900/70 leading-relaxed font-bold pl-9">
                                                                     {addr.address_line1}{addr.address_line2 ? `, ${addr.address_line2}` : ''}<br/>
                                                                     {addr.city}, {addr.state} — {addr.postal_code}
                                                                 </p>
                                                                 <div className="flex items-center gap-1.5 mt-2.5 pl-9">
                                                                     <Phone className="w-3 h-3 text-primary/60" />
-                                                                    <p className="text-[11.5px] text-text-muted font-medium">{addr.phone}</p>
+                                                                    <p className="text-[12px] text-emerald-900/60 font-bold">{addr.phone}</p>
                                                                 </div>
                                                             </div>
                                                         ))}
@@ -1426,12 +1426,12 @@ export default function AdminFeedbackPage() {
                                     </div>
 
                                     {/* Pinned footer */}
-                                    <div className="shrink-0 p-4 border-t border-border bg-card-bg">
+                                    <div className="shrink-0 p-5 border-t border-border bg-card-bg/80 backdrop-blur-md">
                                         <button onClick={() => window.open(`/dashboard/customers/${c360.profile.customer_id}`,'_blank')}
-                                            className="w-full py-2.5 bg-primary text-white rounded-xl text-[12.5px] font-bold
-                                                       flex items-center justify-center gap-2
-                                                       hover:bg-primary-dark active:scale-[.98] transition-all shadow-md shadow-primary/20 vd-btn-press">
-                                            <BarChart2 className="w-3.5 h-3.5" /> Full Dashboard
+                                            className="w-full py-3.5 bg-primary text-white rounded-2xl text-sm font-bold
+                                                       flex items-center justify-center gap-2.5
+                                                       hover:bg-primary-dark active:scale-[.98] transition-all shadow-xl shadow-primary/20 vd-btn-press">
+                                            <BarChart2 className="w-4.5 h-4.5" /> Open Full Customer Profile
                                         </button>
                                     </div>
                                 </>
@@ -1654,17 +1654,17 @@ export default function AdminFeedbackPage() {
                                             style={{
                                                 padding: '4px 12px',
                                                 borderRadius: 99,
-                                                fontSize: 11.5,
+                                                fontSize: 12,
                                                 fontWeight: 700,
                                                 background: modal.value === a ? 'rgba(140,175,140,.25)' : 'rgba(140,175,140,.08)',
                                                 border: `1px solid ${modal.value === a ? 'rgba(140,175,140,.5)' : 'rgba(140,175,140,.15)'}`,
-                                                color: modal.value === a ? '#8caf8c' : 'var(--t-text-muted, #6b7f6b)',
+                                                color: modal.value === a ? '#3b5d3b' : 'var(--t-text-muted, #6b7f6b)',
                                                 cursor: 'pointer',
                                                 transition: 'all .15s',
                                                 display: 'flex', alignItems: 'center', gap: 5,
                                             }}
                                         >
-                                            <span style={{ width: 18, height: 18, borderRadius: '50%', background: 'rgba(140,175,140,.2)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 800 }}>
+                                            <span style={{ width: 18, height: 18, borderRadius: '50%', background: 'rgba(140,175,140,.2)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800 }}>
                                                 {a[0]}
                                             </span>
                                             {a}

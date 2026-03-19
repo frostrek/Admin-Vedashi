@@ -694,28 +694,28 @@ export default function ProductsListPage() {
                 <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                     <button
                         onClick={openDrafts}
-                        className="flex items-center gap-2 rounded-lg border border-border bg-card-bg px-3 sm:px-4 py-2.5 text-sm font-semibold text-text-secondary hover:text-gold hover:border-gold/30 transition-all duration-300"
+                        className="flex items-center gap-2 rounded-lg border border-gold/10 bg-primary px-3 sm:px-4 py-2.5 text-sm font-semibold text-[#E8D8B9] hover:bg-primary-light transition-all duration-300 shadow-sm"
                     >
                         <FileEdit className="h-4 w-4" />
                         <span className="hidden sm:inline">Drafts</span>
                     </button>
                     <button
                         onClick={() => setBulkImportOpen(true)}
-                        className="flex items-center gap-2 rounded-lg border border-gold/20 bg-gold/[0.06] px-3 sm:px-4 py-2.5 text-sm font-semibold text-gold-soft hover:bg-gold/[0.12] hover:border-gold/30 transition-all duration-300"
+                        className="flex items-center gap-2 rounded-lg border border-gold/10 bg-primary px-3 sm:px-4 py-2.5 text-sm font-semibold text-[#E8D8B9] hover:bg-primary-light transition-all duration-300 shadow-sm"
                     >
                         <Package className="h-4 w-4" />
                         <span className="hidden sm:inline">Bulk Import</span>
                     </button>
                     <button
                         onClick={() => setBulkDiscountOpen(true)}
-                        className="flex items-center gap-2 rounded-lg border border-gold/20 bg-gold/[0.06] px-3 sm:px-4 py-2.5 text-sm font-semibold text-gold-soft hover:bg-gold/[0.12] hover:border-gold/30 transition-all duration-300"
+                        className="flex items-center gap-2 rounded-lg border border-gold/10 bg-primary px-3 sm:px-4 py-2.5 text-sm font-semibold text-[#E8D8B9] hover:bg-primary-light transition-all duration-300 shadow-sm"
                     >
                         <Tag className="h-4 w-4" />
                         <span className="hidden sm:inline">Bulk Actions</span>
                     </button>
                     <button
                         onClick={() => setBulkExportOpen(true)}
-                        className="flex items-center gap-2 rounded-lg border border-gold/20 bg-gold/[0.06] px-3 sm:px-4 py-2.5 text-sm font-semibold text-gold-soft hover:bg-gold/[0.12] hover:border-gold/30 transition-all duration-300"
+                        className="flex items-center gap-2 rounded-lg border border-gold/10 bg-primary px-3 sm:px-4 py-2.5 text-sm font-semibold text-[#E8D8B9] hover:bg-primary-light transition-all duration-300 shadow-sm"
                     >
                         <Download className="h-4 w-4" />
                         <span className="hidden sm:inline">Bulk Export</span>
@@ -773,7 +773,7 @@ export default function ProductsListPage() {
                         <div className="px-8 pt-8 pb-6 bg-gradient-to-br from-page-bg to-card-bg">
                             <div className="flex items-start justify-between">
                                 <div>
-                                    <h2 className="font-serif text-3xl font-bold text-primary">Draft Products</h2>
+                                    <h4 className="font-serif text-3xl font-bold text-primary">Draft Products</h4>
                                     <p className="text-sm text-text-secondary mt-1.5 flex items-center gap-2">
                                         <span className="inline-block w-2 h-2 rounded-full bg-gold animate-pulse" />
                                         {draftsLoading
@@ -890,7 +890,7 @@ export default function ProductsListPage() {
                                             onChange={handleToggleSelectAllDrafts}
                                             className="h-4 w-4 rounded border-border text-primary focus:ring-primary/20 transition-all cursor-pointer"
                                         />
-                                        <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">Select All</span>
+                                        <span className="text-xs font-semibold text-text-muted uppercase">Select All</span>
                                     </div>
                                     {filteredDrafts.map(draft => (
                                         <div
@@ -1040,10 +1040,10 @@ export default function ProductsListPage() {
                             <div className="absolute right-0 mt-2 w-80 z-[70] bg-card-bg border border-border rounded-2xl shadow-2xl overflow-hidden animate-fadeInUp flex flex-col max-h-[80vh]">
                                 <div className="p-5 pb-4 border-b border-border/50 shrink-0">
                                     <div className="flex items-center justify-between">
-                                        <h3 className="font-serif text-sm font-semibold text-text-primary flex items-center gap-2">
+                                        <h4 className="font-serif text-sm font-semibold text-text-primary flex items-center gap-2">
                                             <Filter className="h-4 w-4 text-gold" />
                                             Refine Products
-                                        </h3>
+                                        </h4>
                                         <button 
                                             onClick={() => {
                                                 setFilterCategory('all');
@@ -1064,7 +1064,7 @@ export default function ProductsListPage() {
                                     <div className="space-y-5">
                                         {/* Category */}
                                         <div className="space-y-2">
-                                            <label className="text-[11px] font-bold text-text-muted uppercase tracking-wider">Main Category</label>
+                                            <label className="text-[11px] font-bold text-text-muted uppercase">Main Category</label>
                                             <div className="relative">
                                                 <select
                                                     value={filterCategory}
@@ -1090,7 +1090,7 @@ export default function ProductsListPage() {
                                         {/* Sub Category */}
                                         {filterCategory !== 'all' && filterCategory !== 'none' && (
                                             <div className="space-y-2 animate-fadeIn">
-                                                <label className="text-[11px] font-bold text-text-muted uppercase tracking-wider">Sub Category</label>
+                                                <label className="text-[11px] font-bold text-text-muted uppercase">Sub Category</label>
                                                 <div className="relative">
                                                     <select
                                                         value={filterSubCategory}
@@ -1115,7 +1115,7 @@ export default function ProductsListPage() {
 
                                         {/* Stock Status */}
                                         <div className="space-y-2">
-                                            <label className="text-[11px] font-bold text-text-muted uppercase tracking-wider">Stock</label>
+                                            <label className="text-[11px] font-bold text-text-muted uppercase">Stock</label>
                                             <div className="relative">
                                                 <select
                                                     value={filterStock}
@@ -1133,7 +1133,7 @@ export default function ProductsListPage() {
 
                                         {/* Pricing */}
                                         <div className="space-y-2">
-                                            <label className="text-[11px] font-bold text-text-muted uppercase tracking-wider">Price Range</label>
+                                            <label className="text-[11px] font-bold text-text-muted uppercase">Price Range</label>
                                             <PriceRangeSlider
                                                 min={0}
                                                 max={absoluteMaxPrice}
@@ -1145,7 +1145,7 @@ export default function ProductsListPage() {
 
                                         {/* Availability/Best Seller */}
                                         <div className="space-y-2">
-                                            <label className="text-[11px] font-bold text-text-muted uppercase tracking-wider">Highlights</label>
+                                            <label className="text-[11px] font-bold text-text-muted uppercase">Highlights</label>
                                             <div className="relative">
                                                 <select
                                                     value={filterBestSeller}
@@ -1173,12 +1173,12 @@ export default function ProductsListPage() {
                         <thead>
                             <tr className="border-b border-border bg-page-bg">
                                 <SortableHeader label="Product" sortKey="product_name" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
-                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider">SKU</th>
+                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase">SKU</th>
                                 <SortableHeader label="Category" sortKey="category" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
                                 <SortableHeader label="Price" sortKey="price" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
-                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider text-center">Best Seller</th>
+                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase text-center">Best Seller</th>
                                 <SortableHeader label="Stock" sortKey="stock_quantity" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
-                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider text-right">
+                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase text-right">
                                     <div className="flex items-center justify-end gap-3">
                                         <input
                                             type="checkbox"
@@ -1331,13 +1331,13 @@ export default function ProductsListPage() {
                                                                 <table className="w-full text-left text-sm">
                                                                     <thead className="bg-page-bg/50 border-b border-border-subtle">
                                                                         <tr>
-                                                                            <th className="px-4 py-2 font-medium text-text-secondary text-xs uppercase tracking-wider">Image</th>
-                                                                            <th className="px-4 py-2 font-medium text-text-secondary text-xs uppercase tracking-wider">Name</th>
-                                                                            <th className="px-4 py-2 font-medium text-text-secondary text-xs uppercase tracking-wider">SKU</th>
-                                                                            <th className="px-4 py-2 font-medium text-text-secondary text-xs uppercase tracking-wider">Specification</th>
-                                                                            <th className="px-4 py-2 font-medium text-text-secondary text-xs uppercase tracking-wider">Price</th>
-                                                                            <th className="px-4 py-2 font-medium text-text-secondary text-xs uppercase tracking-wider">Stock</th>
-                                                                            <th className="px-4 py-2 font-medium text-text-secondary text-xs uppercase tracking-wider text-right">
+                                                                            <th className="px-4 py-2 font-medium text-text-secondary text-xs uppercase">Image</th>
+                                                                            <th className="px-4 py-2 font-medium text-text-secondary text-xs uppercase">Name</th>
+                                                                            <th className="px-4 py-2 font-medium text-text-secondary text-xs uppercase">SKU</th>
+                                                                            <th className="px-4 py-2 font-medium text-text-secondary text-xs uppercase">Specification</th>
+                                                                            <th className="px-4 py-2 font-medium text-text-secondary text-xs uppercase">Price</th>
+                                                                            <th className="px-4 py-2 font-medium text-text-secondary text-xs uppercase">Stock</th>
+                                                                            <th className="px-4 py-2 font-medium text-text-secondary text-xs uppercase text-right">
                                                                                 <div className="flex items-center justify-end gap-3">
                                                                                     <input
                                                                                         type="checkbox"

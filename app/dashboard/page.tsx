@@ -169,11 +169,11 @@ export default function DashboardPage() {
                 <div className="rounded-2xl border border-border bg-gradient-to-br from-card-bg to-card-bg-elevated animate-fadeInUp shadow-xl transition-all duration-500" style={{ animationDelay: '560ms' }}>
                     <div className="flex items-center justify-between border-b border-border px-6 py-5">
                         <div>
-                            <h2 className="font-serif text-base font-bold text-gold tracking-widest uppercase">Recent Fulfillment</h2>
-                            <p className="text-[10px] text-text-muted uppercase tracking-widest mt-1">Real-time protocol logistics and dispatch</p>
+                            <h4 className="font-serif text-base font-bold text-gold uppercase">Recent Fulfillment</h4>
+                            <p className="text-[10px] text-text-muted uppercase mt-1">Real-time protocol logistics and dispatch</p>
                         </div>
                         <div className="flex items-center gap-3">
-                            <Link href="/dashboard/orders" className="text-[11px] font-bold uppercase tracking-wider text-gold-soft hover:text-gold transition-colors duration-300">
+                            <Link href="/dashboard/orders" className="text-[11px] font-bold uppercase text-gold-soft hover:text-gold transition-colors duration-300">
                                 View Archive →
                             </Link>
                         </div>
@@ -181,11 +181,11 @@ export default function DashboardPage() {
                     
                     {/* Header Row for Semantic Labels */}
                     <div className="grid grid-cols-[1fr_2fr_2fr_1fr_1fr] px-6 py-3 border-b border-border bg-primary/5">
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted">Protocol ID</span>
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted">Patient</span>
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted">Formula</span>
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted">Status</span>
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted text-right">Value</span>
+                        <span className="text-[10px] font-bold uppercase text-text-muted">Protocol ID</span>
+                        <span className="text-[10px] font-bold uppercase text-text-muted">Patient</span>
+                        <span className="text-[10px] font-bold uppercase text-text-muted">Formula</span>
+                        <span className="text-[10px] font-bold uppercase text-text-muted">Status</span>
+                        <span className="text-[10px] font-bold uppercase text-text-muted text-right">Value</span>
                     </div>
 
                     <div className="divide-y divide-border-subtle">
@@ -204,7 +204,7 @@ export default function DashboardPage() {
                                 <p className="text-sm text-text-muted italic mb-4">No active protocols detected</p>
                                 <Link
                                     href="/dashboard/orders"
-                                    className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-gold hover:bg-primary-light transition-all duration-300"
+                                    className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-xs font-bold uppercase text-gold hover:bg-primary-light transition-all duration-300"
                                 >
                                     <ShoppingCart className="h-4 w-4" /> View Archives
                                 </Link>
@@ -231,12 +231,12 @@ export default function DashboardPage() {
                                         </p>
                                     </div>
                                     <div>
-                                        <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg border ${getStatusClasses(order.status)}`}>
+                                        <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded-lg border ${getStatusClasses(order.status)}`}>
                                             {order.status}
                                         </span>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-sm font-bold text-gold tracking-tight">
+                                        <p className="text-sm font-bold text-gold">
                                             {formatINR(order.total ?? 0)}
                                         </p>
                                     </div>

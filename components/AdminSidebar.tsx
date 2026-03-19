@@ -151,7 +151,7 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
                 {!isCollapsed && (
                     <Link href="/dashboard" className="flex items-center gap-2.5">
                         <div>
-                            <span className="text-xl font-bold text-gold-soft tracking-wide">VEDASHI</span>
+                            <span className="text-xl font-bold text-gold-soft">VEDASHI</span>
                         </div>
                     </Link>
                 )}
@@ -165,52 +165,52 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
             {/* Dashboard Link (Optional but kept for functionality if not in reference) */}
             <nav className="flex-1 min-h-0 px-3 py-4 pb-12 space-y-5 overflow-y-auto">
                 <div>
-                    {!isCollapsed && <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-white/30">Overview</p>}
+                    {!isCollapsed && <p className="px-3 mb-2 text-[10px] font-bold uppercase text-white/30">Overview</p>}
                     {overviewNav.map(item => renderNavItem(item, isCollapsed))}
                 </div>
 
                 <div>
-                    {!isCollapsed && <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-white/30">Catalog</p>}
+                    {!isCollapsed && <p className="px-3 mb-2 text-[10px] font-bold uppercase text-white/30">Catalog</p>}
                     {catalogNav.map(item => renderNavItem(item, isCollapsed))}
                 </div>
 
                 <div>
-                    {!isCollapsed && <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-white/30">Engagement</p>}
+                    {!isCollapsed && <p className="px-3 mb-2 text-[10px] font-bold uppercase text-white/30">Engagement</p>}
                     {engagementNav.map(item => renderNavItem(item, isCollapsed))}
                 </div>
 
                 <div>
-                    {!isCollapsed && <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-white/30">Sales</p>}
+                    {!isCollapsed && <p className="px-3 mb-2 text-[10px] font-bold uppercase text-white/30">Sales</p>}
                     {salesNav.map(item => renderNavItem(item, isCollapsed))}
                 </div>
 
                 <div>
-                    {!isCollapsed && <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-white/30">Users</p>}
+                    {!isCollapsed && <p className="px-3 mb-2 text-[10px] font-bold uppercase text-white/30">Users</p>}
                     {usersNav.map(item => renderNavItem(item, isCollapsed))}
                 </div>
 
                 <div>
-                    {!isCollapsed && <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-white/30">Marketing</p>}
+                    {!isCollapsed && <p className="px-3 mb-2 text-[10px] font-bold uppercase text-white/30">Marketing</p>}
                     {marketingNav.map(item => renderNavItem(item, isCollapsed))}
                 </div>
 
                 <div>
-                    {!isCollapsed && <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-white/30">Site Content</p>}
+                    {!isCollapsed && <p className="px-3 mb-2 text-[10px] font-bold uppercase text-white/30">Site Content</p>}
                     {siteContentNav.map(item => renderNavItem(item, isCollapsed))}
                 </div>
 
                 <div>
-                    {!isCollapsed && <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-white/30">Optimization</p>}
+                    {!isCollapsed && <p className="px-3 mb-2 text-[10px] font-bold uppercase text-white/30">Optimization</p>}
                     {optimizationNav.map(item => renderNavItem(item, isCollapsed))}
                 </div>
 
                 <div>
-                    {!isCollapsed && <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-white/30">Support</p>}
+                    {!isCollapsed && <p className="px-3 mb-2 text-[10px] font-bold uppercase text-white/30">Support</p>}
                     {supportNav.map(item => renderNavItem(item, isCollapsed))}
                 </div>
 
                 <div>
-                    {!isCollapsed && <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-white/30">System</p>}
+                    {!isCollapsed && <p className="px-3 mb-2 text-[10px] font-bold uppercase text-white/30">System</p>}
                     {systemNav.map(item => renderNavItem(item, isCollapsed))}
                 </div>
             </nav>
@@ -223,7 +223,7 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
                             <div className="h-10 w-10 rounded-full bg-[#828B5C] flex items-center justify-center text-white font-bold border border-white/20">
                                 {user.name?.[0]?.toUpperCase()}
                             </div>
-                            <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-[#313622]"></span>
+                            <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-[#1D351D]"></span>
                         </div>
                         <div className="flex-1 min-w-0">
                             <p className="text-sm font-bold text-white truncate">{user.name}</p>
@@ -248,7 +248,7 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
             {/* Mobile toggle */}
             <button
                 onClick={() => setMobileOpen(true)}
-                className="fixed top-3.5 left-4 z-50 rounded-xl bg-[#313622] p-2 text-white shadow-lg md:hidden border border-white/10"
+                className="fixed top-3.5 left-4 z-50 rounded-xl bg-[#1D351D] p-2 text-white shadow-lg md:hidden border border-white/10"
             >
                 <Menu className="h-5 w-5" />
             </button>
@@ -257,7 +257,7 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
             {mobileOpen && (
                 <div className="fixed inset-0 z-40 md:hidden">
                     <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
-                    <aside className="absolute inset-y-0 left-0 w-64 flex flex-col bg-[#313622] animate-slideInLeft z-50 border-r border-white/5">
+                    <aside className="absolute inset-y-0 left-0 w-64 flex flex-col bg-[#1D351D] animate-slideInLeft z-50 border-r border-white/5">
                         <button
                             onClick={() => setMobileOpen(false)}
                             className="absolute top-4 right-4 rounded-lg p-1 text-white/50 hover:text-white"
@@ -271,7 +271,7 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
 
             {/* Desktop sidebar */}
             <aside
-                className={`hidden md:flex fixed inset-y-0 left-0 z-40 flex-col bg-[#313622] transition-all duration-300 ease-in-out border-r border-white/5 ${collapsed ? 'w-[68px]' : 'w-72'
+                className={`hidden md:flex fixed inset-y-0 left-0 z-40 flex-col bg-[#1D351D] transition-all duration-300 ease-in-out border-r border-white/5 ${collapsed ? 'w-[68px]' : 'w-72'
                     }`}
             >
                 {sidebarContent(collapsed)}

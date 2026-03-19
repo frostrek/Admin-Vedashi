@@ -1973,8 +1973,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                                                                         <div className="flex flex-wrap gap-3">
                                                                                             {variant.videos.map((vid, vidIdx) => (
                                                                                                 <div key={vidIdx} className="relative group w-28 h-20 rounded-lg overflow-hidden border border-border bg-black">
-                                                                                                    <video src={vid.preview} className="w-full h-full object-cover pointer-events-none" muted />
-                                                                                                    <div className="absolute inset-0 flex items-center justify-center">
+                                                                                                    <p className="text-xs font-semibold text-text-secondary uppercase mb-3">Sale Management</p>           <div className="absolute inset-0 flex items-center justify-center">
                                                                                                         <Film className="h-6 w-6 text-white/70" />
                                                                                                     </div>
                                                                                                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">

@@ -112,9 +112,9 @@ export default function CategoryModal({ isOpen, onClose, onSubmit, editCategory,
             <div className="relative w-full max-w-lg rounded-2xl border border-border bg-card-bg p-6 shadow-xl mx-4 animate-in fade-in zoom-in-95 duration-200">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-5">
-                    <h2 className="font-serif text-lg font-bold text-text-primary">
+                    <h4 className="font-serif text-lg font-bold text-text-primary">
                         {isEdit ? 'Edit Category' : 'Create New Category'}
-                    </h2>
+                    </h4>
                     <button
                         onClick={onClose}
                         className="rounded-lg p-1.5 text-text-muted hover:text-text-primary hover:bg-page-bg transition-colors"

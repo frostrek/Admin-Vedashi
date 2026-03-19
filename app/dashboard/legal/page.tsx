@@ -165,9 +165,9 @@ export default function LegalManagement() {
             {isEditing ? (
                 <div className="bg-card-bg border border-border-subtle rounded-xl p-6 animate-fadeIn">
                     <div className="flex items-center justify-between mb-6 pb-4 border-b border-border-subtle">
-                        <h2 className="font-serif text-xl font-bold text-text-primary">
+                        <h4 className="font-serif text-xl font-bold text-text-primary">
                             {currentDoc?.id ? `Edit Version ${currentDoc.version}` : 'Create New Legal Document'}
-                        </h2>
+                        </h4>
                         <button 
                             onClick={() => { setIsEditing(false); setIsPreviewing(false); }} 
                             className="text-text-muted hover:text-text-primary bg-page-bg px-3 py-1.5 rounded-lg text-sm border border-border-subtle transition"
@@ -298,7 +298,7 @@ export default function LegalManagement() {
                                         ) : blocks.map((block, idx) => (
                                             <div key={idx}>
                                                 {block.type === 'heading' ? (
-                                                    <h3 className="font-serif text-2xl font-bold text-gray-900">{block.text || 'Untitled Heading'}</h3>
+                                                    <h4 className="font-serif text-2xl font-bold text-gray-900">{block.text || 'Untitled Heading'}</h4>
                                                 ) : (
                                                     <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{block.text || 'Empty paragraph content...'}</p>
                                                 )}
@@ -323,7 +323,7 @@ export default function LegalManagement() {
                                         <div key={idx} className="group relative bg-page-bg/50 border border-border-subtle rounded-xl p-4 transition-all hover:bg-page-bg hover:border-gold/30">
                                             <div className="flex items-center justify-between mb-2">
                                                 <div className="flex items-center gap-2">
-                                                    <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest ${
+                                                    <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase ${
                                                         block.type === 'heading' ? 'bg-gold/10 text-gold border border-gold/20' : 'bg-success/10 text-success border border-success/20'
                                                     }`}>
                                                         {block.type}
@@ -380,7 +380,7 @@ export default function LegalManagement() {
             ) : (
                 <div className="bg-card-bg border border-border-subtle rounded-xl p-6 min-h-[500px]">
                     <div className="flex items-center justify-between mb-6">
-                        <h2 className="font-serif text-lg font-bold text-text-primary">Legal Documents & Versions</h2>
+                        <h4 className="font-serif text-lg font-bold text-text-primary">Legal Documents & Versions</h4>
                         <div className="flex gap-2">
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
@@ -427,18 +427,18 @@ export default function LegalManagement() {
                                     <tr key={doc.id} className="hover:bg-page-bg/30 transition">
                                         <td className="px-4 py-3">
                                             <p className="font-bold text-text-primary">{doc.title}</p>
-                                            <p className="text-[10px] text-gold-muted font-bold tracking-tight uppercase">{doc.slug}</p>
+                                            <p className="text-[10px] text-gold-muted font-bold uppercase">{doc.slug}</p>
                                         </td>
                                         <td className="px-4 py-3 font-mono text-xs">
                                             v{doc.version}
                                         </td>
                                         <td className="px-4 py-3">
                                             {doc.is_active ? (
-                                                <span className="inline-flex items-center gap-1.5 rounded-full bg-success/20 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-success">
+                                                <span className="inline-flex items-center gap-1.5 rounded-full bg-success/20 px-2.5 py-1 text-[10px] font-black uppercase text-success">
                                                     <CheckCircle className="h-3 w-3" /> Active
                                                 </span>
                                             ) : (
-                                                <span className="inline-flex items-center gap-1.5 rounded-full bg-page-bg px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-text-muted border border-border-subtle">
+                                                <span className="inline-flex items-center gap-1.5 rounded-full bg-page-bg px-2.5 py-1 text-[10px] font-black uppercase text-text-muted border border-border-subtle">
                                                     <History className="h-3 w-3" /> Archived
                                                 </span>
                                             )}

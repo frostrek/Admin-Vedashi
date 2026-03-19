@@ -34,7 +34,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         <div className="flex min-h-screen bg-page-bg relative overflow-hidden">
             {/* Command Center Background */}
             <div 
-                className="fixed inset-0 z-0 pointer-events-none opacity-40 mix-blend-multiply transition-opacity duration-1000"
+                className="fixed inset-0 z-0 pointer-events-none opacity-15 mix-blend-multiply transition-opacity duration-1000"
                 style={{ 
                     backgroundImage: 'url("/dashboard_bg.png")',
                     backgroundSize: 'cover',

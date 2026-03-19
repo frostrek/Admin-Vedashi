@@ -45,7 +45,7 @@ export default function SortableHeader({
 
     return (
         <th
-            className={`px-4 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider select-none whitespace-nowrap ${alignClass} ${className}`}
+            className={`px-4 py-3 text-xs font-semibold text-gold-muted uppercase select-none whitespace-nowrap ${alignClass} ${className}`}
         >
             <button
                 type="button"

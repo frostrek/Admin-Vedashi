@@ -125,31 +125,31 @@ export default function SeoHealthCheck() {
                     <ShieldAlert className="h-8 w-8 text-gold" />
                     SEO Health Check
                 </h1>
-                <p className="text-text-muted mt-2 uppercase tracking-widest text-[10px] font-bold">Audit your product catalog for missing or suboptimal SEO metadata.</p>
+                <p className="text-text-muted mt-2 uppercase text-[10px] font-bold">Audit your product catalog for missing or suboptimal SEO metadata.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-gradient-to-br from-card-bg to-card-bg-elevated p-6 rounded-2xl border border-border shadow-xl flex flex-col items-center justify-center text-center backdrop-blur-sm animate-fadeInUp" style={{ animationDelay: '100ms' }}>
                     <span className="text-4xl font-bold text-gold">{products.length}</span>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted mt-2">Total Products Scanned</span>
+                    <span className="text-[10px] font-bold uppercase text-text-muted mt-2">Total Products Scanned</span>
                 </div>
                 <div className="bg-gradient-to-br from-card-bg to-card-bg-elevated p-6 rounded-2xl border border-border shadow-xl flex flex-col items-center justify-center text-center backdrop-blur-sm animate-fadeInUp" style={{ animationDelay: '200ms' }}>
                     <span className="text-4xl font-bold text-success flex items-center gap-2">
                         <CheckCircle2 size={32} /> {healthyCount}
                     </span>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted mt-2">Healthy Products</span>
+                    <span className="text-[10px] font-bold uppercase text-text-muted mt-2">Healthy Products</span>
                 </div>
                 <div className="bg-gradient-to-br from-card-bg to-card-bg-elevated p-6 rounded-2xl border border-border shadow-xl flex flex-col items-center justify-center text-center backdrop-blur-sm animate-fadeInUp" style={{ animationDelay: '300ms' }}>
                     <span className="text-4xl font-bold text-warning flex items-center gap-2">
                         <AlertTriangle size={32} /> {warningProducts.length}
                     </span>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted mt-2">Needs Attention</span>
+                    <span className="text-[10px] font-bold uppercase text-text-muted mt-2">Needs Attention</span>
                 </div>
             </div>
 
             <div className="bg-gradient-to-br from-card-bg to-card-bg-elevated rounded-2xl shadow-xl border border-border overflow-hidden animate-fadeInUp backdrop-blur-sm" style={{ animationDelay: '400ms' }}>
                 <div className="px-6 py-5 border-b border-border bg-primary/10">
-                    <h2 className="font-serif text-base font-bold text-gold tracking-widest uppercase">Products Requiring SEO Updates</h2>
+                    <h4 className="font-serif text-base font-bold text-gold uppercase">Products Requiring SEO Updates</h4>
                 </div>
 
                 {warningProducts.length === 0 ? (
@@ -163,9 +163,9 @@ export default function SeoHealthCheck() {
                         <table className="w-full text-left text-sm">
                             <thead className="bg-primary/5 text-text-muted">
                                 <tr>
-                                    <th className="px-6 py-4 font-bold uppercase tracking-widest text-[10px]">Product / Formula</th>
-                                    <th className="px-6 py-4 font-bold uppercase tracking-widest text-[10px]">Anomalies Detected</th>
-                                    <th className="px-6 py-4 font-bold uppercase tracking-widest text-[10px] text-right">Action</th>
+                                    <th className="px-6 py-4 font-bold uppercase text-[10px]">Product / Formula</th>
+                                    <th className="px-6 py-4 font-bold uppercase text-[10px]">Anomalies Detected</th>
+                                    <th className="px-6 py-4 font-bold uppercase text-[10px] text-right">Action</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border-subtle">
@@ -173,12 +173,12 @@ export default function SeoHealthCheck() {
                                     <tr key={p.id} className="hover:bg-primary/5 transition-colors group">
                                         <td className="px-6 py-4">
                                             <div className="font-bold text-gold group-hover:text-gold-soft transition-colors">{p.name}</div>
-                                            <div className="text-text-muted text-[10px] mt-1 font-mono uppercase tracking-[0.05em]">{p.slug || 'No slug'}</div>
+                                            <div className="text-text-muted text-[10px] mt-1 font-mono uppercase">{p.slug || 'No slug'}</div>
                                         </td>
                                         <td className="px-6 py-4 h-full align-middle">
                                             <div className="flex flex-wrap gap-2">
                                                 {p.warnings.map((w, i) => (
-                                                    <span key={i} className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-danger/10 text-danger border border-danger/20">
+                                                    <span key={i} className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-danger/10 text-danger border border-danger/20">
                                                         {w}
                                                     </span>
                                                 ))}
@@ -187,7 +187,7 @@ export default function SeoHealthCheck() {
                                         <td className="px-6 py-4 text-right">
                                             <Link
                                                 href={`/dashboard/products/edit/${p.slug || p.id}?step=4`}
-                                                className="inline-flex items-center gap-1 text-gold hover:text-gold-soft font-bold text-[11px] uppercase tracking-widest bg-primary/20 hover:bg-primary/40 border border-gold/10 px-3 py-1.5 rounded-lg transition-all"
+                                                className="inline-flex items-center gap-1 text-gold hover:text-gold-soft font-bold text-[11px] uppercase bg-primary/20 hover:bg-primary/40 border border-gold/10 px-3 py-1.5 rounded-lg transition-all"
                                             >
                                                 Edit <ArrowRight size={14} />
                                             </Link>

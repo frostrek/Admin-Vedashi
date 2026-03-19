@@ -139,13 +139,13 @@ export default function PromoBannersPage() {
                             Promotion Banners
                         </h1>
                     </div>
-                    <p className={`${isDark ? 'text-gold-soft/60' : 'text-emerald-950/80'} text-[10px] font-bold uppercase tracking-[0.3em] pl-16`}>
+                    <p className={`${isDark ? 'text-gold-soft/60' : 'text-emerald-950/80'} text-[10px] font-bold uppercase pl-16`}>
                         Orchestrate global promotional banners across the storefront.
                     </p>
                 </div>
                 <button
                     onClick={openCreate}
-                    className="flex items-center gap-3 px-8 py-3 bg-primary border border-gold/20 text-gold text-[10px] font-bold uppercase tracking-[0.2em] rounded-2xl hover:shadow-[0_0_20px_rgba(197,164,109,0.2)] transition-all duration-300 group"
+                    className="flex items-center gap-3 px-8 py-3 bg-primary border border-gold/20 text-gold text-[10px] font-bold uppercase rounded-2xl hover:shadow-[0_0_20px_rgba(197,164,109,0.2)] transition-all duration-300 group"
                 >
                     <div className="p-1 bg-gold/20 rounded-lg group-hover:scale-110 transition-transform">
                         <Plus className="w-4 h-4" />
@@ -159,14 +159,14 @@ export default function PromoBannersPage() {
                 {loading ? (
                     <div className="flex flex-col items-center justify-center p-32 space-y-4 animate-pulse">
                         <div className="w-16 h-16 rounded-full border-t-2 border-l-2 border-gold animate-spin" />
-                        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gold/60 text-center">Calibrating Promotional Vibrations...</p>
+                        <p className="text-[10px] font-bold uppercase text-gold/60 text-center">Calibrating Promotional Vibrations...</p>
                     </div>
                 ) : banners.length === 0 ? (
                     <div className={`flex flex-col items-center justify-center p-40 border-2 border-dashed border-border/40 rounded-[2.5rem] m-6 ${isDark ? 'bg-black/10' : 'bg-primary/5'} text-text-muted`}>
                         <Megaphone className="w-20 h-20 mb-8 opacity-20 text-gold" />
                         <p className={`text-xl font-bold ${isDark ? 'text-gold-soft' : 'text-emerald-950'} mb-2`}>Silent Frequencies</p>
-                        <p className={`text-[10px] uppercase tracking-widest ${isDark ? 'opacity-60' : 'text-emerald-900/40'}`}>No promotional announcements have been manifested yet.</p>
-                        <button onClick={openCreate} className={`mt-10 px-8 py-3 bg-primary border border-gold/20 text-gold text-[10px] font-bold uppercase tracking-widest rounded-xl hover:shadow-[0_0_20px_rgba(197,164,109,0.2)] transition-all duration-300`}>
+                        <p className={`text-[10px] uppercase ${isDark ? 'opacity-60' : 'text-emerald-900/40'}`}>No promotional announcements have been manifested yet.</p>
+                        <button onClick={openCreate} className={`mt-10 px-8 py-3 bg-primary border border-gold/20 text-gold text-[10px] font-bold uppercase rounded-xl hover:shadow-[0_0_20px_rgba(197,164,109,0.2)] transition-all duration-300`}>
                             Manifest First Aura
                         </button>
                     </div>
@@ -174,7 +174,7 @@ export default function PromoBannersPage() {
                     <div className="overflow-x-auto custom-scrollbar">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className={`border-b border-border ${isDark ? 'bg-black/40 text-gold/40' : 'bg-primary/10 text-emerald-950'} text-[11px] font-bold uppercase tracking-[0.2em]`}>
+                                <tr className={`border-b border-border ${isDark ? 'bg-black/40 text-gold/40' : 'bg-primary/10 text-emerald-950'} text-[11px] font-bold uppercase`}>
                                     <th className="px-8 py-6">Message</th>
                                     <th className="px-8 py-6">Effect</th>
                                     <th className="px-8 py-6">Colours</th>
@@ -192,10 +192,10 @@ export default function PromoBannersPage() {
                                         </td>
                                         <td className="px-8 py-10">
                                             <div className="flex flex-col gap-2.5 items-start">
-                                                <span className={`inline-flex px-4 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest shadow-lg border ${b.is_active ? (isDark ? 'bg-gold/10 text-gold border-gold/30' : 'bg-primary/10 text-primary border-primary/30') : (isDark ? 'bg-black/40 text-text-muted/60 border-border/40' : 'bg-white text-text-muted border-border')}`}>
+                                                <span className={`inline-flex px-4 py-1 rounded-full text-[10px] font-bold uppercase shadow-lg border ${b.is_active ? (isDark ? 'bg-gold/10 text-gold border-gold/30' : 'bg-primary/10 text-primary border-primary/30') : (isDark ? 'bg-black/40 text-text-muted/60 border-border/40' : 'bg-white text-text-muted border-border')}`}>
                                                     {b.is_active ? 'Manifested' : 'Latent'}
                                                 </span>
-                                                <span className={`text-[10px] ${isDark ? 'text-text-muted' : 'text-emerald-950/70'} uppercase tracking-wider font-bold flex items-center gap-2`}>
+                                                <span className={`text-[10px] ${isDark ? 'text-text-muted' : 'text-emerald-950/70'} uppercase font-bold flex items-center gap-2`}>
                                                     <div className={`w-1.5 h-1.5 rounded-full ${b.flow === 'blink' ? (isDark ? 'bg-gold animate-pulse shadow-[0_0_5px_rgba(197,164,109,0.8)]' : 'bg-primary animate-pulse shadow-[0_0_5px_rgba(59,93,59,0.3)]') : 'bg-border'}`} />
                                                     {b.flow.replace('-', ' ')} oscillation
                                                 </span>
@@ -206,20 +206,20 @@ export default function PromoBannersPage() {
                                                 <div className="flex items-center gap-4">
                                                     <div className="group/color relative">
                                                         <div className="w-8 h-8 rounded-xl border border-border shadow-2xl transition-transform group-hover/color:scale-110" style={{ backgroundColor: b.background_color || '#000000' }} />
-                                                        <span className="absolute -bottom-6 left-0 text-[8px] font-bold text-text-muted opacity-0 group-hover/color:opacity-100 transition-opacity">BG</span>
+                                                        <span className="absolute -bottom-6 left-0 text-[10px] font-bold text-text-muted opacity-0 group-hover/color:opacity-100 transition-opacity">TEXT</span>
                                                     </div>
                                                     <div className="group/color relative">
                                                         <div className="w-8 h-8 rounded-xl border border-border shadow-2xl transition-transform group-hover/color:scale-110" style={{ backgroundColor: b.text_color || '#FFFFFF' }} />
                                                         <span className="absolute -bottom-6 left-0 text-[8px] font-bold text-text-muted opacity-0 group-hover/color:opacity-100 transition-opacity">TEXT</span>
                                                     </div>
                                                 </div>
-                                                <div className={`text-[10px] font-bold ${isDark ? 'text-text-muted' : 'text-emerald-950/70'} uppercase tracking-widest`}>
+                                                <div className={`text-[10px] font-bold ${isDark ? 'text-text-muted' : 'text-emerald-950/70'} uppercase`}>
                                                     Count: <span className={isDark ? 'text-gold-soft' : 'text-primary'}>{b.total_count || 0}</span>
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="px-8 py-10">
-                                            <p className={`text-[10px] font-bold ${isDark ? 'text-text-muted/40' : 'text-emerald-900/60'} uppercase tracking-widest`}>
+                                            <p className={`text-[10px] font-bold ${isDark ? 'text-text-muted/40' : 'text-emerald-900/60'} uppercase`}>
                                                 {new Date(b.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
                                             </p>
                                         </td>
@@ -250,10 +250,10 @@ export default function PromoBannersPage() {
                     <div className={`${isDark ? 'bg-gradient-to-br from-card-bg to-card-bg-elevated' : 'bg-white'} border border-border rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden animate-scaleIn`}>
                         <div className={`flex items-center justify-between p-8 border-b border-border ${isDark ? 'bg-black/40' : 'bg-primary/5'} backdrop-blur-sm sticky top-0 z-10`}>
                             <div>
-                                <h2 className={`text-2xl font-bold ${isDark ? 'text-gold' : 'text-emerald-950'} tracking-tight`}>
+                                <h4 className={`text-2xl font-bold ${isDark ? 'text-gold' : 'text-emerald-950'} tracking-tight`}>
                                     {editing ? 'Edit Banner' : 'Create Banner'}
-                                </h2>
-                                <p className={`text-[10px] ${isDark ? 'text-gold/40' : 'text-emerald-900/40'} font-bold uppercase tracking-[0.2em] mt-1`}>Campaign Configuration</p>
+                                </h4>
+                                <p className={`text-[10px] ${isDark ? 'text-gold/40' : 'text-emerald-900/40'} font-bold uppercase mt-1`}>Campaign Configuration</p>
                             </div>
                             <button onClick={() => setModalOpen(false)} className={`p-3 rounded-full hover:bg-white/5 ${isDark ? 'text-gold-soft hover:text-gold' : 'text-emerald-900/40 hover:text-primary'} transition-all`}>
                                 <X className="w-6 h-6" />
@@ -262,11 +262,11 @@ export default function PromoBannersPage() {
 
                         <form onSubmit={handleSave} className="p-8 space-y-8">
                             <div className="space-y-3">
-                                <label className="flex items-center gap-1.5 text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] px-1 pb-1">
+                                <label className="flex items-center gap-1.5 text-[10px] font-bold text-text-muted uppercase px-1 pb-1">
                                     Message <span className="text-danger">*</span>
                                     <span className="group relative cursor-pointer flex items-center">
                                         <Info className="w-3.5 h-3.5 text-text-muted/60 hover:text-gold transition-colors" />
-                                        <span className="absolute bottom-full mb-2 left-0 opacity-0 group-hover:opacity-100 transition-all pointer-events-none w-max max-w-[200px] bg-black text-white text-[9px] normal-case tracking-normal px-3 py-2 rounded-lg shadow-xl z-[99999]">
+                                        <span className="absolute bottom-full mb-2 left-0 opacity-0 group-hover:opacity-100 transition-all pointer-events-none w-max max-w-[200px] bg-black text-white text-[10px] normal-case px-3 py-2 rounded-lg shadow-xl z-[99999]">
                                             The main text displayed on your banner.
                                         </span>
                                     </span>
@@ -288,7 +288,7 @@ export default function PromoBannersPage() {
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="space-y-6">
                                     <div className="space-y-3">
-                                        <label className="flex items-center gap-1.5 text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] px-1 pb-1">
+                                        <label className="flex items-center gap-1.5 text-[10px] font-bold text-text-muted uppercase px-1 pb-1">
                                             Effect
                                             <span className="group relative cursor-pointer flex items-center">
                                                 <Info className="w-3.5 h-3.5 text-text-muted/60 hover:text-gold transition-colors" />
@@ -313,7 +313,7 @@ export default function PromoBannersPage() {
                                         </select>
                                     </div>
                                     <div className="space-y-3">
-                                        <label className="flex items-center gap-1.5 text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] px-1 pb-1">
+                                        <label className="flex items-center gap-1.5 text-[10px] font-bold text-text-muted uppercase px-1 pb-1">
                                             Count
                                             <span className="group relative cursor-pointer flex items-center">
                                                 <Info className="w-3.5 h-3.5 text-text-muted/60 hover:text-gold transition-colors" />
@@ -333,7 +333,7 @@ export default function PromoBannersPage() {
                                 </div>
                                 <div className="space-y-6">
                                     <div className="space-y-3">
-                                        <label className="flex items-center gap-1.5 text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] px-1 pb-1">
+                                        <label className="flex items-center gap-1.5 text-[10px] font-bold text-text-muted uppercase px-1 pb-1">
                                             Background Colour
                                             <span className="group relative cursor-pointer flex items-center">
                                                 <Info className="w-3.5 h-3.5 text-text-muted/60 hover:text-gold transition-colors" />
@@ -361,7 +361,7 @@ export default function PromoBannersPage() {
                                         </div>
                                     </div>
                                     <div className="space-y-3">
-                                        <label className="flex items-center gap-1.5 text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] px-1 pb-1">
+                                        <label className="flex items-center gap-1.5 text-[10px] font-bold text-text-muted uppercase px-1 pb-1">
                                             Text Color
                                             <span className="group relative cursor-pointer flex items-center">
                                                 <Info className="w-3.5 h-3.5 text-text-muted/60 hover:text-gold transition-colors" />
@@ -393,11 +393,11 @@ export default function PromoBannersPage() {
 
                             <div className="flex justify-end gap-3 pt-8 border-t border-border mt-10">
                                 <button type="button" onClick={() => setModalOpen(false)} disabled={saving}
-                                    className={`px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest text-text-muted ${isDark ? 'hover:text-gold' : 'hover:text-primary'} hover:bg-white/5 transition-all rounded-xl`}>
+                                    className={`px-6 py-2.5 text-[10px] font-bold uppercase text-text-muted ${isDark ? 'hover:text-gold' : 'hover:text-primary'} hover:bg-white/5 transition-all rounded-xl`}>
                                     Abort
                                 </button>
                                 <button type="submit" disabled={saving}
-                                    className="flex items-center gap-2 px-8 py-3 bg-primary border border-gold/20 text-gold text-[10px] font-bold uppercase tracking-widest rounded-xl hover:shadow-[0_0_20px_rgba(197,164,109,0.3)] transition-all duration-300 disabled:opacity-50">
+                                    className="flex items-center gap-2 px-8 py-3 bg-primary border border-gold/20 text-gold text-[10px] font-bold uppercase rounded-xl hover:shadow-[0_0_20px_rgba(197,164,109,0.3)] transition-all duration-300 disabled:opacity-50">
                                     {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Finalizing Vibration…</> : <><Save className="w-4 h-4" /> {editing ? 'Commit Changes' : 'Manifest Aura'}</>}
                                 </button>
                             </div>

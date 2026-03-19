@@ -187,7 +187,7 @@ export default function CustomerDetailPage() {
                     </div>
                     <div className="flex flex-col items-center md:items-end gap-3">
                         {statusBadge(customer)}
-                        <span className="text-[10px] font-mono text-text-muted uppercase tracking-widest select-all">{customer.customer_id}</span>
+                        <span className="text-[10px] font-mono text-text-muted uppercase select-all">{customer.customer_id}</span>
                     </div>
                 </div>
             </div>
@@ -197,30 +197,30 @@ export default function CustomerDetailPage() {
                 <div className="lg:col-span-1 space-y-6">
                     {/* Personal Details */}
                     <div className="p-6 rounded-2xl border border-border bg-card-bg shadow-sm hover-lift">
-                        <h3 className="font-serif text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
+                        <h4 className="font-serif text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
                             <div className="p-1.5 rounded-lg bg-gold/10">
                                 <User className="h-4 w-4 text-gold" />
                             </div>
                             Personal Identity
-                        </h3>
+                        </h4>
                         <div className="space-y-5">
                             <div className="group">
-                                <p className="text-[10px] font-bold text-gold-muted uppercase tracking-widest mb-1.5">Customer Name</p>
+                                <p className="text-[10px] font-bold text-gold-muted uppercase mb-1.5">Customer Name</p>
                                 <p className="text-sm font-medium text-text-primary">{customer.full_name || 'N/A'}</p>
                             </div>
                             <div className="h-px bg-border-subtle"></div>
                             <div className="group">
-                                <p className="text-[10px] font-bold text-gold-muted uppercase tracking-widest mb-1.5">Email Address</p>
+                                <p className="text-[10px] font-bold text-gold-muted uppercase mb-1.5">Email Address</p>
                                 <p className="text-sm font-medium text-text-primary">{customer.email}</p>
                             </div>
                             <div className="h-px bg-border-subtle"></div>
                             <div className="group">
-                                <p className="text-[10px] font-bold text-gold-muted uppercase tracking-widest mb-1.5">Phone Number</p>
+                                <p className="text-[10px] font-bold text-gold-muted uppercase mb-1.5">Phone Number</p>
                                 <p className="text-sm font-medium text-text-primary">{customer.phone || 'Not Provided'}</p>
                             </div>
                             <div className="h-px bg-border-subtle"></div>
                             <div className="group">
-                                <p className="text-[10px] font-bold text-gold-muted uppercase tracking-widest mb-1.5">Customer ID</p>
+                                <p className="text-[10px] font-bold text-gold-muted uppercase mb-1.5">Customer ID</p>
                                 <p className="text-xs font-mono text-text-muted select-all">{customer.customer_id}</p>
                             </div>
                         </div>
@@ -228,19 +228,19 @@ export default function CustomerDetailPage() {
 
                     {/* Shipping Address */}
                     <div className="p-6 rounded-2xl border border-border bg-card-bg shadow-sm hover-lift">
-                        <h3 className="font-serif text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
+                        <h4 className="font-serif text-lg font-bold text-text-primary mb-6 flex items-center gap-2">
                             <div className="p-1.5 rounded-lg bg-gold/10">
                                 <MapPin className="h-4 w-4 text-gold" />
                             </div>
                             Shipping Registry
-                        </h3>
+                        </h4>
                         <div className="space-y-4">
                             <div className="flex gap-3 items-start">
                                 <div className="p-2.5 rounded-xl bg-primary/5 border border-primary/10 h-min mt-0.5">
                                     <MapPin className="h-4 w-4 text-primary" />
                                 </div>
                                 <div>
-                                    <p className="text-[10px] font-bold text-gold-muted uppercase tracking-widest mb-1.5">Latest Order Address</p>
+                                    <p className="text-[10px] font-bold text-gold-muted uppercase mb-1.5">Latest Order Address</p>
                                     <p className="text-sm text-text-secondary leading-relaxed">
                                         {stats.latestAddress}
                                     </p>
@@ -258,21 +258,21 @@ export default function CustomerDetailPage() {
                             <div className="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center text-success mb-4 group-hover:scale-110 transition-transform">
                                 <IndianRupee className="h-5 w-5" />
                             </div>
-                            <p className="text-[10px] font-bold text-gold-muted uppercase tracking-widest mb-1">Lifetime Spend</p>
+                            <p className="text-[10px] font-bold text-gold-muted uppercase mb-1">Lifetime Spend</p>
                             <p className="text-2xl font-bold text-text-primary">{formatINR(stats.totalSpent)}</p>
                         </div>
                         <div className="p-6 rounded-2xl border border-border bg-card-bg shadow-sm hover-lift group">
                             <div className="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center text-gold mb-4 group-hover:scale-110 transition-transform">
                                 <ShoppingBag className="h-5 w-5" />
                             </div>
-                            <p className="text-[10px] font-bold text-gold-muted uppercase tracking-widest mb-1">Total Orders</p>
+                            <p className="text-[10px] font-bold text-gold-muted uppercase mb-1">Total Orders</p>
                             <p className="text-2xl font-bold text-text-primary">{stats.totalOrders}</p>
                         </div>
                         <div className="p-6 rounded-2xl border border-border bg-card-bg shadow-sm hover-lift group">
                             <div className="w-10 h-10 rounded-xl bg-info/10 flex items-center justify-center text-info mb-4 group-hover:scale-110 transition-transform">
                                 <ArrowUpRight className="h-5 w-5" />
                             </div>
-                            <p className="text-[10px] font-bold text-gold-muted uppercase tracking-widest mb-1">Avg. Order Value</p>
+                            <p className="text-[10px] font-bold text-gold-muted uppercase mb-1">Avg. Order Value</p>
                             <p className="text-2xl font-bold text-text-primary">{formatINR(stats.aov)}</p>
                         </div>
                     </div>
@@ -280,23 +280,23 @@ export default function CustomerDetailPage() {
                     {/* Order History Table */}
                     <div className="rounded-2xl border border-border bg-card-bg shadow-sm overflow-hidden">
                         <div className="p-6 border-b border-border flex items-center justify-between">
-                            <h3 className="font-serif text-lg font-bold text-text-primary flex items-center gap-2">
+                            <h4 className="font-serif text-lg font-bold text-text-primary flex items-center gap-2">
                                 <div className="p-1.5 rounded-lg bg-gold/10">
                                     <Clock className="h-4 w-4 text-gold" />
                                 </div>
                                 Fulfillment History
-                            </h3>
+                            </h4>
                             <span className="text-xs font-medium text-text-muted bg-page-bg px-3 py-1.5 rounded-full border border-border-subtle">{orders.length} transactions</span>
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-left">
                                 <thead>
                                     <tr className="bg-primary/5 border-b border-border-subtle">
-                                        <th className="px-6 py-4 text-xs font-bold text-gold-muted uppercase tracking-wider">Order ID</th>
-                                        <th className="px-6 py-4 text-xs font-bold text-gold-muted uppercase tracking-wider">Date</th>
-                                        <th className="px-6 py-4 text-xs font-bold text-gold-muted uppercase tracking-wider">Status</th>
-                                        <th className="px-6 py-4 text-xs font-bold text-gold-muted uppercase tracking-wider text-right">Amount</th>
-                                        <th className="px-6 py-4 text-xs font-bold text-gold-muted uppercase tracking-wider text-right">View</th>
+                                        <th className="px-6 py-4 text-xs font-bold text-gold-muted uppercase">Order ID</th>
+                                        <th className="px-6 py-4 text-xs font-bold text-gold-muted uppercase">Date</th>
+                                        <th className="px-6 py-4 text-xs font-bold text-gold-muted uppercase">Status</th>
+                                        <th className="px-6 py-4 text-xs font-bold text-gold-muted uppercase text-right">Amount</th>
+                                        <th className="px-6 py-4 text-xs font-bold text-gold-muted uppercase text-right">View</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-border-subtle">
@@ -321,7 +321,7 @@ export default function CustomerDetailPage() {
                                                     {new Date(order.created_at).toLocaleDateString()}
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${
+                                                    <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${
                                                         order.status === 'delivered' ? 'bg-success/15 text-success' :
                                                         order.status === 'cancelled' ? 'bg-danger/15 text-danger' :
                                                         'bg-warning/15 text-warning'

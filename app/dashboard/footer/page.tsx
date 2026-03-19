@@ -75,8 +75,8 @@ const SectionCard = ({ icon: Icon, title, subtitle, children, defaultOpen = true
                         <Icon className="w-5 h-5 text-gold" />
                     </div>
                     <div>
-                        <h2 className="font-serif text-sm font-bold text-gold tracking-widest uppercase">{title}</h2>
-                        {subtitle && <p className="text-[10px] text-text-muted mt-0.5 font-medium uppercase tracking-widest">{subtitle}</p>}
+                        <h4 className="font-serif text-sm font-bold text-gold uppercase">{title}</h4>
+                        {subtitle && <p className="text-[10px] text-text-muted mt-0.5 font-medium uppercase">{subtitle}</p>}
                     </div>
                 </div>
                 {open ? <ChevronUp className="w-4 h-4 text-gold-soft" /> : <ChevronDown className="w-4 h-4 text-gold-soft" />}
@@ -88,7 +88,7 @@ const SectionCard = ({ icon: Icon, title, subtitle, children, defaultOpen = true
 
 const Field = ({ label, hint, info, children }: { label: string; hint?: string; info?: string; children: React.ReactNode }) => (
     <div className="space-y-2">
-        <label className="flex items-center gap-2 text-[10px] font-bold text-text-muted uppercase tracking-[0.2em]">
+        <label className="flex items-center gap-2 text-[10px] font-bold text-text-muted uppercase">
             {label}
             {info && (
                 <span className="relative group cursor-pointer inline-flex items-center normal-case tracking-normal">
@@ -181,7 +181,7 @@ export default function FooterManagementPage() {
         <button
             onClick={() => saveSection(section)}
             disabled={saving}
-            className="flex items-center gap-2 px-5 py-2 bg-primary border border-gold/20 text-gold text-[10px] font-bold uppercase tracking-widest rounded-xl hover:shadow-[0_0_15px_rgba(197,164,109,0.2)] transition-all duration-300 disabled:opacity-50"
+            className="flex items-center gap-2 px-5 py-2 bg-primary border border-gold/20 text-gold text-[10px] font-bold uppercase rounded-xl hover:shadow-[0_0_15px_rgba(197,164,109,0.2)] transition-all duration-300 disabled:opacity-50"
         >
             {saving && activeSection === section
                 ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> saving…</>
@@ -193,7 +193,7 @@ export default function FooterManagementPage() {
         return (
             <div className="p-20 flex flex-col items-center justify-center min-h-[600px] space-y-6 animate-pulse">
                 <div className="w-20 h-20 rounded-full border-t-2 border-l-2 border-gold animate-spin shadow-[0_0_20px_rgba(197,164,109,0.3)]" />
-                <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gold/60">Illuminating Footer Foundations...</p>
+                <p className="text-[10px] font-bold uppercase text-gold/60">Illuminating Footer Foundations...</p>
             </div>
         );
     }
@@ -206,11 +206,11 @@ export default function FooterManagementPage() {
                 </div>
                 <div className="space-y-2">
                     <p className="text-xl text-gold-soft">Frequencies Disorganized</p>
-                    <p className="text-[10px] uppercase tracking-widest text-text-muted/60 leading-loose mx-auto max-w-xs">
+                    <p className="text-[10px] uppercase text-text-muted/60 leading-loose mx-auto max-w-xs">
                         The footer architecture remains unmanifested from the repository.
                     </p>
                 </div>
-                <button onClick={load} className="px-8 py-3 bg-primary border border-gold/20 text-gold text-[10px] font-bold uppercase tracking-widest rounded-xl hover:shadow-[0_0_20px_rgba(197,164,109,0.2)] transition-all">
+                <button onClick={load} className="px-8 py-3 bg-primary border border-gold/20 text-gold text-[10px] font-bold uppercase rounded-xl hover:shadow-[0_0_20px_rgba(197,164,109,0.2)] transition-all">
                     Attempt Manifestation
                 </button>
             </div>
@@ -228,7 +228,7 @@ export default function FooterManagementPage() {
                         </div>
                         <h1 className="font-serif text-3xl font-bold text-gold tracking-tighter">Footer Stratum</h1>
                     </div>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-muted">
+                    <p className="text-[10px] font-bold uppercase text-text-muted">
                         Configure your storefront foundation — navigation strata, branding essence, and legal resonance.
                     </p>
                 </div>
@@ -236,14 +236,14 @@ export default function FooterManagementPage() {
                     <button
                         onClick={load}
                         disabled={loading}
-                        className="flex items-center gap-2 px-5 py-2.5 border border-border bg-primary/10 text-[10px] font-bold uppercase tracking-widest text-gold-soft rounded-xl hover:bg-primary/20 transition-all duration-300"
+                        className="flex items-center gap-2 px-5 py-2.5 border border-border bg-primary/10 text-[10px] font-bold uppercase text-gold-soft rounded-xl hover:bg-primary/20 transition-all duration-300"
                     >
                         <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /> Recalibrate
                     </button>
                     <button
                         onClick={saveAll}
                         disabled={saving}
-                        className="flex items-center gap-2 px-6 py-2.5 bg-primary border border-gold/20 text-gold text-[11px] font-bold uppercase tracking-widest rounded-xl hover:shadow-[0_0_20px_rgba(197,164,109,0.3)] transition-all duration-300 disabled:opacity-50"
+                        className="flex items-center gap-2 px-6 py-2.5 bg-primary border border-gold/20 text-gold text-[11px] font-bold uppercase rounded-xl hover:shadow-[0_0_20px_rgba(197,164,109,0.3)] transition-all duration-300 disabled:opacity-50"
                     >
                         {saving && activeSection === 'all'
                             ? <><Loader2 className="w-4 h-4 animate-spin" /> finalizing…</>
@@ -303,7 +303,7 @@ export default function FooterManagementPage() {
                             <div key={ci} className="border border-white/5 rounded-[2rem] p-8 space-y-6 bg-black/40 shadow-inner group/col transition-all hover:border-gold/10">
                                 <div className="flex items-center gap-4">
                                     <div className="flex-1">
-                                        <label className="block text-[8px] font-bold text-gold/40 uppercase tracking-[0.2em] mb-2 px-1">Stratum Title</label>
+                                        <label className="block text-[8px] font-bold text-gold/40 uppercase mb-2 px-1">Stratum Title</label>
                                         <input
                                             className={`${inputCls} font-bold text-lg bg-black/20 italic group-hover/col:text-gold transition-colors`}
                                             value={col.column_title}
@@ -328,7 +328,7 @@ export default function FooterManagementPage() {
                                 </div>
 
                                 <div className="space-y-4">
-                                    <label className="block text-[8px] font-bold text-gold/40 uppercase tracking-[0.2em] px-1">Navigation Nodes</label>
+                                    <label className="block text-[8px] font-bold text-gold/40 uppercase px-1">Navigation Nodes</label>
                                     {col.items.map((item, ii) => (
                                         <div key={ii} className="grid grid-cols-[1fr_1fr_auto_auto] gap-3 items-center group/node">
                                             <input
@@ -386,7 +386,7 @@ export default function FooterManagementPage() {
                                         cols[ci].items = [...cols[ci].items, { label: '', url: '', open_new_tab: false }];
                                         update('links', cols);
                                     }}
-                                    className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gold/60 hover:text-gold transition-all group/add self-start px-2"
+                                    className="flex items-center gap-2 text-[10px] font-bold uppercase text-gold/60 hover:text-gold transition-all group/add self-start px-2"
                                 >
                                     <div className="p-1 rounded-md bg-gold/10 border border-gold/20 group-hover/add:scale-110 transition-transform">
                                         <Plus className="w-3 h-3" />
@@ -399,7 +399,7 @@ export default function FooterManagementPage() {
                         <div className="flex items-center justify-between pt-4 border-t border-white/5">
                             <button
                                 onClick={() => update('links', [...(footer?.links || []), { column_title: 'New Stratum', items: [] }])}
-                                className="flex items-center gap-3 px-6 py-2.5 bg-black/40 border border-border text-gold-soft text-[10px] font-bold uppercase tracking-widest rounded-xl hover:bg-white/5 transition-all"
+                                className="flex items-center gap-3 px-6 py-2.5 bg-black/40 border border-border text-gold-soft text-[10px] font-bold uppercase rounded-xl hover:bg-white/5 transition-all"
                             >
                                 <Plus className="w-4 h-4" /> Manifest New Stratum
                             </button>
@@ -528,8 +528,8 @@ export default function FooterManagementPage() {
                                     />
                                 </div>
                                 <div>
-                                    <p className="text-sm font-bold text-gold-soft uppercase tracking-widest">Manifest Newsletter Node</p>
-                                    <p className="text-[10px] text-text-muted/40 font-bold uppercase tracking-widest mt-1 italic">Display the email subscription oscillation in the stratum</p>
+                                    <p className="text-sm font-bold text-gold-soft uppercase">Manifest Newsletter Node</p>
+                                    <p className="text-[10px] text-text-muted/40 font-bold uppercase mt-1 italic">Display the email subscription oscillation in the stratum</p>
                                 </div>
                             </label>
                         </div>
@@ -621,7 +621,7 @@ export default function FooterManagementPage() {
                 <button
                     onClick={saveAll}
                     disabled={saving}
-                    className="flex items-center gap-3 px-8 py-4 bg-primary border border-gold/30 text-gold font-bold text-base uppercase tracking-[0.1em] rounded-2xl hover:shadow-[0_0_30px_rgba(197,164,109,0.4)] hover:-translate-y-1 transition-all duration-500 disabled:opacity-50"
+                    className="flex items-center gap-3 px-8 py-4 bg-primary border border-gold/30 text-gold font-bold text-base uppercase rounded-2xl hover:shadow-[0_0_30px_rgba(197,164,109,0.4)] hover:-translate-y-1 transition-all duration-500 disabled:opacity-50"
                 >
                     {saving && activeSection === 'all'
                         ? <><Loader2 className="w-5 h-5 animate-spin" /> saving manifold…</>

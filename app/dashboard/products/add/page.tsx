@@ -1232,7 +1232,7 @@ export default function AddProductPage() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     {/* Dimension Selection */}
                                     <div className="space-y-4">
-                                        <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider">Select Variant Types</p>
+                                        <p className="text-xs font-semibold text-text-secondary uppercase ">Select Variant Types</p>
                                         <div className="grid grid-cols-2 gap-3">
                                             {Object.entries(dimConfigs).map(([key, config]) => {
                                                 const Icon = key === 'weight' ? Weight : key === 'volume' ? Droplets : key === 'count' ? Hash : key === 'strength' ? Zap : key === 'flavor' ? Utensils : key === 'pack' ? Package : Layers;
@@ -1592,7 +1592,7 @@ export default function AddProductPage() {
 
                                                                             {/* ÔöÇÔöÇ Dimensions section ÔöÇÔöÇ */}
                                                                             <div>
-                                                                                <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3">Dimensions</p>
+                                                                                <p className="text-xs font-semibold text-text-secondary uppercase ">Dimensions</p>
                                                                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                                                                                     {([
                                                                                         { label: 'Length (cm)', field: 'length_cm' as keyof VariantRow },
@@ -1620,7 +1620,7 @@ export default function AddProductPage() {
 
                                                                                     {/* LEFT: Images */}
                                                                                     <div>
-                                                                                        <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3">Images</p>
+                                                                                        <p className="text-xs font-semibold text-text-secondary uppercase ">Images</p>
                                                                                         <div className="flex flex-wrap gap-3">
                                                                                             {variant.images.map((img, imgIdx) => {
                                                                                                 const isDefault = imgIdx === 0;
@@ -1685,7 +1685,7 @@ export default function AddProductPage() {
 
                                                                                     {/* Videos */}
                                                                                     <div className="mt-5">
-                                                                                        <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3">Videos</p>
+                                                                                        <p className="text-xs font-semibold text-text-secondary uppercase ">Videos</p>
                                                                                         <div className="flex flex-wrap gap-3">
                                                                                             {variant.videos.map((vid, vidIdx) => (
                                                                                                 <div key={vidIdx} className="relative group w-28 h-20 rounded-lg overflow-hidden border border-border bg-black">
@@ -1712,7 +1712,7 @@ export default function AddProductPage() {
 
                                                                                     {/* RIGHT: Sale Management */}
                                                                                     <div>
-                                                                                        <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3">Sale Management</p>
+                                                                                        <p className="text-xs font-semibold text-text-secondary uppercase ">Sale Management</p>
                                                                                         <div className="space-y-3">
                                                                                             <div>
                                                                                                 <label className="block text-xs font-medium text-text-secondary mb-1">Sale Price ($)</label>

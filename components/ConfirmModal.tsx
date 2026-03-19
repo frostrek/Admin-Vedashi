@@ -55,9 +55,9 @@ export default function ConfirmModal({
             <div className="relative w-full max-w-md rounded-2xl border border-border bg-gradient-to-br from-card-bg to-card-bg-elevated shadow-2xl shadow-black/40 animate-in zoom-in-95 fade-in duration-200">
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 pt-5 pb-1">
-                    <h2 className="font-serif text-lg font-bold text-text-primary tracking-wide">
+                    <h4 className="font-serif text-lg font-bold text-text-primary">
                         {title}
-                    </h2>
+                    </h4>
                     <button
                         onClick={onClose}
                         className="rounded-lg p-1.5 text-text-secondary hover:text-text-primary hover:bg-hover transition-colors"

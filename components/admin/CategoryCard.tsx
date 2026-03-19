@@ -2,6 +2,7 @@
 
 import { Tag, Pencil, Trash2, FolderTree } from 'lucide-react';
 import { Category } from '@/types/category';
+import { useTheme } from '@/context/ThemeContext';
 
 interface CategoryCardProps {
     category: Category;
@@ -12,27 +13,32 @@ interface CategoryCardProps {
 }
 
 export default function CategoryCard({ category, subcategoryCount, onEdit, onDelete, parentName }: CategoryCardProps) {
+    const { isDark } = useTheme();
+
     return (
-        <div className="rounded-xl border border-border bg-card-bg p-5 transition-all hover:shadow-md group">
-            <div className="flex items-start justify-between mb-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+        <div className="rounded-2xl border border-border bg-card-bg/90 backdrop-blur-md p-6 transition-all duration-300 hover:shadow-lg hover:border-gold/40 group relative overflow-hidden flex flex-col h-full">
+            {/* Soft background glow */}
+            <div className="absolute -top-10 -right-10 h-32 w-32 bg-primary/[0.03] rounded-full blur-3xl group-hover:bg-primary/10 transition-all duration-500" />
+            
+            <div className="flex items-start justify-between mb-4 relative z-10">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-sm border border-primary/10 transition-transform group-hover:scale-105 group-hover:bg-primary group-hover:text-white">
                     {category.parent_id ? (
-                        <FolderTree className="h-5 w-5 text-primary" />
+                        <FolderTree className="h-5 w-5" />
                     ) : (
-                        <Tag className="h-5 w-5 text-primary" />
+                        <Tag className="h-5 w-5" />
                     )}
                 </div>
-                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200 translate-x-1 group-hover:translate-x-0">
                     <button
                         onClick={() => onEdit(category)}
-                        className="rounded-lg p-1.5 text-text-muted hover:text-info hover:bg-blue-50 transition-colors"
+                        className="rounded-lg p-2 text-text-muted hover:text-primary hover:bg-primary/10 transition-colors bg-page-bg/50 backdrop-blur border border-border"
                         title="Edit category"
                     >
                         <Pencil className="h-3.5 w-3.5" />
                     </button>
                     <button
                         onClick={() => onDelete(category)}
-                        className="rounded-lg p-1.5 text-text-muted hover:text-danger hover:bg-red-50 transition-colors"
+                        className="rounded-lg p-2 text-text-muted hover:text-danger hover:bg-red-50 transition-colors bg-page-bg/50 backdrop-blur border border-border"
                         title="Delete category"
                     >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -40,25 +46,33 @@ export default function CategoryCard({ category, subcategoryCount, onEdit, onDel
                 </div>
             </div>
 
-            <h3 className="font-serif text-base font-semibold text-text-primary">{category.name}</h3>
-            <p className="mt-0.5 text-xs text-text-secondary line-clamp-2">{category.description || 'No description'}</p>
+            <div className="flex-1 relative z-10">
+                <h4 className={`font-serif text-xl font-bold tracking-tight mb-1.5 group-hover:text-gold transition-colors ${isDark ? 'text-text-primary' : 'text-emerald-950'}`}>{category.name}</h4>
+                <p className={`text-sm line-clamp-2 leading-relaxed h-10 ${isDark ? 'text-text-muted' : 'text-emerald-900/60'}`}>{category.description || 'No description provided.'}</p>
+            </div>
 
-            <div className="mt-3 flex items-center gap-3">
-                {category.parent_id && parentName && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700">
-                        ↳ {parentName}
-                    </span>
-                )}
-                {!category.parent_id && subcategoryCount > 0 && (
-                    <span className="text-xs font-medium text-primary">
-                        {subcategoryCount} subcategor{subcategoryCount === 1 ? 'y' : 'ies'}
-                    </span>
-                )}
-                <span className={`ml-auto inline-block rounded-full px-2 py-0.5 text-[10px] font-medium ${category.is_active
-                        ? 'bg-green-50 text-green-700'
-                        : 'bg-red-50 text-red-600'
+            <div className="mt-6 pt-4 border-t border-border flex items-center justify-between relative z-10">
+                <div className="flex items-center gap-2">
+                    {category.parent_id && parentName ? (
+                        <span className="inline-flex items-center gap-1.5 rounded-lg bg-amber-50/80 px-2.5 py-1 text-xs font-semibold text-amber-700 border border-amber-200/50">
+                            <FolderTree className="h-3 w-3" /> {parentName}
+                        </span>
+                    ) : (
+                        subcategoryCount > 0 && (
+                            <span className="inline-flex items-center gap-1.5 rounded-lg bg-primary/5 px-2.5 py-1 text-xs font-semibold text-primary border border-primary/10">
+                                {subcategoryCount} Subcategories
+                            </span>
+                        )
+                    )}
+                </div>
+                
+                <span className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold uppercase border ${
+                        category.is_active
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200/50'
+                            : 'bg-red-50 text-red-700 border-red-200/50'
                     }`}>
-                    {category.is_active ? 'Active' : 'Inactive'}
+                    <div className={`h-2 w-2 rounded-full ${category.is_active ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                    {category.is_active ? 'Active' : 'Archived'}
                 </span>
             </div>
         </div>

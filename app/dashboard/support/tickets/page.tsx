@@ -135,7 +135,7 @@ export default function AdminTicketsPage() {
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead className="border-b border-border">
-                                <tr className="text-left text-xs text-text-muted uppercase tracking-wider">
+                                <tr className="text-left text-xs text-text-muted uppercase">
                                     <th className="px-4 py-3">Ticket</th>
                                     <th className="px-4 py-3">Customer</th>
                                     <th className="px-4 py-3">Category</th>

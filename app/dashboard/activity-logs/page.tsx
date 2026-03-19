@@ -163,7 +163,7 @@ function ActivityLogsPageContent() {
         return (
             <div className={`flex flex-col items-center justify-center p-12 rounded-2xl border ${isDark ? 'bg-card-bg/50 border-danger/20' : 'bg-white border-danger/10 shadow-xl shadow-danger/5'}`}>
                 <ShieldAlert className="w-12 h-12 text-danger mb-4" />
-                <h2 className={`text-xl font-bold ${isDark ? 'text-text' : 'text-emerald-950'} mb-2`}>Access Denied</h2>
+                <h4 className={`text-xl font-bold ${isDark ? 'text-text' : 'text-emerald-950'} mb-2`}>Access Denied</h4>
                 <p className={`${isDark ? 'text-text-muted' : 'text-emerald-900/60'}`}>You must be an Owner or Admin to view activity logs.</p>
             </div>
         );
@@ -179,16 +179,16 @@ function ActivityLogsPageContent() {
                         <div className={`flex items-center justify-center w-12 h-12 rounded-2xl ${isDark ? 'bg-primary/20 border-border' : 'bg-gold/10 border-gold/20'} border shadow-lg`}>
                             <Activity className="w-6 h-6 text-gold" />
                         </div>
-                        <h1 className={`text-3xl font-bold ${isDark ? 'text-gold' : 'text-emerald-950'} tracking-tighter`}>Interaction Chronicles</h1>
+                        <h1 className={`text-3xl font-bold ${isDark ? 'text-gold' : 'text-emerald-950'}`}>Interaction Chronicles</h1>
                     </div>
-                    <p className={`text-[10px] font-bold uppercase tracking-[0.2em] ${isDark ? 'text-text-muted' : 'text-emerald-900/40'} ml-1`}>
+                    <p className={`text-[10px] font-bold uppercase ${isDark ? 'text-text-muted' : 'text-emerald-900/40'} ml-1`}>
                         An irreversible audit trail of administrative vibrations and system evolutions.
                     </p>
                 </div>
                 <button
                     onClick={() => fetchLogs(pagination.page.toString())}
                     disabled={loading}
-                    className="flex items-center gap-2 bg-primary border border-gold/20 text-gold text-[10px] font-bold uppercase tracking-widest px-6 py-2.5 rounded-xl hover:shadow-[0_0_20px_rgba(197,164,109,0.3)] transition-all disabled:opacity-50"
+                    className="flex items-center gap-2 bg-primary border border-gold/20 text-gold text-[10px] font-bold uppercase px-6 py-2.5 rounded-xl hover:shadow-[0_0_20px_rgba(197,164,109,0.3)] transition-all disabled:opacity-50"
                 >
                     <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                     Recalibrate Chronicles
@@ -198,7 +198,7 @@ function ActivityLogsPageContent() {
             {/* Filters */}
             <form onSubmit={handleFilterSubmit} className={`grid grid-cols-1 sm:grid-cols-4 gap-4 p-6 ${isDark ? 'bg-card-bg border-border-subtle' : 'bg-white/80 border-gold/15 shadow-sm'} rounded-2xl border`}>
                 <div className="relative">
-                    <label className={`text-[10px] font-black uppercase tracking-[0.2em] ${isDark ? 'text-gold' : 'text-emerald-900'} mb-2 block ml-1`}>Actor Email</label>
+                    <label className={`text-[10px] font-black uppercase ${isDark ? 'text-gold' : 'text-emerald-900'} mb-2 block ml-1`}>Actor Email</label>
                     <div className="relative">
                         <Search className={`absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 ${isDark ? 'text-gold/40' : 'text-emerald-900/40'}`} />
                         <input
@@ -212,7 +212,7 @@ function ActivityLogsPageContent() {
                 </div>
 
                 <div className="relative">
-                    <label className={`text-[10px] font-black uppercase tracking-[0.2em] ${isDark ? 'text-gold' : 'text-emerald-900'} mb-2 block ml-1`}>Entity Type</label>
+                    <label className={`text-[10px] font-black uppercase ${isDark ? 'text-gold' : 'text-emerald-900'} mb-2 block ml-1`}>Entity Type</label>
                     <div className="relative">
                         <Filter className={`absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 ${isDark ? 'text-gold/40' : 'text-emerald-900/40'}`} />
                         <input
@@ -226,7 +226,7 @@ function ActivityLogsPageContent() {
                 </div>
 
                 <div className="relative">
-                    <label className={`text-[10px] font-black uppercase tracking-[0.2em] ${isDark ? 'text-gold' : 'text-emerald-900'} mb-2 block ml-1`}>Action</label>
+                    <label className={`text-[10px] font-black uppercase ${isDark ? 'text-gold' : 'text-emerald-900'} mb-2 block ml-1`}>Action</label>
                     <div className="relative">
                         <Filter className={`absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 ${isDark ? 'text-gold/40' : 'text-emerald-900/40'}`} />
                         <input
@@ -239,7 +239,7 @@ function ActivityLogsPageContent() {
                     </div>
                 </div>
                 <div className="flex items-end gap-2">
-                    <button type="submit" className="flex-1 bg-gold/10 text-gold border border-gold/30 hover:bg-gold hover:text-black py-2.5 rounded-xl font-bold uppercase tracking-widest transition-all flex justify-center items-center gap-2 text-[10px] shadow-sm active:scale-95">
+                    <button type="submit" className="flex-1 bg-gold/10 text-gold border border-gold/30 hover:bg-gold hover:text-black py-2.5 rounded-xl font-bold uppercase transition-all flex justify-center items-center gap-2 text-[10px] shadow-sm active:scale-95">
                         <Search className="w-4 h-4" /> Filter
                     </button>
                     <button 
@@ -258,29 +258,29 @@ function ActivityLogsPageContent() {
                     <table className="w-full whitespace-nowrap">
                         <thead>
                             <tr className={`border-b ${isDark ? 'border-border/50 bg-sidebar-bg' : 'border-gold/10 bg-emerald-50/40'}`}>
-                                <th className={`px-5 py-4 text-left text-[10px] font-black ${isDark ? 'text-text-muted' : 'text-emerald-900/60'} uppercase tracking-[0.2em]`}>Time</th>
-                                <th className={`px-5 py-4 text-left text-[10px] font-black ${isDark ? 'text-text-muted' : 'text-emerald-900/60'} uppercase tracking-[0.2em]`}>Actor</th>
-                                <th className={`px-5 py-4 text-left text-[10px] font-black ${isDark ? 'text-text-muted' : 'text-emerald-900/60'} uppercase tracking-[0.2em]`}>Action</th>
-                                <th className={`px-5 py-4 text-left text-[10px] font-black ${isDark ? 'text-text-muted' : 'text-emerald-900/60'} uppercase tracking-[0.2em]`}>Entity Type</th>
-                                <th className={`px-5 py-4 text-left text-[10px] font-black ${isDark ? 'text-text-muted' : 'text-emerald-900/60'} uppercase tracking-[0.2em]`}>Entity ID</th>
-                                <th className={`px-5 py-4 text-left text-[10px] font-black ${isDark ? 'text-text-muted' : 'text-emerald-900/60'} uppercase tracking-[0.2em]`}>Metadata</th>
-                                <th className={`px-5 py-4 text-right text-[10px] font-black ${isDark ? 'text-text-muted' : 'text-emerald-900/60'} uppercase tracking-[0.2em]`}>Actions</th>
+                                <th className={`px-5 py-4 text-left text-[10px] font-black ${isDark ? 'text-text-muted' : 'text-emerald-900/60'} uppercase`}>Time</th>
+                                <th className={`px-5 py-4 text-left text-[10px] font-black ${isDark ? 'text-text-muted' : 'text-emerald-900/60'} uppercase`}>Actor</th>
+                                <th className={`px-5 py-4 text-left text-[10px] font-black ${isDark ? 'text-text-muted' : 'text-emerald-900/60'} uppercase`}>Action</th>
+                                <th className={`px-5 py-4 text-left text-[10px] font-black ${isDark ? 'text-text-muted' : 'text-emerald-900/60'} uppercase`}>Entity Type</th>
+                                <th className={`px-5 py-4 text-left text-[10px] font-black ${isDark ? 'text-text-muted' : 'text-emerald-900/60'} uppercase`}>Entity ID</th>
+                                <th className={`px-5 py-4 text-left text-[10px] font-black ${isDark ? 'text-text-muted' : 'text-emerald-900/60'} uppercase`}>Metadata</th>
+                                <th className={`px-5 py-4 text-right text-[10px] font-black ${isDark ? 'text-text-muted' : 'text-emerald-900/60'} uppercase`}>Actions</th>
                             </tr>
                         </thead>
                         <tbody className={`divide-y ${isDark ? 'divide-border/30' : 'divide-gold/5'} relative`}>
                             {loading ? (
                                 <tr>
-                                    <td colSpan={7} className="h-48 text-center text-text-muted italic text-xs tracking-widest animate-pulse">Synchronizing Chronicles...</td>
+                                    <td colSpan={7} className="h-48 text-center text-text-muted italic text-xs animate-pulse">Synchronizing Chronicles...</td>
                                 </tr>
                             ) : error ? (
                                 <tr>
                                     <td colSpan={7} className="h-48 text-center">
                                         <div className="flex flex-col items-center justify-center p-8 text-danger/60">
                                             <ShieldAlert className="w-12 h-12 mb-4" />
-                                            <p className={`text-[10px] font-black uppercase tracking-widest`}>{error}</p>
+                                            <p className={`text-[10px] font-black uppercase`}>{error}</p>
                                             <button 
                                                 onClick={() => fetchLogs('1')}
-                                                className="mt-4 text-[10px] font-bold uppercase tracking-widest text-gold hover:underline"
+                                                className="mt-4 text-[10px] font-bold uppercase text-gold hover:underline"
                                             >
                                                 Try Again
                                             </button>
@@ -292,7 +292,7 @@ function ActivityLogsPageContent() {
                                     <td colSpan={7} className="h-48 text-center">
                                         <div className="flex flex-col items-center justify-center p-8 opacity-40">
                                             <FileText className="w-12 h-12 text-gold mb-4" />
-                                            <p className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-text-muted' : 'text-emerald-900'}`}>No traces found in this timeline</p>
+                                            <p className={`text-[10px] font-black uppercase ${isDark ? 'text-text-muted' : 'text-emerald-900'}`}>No traces found in this timeline</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -311,11 +311,11 @@ function ActivityLogsPageContent() {
                                             <div className="text-[10px] text-text-muted opacity-60 font-mono">IP: {log.ip_address || 'N/A'}</div>
                                         </td>
                                         <td className="px-5 py-4">
-                                            <span className={`px-3 py-1 text-[9px] font-black tracking-[0.1em] uppercase rounded-full ${isDark ? 'bg-gold/10 text-gold border-gold/20' : 'bg-emerald-900/5 text-emerald-900 border-emerald-900/10'} border shadow-sm`}>
+                                            <span className={`px-3 py-1 text-[9px] font-black uppercase rounded-full ${isDark ? 'bg-gold/10 text-gold border-gold/20' : 'bg-emerald-900/5 text-emerald-900 border-emerald-900/10'} border shadow-sm`}>
                                                 {log.action}
                                             </span>
                                         </td>
-                                        <td className={`px-5 py-4 text-xs font-bold uppercase tracking-widest ${isDark ? 'text-text' : 'text-emerald-950/80'}`}>
+                                        <td className={`px-5 py-4 text-xs font-bold uppercase ${isDark ? 'text-text' : 'text-emerald-950/80'}`}>
                                             {log.entity_type || '-'}
                                         </td>
                                         <td className="px-5 py-4 text-[11px] font-mono text-text-muted/60">
@@ -342,7 +342,7 @@ function ActivityLogsPageContent() {
 
                 {logs.length > 0 && (
                     <div className={`px-5 py-5 border-t ${isDark ? 'border-border-subtle bg-sidebar-bg' : 'border-gold/10 bg-emerald-50/30'} flex items-center justify-between`}>
-                        <p className={`text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-text-muted' : 'text-emerald-900/50'}`}>
+                        <p className={`text-[10px] font-bold uppercase ${isDark ? 'text-text-muted' : 'text-emerald-900/50'}`}>
                             Showing <span className={`text-gold font-black`}>{(pagination.page - 1) * pagination.limit + 1}</span> to{' '}
                             <span className={`text-gold font-black`}>
                                 {Math.min(pagination.page * pagination.limit, pagination.total)}
@@ -379,8 +379,8 @@ function ActivityLogsPageContent() {
                                     <Activity className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <h2 className={`text-2xl font-bold tracking-tight ${isDark ? 'text-gold' : 'text-emerald-950'}`}>Chronicle Entry</h2>
-                                    <p className={`text-[10px] uppercase font-black tracking-[0.3em] ${isDark ? 'text-gold/50' : 'text-emerald-900/40'}`}>Detail Analysis</p>
+                                    <h4 className={`text-2xl font-bold tracking-tight ${isDark ? 'text-gold' : 'text-emerald-950'}`}>Chronicle Entry</h4>
+                                    <p className={`text-[10px] uppercase font-black ${isDark ? 'text-gold/50' : 'text-emerald-900/40'}`}>Detail Analysis</p>
                                 </div>
                             </div>
                             <button onClick={() => {
@@ -394,23 +394,22 @@ function ActivityLogsPageContent() {
                         <div className="p-10 max-h-[70vh] overflow-y-auto space-y-10 scrollbar-thin scrollbar-thumb-gold/20">
                             <div className="grid grid-cols-2 gap-10">
                                 <div className="space-y-1">
-                                    <label className={`text-[10px] uppercase font-black tracking-[0.3em] ${isDark ? 'text-gold/60' : 'text-emerald-900/60'} mb-2 block`}>Origin Actor</label>
+                                    <label className={`text-[10px] uppercase font-black ${isDark ? 'text-gold/60' : 'text-emerald-900/60'} mb-2 block`}>Origin Actor</label>
                                     <div className={`text-lg font-bold ${isDark ? 'text-text' : 'text-emerald-950'}`}>{activeLog.actor_email || 'System Operation'}</div>
-                                    <div className={`text-[11px] ${isDark ? 'text-text-muted/60' : 'text-emerald-900/40'} mt-1 font-mono uppercase tracking-widest break-all`}>ID: {activeLog.actor_id}</div>
-                                    <div className={`text-[11px] ${isDark ? 'text-text-muted/60' : 'text-emerald-900/40'} font-mono uppercase tracking-widest mt-1 italic`}>Vibration Source: {activeLog.ip_address || 'LOCALHOST'}</div>
+                                    <div className={`text-[11px] ${isDark ? 'text-text-muted/60' : 'text-emerald-900/40'} mt-1 font-mono uppercase mt-1 italic`}>Vibration Source: {activeLog.ip_address || 'LOCALHOST'}</div>
                                 </div>
                                 <div className="space-y-1">
-                                    <label className={`text-[10px] uppercase font-black tracking-[0.3em] ${isDark ? 'text-gold/60' : 'text-emerald-900/60'} mb-2 block`}>Recorded At</label>
+                                    <label className={`text-[10px] uppercase font-black ${isDark ? 'text-gold/60' : 'text-emerald-900/60'} mb-2 block`}>Recorded At</label>
                                     <div className={`text-lg font-bold ${isDark ? 'text-text' : 'text-emerald-950'}`}>{new Date(activeLog.created_at).toLocaleString()}</div>
-                                    <div className={`text-[11px] ${isDark ? 'text-text-muted/60' : 'text-emerald-900/50'} mt-2 p-2 ${isDark ? 'bg-gold/5 border-gold/10' : 'bg-emerald-50/50 border-gold/5'} rounded-lg border text-center uppercase tracking-widest font-bold`}>
+                                    <div className={`text-[11px] ${isDark ? 'text-text-muted/60' : 'text-emerald-900/50'} mt-2 p-2 ${isDark ? 'bg-gold/5 border-gold/10' : 'bg-emerald-50/50 border-gold/5'} rounded-lg border text-center uppercase font-bold`}>
                                         Vedic Timestamp: {activeLog.created_at.split('T')[0]}
                                     </div>
                                 </div>
                             </div>
 
                             <div className="space-y-4">
-                                <label className={`text-[10px] uppercase font-black tracking-[0.3em] ${isDark ? 'text-gold/60' : 'text-emerald-900/60'} block underline decoration-gold/20 underline-offset-8`}>Manifested Action</label>
-                                <span className={`inline-block px-8 py-3 text-xs font-black tracking-[0.2em] uppercase rounded-full border shadow-xl ${isDark ? 'bg-gold/10 text-gold border-gold/30' : 'bg-emerald-900/5 text-emerald-900 border-emerald-900/20'}`}>
+                                <label className={`text-[10px] uppercase font-black ${isDark ? 'text-gold/60' : 'text-emerald-900/60'} block underline decoration-gold/20 underline-offset-8`}>Manifested Action</label>
+                                <span className={`inline-block px-8 py-3 text-xs font-black uppercase rounded-full border shadow-xl ${isDark ? 'bg-gold/10 text-gold border-gold/30' : 'bg-emerald-900/5 text-emerald-900 border-emerald-900/20'}`}>
                                     {activeLog.action}
                                 </span>
                             </div>
@@ -418,10 +417,10 @@ function ActivityLogsPageContent() {
                             <div className={`p-8 border rounded-[2rem] space-y-4 shadow-inner ${isDark ? 'bg-white/[0.02] border-gold/15' : 'bg-emerald-50/30 border-gold/10'}`}>
                                 <div className="flex justify-between items-start">
                                     <div>
-                                        <label className={`text-[10px] uppercase font-black tracking-[0.3em] ${isDark ? 'text-gold/60' : 'text-emerald-900/60'} mb-3 block`}>Entity Association</label>
+                                        <label className={`text-[10px] uppercase font-black ${isDark ? 'text-gold/60' : 'text-emerald-900/60'} mb-3 block`}>Entity Association</label>
                                         <div className="flex flex-col gap-2">
                                             <span className={`text-3xl italic ${isDark ? 'text-gold' : 'text-emerald-900'}`}>{activeLog.entity_type || 'General System'}</span>
-                                            <span className={`font-mono text-xs tracking-[0.1em] break-all p-2 rounded-lg ${isDark ? 'text-text-muted/70 bg-black/5' : 'text-emerald-900/60 bg-white shadow-sm'}`}>
+                                            <span className={`font-mono text-xs break-all p-2 rounded-lg ${isDark ? 'text-text-muted/70 bg-black/5' : 'text-emerald-900/60 bg-white shadow-sm'}`}>
                                                 {activeLog.entity_id || 'NO_ENTITY_ID'}
                                             </span>
                                         </div>
@@ -467,14 +466,14 @@ function ActivityLogsPageContent() {
 
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between">
-                                    <label className={`text-[10px] uppercase font-black tracking-[0.3em] ${isDark ? 'text-gold/60' : 'text-emerald-900/60'} block`}>Evolutionary Metadata (JSON)</label>
+                                    <label className={`text-[10px] uppercase font-black ${isDark ? 'text-gold/60' : 'text-emerald-900/60'} block`}>Evolutionary Metadata (JSON)</label>
                                     {activeLog.metadata && (
                                         <button
                                             onClick={() => {
                                                 navigator.clipboard.writeText(formatMetadata(activeLog.metadata));
                                                 toast.success('Scroll copied');
                                             }}
-                                            className="text-[10px] font-black uppercase tracking-widest text-gold hover:text-gold-soft transition-colors flex items-center gap-2"
+                                            className="text-[10px] font-black uppercase text-gold hover:text-gold-soft transition-colors flex items-center gap-2"
                                         >
                                             <Copy className="w-3.5 h-3.5" /> Copy Scroll
                                         </button>
@@ -494,7 +493,7 @@ function ActivityLogsPageContent() {
                                     setActiveLog(null);
                                     router.push('/dashboard/activity-logs');
                                 }}
-                                className={`px-12 py-4 rounded-2xl font-black uppercase text-[11px] tracking-[0.3em] transition-all duration-300 shadow-xl ${isDark ? 'bg-gold text-primary hover:bg-gold-soft' : 'bg-emerald-950 text-gold hover:bg-emerald-900'} hover:scale-105 active:scale-95`}
+                                className={`px-12 py-4 rounded-2xl font-black uppercase text-[11px] transition-all duration-300 shadow-xl ${isDark ? 'bg-gold text-primary hover:bg-gold-soft' : 'bg-emerald-950 text-gold hover:bg-emerald-900'} hover:scale-105 active:scale-95`}
                             >
                                 Dismiss Chronicles
                             </button>
@@ -512,7 +511,7 @@ export default function ActivityLogsPage() {
         <Suspense fallback={
             <div className="flex flex-col items-center justify-center p-20 animate-pulse">
                 <RefreshCw className="w-8 h-8 text-gold animate-spin mb-4" />
-                <p className="text-[10px] font-black uppercase tracking-widest text-gold/40">Synchronizing Chronicles...</p>
+                <p className="text-[10px] font-black uppercase text-gold/40">Synchronizing Chronicles...</p>
             </div>
         }>
             <ActivityLogsPageContent />

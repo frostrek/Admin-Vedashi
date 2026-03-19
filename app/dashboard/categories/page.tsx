@@ -169,19 +169,18 @@ export default function CategoriesPage() {
     return (
         <div>
             {/* Header */}
-            <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
                 <div>
-                    <h1 className="font-serif text-2xl font-bold text-gold-soft">Categories</h1>
-                    <p className="text-sm text-text-secondary">
-                        {parentCategories.length} Categories & {categories.length - parentCategories.length} Subcategories
+                    <h1 className="font-serif text-4xl md:text-5xl font-bold text-gold mb-2 tracking-tight">Categories</h1>
+                    <p className="text-base text-text-muted font-medium">
+                        Organizing {parentCategories.length} core collections and {categories.length - parentCategories.length} specific rituals.
                     </p>
                 </div>
                 <button
                     onClick={handleCreate}
-                    className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark transition-colors"
-
+                    className="flex items-center gap-2 rounded-2xl bg-primary px-8 py-3 text-sm font-bold text-white hover:bg-primary-dark transition-all shadow-lg hover:shadow-primary/20 transform active:scale-95"
                 >
-                    <Plus className="h-4 w-4" /> Add Category / Subcategory
+                    <Plus className="h-5 w-5" /> Add Category / Subcategory
                 </button>
             </div>
 
@@ -189,18 +188,18 @@ export default function CategoriesPage() {
             {!loading && categories.length > 0 && (
                 <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-6">
                     {/* Filter Tabs */}
-                    <div className="flex gap-1 p-1 bg-page-bg rounded-lg w-fit">
+                    <div className="flex gap-2 p-1.5 bg-sidebar-bg/50 backdrop-blur-md rounded-2xl border border-border w-fit shadow-sm">
                         {filterTabs.map((tab) => (
                             <button
                                 key={tab.key}
                                 onClick={() => setFilter(tab.key)}
-                                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${filter === tab.key
-                                    ? 'bg-white text-text-primary shadow-sm'
-                                    : 'text-text-secondary hover:text-text-primary'
+                                className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${filter === tab.key
+                                    ? 'bg-primary text-white shadow-md'
+                                    : 'text-text-secondary hover:bg-primary/5 hover:text-primary'
                                     }`}
                             >
                                 {tab.key === 'parents' ? 'Categories' : tab.label}
-                                <span className="ml-1.5 text-text-muted">({tab.count})</span>
+                                <span className={`ml-2 text-[10px] font-black ${filter === tab.key ? 'text-white/60' : 'text-text-muted'}`}>({tab.count})</span>
                             </button>
                         ))}
                     </div>
@@ -213,8 +212,8 @@ export default function CategoriesPage() {
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder="Search categories..."
-                                className="w-full rounded-lg border border-border bg-card-bg pl-10 pr-4 py-2 text-sm focus:border-gold/40 focus:outline-none transition-colors"
+                                placeholder="Search collections..."
+                                className="w-full rounded-2xl border border-border bg-card-bg/60 backdrop-blur-sm pl-11 pr-4 py-3 text-sm font-medium focus:border-gold focus:ring-4 focus:ring-gold/5 focus:outline-none transition-all"
                             />
                         </div>
 
@@ -262,7 +261,7 @@ export default function CategoriesPage() {
                     <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 mb-4">
                         <FolderTree className="h-8 w-8 text-primary" />
                     </div>
-                    <h3 className="font-serif text-lg font-semibold text-text-primary mb-1">No categories yet</h3>
+                    <h4 className="font-serif text-lg font-semibold text-text-primary mb-1">No categories yet</h4>
                     <p className="text-sm text-text-secondary mb-4">
                         Create your first category to organize products.
                     </p>
@@ -284,9 +283,10 @@ export default function CategoriesPage() {
                             {/* Parents Section */}
                             {displayParents.length > 0 && (
                                 <div>
-                                    <h2 className="font-serif text-sm font-semibold text-text-secondary mb-4 flex items-center gap-2">
-                                        <Tag className="h-4 w-4" /> Categories ({displayParents.length})
-                                    </h2>
+                                    <h4 className="font-serif text-2xl font-bold text-text-primary mb-6 flex items-center gap-3">
+                                        <div className="h-2 w-2 rounded-full bg-gold shadow-[0_0_8px_#D4A847]" />
+                                        Primary Collections <span className="text-sm font-medium text-text-muted">({displayParents.length})</span>
+                                    </h4>
                                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                                         {displayParents.map((cat) => (
                                             <CategoryCard
@@ -305,9 +305,10 @@ export default function CategoriesPage() {
                             {/* Subcategories Section */}
                             {displaySubcategories.length > 0 && (
                                 <div>
-                                    <h2 className="font-serif text-sm font-semibold text-text-secondary mb-4 flex items-center gap-2 pt-4">
-                                        <FolderTree className="h-4 w-4" /> Subcategories ({displaySubcategories.length})
-                                    </h2>
+                                    <h4 className="font-serif text-2xl font-bold text-text-primary mb-6 flex items-center gap-3 pt-8">
+                                        <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_#3B5D3B]" />
+                                        Deep Rituals <span className="text-sm font-medium text-text-muted">({displaySubcategories.length})</span>
+                                    </h4>
                                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                                         {displaySubcategories.map((cat) => (
                                             <CategoryCard

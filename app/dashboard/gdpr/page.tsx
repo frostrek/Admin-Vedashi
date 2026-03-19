@@ -160,7 +160,7 @@ export default function GDPRDashboard() {
                 {activeTab === 'requests' && (
                     <div className="space-y-4 animate-fadeIn">
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="font-serif text-lg font-bold text-text-primary">Incoming DSRs</h2>
+                            <h4 className="font-serif text-lg font-bold text-text-primary">Incoming DSRs</h4>
                             <div className="flex gap-2">
                                 <div className="relative">
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
@@ -205,10 +205,10 @@ export default function GDPRDashboard() {
                                             </td>
                                             <td className="px-4 py-3">
                                                 <p className="font-bold text-text-primary">{req.customer_name || req.customer}</p>
-                                                <p className="text-[10px] text-text-muted font-bold tracking-tight">{req.customer_email}</p>
+                                                <p className="text-[10px] text-text-muted font-bold">{req.customer_email}</p>
                                             </td>
                                             <td className="px-4 py-3">
-                                                <span className="rounded bg-page-bg px-2 py-1 text-[10px] font-black tracking-widest border border-border-subtle text-text-muted">
+                                                <span className="rounded bg-page-bg px-2 py-1 text-[10px] font-black border border-border-subtle text-text-muted">
                                                     {req.request_type || req.type}
                                                 </span>
                                             </td>
@@ -216,14 +216,14 @@ export default function GDPRDashboard() {
                                                 {new Date(req.created_at || req.date).toLocaleDateString()}
                                             </td>
                                             <td className="px-4 py-3">
-                                                <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest ${req.status === 'COMPLETED' ? 'bg-success/20 text-success' : 'bg-warning/20 text-warning'
+                                                <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-black uppercase ${req.status === 'COMPLETED' ? 'bg-success/20 text-success' : 'bg-warning/20 text-warning'
                                                     }`}>
                                                     <span className={`h-1 w-1 rounded-full ${req.status === 'COMPLETED' ? 'bg-success' : 'bg-warning'}`}></span>
                                                     {req.status}
                                                 </span>
                                             </td>
                                             <td className="px-4 py-3 text-right">
-                                                <button className="text-gold hover:text-text-primary text-[10px] font-black uppercase tracking-widest bg-gold/10 px-3 py-1.5 rounded-lg transition">Review</button>
+                                                <button className="text-gold hover:text-text-primary text-[10px] font-black uppercase bg-gold/10 px-3 py-1.5 rounded-lg transition">Review</button>
                                             </td>
                                         </tr>
                                     ))}
@@ -237,7 +237,7 @@ export default function GDPRDashboard() {
                 {activeTab === 'processors' && (
                     <div className="space-y-4 animate-fadeIn">
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="font-serif text-lg font-bold text-text-primary">Third-Party Processors</h2>
+                            <h4 className="font-serif text-lg font-bold text-text-primary">Third-Party Processors</h4>
                             <button 
                                 onClick={() => setIsAddingProcessor(true)}
                                 className="flex items-center gap-2 rounded-xl bg-gold px-4 py-2 font-semibold text-white transition hover:bg-gold-soft shadow-lg shadow-gold/20 text-sm"
@@ -259,7 +259,7 @@ export default function GDPRDashboard() {
                             ) : processors.map(proc => (
                                 <div key={proc.processor_id || proc.id} className="group relative border border-border-subtle rounded-xl p-5 bg-page-bg/50 hover:bg-page-bg transition">
                                     <div className="flex justify-between items-start mb-3">
-                                        <h3 className="font-serif text-text-primary font-bold">{proc.name}</h3>
+                                        <h4 className="font-serif text-text-primary font-bold">{proc.name}</h4>
                                         <div className="flex items-center gap-2">
                                             <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${(proc.dpa_signed || proc.dpa) ? 'bg-success/20 text-success' : 'bg-danger/20 text-danger'}`}>
                                                 DPA {(proc.dpa_signed || proc.dpa) ? 'Signed' : 'Missing'}
@@ -272,8 +272,8 @@ export default function GDPRDashboard() {
                                             </button>
                                         </div>
                                     </div>
-                                    <p className="text-13 text-text-secondary mb-1"><span className="text-text-muted font-bold uppercase text-[9px] tracking-wider">Purpose:</span> {proc.purpose}</p>
-                                    <p className="text-13 text-text-secondary"><span className="text-text-muted font-bold uppercase text-[9px] tracking-wider">Location:</span> {proc.location}</p>
+                                    <p className="text-13 text-text-secondary mb-1"><span className="text-text-muted font-bold uppercase text-[9px]">Purpose:</span> {proc.purpose}</p>
+                                    <p className="text-13 text-text-secondary"><span className="text-text-muted font-bold uppercase text-[9px]">Location:</span> {proc.location}</p>
                                 </div>
                             ))}
                         </div>
@@ -295,7 +295,7 @@ export default function GDPRDashboard() {
                                         <div className="h-16 w-16 rounded-full bg-success/10 flex items-center justify-center mb-4 border border-success/20">
                                             <Shield className="h-8 w-8 text-success" />
                                         </div>
-                                        <h3 className="font-serif text-lg font-bold text-text-primary mb-2">No Security Incidents</h3>
+                                        <h4 className="font-serif text-lg font-bold text-text-primary mb-2">No Security Incidents</h4>
                                         <p className="text-text-muted text-sm max-w-sm">
                                             There are currently no recorded data breaches. In the event of a breach, you must log it here within 72 hours of discovery.
                                         </p>
@@ -342,9 +342,9 @@ export default function GDPRDashboard() {
                         ) : (
                             <div className="max-w-3xl mx-auto border border-border-subtle bg-page-bg/50 rounded-xl p-6">
                                 <div className="flex items-center justify-between mb-6 pb-4 border-b border-border-subtle">
-                                    <h2 className="font-serif text-xl font-bold text-text-primary flex items-center gap-2">
+                                    <h4 className="font-serif text-xl font-bold text-text-primary flex items-center gap-2">
                                         <AlertTriangle className="h-5 w-5 text-danger" /> Log Data Breach
-                                    </h2>
+                                    </h4>
                                     <button onClick={() => setIsReportingBreach(false)} className="text-text-muted hover:text-text-primary bg-card-bg px-3 py-1.5 rounded-lg text-sm border border-border-subtle transition">Cancel</button>
                                 </div>
 
@@ -412,14 +412,14 @@ export default function GDPRDashboard() {
                     <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsAddingProcessor(false)} />
                     <div className="relative bg-card-bg border border-border-subtle w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-fadeInUp">
                         <div className="p-6 border-b border-border-subtle bg-page-bg/30">
-                            <h3 className="font-serif text-xl font-bold text-text-primary">Add Data Processor</h3>
+                            <h4 className="font-serif text-xl font-bold text-text-primary">Add Data Processor</h4>
                             <p className="text-xs text-text-muted mt-1">Register a third-party service that handles user data</p>
                         </div>
                         
                         <form onSubmit={handleAddProcessor}>
                             <div className="p-6 space-y-4">
                                 <div>
-                                    <label className="block text-xs font-bold uppercase tracking-widest text-text-secondary mb-2">Processor Name</label>
+                                    <label className="block text-xs font-bold uppercase text-text-secondary mb-2">Processor Name</label>
                                     <input 
                                         required
                                         type="text"
@@ -431,7 +431,7 @@ export default function GDPRDashboard() {
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold uppercase tracking-widest text-text-secondary mb-2">Primary Purpose</label>
+                                    <label className="block text-xs font-bold uppercase text-text-secondary mb-2">Primary Purpose</label>
                                     <input 
                                         required
                                         type="text"
@@ -443,7 +443,7 @@ export default function GDPRDashboard() {
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold uppercase tracking-widest text-text-secondary mb-2">Data Location</label>
+                                    <label className="block text-xs font-bold uppercase text-text-secondary mb-2">Data Location</label>
                                     <input 
                                         required
                                         type="text"
@@ -472,13 +472,13 @@ export default function GDPRDashboard() {
                                 <button 
                                     type="button"
                                     onClick={() => setIsAddingProcessor(false)}
-                                    className="flex-1 py-3 text-xs font-bold uppercase tracking-widest text-text-muted hover:text-text-primary transition-colors bg-card-bg rounded-xl border border-border-subtle"
+                                    className="flex-1 py-3 text-xs font-bold uppercase text-text-muted hover:text-text-primary transition-colors bg-card-bg rounded-xl border border-border-subtle"
                                 >
                                     Cancel
                                 </button>
                                 <button 
                                     type="submit"
-                                    className="flex-1 bg-gold hover:bg-gold-soft text-white py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all shadow-lg shadow-gold/20"
+                                    className="flex-1 bg-gold hover:bg-gold-soft text-white py-3 rounded-xl text-xs font-bold uppercase transition-all shadow-lg shadow-gold/20"
                                 >
                                     Add Processor
                                 </button>

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { getSearchAnalytics, SearchDashboardStats } from '@/lib/api';
 import {
     Search, AlertCircle, Calendar, ArrowRight, Loader2,
-    TrendingUp, Activity, Eye, Zap, RefreshCw
+    TrendingUp, Activity, Eye, Zap, RefreshCw, CircleSlash
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
@@ -107,7 +107,7 @@ export default function SearchAnalyticsPage() {
                         </div>
                         <TrendingUp className="w-4 h-4 text-text-muted/40 group-hover:text-gold/60 transition-colors" />
                     </div>
-                    <p className="text-[11px] font-semibold uppercase tracking-wider text-text-muted mb-1">Total Searches</p>
+                    <p className="text-[11px] font-semibold uppercase text-text-muted mb-1">Total Searches</p>
                     <p className="text-3xl font-bold text-text-primary tabular-nums">{stats.total_searches.toLocaleString()}</p>
                 </div>
 
@@ -119,7 +119,7 @@ export default function SearchAnalyticsPage() {
                         </div>
                         <Zap className="w-4 h-4 text-text-muted/40 group-hover:text-gold/60 transition-colors" />
                     </div>
-                    <p className="text-[11px] font-semibold uppercase tracking-wider text-text-muted mb-1">Daily Average</p>
+                    <p className="text-[11px] font-semibold uppercase text-text-muted mb-1">Daily Average</p>
                     <p className="text-3xl font-bold text-text-primary tabular-nums">{avgDaily.toLocaleString()}</p>
                 </div>
 
@@ -129,9 +129,9 @@ export default function SearchAnalyticsPage() {
                         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-500/20 to-red-500/20 flex items-center justify-center">
                             <AlertCircle className="w-5 h-5 text-rose-400" />
                         </div>
-                        <Eye className="w-4 h-4 text-text-muted/40 group-hover:text-gold/60 transition-colors" />
+                        <CircleSlash className="w-4 h-4 text-text-muted/40 group-hover:text-gold/60 transition-colors" />
                     </div>
-                    <p className="text-[11px] font-semibold uppercase tracking-wider text-text-muted mb-1">Zero Results</p>
+                    <p className="text-[11px] font-semibold uppercase text-text-muted mb-1">Zero Results</p>
                     <p className="text-3xl font-bold text-text-primary tabular-nums">{zeroPercent}<span className="text-lg text-text-muted ml-0.5">%</span></p>
                 </div>
 
@@ -142,7 +142,7 @@ export default function SearchAnalyticsPage() {
                             <Calendar className="w-5 h-5 text-amber-400" />
                         </div>
                     </div>
-                    <p className="text-[11px] font-semibold uppercase tracking-wider text-text-muted mb-1">Period</p>
+                    <p className="text-[11px] font-semibold uppercase text-text-muted mb-1">Period</p>
                     <p className="text-xl font-bold text-text-primary">Last {stats.period_days} Days</p>
                 </div>
             </div>
@@ -153,7 +153,7 @@ export default function SearchAnalyticsPage() {
                 <div className="rounded-xl border border-border bg-gradient-to-br from-card-bg to-card-bg-elevated overflow-hidden">
                     <div className="px-5 py-4 border-b border-border-subtle flex items-center gap-2">
                         <TrendingUp className="w-4 h-4 text-gold" />
-                        <h3 className="font-serif text-sm font-semibold text-text-primary">Top Searched Terms</h3>
+                        <h4 className="font-serif text-sm font-semibold text-text-primary">Top Searched Terms</h4>
                         {stats.top_searches.length > 0 && (
                             <span className="ml-auto text-[10px] text-text-muted bg-page-bg rounded-full px-2 py-0.5">
                                 {stats.top_searches.length} terms
@@ -202,7 +202,7 @@ export default function SearchAnalyticsPage() {
                 <div className="rounded-xl border border-border bg-gradient-to-br from-card-bg to-card-bg-elevated overflow-hidden">
                     <div className="px-5 py-4 border-b border-border-subtle flex items-center gap-2">
                         <AlertCircle className="w-4 h-4 text-rose-400" />
-                        <h3 className="font-serif text-sm font-semibold text-text-primary">Zero-Result Searches</h3>
+                        <h4 className="font-serif text-sm font-semibold text-text-primary">Zero-Result Searches</h4>
                         {stats.zero_results.length > 0 && (
                             <span className="ml-auto text-[10px] text-rose-400 bg-rose-500/10 rounded-full px-2 py-0.5">
                                 {stats.zero_results.length} terms
@@ -248,7 +248,7 @@ export default function SearchAnalyticsPage() {
                 <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-2">
                         <Activity className="w-4 h-4 text-gold" />
-                        <h3 className="font-serif text-sm font-semibold text-text-primary">Search Volume</h3>
+                        <h4 className="font-serif text-sm font-semibold text-text-primary">Search Volume</h4>
                         <span className="text-[10px] text-text-muted">(Last {stats.period_days} days)</span>
                     </div>
                     {stats.daily_volume.length > 0 && (

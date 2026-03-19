@@ -172,7 +172,7 @@ export default function AdminReviewsPage() {
         if (totalPages <= 1) return null;
         return (
             <div className="flex items-center justify-between border-t border-border pt-4 mt-6">
-                <p className={`text-[10px] font-black tracking-widest uppercase ${isDark ? 'text-text-muted' : 'text-emerald-900/60'}`}>
+                <p className={`text-[10px] font-black uppercase ${isDark ? 'text-text-muted' : 'text-emerald-900/60'}`}>
                     Page {currentPage} of {totalPages}
                 </p>
                 <div className="flex items-center gap-2">
@@ -196,149 +196,159 @@ export default function AdminReviewsPage() {
     };
 
     const renderReviewCard = (review: AdminReview, showProduct: boolean = true) => (
-        <div key={review.review_id} className={`${isDark ? 'bg-primary/20 border-primary/20' : 'bg-white border-primary/20 shadow-[0_2px_15px_rgba(0,0,0,0.03)]'} border rounded-2xl p-4 md:p-5 transition-all hover:shadow-[0_4px_20px_rgba(59,93,59,0.05)] group overflow-hidden relative flex flex-col md:flex-row gap-4`}>
-            {/* Green vertical accent */}
-            <div className="absolute top-0 left-0 w-1 h-full bg-primary/40" />
+        <div key={review.review_id} className="rounded-[2.5rem] border border-border bg-card-bg/80 backdrop-blur-sm p-6 md:p-8 transition-all hover:shadow-xl hover:border-gold/30 group relative overflow-hidden flex flex-col md:flex-row gap-6">
+            {/* Horizontal accent line */}
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-gold/40 via-gold/10 to-transparent" />
             
             <div className="flex-1 relative z-10">
-                <div className="flex flex-col md:flex-row justify-between items-start gap-2 mb-2">
-                    <div className="space-y-0.5">
-                        <div className="flex items-center gap-1 opacity-80">
+                <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-4">
+                    <div className="space-y-1">
+                        <div className="flex items-center gap-1.5 mb-1">
                             {Array.from({ length: 5 }).map((_, i) => (
-                                <Star key={`${review.review_id}-star-${i}`} size={8} className={i < review.rating ? 'text-gold fill-gold' : 'text-gold/20'} />
+                                <Star key={`${review.review_id}-star-${i}`} size={16} className={i < review.rating ? 'text-gold fill-gold' : 'text-gold/20'} />
                             ))}
                         </div>
-                        <h3 className={`text-base font-bold tracking-tight ${isDark ? 'text-text-primary' : 'text-emerald-950'}`}>
+                        <h4 className={`font-serif text-2xl font-bold tracking-tight leading-tight ${isDark ? 'text-text-primary' : 'text-emerald-950'}`}>
                             {review.title}
-                        </h3>
-                        <div className={`flex flex-wrap items-center gap-x-2 gap-y-1 text-[8px] font-black uppercase tracking-widest ${isDark ? 'text-text-muted' : 'text-emerald-900/80'}`}>
-                            <span className={isDark ? 'text-primary' : 'text-emerald-700'}>{review.reviewer_name}</span>
-                            <span className="opacity-20">•</span>
-                            <span>{new Date(review.created_at).toLocaleDateString()}</span>
+                        </h4>
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm font-semibold text-emerald-900/70">
+                            <span className="text-primary">{review.reviewer_name}</span>
+                            <span className="opacity-30">•</span>
+                            <span>{new Date(review.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                             {showProduct && (
                                 <>
-                                    <span className="opacity-20">•</span>
-                                    <span className={isDark ? 'text-gold' : 'text-primary'}>{review.product_name}</span>
+                                    <span className="opacity-30">•</span>
+                                    <span className="text-gold italic font-serif text-sm">{review.product_name}</span>
                                 </>
                             )}
                         </div>
                     </div>
-                    <div className={`px-2 py-0.5 rounded-md border ${isDark ? 'bg-white/5 border-white/10 text-gold-soft/60' : 'bg-primary/10 border-primary/20 text-primary-dark'} text-[7px] font-black uppercase tracking-widest h-fit`}>
+                    <div className="px-4 py-1.5 rounded-xl bg-primary/10 border border-primary/20 text-primary-dark text-xs font-bold uppercase shadow-sm">
                         {review.helpful_count} Helpful
                     </div>
                 </div>
 
-                <p className={`text-[11px] leading-relaxed mb-3 italic font-medium ${isDark ? 'text-text-secondary' : 'text-emerald-900'}`}>
-                    "{review.body}"
-                </p>
+                <div className="relative mb-6">
+                    <div className="absolute -left-4 top-0 text-gold/20 text-4xl font-serif">"</div>
+                    <p className="text-base leading-relaxed text-text-secondary font-medium italic pl-2">
+                        {review.body}
+                    </p>
+                    <div className="absolute -right-2 bottom-0 text-gold/20 text-4xl font-serif">"</div>
+                </div>
             </div>
 
-            {/* Reply Stratum */}
-            <div className={`w-full md:w-64 relative z-10 rounded-xl border ${isDark ? 'bg-black/20 border-white/5' : 'bg-primary/10 border-primary/20'} p-3 flex flex-col justify-center`}>
-                {review.admin_reply ? (
-                    <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                            <span className={`text-[8px] font-black uppercase tracking-[0.2em] ${isDark ? 'text-gold' : 'text-primary'}`}>Administrative Response</span>
-                            <div className={`h-px flex-1 ${isDark ? 'bg-gold/20' : 'bg-primary/20'}`} />
-                        </div>
-                        <p className={`text-xs font-medium ${isDark ? 'text-text-primary' : 'text-emerald-950'}`}>{review.admin_reply}</p>
-                    </div>
-                ) : (
-                    replyingTo === review.review_id ? (
-                        <div className="space-y-4">
-                            <textarea
-                                rows={3}
-                                className={`${inputCls} !py-3 !px-4 !rounded-xl !text-xs`}
-                                placeholder="Administrative resonance..."
-                                value={replyDrafts[review.review_id] || ''}
-                                onChange={(e) => handleReplyChange(review.review_id, e.target.value)}
-                            />
-                            <div className="flex justify-end gap-3">
-                                <button
-                                    onClick={() => setReplyingTo(null)}
-                                    className={`px-4 py-2 rounded-lg border ${isDark ? 'border-white/10 text-text-muted' : 'border-gold/10 text-emerald-900'} text-[9px] font-black uppercase tracking-widest hover:bg-gold/10 transition-all`}
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={() => handleSubmitReply(review.review_id)}
-                                    className="px-6 py-2 bg-gold text-primary rounded-lg text-[9px] font-black uppercase tracking-widest transition-all"
-                                >
-                                    Deliver
-                                </button>
+            {/* Response Section */}
+            <div className="w-full md:w-80 relative z-10 shrink-0">
+                <div className="h-full rounded-3xl border border-primary/10 bg-primary/5 p-5 flex flex-col justify-center min-h-[140px] transition-all hover:bg-primary/10">
+                    {review.admin_reply ? (
+                        <div className="space-y-3">
+                            <div className="flex items-center gap-3">
+                                <span className="text-xs font-bold uppercase text-primary">Official Resonance</span>
+                                <div className="h-px flex-1 bg-primary/20" />
                             </div>
+                            <p className={`text-sm font-medium leading-relaxed ${isDark ? 'text-text-primary' : 'text-emerald-950'}`}>{review.admin_reply}</p>
                         </div>
                     ) : (
-                        <button
-                            onClick={() => setReplyingTo(review.review_id)}
-                            className={`w-full py-2.5 border border-dashed rounded-xl text-[8px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${isDark ? 'border-gold/30 text-text-muted hover:text-gold hover:border-gold' : 'border-primary/30 text-primary hover:bg-primary/5 hover:border-primary'}`}
-                        >
-                            <MessageSquare size={10} />
-                            Add Reply
-                        </button>
-                    )
-                )}
+                        replyingTo === review.review_id ? (
+                            <div className="space-y-4">
+                                <textarea
+                                    rows={3}
+                                    className="w-full rounded-2xl border border-border bg-card-bg px-4 py-3 text-sm font-medium focus:border-gold focus:ring-4 focus:ring-gold/5 focus:outline-none transition-all resize-none min-h-[80px]"
+                                    placeholder="Type your resonance..."
+                                    value={replyDrafts[review.review_id] || ''}
+                                    onChange={(e) => handleReplyChange(review.review_id, e.target.value)}
+                                />
+                                <div className="flex justify-end gap-2">
+                                    <button
+                                        onClick={() => setReplyingTo(null)}
+                                        className="px-4 py-2 rounded-xl text-xs font-bold text-text-muted hover:text-text-primary transition-all"
+                                    >
+                                        Dismiss
+                                    </button>
+                                    <button
+                                        onClick={() => handleSubmitReply(review.review_id)}
+                                        className="px-6 py-2 bg-primary text-white rounded-xl text-xs font-bold shadow-lg shadow-primary/20 transition-all hover:bg-primary-dark active:scale-95"
+                                    >
+                                        Deliver
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <button
+                                onClick={() => setReplyingTo(review.review_id)}
+                                className="w-full py-4 border-2 border-dashed border-border rounded-2xl text-xs font-bold text-text-muted hover:text-primary hover:border-primary/50 hover:bg-primary/5 transition-all flex flex-col items-center justify-center gap-2 group/btn"
+                            >
+                                <div className="p-2 rounded-full bg-border/50 group-hover/btn:bg-primary/10 transition-colors">
+                                    <MessageSquare size={20} className="group-hover/btn:scale-110 transition-transform" />
+                                </div>
+                                Compose Reply
+                            </button>
+                        )
+                    )}
+                </div>
             </div>
         </div>
     );
 
     return (
         <div className={`p-6 max-w-5xl mx-auto space-y-5 animate-fadeIn min-h-screen ${isDark ? '' : 'bg-white/60 backdrop-blur-xl rounded-[2.5rem] mt-4'}`}>
-            {/* ── Page Header ── */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
                 <div>
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/20 border border-gold/20 shadow-md">
-                            <Star className="w-5 h-5 text-gold fill-gold/20" />
+                    <div className="flex items-center gap-4 mb-3">
+                        <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 shadow-lg shadow-primary/5">
+                            <Star className="w-6 h-6 text-primary" />
                         </div>
-                        <h1 className={`text-2xl font-bold tracking-tighter ${isDark ? 'text-text-primary' : 'text-emerald-950'}`}>Reviews Moderation</h1>
+                        <h1 className="font-serif text-4xl md:text-5xl font-bold text-emerald-950 tracking-tight">Reviews Moderation</h1>
                     </div>
-                    <p className={`text-[9px] font-bold uppercase tracking-[0.2em] ml-13 ${isDark ? 'text-text-muted' : 'text-emerald-900/60'}`}>
-                        Monitor customer feedback and manage product resonance.
+                    <p className="text-base text-emerald-900/70 font-medium ml-1">
+                        Curating customer experiences and managing product resonance.
                     </p>
                 </div>
             </div>
 
             {/* ── Tabs ── */}
-            <div className="flex gap-4 border-b border-gold/10 pb-0">
+            <div className="flex gap-2 p-1.5 bg-sidebar-bg/50 backdrop-blur-md rounded-2xl border border-border w-fit shadow-sm">
                 <button
                     onClick={() => setActiveTab('all')}
-                    className={`pb-3 px-1 text-[10px] font-black uppercase tracking-[0.2em] transition-all relative ${activeTab === 'all' ? 'text-gold' : isDark ? 'text-text-muted hover:text-gold/60' : 'text-emerald-900/60 hover:text-emerald-900'}`}
+                    className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'all' 
+                        ? 'bg-primary text-white shadow-md' 
+                        : 'text-text-secondary hover:bg-primary/5 hover:text-primary'}`}
                 >
                     All Reviews
-                    {activeTab === 'all' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gold rounded-full shadow-[0_0_8px_#C5A46D]" />}
                 </button>
                 <button
                     onClick={() => setActiveTab('by_product')}
-                    className={`pb-3 px-1 text-[10px] font-black uppercase tracking-[0.2em] transition-all relative ${activeTab === 'by_product' ? 'text-gold' : isDark ? 'text-text-muted hover:text-gold/60' : 'text-emerald-900/60 hover:text-emerald-900'}`}
+                    className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'by_product' 
+                         ? 'bg-primary text-white shadow-md' 
+                        : 'text-text-secondary hover:bg-primary/5 hover:text-primary'}`}
                 >
                     By Product
-                    {activeTab === 'by_product' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gold rounded-full shadow-[0_0_8px_#C5A46D]" />}
                 </button>
                 <button
                     onClick={() => setActiveTab('reports')}
-                    className={`pb-3 px-1 text-[10px] font-black uppercase tracking-[0.2em] transition-all relative ${activeTab === 'reports' ? 'text-gold' : isDark ? 'text-text-muted hover:text-gold/60' : 'text-emerald-900/60 hover:text-emerald-900'}`}
+                    className={`px-5 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'reports' 
+                         ? 'bg-danger text-white shadow-md' 
+                        : 'text-text-secondary hover:bg-danger/5 hover:text-danger'}`}
                 >
-                    Reported {reports.length > 0 && `(${reports.length})`}
-                    {activeTab === 'reports' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gold rounded-full shadow-[0_0_8px_#C5A46D]" />}
+                    Reported {reports.length > 0 && <span className="ml-1 opacity-60">({reports.length})</span>}
                 </button>
             </div>
 
             {/* ── Filters ── */}
             {(activeTab === 'all' || activeTab === 'by_product') && (
-                <div className="flex flex-col md:flex-row gap-3">
+                <div className="flex flex-col md:flex-row gap-4 mb-4">
                     <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-text-muted" />
                         <input
                             type="text"
                             placeholder="Search in reviews..."
                             value={searchQuery}
                             onChange={e => setSearchQuery(e.target.value)}
-                            className={`w-full rounded-xl border ${isDark ? 'border-white/10 bg-black/20 text-text-primary' : 'border-gold/20 bg-white text-emerald-950'} pl-9 pr-8 py-2.5 text-sm focus:border-gold/40 focus:outline-none transition-all`}
+                            className="w-full rounded-2xl border border-border bg-card-bg/60 backdrop-blur-sm pl-12 pr-10 py-3 text-sm font-medium focus:border-gold focus:ring-4 focus:ring-gold/5 focus:outline-none transition-all"
                         />
                         {searchQuery && (
-                            <button onClick={() => setSearchQuery('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted hover:text-gold">
-                                <X className="h-3.5 w-3.5" />
+                            <button onClick={() => setSearchQuery('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-gold">
+                                <X className="h-4 w-4" />
                             </button>
                         )}
                     </div>
@@ -346,7 +356,7 @@ export default function AdminReviewsPage() {
                         <select
                             value={ratingFilter}
                             onChange={(e) => setRatingFilter(e.target.value)}
-                            className={`rounded-xl border ${isDark ? 'border-white/10 bg-black/20 text-text-primary' : 'border-gold/20 bg-white text-emerald-950'} px-3 py-2.5 text-sm focus:border-gold/40 focus:outline-none transition-all`}
+                            className="appearance-none rounded-2xl border border-border bg-card-bg/60 backdrop-blur-sm px-6 py-3 text-sm font-bold text-text-primary focus:border-gold focus:outline-none cursor-pointer min-w-[150px] transition-all"
                         >
                             <option value="all">All Ratings</option>
                             <option value="5">5 Stars</option>
@@ -358,7 +368,7 @@ export default function AdminReviewsPage() {
                         <select
                             value={sortBy}
                             onChange={(e) => setSortBy(e.target.value)}
-                            className={`rounded-xl border ${isDark ? 'border-white/10 bg-black/20 text-text-primary' : 'border-gold/20 bg-white text-emerald-950'} px-3 py-2.5 text-sm focus:border-gold/40 focus:outline-none transition-all`}
+                            className="appearance-none rounded-2xl border border-border bg-card-bg/60 backdrop-blur-sm px-6 py-3 text-sm font-bold text-text-primary focus:border-gold focus:outline-none cursor-pointer min-w-[150px] transition-all"
                         >
                             <option value="newest">Newest First</option>
                             <option value="oldest">Oldest First</option>
@@ -376,12 +386,12 @@ export default function AdminReviewsPage() {
                         {loadingReviews ? (
                             <div className="py-20 flex flex-col items-center justify-center animate-pulse">
                                 <Search className="w-12 h-12 text-gold/30 mb-4" />
-                                <p className="text-[10px] font-black uppercase tracking-widest text-text-muted">Synchronizing Resonance...</p>
+                                <p className="text-xs font-bold uppercase text-emerald-900/60">Synchronizing Resonance...</p>
                             </div>
                         ) : filteredReviews.length === 0 ? (
-                            <div className={`py-20 flex flex-col items-center justify-center rounded-[2.5rem] border-2 border-dashed ${isDark ? 'border-white/5 bg-white/[0.02]' : 'border-gold/40 bg-primary/5'}`}>
-                                <MessageSquare className="w-12 h-12 text-gold/30 mb-4" />
-                                <p className="text-[10px] font-black uppercase tracking-widest text-text-muted">No reviews found matching criteria.</p>
+                            <div className={`py-20 flex flex-col items-center justify-center rounded-[2.5rem] border-2 border-dashed ${isDark ? 'border-primary/20 bg-primary/5' : 'border-primary/20 bg-primary/5'}`}>
+                                <MessageSquare className="w-12 h-12 text-primary/30 mb-4" />
+                                <p className="text-xs font-bold uppercase text-emerald-900/60">No reviews found matching criteria.</p>
                             </div>
                         ) : (
                             <>
@@ -396,13 +406,13 @@ export default function AdminReviewsPage() {
                     <div className="grid gap-6">
                         {loadingReviews ? (
                             <div className="py-20 flex flex-col items-center justify-center animate-pulse">
-                                <Search className="w-12 h-12 text-gold/30 mb-4" />
-                                <p className="text-[10px] font-black uppercase tracking-widest text-text-muted">Synchronizing Resonance...</p>
+                                <Search className="w-12 h-12 text-primary/30 mb-4" />
+                                <p className="text-xs font-bold uppercase text-emerald-900/60">Synchronizing Resonance...</p>
                             </div>
                         ) : Object.keys(groupedReviews).length === 0 ? (
-                            <div className={`py-20 flex flex-col items-center justify-center rounded-[2.5rem] border-2 border-dashed ${isDark ? 'border-white/5 bg-white/[0.02]' : 'border-gold/40 bg-primary/5'}`}>
-                                <MessageSquare className="w-12 h-12 text-gold/30 mb-4" />
-                                <p className="text-[10px] font-black uppercase tracking-widest text-text-muted">No reviews found matching criteria.</p>
+                            <div className="py-20 flex flex-col items-center justify-center rounded-[2.5rem] border-2 border-dashed border-primary/20 bg-primary/5">
+                                <MessageSquare className="w-12 h-12 text-primary/30 mb-4" />
+                                <p className="text-xs font-bold uppercase text-emerald-900/60">No reviews found matching criteria.</p>
                             </div>
                         ) : (
                             <>
@@ -419,16 +429,16 @@ export default function AdminReviewsPage() {
                                                     <div className={`p-1.5 rounded-full ${isDark ? 'bg-primary/30 text-gold-soft' : 'bg-gold/10 text-primary'}`}>
                                                         {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                                                     </div>
-                                                    <h3 className={`text-lg font-bold tracking-tight ${isDark ? 'text-gold-soft' : 'text-emerald-950'}`}>
+                                                    <h4 className={`text-lg font-bold tracking-tight ${isDark ? 'text-gold-soft' : 'text-emerald-950'}`}>
                                                         {productName}
-                                                    </h3>
+                                                    </h4>
                                                 </div>
-                                                <span className={`text-[9px] font-black uppercase tracking-widest z-10 ${isDark ? 'text-gold bg-gold/10' : 'text-primary bg-primary/10'} px-3 py-1.5 rounded-xl`}>
+                                                <span className="text-xs font-bold uppercase z-10 text-primary-dark bg-primary/10 px-4 py-2 rounded-xl border border-primary/20 shadow-sm">
                                                     {productReviews.length} Review{productReviews.length !== 1 ? 's' : ''}
                                                 </span>
                                             </div>
                                             {isExpanded && (
-                                                <div className={`p-4 md:p-5 grid gap-4 ${isDark ? 'bg-black/20' : 'bg-primary/5'} border-t-0 animate-fadeIn`}>
+                                                <div className="p-4 md:p-6 grid gap-6 bg-primary/5 border-t border-primary/10 animate-fadeIn">
                                                     {productReviews.map(review => renderReviewCard(review, false))}
                                                 </div>
                                             )}
@@ -445,52 +455,52 @@ export default function AdminReviewsPage() {
                     <div className="grid gap-6">
                         {loadingReports ? (
                             <div className="py-20 flex flex-col items-center justify-center animate-pulse">
-                                <AlertTriangle className="w-12 h-12 text-gold/20 mb-4" />
-                                <p className="text-[10px] font-black uppercase tracking-widest text-gold/40">Auditing Deviations...</p>
+                                <AlertTriangle className="w-12 h-12 text-primary/30 mb-4" />
+                                <p className="text-xs font-bold uppercase text-emerald-900/50">Auditing Deviations...</p>
                             </div>
                         ) : reports.length === 0 ? (
-                            <div className={`py-20 flex flex-col items-center justify-center rounded-[2rem] border-2 border-dashed ${isDark ? 'border-white/5 bg-white/[0.02]' : 'border-gold/20 bg-emerald-50/50'}`}>
+                            <div className="py-20 flex flex-col items-center justify-center rounded-[2.5rem] border-2 border-dashed border-primary/20 bg-primary/5">
                                 <CheckCircle className="w-12 h-12 text-emerald-500/30 mb-4" />
-                                <p className="text-[10px] font-black uppercase tracking-widest text-gold/40">All vibrations are in harmony. No pending reports.</p>
+                                <p className="text-xs font-bold uppercase text-emerald-900/50">All vibrations are in harmony. No pending reports.</p>
                             </div>
                         ) : (
                             reports.map((report: ReviewReport) => (
                                 <div key={report.report_id} className={`border ${isDark ? 'bg-primary/20 border-red-500/10 shadow-[0_0_15px_rgba(239,68,68,0.02)]' : 'bg-red-50/50 border-red-100'} rounded-xl p-4 md:p-5 relative overflow-hidden group border-l-4 border-l-red-500/30`}>
                                    
                                     <div className="flex flex-col md:flex-row justify-between items-start gap-2 mb-2 relative z-10">
-                                        <div className="space-y-0.5">
-                                            <div className="flex items-center gap-2 text-red-500/80">
-                                                <AlertTriangle size={12} />
-                                                <span className="text-[7px] font-black uppercase tracking-[0.2em]">Discord Reported</span>
+                                        <div className="space-y-1">
+                                            <div className="flex items-center gap-2 text-red-600/90 bg-red-50 w-fit px-2 py-1 rounded-md">
+                                                <AlertTriangle size={14} />
+                                                <span className="text-xs font-bold uppercase">Discord Reported</span>
                                             </div>
-                                            <p className="text-[9px] font-black uppercase tracking-widest text-text-muted">
+                                            <p className="text-xs font-bold uppercase text-emerald-900/70 pt-1">
                                                 By {report.reporter_name} • {new Date(report.created_at).toLocaleDateString()}
                                             </p>
                                         </div>
                                     </div>
 
-                                    <div className={`mb-3 p-3 rounded-lg ${isDark ? 'bg-red-500/5 text-red-400/80' : 'bg-red-50 text-red-700/80'} border border-red-500/10`}>
-                                        <p className="text-[7px] uppercase tracking-widest font-black mb-0.5 opacity-50">Reason</p>
-                                        <p className="text-[11px] font-bold leading-relaxed">{report.reason}</p>
+                                    <div className="mb-4 p-4 rounded-xl bg-red-50 text-red-900 border border-red-100">
+                                        <p className="text-xs uppercase font-bold mb-1.5 opacity-60">Reason</p>
+                                        <p className="text-sm font-medium leading-relaxed">{report.reason}</p>
                                     </div>
 
-                                    <div className={`border-l-2 border-gold/20 pl-3 py-0.5 mb-4`}>
-                                        <p className="text-[7px] uppercase tracking-widest font-black mb-1 text-text-muted">Original Vibration</p>
-                                        <p className="text-[11px] italic text-text-secondary font-medium leading-relaxed">
+                                    <div className="border-l-4 border-primary/20 pl-4 py-1 mb-6">
+                                        <p className="text-xs uppercase font-bold mb-1.5 text-emerald-900/60">Original Vibration</p>
+                                        <p className="text-sm italic text-emerald-950 font-medium leading-relaxed">
                                             "{report.review_body}"
                                         </p>
                                     </div>
 
-                                    <div className="flex justify-end gap-2 relative z-10">
+                                    <div className="flex justify-end gap-3 relative z-10">
                                         <button
                                             onClick={() => handleResolveReport(report.report_id, 'dismissed')}
-                                            className={`px-3 py-1.5 rounded-lg border ${isDark ? 'border-white/10 text-text-muted/60' : 'border-gold/10 text-emerald-900'} text-[8px] font-black uppercase tracking-widest hover:bg-white/[0.05] transition-all`}
+                                            className="px-4 py-2 rounded-xl border border-primary/20 text-emerald-900 text-xs font-bold uppercase hover:bg-primary/5 transition-all"
                                         >
                                             Dismiss
                                         </button>
                                         <button
                                             onClick={() => handleResolveReport(report.report_id, 'resolved')}
-                                            className="px-4 py-1.5 bg-red-600/10 border border-red-600/20 text-red-500 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all"
+                                            className="px-5 py-2 bg-red-100 border border-red-200 text-red-700 hover:bg-red-200 rounded-xl text-xs font-bold uppercase transition-all"
                                         >
                                             Execute
                                         </button>

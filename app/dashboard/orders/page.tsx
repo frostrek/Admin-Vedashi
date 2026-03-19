@@ -593,14 +593,14 @@ export default function OrdersPage() {
                                         }
                                     </button>
                                 </th>
-                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider">Order ID</th>
+                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase">Order ID</th>
                                 <SortableHeader label="Customer" sortKey="customer_name" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
-                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider">Items</th>
+                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase">Items</th>
                                 <SortableHeader label="Total" sortKey="total" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
-                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider">Payment</th>
+                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase">Payment</th>
                                 <SortableHeader label="Status" sortKey="status" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
                                 <SortableHeader label="Date" sortKey="created_at" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
-                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider text-right">Actions</th>
+                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border-subtle">
@@ -795,7 +795,7 @@ export default function OrdersPage() {
                         {/* Header */}
                         <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-page-bg flex-shrink-0">
                             <div>
-                                <h2 className="font-serif text-lg font-bold text-gold-soft">Order Details</h2>
+                                <h4 className="font-serif text-lg font-bold text-gold-soft">Order Details</h4>
                                 <p className="font-mono text-xs text-text-muted mt-0.5">{selectedOrder.id}</p>
                             </div>
                             <div className="flex items-center gap-2">
@@ -834,7 +834,7 @@ export default function OrdersPage() {
                             {/* Customer + Status row */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="rounded-xl border border-border bg-card-bg p-4 space-y-2">
-                                    <div className="flex items-center gap-2 text-gold-muted text-xs font-semibold uppercase tracking-wider mb-3">
+                                    <div className="flex items-center gap-2 text-gold-muted text-xs font-semibold uppercase mb-3">
                                         <User className="h-3.5 w-3.5" /> Customer
                                     </div>
                                     <p className="text-sm font-semibold text-text-primary">{selectedOrder.customer_name}</p>
@@ -843,7 +843,7 @@ export default function OrdersPage() {
                                 </div>
 
                                 <div className="rounded-xl border border-border bg-card-bg p-4 space-y-3">
-                                    <div className="flex items-center gap-2 text-gold-muted text-xs font-semibold uppercase tracking-wider mb-3">
+                                    <div className="flex items-center gap-2 text-gold-muted text-xs font-semibold uppercase mb-3">
                                         <CreditCard className="h-3.5 w-3.5" /> Payment &amp; Status
                                     </div>
                                     <div className="flex items-center justify-between">
@@ -912,7 +912,7 @@ export default function OrdersPage() {
                                 {/* Refund History */}
                                 {refunds.length > 0 && (
                                     <div className="mt-3 border-t border-border pt-3">
-                                        <p className="text-[10px] font-semibold text-gold-muted uppercase tracking-wider mb-2">Refund History</p>
+                                        <p className="text-[10px] font-semibold text-gold-muted uppercase mb-2">Refund History</p>
                                         <div className="space-y-2">
                                             {refunds.map(r => (
                                                 <div key={r.refund_id} className="flex items-center justify-between text-xs">
@@ -938,7 +938,7 @@ export default function OrdersPage() {
                             {/* Shipping Address */}
                             {selectedOrder.shipping_address && (
                                 <div className="rounded-xl border border-border bg-card-bg p-4">
-                                    <div className="flex items-center gap-2 text-gold-muted text-xs font-semibold uppercase tracking-wider mb-3">
+                                    <div className="flex items-center gap-2 text-gold-muted text-xs font-semibold uppercase mb-3">
                                         <MapPin className="h-3.5 w-3.5" /> Shipping Address
                                     </div>
                                     <p className="text-sm text-text-primary">
@@ -956,7 +956,7 @@ export default function OrdersPage() {
 
                             {/* Items */}
                             <div className="rounded-xl border border-border bg-card-bg p-4">
-                                <div className="flex items-center gap-2 text-gold-muted text-xs font-semibold uppercase tracking-wider mb-3">
+                                <div className="flex items-center gap-2 text-gold-muted text-xs font-semibold uppercase mb-3">
                                     <Package className="h-3.5 w-3.5" /> Items ({selectedOrder.items?.length ?? 0})
                                 </div>
                                 <div className="space-y-3">
@@ -1033,7 +1033,7 @@ export default function OrdersPage() {
             {showRefundModal && selectedOrder && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" onClick={() => setShowRefundModal(false)}>
                     <div className="w-full max-w-md rounded-2xl border border-border bg-card-bg-elevated p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
-                        <h3 className="font-serif text-lg font-bold text-gold-soft mb-1">Initiate Refund</h3>
+                        <h4 className="font-serif text-lg font-bold text-gold-soft mb-1">Initiate Refund</h4>
                         <p className="text-xs text-text-muted mb-4">Order: {selectedOrder.id.slice(0, 8)}… · {formatINR(selectedOrder.total)}</p>
 
                         <div className="space-y-3">

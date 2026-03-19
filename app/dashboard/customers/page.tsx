@@ -155,7 +155,7 @@ export default function CustomersPage() {
                     { label: 'Verified Access', value: customers.filter(c => c.is_email_verified).length, color: 'text-info' },
                 ].map(stat => (
                     <div key={stat.label} className="rounded-xl border border-border bg-gradient-to-br from-card-bg to-card-bg-elevated p-4">
-                        <p className="text-xs text-text-muted uppercase tracking-wider mb-1">{stat.label}</p>
+                        <p className="text-xs text-text-muted uppercase mb-1">{stat.label}</p>
                         <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
                     </div>
                 ))}
@@ -171,9 +171,9 @@ export default function CustomersPage() {
                                 <SortableHeader label="Total Orders" sortKey="total_orders" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
                                 <SortableHeader label="Total Spent" sortKey="total_spent" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
                                 <SortableHeader label="Last Active" sortKey="last_login_at" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
-                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider">Status</th>
+                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase">Status</th>
                                 <SortableHeader label="Joined" sortKey="created_at" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
-                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase tracking-wider text-right">Actions</th>
+                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border-subtle">

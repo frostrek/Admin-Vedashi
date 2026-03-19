@@ -221,7 +221,7 @@ export default function ProductAnalyticsDashboard() {
                         </div>
                         <span className="text-xs font-medium text-success bg-success/10 px-2 py-1 rounded-md">Live</span>
                     </div>
-                    <p className="text-sm text-text-muted font-medium uppercase tracking-wider mb-1">Total Views</p>
+                    <p className="text-sm text-text-muted font-medium uppercase mb-1">Total Views</p>
                     <p className="text-2xl font-bold text-text-primary">{formatNumber(overview?.total_views || 0)}</p>
                 </div>
 
@@ -232,7 +232,7 @@ export default function ProductAnalyticsDashboard() {
                             <TrendingUp className="h-5 w-5 text-success" />
                         </div>
                     </div>
-                    <p className="text-sm text-text-muted font-medium uppercase tracking-wider mb-1">Total Revenue</p>
+                    <p className="text-sm text-text-muted font-medium uppercase mb-1">Total Revenue</p>
                     <p className="text-2xl font-bold text-text-primary">{formatCurrency(overview?.total_revenue || 0)}</p>
                 </div>
 
@@ -243,7 +243,7 @@ export default function ProductAnalyticsDashboard() {
                             <ShoppingCart className="h-5 w-5 text-blue-500" />
                         </div>
                     </div>
-                    <p className="text-sm text-text-muted font-medium uppercase tracking-wider mb-1">Avg Conversion</p>
+                    <p className="text-sm text-text-muted font-medium uppercase mb-1">Avg Conversion</p>
                     <p className="text-2xl font-bold text-text-primary">{parseFloat(overview?.avg_conversion_rate || 0).toFixed(2)}%</p>
                 </div>
 
@@ -254,7 +254,7 @@ export default function ProductAnalyticsDashboard() {
                             <Star className="h-5 w-5 text-primary" />
                         </div>
                     </div>
-                    <p className="text-sm text-text-muted font-medium uppercase tracking-wider mb-1">Total Reviews</p>
+                    <p className="text-sm text-text-muted font-medium uppercase mb-1">Total Reviews</p>
                     <p className="text-2xl font-bold text-text-primary">{formatNumber(overview?.total_reviews || 0)}</p>
                 </div>
 
@@ -265,7 +265,7 @@ export default function ProductAnalyticsDashboard() {
                             <Activity className="h-5 w-5 text-purple-500" />
                         </div>
                     </div>
-                    <p className="text-sm text-text-muted font-medium uppercase tracking-wider mb-1">Total Wishlists</p>
+                    <p className="text-sm text-text-muted font-medium uppercase mb-1">Total Wishlists</p>
                     <p className="text-2xl font-bold text-text-primary">{formatNumber(overview?.total_wishlists || 0)}</p>
                 </div>
 
@@ -276,7 +276,7 @@ export default function ProductAnalyticsDashboard() {
                             <Activity className="h-5 w-5 text-amber-500" />
                         </div>
                     </div>
-                    <p className="text-sm text-text-muted font-medium uppercase tracking-wider mb-1">Avg Health Score</p>
+                    <p className="text-sm text-text-muted font-medium uppercase mb-1">Avg Health Score</p>
                     <div className="flex items-end gap-2">
                         <p className="text-2xl font-bold text-text-primary">{parseFloat(overview?.avg_health_score || 0).toFixed(1)}</p>
                         <p className="text-sm text-text-muted mb-1">/ 100</p>
@@ -288,7 +288,7 @@ export default function ProductAnalyticsDashboard() {
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                 {/* Revenue & Units Chart */}
                 <div className="bg-card-bg rounded-2xl border border-border-subtle p-5">
-                    <h2 className="font-serif text-sm font-semibold text-text-primary uppercase tracking-wider mb-6">Revenue & Sales Volume</h2>
+                    <h4 className="font-serif text-sm font-semibold text-text-primary uppercase mb-6">Revenue & Sales Volume</h4>
                     <div className="h-80 w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <ComposedChart data={revenueData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }} onClick={(data) => handleChartClick(data, 'revenue')} className="cursor-pointer">
@@ -320,7 +320,7 @@ export default function ProductAnalyticsDashboard() {
 
                 {/* Conversion Funnel */}
                 <div className="bg-card-bg rounded-2xl border border-border-subtle p-5">
-                    <h2 className="font-serif text-sm font-semibold text-text-primary uppercase tracking-wider mb-6">Conversion Funnel</h2>
+                    <h4 className="font-serif text-sm font-semibold text-text-primary uppercase mb-6">Conversion Funnel</h4>
                     <div className="h-80 w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={conversionData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }} onClick={(data) => handleChartClick(data, 'conversion')} className="cursor-pointer">
@@ -356,7 +356,7 @@ export default function ProductAnalyticsDashboard() {
                 {/* Top Selling */}
                 <div className="bg-card-bg rounded-2xl border border-border-subtle overflow-hidden flex flex-col">
                     <div className="px-5 py-4 border-b border-border-subtle flex justify-between items-center bg-page-bg/50">
-                        <h2 className="font-serif text-sm font-semibold text-text-primary uppercase tracking-wider">Top Selling Products</h2>
+                        <h4 className="font-serif text-sm font-semibold text-text-primary uppercase">Top Selling Products</h4>
                     </div>
                     <div className="p-0 overflow-x-auto flex-1">
                         <table className="w-full text-sm text-left">
@@ -407,9 +407,9 @@ export default function ProductAnalyticsDashboard() {
                 {/* Lowest Performing (Health Score) */}
                 <div className="bg-card-bg rounded-2xl border border-border-subtle overflow-hidden flex flex-col">
                     <div className="px-5 py-4 border-b border-border-subtle flex justify-between items-center bg-page-bg/50">
-                        <h2 className="font-serif text-sm font-semibold text-text-primary uppercase tracking-wider flex items-center gap-2">
+                        <h4 className="font-serif text-sm font-semibold text-text-primary uppercase flex items-center gap-2">
                             <AlertCircle className="h-4 w-4 text-danger" /> Needs Attention
-                        </h2>
+                        </h4>
                     </div>
                     <div className="p-0 overflow-x-auto flex-1">
                         <table className="w-full text-sm text-left">
@@ -466,7 +466,7 @@ export default function ProductAnalyticsDashboard() {
                                     <Calendar className="h-5 w-5 text-primary" />
                                 </div>
                                 <div>
-                                    <h3 className="font-serif text-lg font-bold text-text-primary">Daily Breakdown</h3>
+                                    <h4 className="font-serif text-lg font-bold text-text-primary">Daily Breakdown</h4>
                                     <p className="text-sm text-text-muted">{selectedMetrics.displayDate}</p>
                                 </div>
                             </div>
@@ -485,40 +485,40 @@ export default function ProductAnalyticsDashboard() {
                                 {selectedMetrics.type === 'revenue' ? (
                                     <>
                                         <div className="bg-page-bg rounded-xl p-4 border border-border-subtle">
-                                            <p className="text-xs text-text-muted font-medium uppercase tracking-wider mb-1">Revenue</p>
+                                            <p className="text-xs text-text-muted font-medium uppercase mb-1">Revenue</p>
                                             <p className="text-xl font-bold text-gold-soft">{formatCurrency(selectedMetrics.revenue || 0)}</p>
                                         </div>
                                         <div className="bg-page-bg rounded-xl p-4 border border-border-subtle">
-                                            <p className="text-xs text-text-muted font-medium uppercase tracking-wider mb-1">Units Sold</p>
+                                            <p className="text-xs text-text-muted font-medium uppercase mb-1">Units Sold</p>
                                             <p className="text-xl font-bold text-text-primary">{formatNumber(selectedMetrics.units_sold || 0)}</p>
                                         </div>
                                         <div className="bg-page-bg rounded-xl p-4 border border-border-subtle">
-                                            <p className="text-xs text-text-muted font-medium uppercase tracking-wider mb-1">Avg Order Val.</p>
+                                            <p className="text-xs text-text-muted font-medium uppercase mb-1">Avg Order Val.</p>
                                             <p className="text-xl font-bold text-text-primary">
                                                 {selectedMetrics.units_sold > 0 ? formatCurrency((selectedMetrics.revenue || 0) / selectedMetrics.units_sold) : '₹0'}
                                             </p>
                                         </div>
                                         <div className="bg-page-bg rounded-xl p-4 border border-border-subtle">
-                                            <p className="text-xs text-text-muted font-medium uppercase tracking-wider mb-1">Transactions</p>
+                                            <p className="text-xs text-text-muted font-medium uppercase mb-1">Transactions</p>
                                             <p className="text-xl font-bold text-text-primary">{formatNumber(selectedMetrics.total_orders || 0)}</p>
                                         </div>
                                     </>
                                 ) : (
                                     <>
                                         <div className="bg-page-bg rounded-xl p-4 border border-border-subtle">
-                                            <p className="text-xs text-text-muted font-medium uppercase tracking-wider mb-1">Views</p>
+                                            <p className="text-xs text-text-muted font-medium uppercase mb-1">Views</p>
                                             <p className="text-xl font-bold text-blue-500">{formatNumber(selectedMetrics.views || 0)}</p>
                                         </div>
                                         <div className="bg-page-bg rounded-xl p-4 border border-border-subtle">
-                                            <p className="text-xs text-text-muted font-medium uppercase tracking-wider mb-1">Cart Adds</p>
+                                            <p className="text-xs text-text-muted font-medium uppercase mb-1">Cart Adds</p>
                                             <p className="text-xl font-bold text-purple-500">{formatNumber(selectedMetrics.add_to_cart || 0)}</p>
                                         </div>
                                         <div className="bg-page-bg rounded-xl p-4 border border-border-subtle">
-                                            <p className="text-xs text-text-muted font-medium uppercase tracking-wider mb-1">Purchases</p>
+                                            <p className="text-xs text-text-muted font-medium uppercase mb-1">Purchases</p>
                                             <p className="text-xl font-bold text-success">{formatNumber(selectedMetrics.purchases || 0)}</p>
                                         </div>
                                         <div className="bg-page-bg rounded-xl p-4 border border-border-subtle">
-                                            <p className="text-xs text-text-muted font-medium uppercase tracking-wider mb-1">Conversion</p>
+                                            <p className="text-xs text-text-muted font-medium uppercase mb-1">Conversion</p>
                                             <p className="text-xl font-bold text-text-primary">
                                                 {selectedMetrics.views > 0 ? ((selectedMetrics.purchases || 0) / selectedMetrics.views * 100).toFixed(1) : '0'}%
                                             </p>
@@ -531,7 +531,7 @@ export default function ProductAnalyticsDashboard() {
                             <div>
                                 <div className="flex items-center gap-2 mb-4">
                                     <Target className="h-4 w-4 text-primary" />
-                                    <h4 className="font-serif text-sm font-semibold text-text-primary uppercase tracking-wider">Top Drivers for this exact date</h4>
+                                    <h4 className="font-serif text-sm font-semibold text-text-primary uppercase">Top Drivers for this exact date</h4>
                                 </div>
                                 
                                 {isModalLoading ? (

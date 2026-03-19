@@ -25,7 +25,7 @@ import {
 
 const DetailRow = ({ label, value, isDark }: { label: string, value: any, isDark: boolean }) => (
     <div className={`p-3 rounded-xl border ${isDark ? 'bg-white/5 border-white/5' : 'bg-black/5 border-black/5'} flex flex-col gap-1`}>
-        <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted">{label}</span>
+        <span className="text-[10px] font-bold uppercase text-text-muted">{label}</span>
         <span className={`text-sm font-medium ${isDark ? 'text-white/90' : 'text-black/80'} break-all`}>{value || 'N/A'}</span>
     </div>
 );
@@ -131,15 +131,15 @@ export default function PaymentLogsPage() {
                         <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/20 border border-border shadow-lg">
                             <Receipt className="w-6 h-6 text-gold" />
                         </div>
-                        <h1 className="font-serif text-3xl font-bold text-gold tracking-tighter">Payments</h1>
+                        <h1 className="font-serif text-3xl font-bold text-gold">Payments</h1>
                     </div>
-                    <p className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-text-muted' : 'text-emerald-900/60'}`}>
+                    <p className={`text-[10px] font-bold uppercase ${isDark ? 'text-text-muted' : 'text-emerald-900/60'}`}>
                         Administrative payment auditing & reconciliation.
                     </p>
                 </div>
                 <button
                     onClick={fetchLogs}
-                    className="flex items-center gap-2 px-6 py-2.5 bg-primary border border-gold/20 text-gold text-[11px] font-bold uppercase tracking-widest rounded-xl hover:shadow-[0_0_20px_rgba(197,164,109,0.3)] transition-all duration-300 disabled:opacity-50"
+                    className="flex items-center gap-2 px-6 py-2.5 bg-primary border border-gold/20 text-gold text-[11px] font-bold uppercase rounded-xl hover:shadow-[0_0_20px_rgba(197,164,109,0.3)] transition-all duration-300 disabled:opacity-50"
                 >
                     <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                     Refresh Logs
@@ -154,7 +154,7 @@ export default function PaymentLogsPage() {
                         <div className="p-2.5 bg-gold/10 rounded-xl border border-gold/20">
                             <TrendingUp className="w-4 h-4 text-gold" />
                         </div>
-                        <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Total Volume</span>
+                        <span className="text-[10px] font-bold text-text-muted uppercase">Total Volume</span>
                     </div>
                     <div className="text-2xl font-bold text-gold-soft">{formatINR(stats.totalVolume)}</div>
                 </div>
@@ -165,7 +165,7 @@ export default function PaymentLogsPage() {
                         <div className="p-2.5 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
                             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                         </div>
-                        <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Successful</span>
+                        <span className="text-[10px] font-bold text-text-muted uppercase">Successful</span>
                     </div>
                     <div className="text-2xl font-bold text-gold-soft">{stats.successCount}</div>
                 </div>
@@ -176,7 +176,7 @@ export default function PaymentLogsPage() {
                         <div className="p-2.5 bg-amber-500/10 rounded-xl border border-amber-500/20">
                             <Hourglass className="w-4 h-4 text-amber-400" />
                         </div>
-                        <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Pending</span>
+                        <span className="text-[10px] font-bold text-text-muted uppercase">Pending</span>
                     </div>
                     <div className="text-2xl font-bold text-gold-soft">{stats.pendingCount}</div>
                 </div>
@@ -187,7 +187,7 @@ export default function PaymentLogsPage() {
                         <div className="p-2.5 bg-red-500/10 rounded-xl border border-red-500/20">
                             <AlertCircle className="w-4 h-4 text-red-400" />
                         </div>
-                        <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Failed</span>
+                        <span className="text-[10px] font-bold text-text-muted uppercase">Failed</span>
                     </div>
                     <div className="text-2xl font-bold text-gold-soft">{stats.failedCount}</div>
                 </div>
@@ -213,7 +213,7 @@ export default function PaymentLogsPage() {
                             <select
                                 value={statusFilter}
                                 onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-                                className={`w-full pl-12 pr-10 py-4 border border-white/10 ${isDark ? 'bg-black/80' : 'bg-white/90'} rounded-2xl text-[11px] font-bold uppercase tracking-wider ${isDark ? 'text-gold-soft' : 'text-emerald-950'} appearance-none cursor-pointer focus:ring-1 focus:ring-gold/20 focus:border-gold/50 outline-none transition-all shadow-inner hover:bg-black/9 active:bg-black/90`}
+                                className={`w-full pl-12 pr-10 py-4 border border-white/10 ${isDark ? 'bg-black/80' : 'bg-white/90'} rounded-2xl text-[11px] font-bold uppercase ${isDark ? 'text-gold-soft' : 'text-emerald-950'} appearance-none cursor-pointer focus:ring-1 focus:ring-gold/20 focus:border-gold/50 outline-none transition-all shadow-inner hover:bg-black/9 active:bg-black/90`}
                             >
                                 <option value="" className={isDark ? "bg-[#0a0a0a] text-gold-soft" : ""}>All Statuses</option>
                                 <option value="PAID" className={isDark ? "bg-[#0a0a0a] text-gold-soft" : ""}>Paid</option>
@@ -228,7 +228,7 @@ export default function PaymentLogsPage() {
                             <select
                                 value={gatewayFilter}
                                 onChange={(e) => { setGatewayFilter(e.target.value); setPage(1); }}
-                                className={`w-full pl-12 pr-10 py-4 border border-white/10 ${isDark ? 'bg-black/80' : 'bg-white/90'} rounded-2xl text-[11px] font-bold uppercase tracking-wider ${isDark ? 'text-gold-soft' : 'text-emerald-950'} appearance-none cursor-pointer focus:ring-1 focus:ring-gold/20 focus:border-gold/50 outline-none transition-all shadow-inner hover:bg-black/9 active:bg-black/90`}
+                                className={`w-full pl-12 pr-10 py-4 border border-white/10 ${isDark ? 'bg-black/80' : 'bg-white/90'} rounded-2xl text-[11px] font-bold uppercase ${isDark ? 'text-gold-soft' : 'text-emerald-950'} appearance-none cursor-pointer focus:ring-1 focus:ring-gold/20 focus:border-gold/50 outline-none transition-all shadow-inner hover:bg-black/9 active:bg-black/90`}
                             >
                                 <option value="" className={isDark ? "bg-[#0a0a0a] text-gold-soft" : ""}>All Gateways</option>
                                 <option value="razorpay" className={isDark ? "bg-[#0a0a0a] text-gold-soft" : ""}>Razorpay</option>
@@ -242,7 +242,7 @@ export default function PaymentLogsPage() {
                 <div className="overflow-x-auto custom-scrollbar">
                     <table className="w-full text-left border-separate border-spacing-0">
                         <thead>
-                            <tr className={`border-b border-white/10 ${isDark ? 'bg-black/40 text-gold' : 'bg-emerald-900/10 text-emerald-950'} text-[11px] font-bold uppercase tracking-wider`}>
+                            <tr className={`border-b border-white/10 ${isDark ? 'bg-black/40 text-gold' : 'bg-emerald-900/10 text-emerald-950'} text-[11px] font-bold uppercase`}>
                                 <th className="px-10 py-6 border-b border-white/5">Transaction</th>
                                 <th className="px-10 py-6 border-b border-white/5">Details</th>
                                 <th className="px-8 py-6 border-b border-white/5 italic text-lg capitalize">Amount</th>
@@ -271,10 +271,10 @@ export default function PaymentLogsPage() {
                                 logs.map((log) => (
                                     <tr key={log.payment_id} className="group hover:bg-white/[0.02] transition-all duration-300">
                                         <td className="px-10 py-8">
-                                            <div className={`font-bold text-lg tracking-wider group-hover:text-gold transition-colors ${isDark ? 'text-gold-soft' : 'text-emerald-950'}`}>
+                                            <div className={`font-bold text-lg group-hover:text-gold transition-colors ${isDark ? 'text-gold-soft' : 'text-emerald-950'}`}>
                                                 {log.razorpay_payment_id || log.transaction_reference || 'N/A'}
                                             </div>
-                                            <div className={`text-[10px] ${isDark ? 'text-gold-soft/50' : 'text-emerald-900/50'} mt-2 uppercase tracking-wide font-bold`}>
+                                            <div className={`text-[10px] ${isDark ? 'text-gold-soft/50' : 'text-emerald-900/50'} mt-2 uppercase font-bold`}>
                                                 {new Date(log.created_at).toLocaleString('en-IN', {
                                                     day: '2-digit', month: 'short', year: 'numeric',
                                                     hour: '2-digit', minute: '2-digit'
@@ -286,7 +286,7 @@ export default function PaymentLogsPage() {
                                                 <div className="text-[10px] font-mono bg-gold/10 px-3 py-1 rounded-lg text-gold-soft border border-gold/20 shadow-sm">
                                                     #{log.order_id?.split('-')[0]}
                                                 </div>
-                                                <div className={`text-[11px] ${isDark ? 'text-gold-soft' : 'text-emerald-950'} font-bold uppercase tracking-wide flex items-center gap-2.5`}>
+                                                <div className={`text-[11px] ${isDark ? 'text-gold-soft' : 'text-emerald-950'} font-bold uppercase flex items-center gap-2.5`}>
                                                     <div className={`w-1.5 h-1.5 rounded-full ${isDark ? 'bg-gold' : 'bg-emerald-600'}`} />
                                                     {log.customer_name || 'Generic'}
                                                 </div>
@@ -298,12 +298,12 @@ export default function PaymentLogsPage() {
                                             </div>
                                         </td>
                                         <td className="px-8 py-8">
-                                            <span className="inline-flex items-center px-4 py-1.5 bg-gold/5 border border-gold/20 text-gold-soft text-[10px] font-bold uppercase tracking-wider rounded-xl shadow-lg backdrop-blur-sm group-hover:bg-gold/10 transition-colors">
+                                            <span className="inline-flex items-center px-4 py-1.5 bg-gold/5 border border-gold/20 text-gold-soft text-[10px] font-bold uppercase rounded-xl shadow-lg backdrop-blur-sm group-hover:bg-gold/10 transition-colors">
                                                 {log.payment_gateway || log.payment_method}
                                             </span>
                                         </td>
                                         <td className="px-10 py-8 text-right">
-                                            <span className={`inline-flex items-center px-5 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider border shadow-lg backdrop-blur-md transition-all ${getStatusStyle(log.payment_status)}`}>
+                                            <span className={`inline-flex items-center px-5 py-1.5 rounded-full text-[10px] font-bold uppercase border shadow-lg backdrop-blur-md transition-all ${getStatusStyle(log.payment_status)}`}>
                                                 {getStatusIcon(log.payment_status)}
                                                 {log.payment_status}
                                             </span>
@@ -327,7 +327,7 @@ export default function PaymentLogsPage() {
                 {/* ── Pagination ── */}
                 {!loading && total > 0 && (
                     <div className="p-6 border-t border-white/5 bg-black/40 flex items-center justify-between">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted/60">
+                        <span className="text-[10px] font-bold uppercase text-text-muted/60">
                             Showing <span className="text-gold-soft">{(page - 1) * limit + 1}</span> — <span className="text-gold-soft">{Math.min(page * limit, total)}</span> of <span className="text-gold">{total}</span> records
                         </span>
                         <div className="flex gap-3">
@@ -361,8 +361,8 @@ export default function PaymentLogsPage() {
                                     <Receipt className="w-5 h-5 text-gold" />
                                 </div>
                                 <div>
-                                    <h2 className={`text-xl font-bold ${isDark ? 'text-gold' : 'text-emerald-950'}`}>Payment Details</h2>
-                                    <p className="text-[10px] font-bold uppercase tracking-wider text-text-muted mt-0.5">ID: {selectedLog.payment_id}</p>
+                                    <h4 className={`text-xl font-bold ${isDark ? 'text-gold' : 'text-emerald-950'}`}>Payment Details</h4>
+                                    <p className="text-[10px] font-bold uppercase text-text-muted mt-0.5">ID: {selectedLog.payment_id}</p>
                                 </div>
                             </div>
                             <button
@@ -383,7 +383,7 @@ export default function PaymentLogsPage() {
                                 </div>
                                 <div className={`p-4 rounded-xl border ${isDark ? 'bg-black/20 border-white/5' : 'bg-emerald-50 border-emerald-900/5'}`}>
                                     <div className="text-[10px] uppercase font-bold text-text-muted mb-1">Status</div>
-                                    <span className={`inline-flex items-center px-3 py-1 mt-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${getStatusStyle(selectedLog.payment_status)}`}>
+                                    <span className={`inline-flex items-center px-3 py-1 mt-1 rounded-full text-[10px] font-bold uppercase border ${getStatusStyle(selectedLog.payment_status)}`}>
                                         {getStatusIcon(selectedLog.payment_status)}
                                         {selectedLog.payment_status}
                                     </span>
@@ -392,7 +392,7 @@ export default function PaymentLogsPage() {
 
                             {/* Details List */}
                             <div className="space-y-4">
-                                <h3 className={`text-[11px] font-bold uppercase tracking-wider ${isDark ? 'text-gold-soft' : 'text-emerald-900'} border-b ${isDark ? 'border-white/5' : 'border-emerald-900/10'} pb-2`}>Transaction Info</h3>
+                                <h3 className={`text-[11px] font-bold uppercase ${isDark ? 'text-gold-soft' : 'text-emerald-900'} border-b ${isDark ? 'border-white/5' : 'border-emerald-900/10'} pb-2`}>Transaction Info</h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <DetailRow label="Order ID" value={selectedLog.order_id} isDark={isDark} />
                                     <DetailRow label="Gateway" value={selectedLog.payment_gateway || selectedLog.payment_method} isDark={isDark} />
@@ -407,7 +407,7 @@ export default function PaymentLogsPage() {
                             </div>
 
                             <div className="space-y-4">
-                                <h3 className={`text-[11px] font-bold uppercase tracking-wider ${isDark ? 'text-gold-soft' : 'text-emerald-900'} border-b ${isDark ? 'border-white/5' : 'border-emerald-900/10'} pb-2`}>Customer Info</h3>
+                                <h3 className={`text-[11px] font-bold uppercase ${isDark ? 'text-gold-soft' : 'text-emerald-900'} border-b ${isDark ? 'border-white/5' : 'border-emerald-900/10'} pb-2`}>Customer Info</h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <DetailRow label="Customer ID" value={selectedLog.customer_id} isDark={isDark} />
                                     <DetailRow label="Name" value={selectedLog.customer_name} isDark={isDark} />

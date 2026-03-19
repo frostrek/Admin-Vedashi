@@ -246,15 +246,15 @@ export default function MediaLibraryPage() {
                         <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/20 border border-border shadow-lg">
                             <Images className="w-6 h-6 text-gold" />
                         </div>
-                        <h1 className="font-serif text-3xl font-bold text-gold tracking-tight">Visual Repository</h1>
+                        <h1 className="font-serif text-3xl font-bold text-gold">Visual Repository</h1>
                     </div>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-muted">
+                    <p className="text-[10px] font-bold uppercase text-text-muted">
                         Manage hero carousel slides for the storefront landing gallery.
                     </p>
                 </div>
                 <button
                     onClick={openCreate}
-                    className="flex items-center gap-2 px-6 py-2.5 bg-primary border border-gold/20 text-gold text-[11px] font-bold uppercase tracking-widest rounded-xl hover:shadow-[0_0_20px_rgba(197,164,109,0.3)] transition-all duration-300 shadow-lg shadow-black/40"
+                    className="flex items-center gap-2 px-6 py-2.5 bg-primary border border-gold/20 text-gold text-[11px] font-bold uppercase rounded-xl hover:shadow-[0_0_20px_rgba(197,164,109,0.3)] transition-all duration-300 shadow-lg shadow-black/40"
                 >
                     <Plus className="w-4 h-4" /> Manifest Slide
                 </button>
@@ -262,7 +262,7 @@ export default function MediaLibraryPage() {
 
             {/* Settings Bar */}
             <div className={`border border-border rounded-3xl p-6 shadow-xl backdrop-blur-sm flex flex-col xl:flex-row xl:items-center justify-between gap-6 animate-fadeInUp ${isDark ? 'bg-gradient-to-br from-card-bg to-card-bg-elevated' : 'bg-white/80'}`} style={{ animationDelay: '100ms' }}>
-                <div className="flex items-center gap-3 text-gold font-bold text-base tracking-widest uppercase shrink-0">
+                <div className="flex items-center gap-3 text-gold font-bold text-base uppercase shrink-0">
                     <Settings className={`w-5 h-5 ${isDark ? 'text-gold' : 'text-emerald-900'}`} />
                     <span className={isDark ? 'text-gold' : 'text-emerald-950'}>System Dynamics</span>
                 </div>
@@ -270,14 +270,14 @@ export default function MediaLibraryPage() {
                 <div className="flex flex-wrap items-center gap-x-6 gap-y-5 lg:justify-end flex-1">
                     {/* Speed Config */}
                     <div className="flex items-center gap-3">
-                        <label className={`text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-2 whitespace-nowrap ${isDark ? 'text-text-muted' : 'text-emerald-900/60'}`}>
+                        <label className={`text-[10px] font-bold uppercase flex items-center gap-2 whitespace-nowrap ${isDark ? 'text-text-muted' : 'text-emerald-900/60'}`}>
                             <Clock className="w-3.5 h-3.5 text-gold" /> Temporal Flow
                         </label>
                         <select
                             value={settings.slider_speed}
                             disabled={savingSettings}
                             onChange={(e) => saveSettings({ ...settings, slider_speed: parseInt(e.target.value) })}
-                            className={`border text-[10px] font-bold uppercase tracking-widest rounded-lg px-3 py-2 focus:ring-1 focus:ring-gold/10 disabled:opacity-50 transition-all outline-none ${isDark ? 'bg-black/20 border-border text-gold-soft focus:border-gold/30' : 'bg-white border-gold/10 text-emerald-950 focus:border-gold/40 shadow-sm'}`}
+                            className={`border text-[10px] font-bold uppercase rounded-lg px-3 py-2 focus:ring-1 focus:ring-gold/10 disabled:opacity-50 transition-all outline-none ${isDark ? 'bg-black/20 border-border text-gold-soft focus:border-gold/30' : 'bg-white border-gold/10 text-emerald-950 focus:border-gold/40 shadow-sm'}`}
                         >
                             <option value={3000}>Fast (3s)</option>
                             <option value={5000}>Normal (5s)</option>
@@ -288,14 +288,14 @@ export default function MediaLibraryPage() {
 
                     {/* Arrow Config */}
                     <div className="flex items-center gap-3">
-                        <label className={`text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-2 whitespace-nowrap ${isDark ? 'text-text-muted' : 'text-emerald-900/60'}`}>
+                        <label className={`text-[10px] font-bold uppercase flex items-center gap-2 whitespace-nowrap ${isDark ? 'text-text-muted' : 'text-emerald-900/60'}`}>
                             <MousePointer2 className="w-3.5 h-3.5 text-gold" /> Navigation
                         </label>
                         <select
                             value={settings.arrow_visibility}
                             disabled={savingSettings}
                             onChange={(e) => saveSettings({ ...settings, arrow_visibility: e.target.value as any })}
-                            className={`border text-[10px] font-bold uppercase tracking-widest rounded-lg px-3 py-2 focus:ring-1 focus:ring-gold/10 disabled:opacity-50 transition-all outline-none ${isDark ? 'bg-black/20 border-border text-gold-soft focus:border-gold/30' : 'bg-white border-gold/10 text-emerald-950 focus:border-gold/40 shadow-sm'}`}
+                            className={`border text-[10px] font-bold uppercase rounded-lg px-3 py-2 focus:ring-1 focus:ring-gold/10 disabled:opacity-50 transition-all outline-none ${isDark ? 'bg-black/20 border-border text-gold-soft focus:border-gold/30' : 'bg-white border-gold/10 text-emerald-950 focus:border-gold/40 shadow-sm'}`}
                         >
                             <option value="hover">On Presence</option>
                             <option value="visible">Omnipresent</option>
@@ -305,14 +305,14 @@ export default function MediaLibraryPage() {
 
                     {/* Loop Config */}
                     <div className="flex items-center gap-3">
-                        <label className={`text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-2 whitespace-nowrap ${isDark ? 'text-text-muted' : 'text-emerald-900/60'}`}>
+                        <label className={`text-[10px] font-bold uppercase flex items-center gap-2 whitespace-nowrap ${isDark ? 'text-text-muted' : 'text-emerald-900/60'}`}>
                             <Repeat className="w-3.5 h-3.5 text-gold" /> Cycle
                         </label>
                         <select
                             value={settings.loop ? 'true' : 'false'}
                             disabled={savingSettings}
                             onChange={(e) => saveSettings({ ...settings, loop: e.target.value === 'true' })}
-                            className={`border text-[10px] font-bold uppercase tracking-widest rounded-lg px-3 py-2 focus:ring-1 focus:ring-gold/10 disabled:opacity-50 transition-all outline-none ${isDark ? 'bg-black/20 border-border text-gold-soft focus:border-gold/30' : 'bg-white border-gold/10 text-emerald-950 focus:border-gold/40 shadow-sm'}`}
+                            className={`border text-[10px] font-bold uppercase rounded-lg px-3 py-2 focus:ring-1 focus:ring-gold/10 disabled:opacity-50 transition-all outline-none ${isDark ? 'bg-black/20 border-border text-gold-soft focus:border-gold/30' : 'bg-white border-gold/10 text-emerald-950 focus:border-gold/40 shadow-sm'}`}
                         >
                             <option value="true">Infinite</option>
                             <option value="false">Finite</option>
@@ -321,14 +321,14 @@ export default function MediaLibraryPage() {
 
                     {/* Transition Config */}
                     <div className="flex items-center gap-3">
-                        <label className={`text-[9px] font-bold uppercase tracking-[0.2em] flex items-center gap-2 whitespace-nowrap ${isDark ? 'text-text-muted' : 'text-emerald-900/60'}`}>
+                        <label className={`text-[10px] font-bold uppercase flex items-center gap-2 whitespace-nowrap ${isDark ? 'text-text-muted' : 'text-emerald-900/60'}`}>
                             <MonitorPlay className="w-3.5 h-3.5 text-gold" /> Effect
                         </label>
                         <select
                             value={settings.slideshow_type}
                             disabled={savingSettings}
                             onChange={(e) => saveSettings({ ...settings, slideshow_type: e.target.value as any })}
-                            className={`border text-[10px] font-bold uppercase tracking-widest rounded-lg px-3 py-2 focus:ring-1 focus:ring-gold/10 disabled:opacity-50 transition-all outline-none ${isDark ? 'bg-black/20 border-border text-gold-soft focus:border-gold/30' : 'bg-white border-gold/10 text-emerald-950 focus:border-gold/40 shadow-sm'}`}
+                            className={`border text-[10px] font-bold uppercase rounded-lg px-3 py-2 focus:ring-1 focus:ring-gold/10 disabled:opacity-50 transition-all outline-none ${isDark ? 'bg-black/20 border-border text-gold-soft focus:border-gold/30' : 'bg-white border-gold/10 text-emerald-950 focus:border-gold/40 shadow-sm'}`}
                         >
                             <option value="fade">Dissolve</option>
                             <option value="slide_right_to_left">Transversal Link</option>
@@ -339,7 +339,7 @@ export default function MediaLibraryPage() {
             </div>
 
             {/* Live preview bar */}
-            <div className="bg-primary/5 border border-border/40 rounded-2xl p-4 text-[10px] font-bold uppercase tracking-[0.1em] text-text-muted flex items-center gap-3 animate-fadeInUp shadow-inner" style={{ animationDelay: '200ms' }}>
+            <div className="bg-primary/5 border border-border/40 rounded-2xl p-4 text-[10px] font-bold uppercase text-text-muted flex items-center gap-3 animate-fadeInUp shadow-inner" style={{ animationDelay: '200ms' }}>
                 <Eye className="w-4 h-4 text-gold flex-shrink-0" />
                 <span>
                     <span className="text-gold">{slides.filter(s => s.is_active).length}</span> Manifested slides currently active in the visual stratum.
@@ -350,14 +350,14 @@ export default function MediaLibraryPage() {
             {loading ? (
                 <div className="flex flex-col items-center justify-center p-32 space-y-4 animate-pulse">
                     <div className="w-16 h-16 rounded-full border-t-2 border-l-2 border-gold animate-spin" />
-                    <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gold/60">Synchronizing Visual Assets...</p>
+                    <p className="text-[10px] font-bold uppercase text-gold/60">Synchronizing Visual Assets...</p>
                 </div>
             ) : slides.length === 0 ? (
                 <div className="flex flex-col items-center justify-center p-32 border-2 border-dashed border-border/40 rounded-3xl bg-black/10 text-text-muted animate-fadeIn">
                     <Images className="w-20 h-20 mb-6 opacity-20 text-gold" />
                     <p className="text-lg font-bold text-gold-soft mb-2">No Visual Essences Found</p>
-                    <p className="text-[10px] uppercase tracking-widest opacity-60 mb-8">Begin by manifesting your first storefront visual asset.</p>
-                    <button onClick={openCreate} className="px-8 py-3 bg-primary border border-gold/20 text-gold text-[10px] font-bold uppercase tracking-widest rounded-xl hover:shadow-[0_0_20px_rgba(197,164,109,0.2)] transition-all duration-300">
+                    <p className="text-[10px] uppercase opacity-60 mb-8">Begin by manifesting your first storefront visual asset.</p>
+                    <button onClick={openCreate} className="px-8 py-3 bg-primary border border-gold/20 text-gold text-[10px] font-bold uppercase rounded-xl hover:shadow-[0_0_20px_rgba(197,164,109,0.2)] transition-all duration-300">
                         Upload Essence
                     </button>
                 </div>
@@ -388,7 +388,7 @@ export default function MediaLibraryPage() {
                                     {slide.headings[0]?.text || <span className="italic opacity-30">Unnamed Essence</span>}
                                 </p>
                                 <div className="flex items-center justify-between">
-                                    <span className={`px-3 py-1 rounded-lg text-[9px] font-bold uppercase tracking-[0.2em] shadow-lg ${slide.is_active ? 'bg-gold/10 text-gold border border-gold/30' : 'bg-black/40 text-text-muted border border-border/30'}`}>
+                                    <span className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase shadow-lg ${slide.is_active ? 'bg-gold/10 text-gold border border-gold/30' : 'bg-black/40 text-text-muted border border-border/30'}`}>
                                         {slide.is_active ? 'Manifested' : 'Latent'}
                                     </span>
                                 </div>
@@ -398,7 +398,7 @@ export default function MediaLibraryPage() {
                             <div className="absolute inset-0 bg-primary/40 opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col items-center justify-center gap-4 backdrop-blur-sm">
                                 <button
                                     onClick={() => openEdit(slide)}
-                                    className="flex items-center gap-2 px-8 py-3 bg-gold text-primary text-[10px] font-bold uppercase tracking-[0.2em] rounded-full hover:scale-105 transition-all shadow-2xl border border-white/20"
+                                    className="flex items-center gap-2 px-8 py-3 bg-gold text-primary text-[10px] font-bold uppercase rounded-full hover:scale-105 transition-all shadow-2xl border border-white/20"
                                 >
                                     <Edit2 className="w-4 h-4" /> Reconfigure
                                 </button>
@@ -430,10 +430,10 @@ export default function MediaLibraryPage() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-fadeIn">
                     <div className="bg-gradient-to-br from-card-bg to-card-bg-elevated border border-border rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col animate-scaleIn">
                         <div className="flex items-center justify-between p-6 border-b border-border bg-black/40 backdrop-blur-sm sticky top-0 z-10">
-                            <h2 className="font-serif text-xl font-bold text-gold tracking-tight lowercase">
-                                <span className="text-[10px] uppercase block tracking-[0.3em] font-bold text-gold/40 mb-1">Visual Configuration</span>
+                            <h4 className="font-serif text-xl font-bold text-gold">
+                                <span className="text-[10px] uppercase block font-bold text-gold/40 mb-1">Visual Configuration</span>
                                 {editing ? 'Refine Essence' : 'Manifest New Essence'}
-                            </h2>
+                            </h4>
                             <button onClick={() => setModalOpen(false)} className="p-3 rounded-full hover:bg-white/5 text-gold-soft hover:text-gold transition-all">
                                 <X className="w-5 h-5" />
                             </button>
@@ -443,7 +443,7 @@ export default function MediaLibraryPage() {
 
                             {/* File Upload Area */}
                             <div className="space-y-3">
-                                <label className="block text-[10px] font-bold text-text-muted uppercase tracking-[0.2em]">
+                                <label className="block text-[10px] font-bold text-text-muted uppercase">
                                     Prime Visual Asset <span className="text-danger">*</span>
                                 </label>
 
@@ -499,7 +499,7 @@ export default function MediaLibraryPage() {
                                                     <span
                                                         key={b.id}
                                                         style={{ backgroundColor: b.bgColor, color: b.textColor }}
-                                                        className="inline-flex items-center gap-2 rounded-lg px-6 py-2 text-[8px] font-bold uppercase tracking-widest shadow-2xl"
+                                                        className="inline-flex items-center gap-2 rounded-lg px-6 py-2 text-[10px] font-bold uppercase shadow-2xl"
                                                     >
                                                         {b.label || 'Action'}
                                                         <ArrowRight className="h-2.5 w-2.5" />
@@ -512,7 +512,7 @@ export default function MediaLibraryPage() {
                                             <button
                                                 type="button"
                                                 onClick={() => fileInputRef.current?.click()}
-                                                className="px-6 py-2.5 bg-gold text-primary rounded-full text-[10px] font-bold uppercase tracking-widest shadow-2xl hover:scale-110 transition-transform flex items-center gap-2"
+                                                className="px-6 py-2.5 bg-gold text-primary rounded-full text-[10px] font-bold uppercase shadow-2xl hover:scale-110 transition-transform flex items-center gap-2"
                                             >
                                                 <UploadCloud className="w-4 h-4" /> Recalibrate Asset
                                             </button>
@@ -527,8 +527,8 @@ export default function MediaLibraryPage() {
                                             <UploadCloud className="w-8 h-8 text-gold" />
                                         </div>
                                         <p className="text-sm font-bold text-gold-soft mb-1">Manifest Visual Essence</p>
-                                        <p className="text-[10px] uppercase tracking-widest text-text-muted opacity-60">JPEG, PNG, WebP up to 10MB</p>
-                                        <div className="mt-6 flex items-center gap-2 text-[9px] uppercase tracking-widest text-gold opacity-40">
+                                        <p className="text-[10px] uppercase text-text-muted opacity-60">JPEG, PNG, WebP up to 10MB</p>
+                                        <div className="mt-6 flex items-center gap-2 text-[10px] uppercase text-gold opacity-40">
                                             <div className="h-px w-8 bg-gold/20" />
                                             Optimal 1920x1080
                                             <div className="h-px w-8 bg-gold/20" />
@@ -540,11 +540,11 @@ export default function MediaLibraryPage() {
                             {/* ── Dynamic Headings ── */}
                             <div className="space-y-4 pt-4 border-t border-border">
                                 <div className="flex items-center justify-between px-1">
-                                    <h3 className="font-serif text-[10px] font-bold tracking-[0.2em] text-text-muted uppercase">Headings</h3>
+                                    <h4 className="font-serif text-[10px] font-bold text-text-muted uppercase">Headings</h4>
                                     <button
                                         type="button"
                                         onClick={addHeading}
-                                        className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gold hover:text-gold-soft transition-all"
+                                        className="inline-flex items-center gap-2 text-[10px] font-bold uppercase text-gold hover:text-gold-soft transition-all"
                                     >
                                         <Plus className="w-4 h-4" />
                                         Append Heading
@@ -561,7 +561,7 @@ export default function MediaLibraryPage() {
                                             className={`${inputCls} flex-1`}
                                         />
                                         <div className="flex items-center gap-2 px-3 py-1 bg-black/40 border border-border rounded-xl shadow-inner">
-                                            <label className="text-[9px] font-bold text-text-muted uppercase tracking-widest cursor-pointer flex items-center gap-2">
+                                            <label className="text-[10px] font-bold text-text-muted uppercase cursor-pointer flex items-center gap-2">
                                                 Color
                                                 <input
                                                     type="color"
@@ -580,7 +580,7 @@ export default function MediaLibraryPage() {
                                                 onChange={e => updateHeading(h.id, 'fontSize', e.target.value)}
                                                 className="w-12 text-[10px] font-bold text-gold-soft bg-transparent focus:outline-none"
                                             />
-                                            <span className="text-[9px] font-bold text-text-muted uppercase tracking-widest">px</span>
+                                            <span className="text-[10px] font-bold text-text-muted uppercase">px</span>
                                         </div>
                                         <button
                                             type="button"
@@ -600,11 +600,11 @@ export default function MediaLibraryPage() {
                             {/* ── Dynamic Subheadings ── */}
                             <div className="space-y-4 pt-4 border-t border-border">
                                 <div className="flex items-center justify-between px-1">
-                                    <h3 className="font-serif text-[10px] font-bold tracking-[0.2em] text-text-muted uppercase">Subheadings</h3>
+                                    <h4 className="font-serif text-[10px] font-bold text-text-muted uppercase">Subheadings</h4>
                                     <button
                                         type="button"
                                         onClick={addSubheading}
-                                        className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gold hover:text-gold-soft transition-all"
+                                        className="inline-flex items-center gap-2 text-[10px] font-bold uppercase text-gold hover:text-gold-soft transition-all"
                                     >
                                         <Plus className="w-4 h-4" />
                                         Append Subheading
@@ -621,7 +621,7 @@ export default function MediaLibraryPage() {
                                             className={`${inputCls} flex-1`}
                                         />
                                         <div className="flex items-center gap-2 px-3 py-1 bg-black/40 border border-border rounded-xl shadow-inner">
-                                            <label className="text-[9px] font-bold text-text-muted uppercase tracking-widest cursor-pointer flex items-center gap-2">
+                                            <label className="text-[10px] font-bold text-text-muted uppercase cursor-pointer flex items-center gap-2">
                                                 Color
                                                 <input
                                                     type="color"
@@ -640,7 +640,7 @@ export default function MediaLibraryPage() {
                                                 onChange={e => updateSubheading(s.id, 'fontSize', e.target.value)}
                                                 className="w-12 text-[10px] font-bold text-gold-soft bg-transparent focus:outline-none"
                                             />
-                                            <span className="text-[9px] font-bold text-text-muted uppercase tracking-widest">px</span>
+                                            <span className="text-[10px] font-bold text-text-muted uppercase">px</span>
                                         </div>
                                         <button
                                             type="button"
@@ -657,11 +657,11 @@ export default function MediaLibraryPage() {
                             {/* ── Dynamic Buttons ── */}
                             <div className="space-y-4 pt-4 border-t border-border">
                                 <div className="flex items-center justify-between px-1">
-                                    <h3 className="font-serif text-[10px] font-bold tracking-[0.2em] text-text-muted uppercase">Interaction Nodes</h3>
+                                    <h4 className="font-serif text-[10px] font-bold text-text-muted uppercase">Interaction Nodes</h4>
                                     <button
                                         type="button"
                                         onClick={addButton}
-                                        className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gold hover:text-gold-soft transition-all"
+                                        className="inline-flex items-center gap-2 text-[10px] font-bold uppercase text-gold hover:text-gold-soft transition-all"
                                     >
                                         <Plus className="w-4 h-4" />
                                         Link Aspect
@@ -679,7 +679,7 @@ export default function MediaLibraryPage() {
                                         </button>
                                         <div className="grid grid-cols-2 gap-4 pr-10">
                                             <div className="space-y-2">
-                                                <label className="text-[9px] font-bold text-text-muted uppercase tracking-widest px-1">Label</label>
+                                                <label className="text-[10px] font-bold text-text-muted uppercase px-1">Label</label>
                                                 <input
                                                     type="text"
                                                     value={b.label}
@@ -689,7 +689,7 @@ export default function MediaLibraryPage() {
                                                 />
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-[9px] font-bold text-text-muted uppercase tracking-widest px-1">URL</label>
+                                                <label className="text-[10px] font-bold text-text-muted uppercase px-1">URL</label>
                                                 <input
                                                     type="text"
                                                     value={b.url}
@@ -701,7 +701,7 @@ export default function MediaLibraryPage() {
                                         </div>
                                         <div className="flex items-center gap-4 px-1">
                                             <div className="flex items-center gap-3 px-3 py-1 bg-black/40 border border-border rounded-xl shadow-inner">
-                                                <label className="text-[9px] font-bold text-text-muted uppercase tracking-widest cursor-pointer flex items-center gap-2">
+                                                <label className="text-[10px] font-bold text-text-muted uppercase cursor-pointer flex items-center gap-2">
                                                     Background
                                                     <input
                                                         type="color"
@@ -712,7 +712,7 @@ export default function MediaLibraryPage() {
                                                 </label>
                                             </div>
                                             <div className="flex items-center gap-3 px-3 py-1 bg-black/40 border border-border rounded-xl shadow-inner">
-                                                <label className="text-[9px] font-bold text-text-muted uppercase tracking-widest cursor-pointer flex items-center gap-2">
+                                                <label className="text-[10px] font-bold text-text-muted uppercase cursor-pointer flex items-center gap-2">
                                                     Text Color
                                                     <input
                                                         type="color"
@@ -727,7 +727,7 @@ export default function MediaLibraryPage() {
                                 ))}
                             </div>
                             <div className="bg-black/40 rounded-2xl p-6 border border-border shadow-inner space-y-4">
-                                <label className="flex items-center justify-between text-[10px] font-bold text-text-muted uppercase tracking-[0.2em]">
+                                <label className="flex items-center justify-between text-[10px] font-bold text-text-muted uppercase">
                                     <span>Atmospheric Density</span>
                                     <span className="text-gold bg-gold/10 px-3 py-1 rounded-lg border border-gold/20">{Math.round(form.overlay_opacity * 100)}%</span>
                                 </label>
@@ -737,7 +737,7 @@ export default function MediaLibraryPage() {
                                     onChange={e => setForm({ ...form, overlay_opacity: parseFloat(e.target.value) })}
                                     className="w-full accent-gold h-1.5 bg-black/40 rounded-full cursor-pointer"
                                 />
-                                <div className="flex justify-between text-[9px] uppercase font-bold text-text-muted/40 tracking-widest px-1">
+                                <div className="flex justify-between text-[10px] uppercase font-bold text-text-muted/40 px-1">
                                     <span>Transparent</span>
                                     <span>Absolute Void</span>
                                 </div>
@@ -749,8 +749,8 @@ export default function MediaLibraryPage() {
 
                             <label className="flex items-center justify-between cursor-pointer select-none p-5 rounded-2xl border border-border bg-black/20 hover:bg-black/40 hover:border-gold/20 transition-all duration-300">
                                 <div>
-                                    <p className="text-sm font-bold text-gold-soft tracking-wide">Manifest Immediately</p>
-                                    <p className="text-[10px] text-text-muted mt-0.5 uppercase tracking-widest font-medium">Toggle visibility of this essence within the storefront</p>
+                                    <p className="text-sm font-bold text-gold-soft">Manifest Immediately</p>
+                                    <p className="text-[10px] text-text-muted mt-0.5 uppercase font-medium">Toggle visibility of this essence within the storefront</p>
                                 </div>
                                 <div className={`relative w-14 h-7 rounded-full transition-all duration-500 flex-shrink-0 ${form.is_active ? 'bg-gold shadow-[0_0_15px_rgba(197,164,109,0.3)]' : 'bg-border'}`}>
                                     <div className={`absolute top-1.5 left-1.5 w-4 h-4 bg-white rounded-full shadow-lg transition-transform duration-500 ease-out ${form.is_active ? 'translate-x-7' : ''}`} />
@@ -765,11 +765,11 @@ export default function MediaLibraryPage() {
 
                             <div className="flex justify-end gap-3 pt-4 border-t border-border">
                                 <button type="button" onClick={() => setModalOpen(false)} disabled={saving}
-                                    className="px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest text-text-muted hover:text-gold hover:bg-white/5 transition-all rounded-xl">
+                                    className="px-6 py-2.5 text-[10px] font-bold uppercase text-text-muted hover:text-gold hover:bg-white/5 transition-all rounded-xl">
                                     Abort
                                 </button>
                                 <button type="submit" disabled={saving}
-                                    className="flex items-center gap-2 px-8 py-3 bg-primary border border-gold/20 text-gold text-[10px] font-bold uppercase tracking-widest rounded-xl hover:shadow-[0_0_20px_rgba(197,164,109,0.3)] transition-all duration-300 disabled:opacity-50">
+                                    className="flex items-center gap-2 px-8 py-3 bg-primary border border-gold/20 text-gold text-[10px] font-bold uppercase rounded-xl hover:shadow-[0_0_20px_rgba(197,164,109,0.3)] transition-all duration-300 disabled:opacity-50">
                                     {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Finalizing Essence…</> : <><Save className="w-4 h-4" /> {editing ? 'Commit Changes' : 'Manifest Slide'}</>}
                                 </button>
                             </div>

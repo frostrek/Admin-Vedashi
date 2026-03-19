@@ -131,7 +131,7 @@ export default function AlertsPage() {
                     <Bell className="h-6 w-6 text-gold" />
                 </div>
                 <div className="flex-1">
-                    <h1 className="font-serif text-2xl font-bold text-gold-soft tracking-wide">System Alerts</h1>
+                    <h1 className="font-serif text-2xl font-bold text-gold-soft">System Alerts</h1>
                     <p className="mt-1 text-sm text-text-secondary italic">Stay updated with your latest alerts and activities. You have {allAlerts.length} total active alerts.</p>
                 </div>
                 {allAlerts.length > 0 && (
@@ -161,7 +161,7 @@ export default function AlertsPage() {
                                     </div>
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2">
-                                            <h3 className="font-serif text-sm font-semibold text-text-primary">Order Management</h3>
+                                            <h4 className="font-serif text-sm font-semibold text-text-primary">Order Management</h4>
                                             <span className="text-[10px] bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full font-medium">New Order</span>
                                         </div>
                                         <p className="text-sm text-text-secondary mt-1">
@@ -187,7 +187,7 @@ export default function AlertsPage() {
                                     </div>
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2">
-                                            <h3 className="font-serif text-sm font-semibold text-text-primary">Product Management</h3>
+                                            <h4 className="font-serif text-sm font-semibold text-text-primary">Product Management</h4>
                                             <span className="text-[10px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full font-medium">Low Stock</span>
                                         </div>
                                         <p className="text-sm text-text-secondary mt-1">
@@ -213,7 +213,7 @@ export default function AlertsPage() {
                                     </div>
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2">
-                                            <h3 className="font-serif text-sm font-semibold text-text-primary">Customer Enquiries</h3>
+                                            <h4 className="font-serif text-sm font-semibold text-text-primary">Customer Enquiries</h4>
                                             <span className="text-[10px] bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full font-medium">New Enquiry</span>
                                         </div>
                                         <p className="text-sm text-text-secondary mt-1">

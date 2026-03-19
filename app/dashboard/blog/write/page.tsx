@@ -266,7 +266,7 @@ function WritePostContent() {
                                 onChange={e => setBody(e.target.value)}
                                 rows={18}
                                 className="w-full rounded-lg border border-border bg-page-bg px-4 py-4 text-sm text-text-primary focus:border-gold/50 focus:outline-none font-mono"
-                                placeholder="<h2 className="font-serif">Section 1</h2><p>Content goes here...</p>"
+                                placeholder="<h4 className='font-serif'>Section 1</h4><p>Content goes here...</p>"
                             />
                         </div>
                     </div>
@@ -276,7 +276,7 @@ function WritePostContent() {
                 <div className="space-y-6">
                     {/* Organization */}
                     <div className="rounded-xl border border-border bg-card-bg p-5 shadow-sm space-y-4">
-                        <h3 className="font-serif font-semibold text-text-primary border-b border-border pb-2">Organization & Layout</h3>
+                        <h4 className="font-serif font-semibold text-text-primary border-b border-border pb-2">Organization & Layout</h4>
 
                         <div>
                             <label className="block text-xs font-medium text-text-secondary mb-1">Category</label>
@@ -334,7 +334,7 @@ function WritePostContent() {
 
                     {/* Editorial Flags */}
                     <div className="rounded-xl border border-border bg-card-bg p-5 shadow-sm space-y-3">
-                        <h3 className="font-serif font-semibold text-text-primary border-b border-border pb-2">Editorial Flags</h3>
+                        <h4 className="font-serif font-semibold text-text-primary border-b border-border pb-2">Editorial Flags</h4>
 
                         <label className="flex items-center gap-2 cursor-pointer">
                             <input
@@ -392,7 +392,7 @@ function WritePostContent() {
 
                     {/* Media */}
                     <div className="rounded-xl border border-border bg-card-bg p-5 shadow-sm space-y-4">
-                        <h3 className="font-serif font-semibold text-text-primary border-b border-border pb-2">Media</h3>
+                        <h4 className="font-serif font-semibold text-text-primary border-b border-border pb-2">Media</h4>
                         
                         <div>
                             <label className="block text-xs font-medium text-text-secondary mb-1">Post Image URL</label>

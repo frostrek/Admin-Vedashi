@@ -202,7 +202,7 @@ export default function TopNavbar({ sidebarCollapsed }: TopNavbarProps) {
                 {/* Search */}
                 <div ref={searchRef} className="relative hidden sm:block w-full max-w-md">
                     <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted pointer-events-none" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#A89250]/60 pointer-events-none" />
                         <input
                             ref={inputRef}
                             type="text"
@@ -216,12 +216,12 @@ export default function TopNavbar({ sidebarCollapsed }: TopNavbarProps) {
                             onFocus={() => setSearchOpen(true)}
                             onKeyDown={handleKeyDown}
                             autoComplete="off"
-                            className="w-full rounded-xl border border-border bg-page-bg py-2 pl-10 pr-8 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-gold/40 focus:ring-1 focus:ring-gold/20 transition-all duration-300"
+                            className="w-full rounded-xl border border-border bg-page-bg py-2 pl-10 pr-8 text-sm text-text-primary placeholder:text-[#A89250]/40 focus:outline-none focus:border-gold/40 focus:ring-1 focus:ring-gold/20 transition-all duration-300"
                         />
                         {query && (
                             <button
                                 onClick={() => { setQuery(''); setProducts([]); setSynonyms([]); inputRef.current?.focus(); }}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-text-muted hover:text-text-primary transition-colors"
+                                className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-[#A89250]/50 hover:text-[#A89250] transition-colors"
                             >
                                 <X className="h-3.5 w-3.5" />
                             </button>
@@ -234,7 +234,7 @@ export default function TopNavbar({ sidebarCollapsed }: TopNavbarProps) {
                             {/* Page Navigation */}
                             {filteredPages.length > 0 && (
                                 <div className="py-1">
-                                    <p className="px-4 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-text-muted">
+                                    <p className="px-4 pt-2 pb-1 text-[10px] font-semibold uppercase text-[#A89250]/50">
                                         Pages
                                     </p>
                                     {filteredPages.map((page) => {
@@ -262,7 +262,7 @@ export default function TopNavbar({ sidebarCollapsed }: TopNavbarProps) {
                             {/* Synonyms / Search Mappings */}
                             {synonyms.length > 0 && (
                                 <div className="py-1 border-t border-border-subtle">
-                                    <p className="px-4 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-text-muted">
+                                    <p className="px-4 pt-2 pb-1 text-[10px] font-semibold uppercase text-[#A89250]/50">
                                         Search Mappings
                                     </p>
                                     {synonyms.map((syn) => {
@@ -280,7 +280,7 @@ export default function TopNavbar({ sidebarCollapsed }: TopNavbarProps) {
                                                 <FileSearch className="h-4 w-4 flex-shrink-0 text-gold/60" />
                                                 <div className="min-w-0 flex-1">
                                                     <span className="text-sm font-semibold text-gold">{syn.keyword}</span>
-                                                    <span className="text-text-muted mx-1.5">→</span>
+                                                    <span className="text-[#A89250]/40 mx-1.5">→</span>
                                                     <span className="text-xs text-text-secondary">{syn.synonyms.join(', ')}</span>
                                                 </div>
                                                 <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${syn.is_active
@@ -298,11 +298,11 @@ export default function TopNavbar({ sidebarCollapsed }: TopNavbarProps) {
                             {/* Products */}
                             {(products.length > 0 || searching) && (
                                 <div className="py-1 border-t border-border-subtle">
-                                    <p className="px-4 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-text-muted">
+                                    <p className="px-4 pt-2 pb-1 text-[10px] font-semibold uppercase text-[#A89250]/50">
                                         Products
                                     </p>
                                     {searching && products.length === 0 && (
-                                        <div className="flex items-center gap-2 px-4 py-3 text-sm text-text-muted">
+                                        <div className="flex items-center gap-2 px-4 py-3 text-sm text-[#A89250]/60">
                                             <Loader2 className="h-4 w-4 animate-spin" />
                                             Searching...
                                         </div>
@@ -324,12 +324,12 @@ export default function TopNavbar({ sidebarCollapsed }: TopNavbarProps) {
                                                     {product.images && product.images.length > 0 ? (
                                                         <img src={product.images[0]} alt="" className="h-8 w-8 rounded-lg object-cover" />
                                                     ) : (
-                                                        <Package className="h-3.5 w-3.5 text-text-muted" />
+                                                        <Package className="h-3.5 w-3.5 text-[#A89250]/40" />
                                                     )}
                                                 </div>
                                                 <div className="min-w-0 flex-1">
                                                     <p className="text-sm font-medium text-text-primary truncate">{product.product_name}</p>
-                                                    <p className="text-[11px] text-text-muted truncate">
+                                                    <p className="text-[11px] text-[#A89250]/50 truncate">
                                                         {[product.sku, product.brand, product.category].filter(Boolean).join(' · ')}
                                                     </p>
                                                 </div>
@@ -346,7 +346,7 @@ export default function TopNavbar({ sidebarCollapsed }: TopNavbarProps) {
 
                             {/* Empty state */}
                             {!searching && filteredPages.length === 0 && synonyms.length === 0 && products.length === 0 && query.trim().length >= 2 && (
-                                <div className="px-4 py-6 text-center text-sm text-text-muted">
+                                <div className="px-4 py-6 text-center text-sm text-[#A89250]/60">
                                     No results found for &ldquo;{query}&rdquo;
                                 </div>
                             )}
@@ -358,7 +358,7 @@ export default function TopNavbar({ sidebarCollapsed }: TopNavbarProps) {
                 <div className="flex items-center gap-2 ml-auto">
                     <button
                         onClick={toggleTheme}
-                        className="flex h-9 w-9 items-center justify-center rounded-xl text-text-muted hover:text-gold hover:bg-gold/[0.06] transition-all duration-300"
+                        className="flex h-9 w-9 items-center justify-center rounded-xl text-[#A89250]/70 hover:text-gold hover:bg-gold/[0.06] transition-all duration-300"
                         title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
                     >
                         {isDark ? <Sun className="h-[18px] w-[18px]" /> : <Moon className="h-[18px] w-[18px]" />}
@@ -366,7 +366,7 @@ export default function TopNavbar({ sidebarCollapsed }: TopNavbarProps) {
                     <div ref={notifRef} className="relative">
                         <button
                             onClick={() => setNotifOpen(!notifOpen)}
-                            className="relative flex h-9 w-9 items-center justify-center rounded-xl text-text-muted hover:text-gold hover:bg-gold/[0.06] transition-all duration-300"
+                            className="relative flex h-9 w-9 items-center justify-center rounded-xl text-[#A89250]/70 hover:text-gold hover:bg-gold/[0.06] transition-all duration-300"
                         >
                             <Bell className="h-[18px] w-[18px]" />
                             {(alertsData.orders + alertsData.products + alertsData.enquiries) > 0 && (
@@ -378,7 +378,7 @@ export default function TopNavbar({ sidebarCollapsed }: TopNavbarProps) {
                         {notifOpen && (
                             <div className="absolute right-0 top-full mt-2 w-80 rounded-xl border border-border bg-card-bg-elevated shadow-2xl py-2 animate-slideDown z-50">
                                 <div className="px-4 py-2 border-b border-border flex justify-between items-center">
-                                    <h3 className="font-serif text-sm font-semibold text-text-primary">Alerts</h3>
+                                    <h4 className="font-serif text-sm font-semibold text-text-primary">Alerts</h4>
                                     {(alertsData.orders + alertsData.products + alertsData.enquiries) > 0 && (
                                         <span className="text-[10px] text-gold font-medium bg-gold/10 px-2 py-0.5 rounded-full">
                                             {alertsData.orders + alertsData.products + alertsData.enquiries} New
@@ -399,7 +399,7 @@ export default function TopNavbar({ sidebarCollapsed }: TopNavbarProps) {
                                                  <div>
                                                      <p className="text-xs font-semibold text-text-primary group-hover:text-gold transition-colors">Order Management</p>
                                                      <p className="text-[11px] text-text-secondary mt-0.5 leading-tight">You have {alertsData.orders} pending overall order(s) awaiting fulfillment.</p>
-                                                     <p className="text-[9px] text-text-muted mt-1">Just now</p>
+                                                     <p className="text-[9px] text-[#A89250]/50 mt-1">Just now</p>
                                                  </div>
                                              </div>
                                          </Link>
@@ -441,7 +441,7 @@ export default function TopNavbar({ sidebarCollapsed }: TopNavbarProps) {
                                          </Link>
                                      )}
                                     {alertsData.orders === 0 && alertsData.products === 0 && alertsData.enquiries === 0 && (
-                                        <div className="px-4 py-6 text-center text-xs text-text-muted">
+                                        <div className="px-4 py-6 text-center text-xs text-[#A89250]/50">
                                             No new alerts at this time.
                                         </div>
                                     )}
@@ -467,13 +467,13 @@ export default function TopNavbar({ sidebarCollapsed }: TopNavbarProps) {
                             <div className="h-9 w-9 rounded-full bg-[#828B5C] flex items-center justify-center text-[#E8D8B9] text-xs font-bold border border-white/20 shadow-lg">
                                 {user?.name?.charAt(0)?.toUpperCase() || 'A'}
                             </div>
-                            <ChevronDown className={`hidden sm:block h-3.5 w-3.5 text-text-muted transition-transform duration-300 ${profileOpen ? 'rotate-180' : ''}`} />
+                            <ChevronDown className={`hidden sm:block h-3.5 w-3.5 text-[#A89250]/60 transition-transform duration-300 ${profileOpen ? 'rotate-180' : ''}`} />
                         </button>
                         {profileOpen && (
                             <div className="absolute right-0 top-full mt-2 w-48 rounded-xl border border-border bg-card-bg-elevated shadow-2xl py-1 animate-slideDown z-50">
                                 <div className="px-3 py-2 border-b border-border">
                                     <p className="text-sm font-medium text-text-primary truncate">{user?.name}</p>
-                                    <p className="text-xs text-text-muted truncate">{user?.email}</p>
+                                    <p className="text-xs text-[#A89250]/60 truncate">{user?.email}</p>
                                 </div>
                                 <Link
                                     href="/dashboard/profile"

@@ -247,7 +247,7 @@ function CreateCampaignForm() {
             <div className="grid gap-6">
                 {/* Campaign Details */}
                 <div className="bg-card-bg border border-border rounded-xl p-5 space-y-4">
-                    <h2 className="font-serif text-sm font-semibold text-text-secondary uppercase tracking-wider">Campaign Details</h2>
+                    <h4 className="font-serif text-sm font-semibold text-text-secondary uppercase">Campaign Details</h4>
                     <div>
                         <label className="block text-sm font-medium text-text-secondary mb-1.5">
                             Campaign Title <span className="text-red-400">*</span>
@@ -278,7 +278,7 @@ function CreateCampaignForm() {
                 {/* Audience */}
                 <div className="bg-card-bg border border-border rounded-xl p-5 space-y-3">
                     <div className="flex items-center justify-between">
-                        <h2 className="font-serif text-sm font-semibold text-text-secondary uppercase tracking-wider">Target Audience</h2>
+                        <h4 className="font-serif text-sm font-semibold text-text-secondary uppercase">Target Audience</h4>
                         <button
                             type="button"
                             onClick={() => {
@@ -403,7 +403,7 @@ function CreateCampaignForm() {
                 {/* Email Body */}
                 <div className="bg-card-bg border border-border rounded-xl p-5 space-y-3">
                     <div className="flex items-center justify-between">
-                        <h2 className="font-serif text-sm font-semibold text-text-secondary uppercase tracking-wider">Email Body (HTML)</h2>
+                        <h4 className="font-serif text-sm font-semibold text-text-secondary uppercase">Email Body (HTML)</h4>
                         <button
                             type="button"
                             onClick={() => setPreview(!preview)}
@@ -437,7 +437,7 @@ function CreateCampaignForm() {
 
                 {/* Send Mode */}
                 <div className="bg-card-bg border border-border rounded-xl p-5 space-y-4">
-                    <h2 className="font-serif text-sm font-semibold text-text-secondary uppercase tracking-wider">Delivery</h2>
+                    <h4 className="font-serif text-sm font-semibold text-text-secondary uppercase">Delivery</h4>
                     <div className="grid grid-cols-2 gap-3">
                         <label className={`flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition-colors ${scheduleMode === 'now' ? 'border-gold/40 bg-gold/[0.04]' : 'border-border hover:border-gold/20'}`}>
                             <input type="radio" name="scheduleMode" checked={scheduleMode === 'now'} onChange={() => setScheduleMode('now')} className="accent-gold" />
@@ -503,7 +503,7 @@ function CreateCampaignForm() {
                         {/* Modal Header */}
                         <div className="flex items-center justify-between p-4 border-b border-border/50 bg-page-bg/50">
                             <div>
-                                <h3 className="font-serif text-lg font-bold text-gold">Recipient List</h3>
+                                <h4 className="font-serif text-lg font-bold text-gold">Recipient List</h4>
                                 <p className="text-xs text-text-muted mt-0.5">{recipientCount} matching customers</p>
                             </div>
                             <button

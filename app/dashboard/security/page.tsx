@@ -241,11 +241,11 @@ export default function SecurityDashboard() {
                         </div>
                         Security & Operations
                     </h1>
-                    <p className="text-text-muted mt-2 text-[10px] font-bold uppercase tracking-widest">Monitor active defenses, manage backups, and control disaster recovery</p>
+                    <p className="text-text-muted mt-2 text-[10px] font-bold uppercase">Monitor active defenses, manage backups, and control disaster recovery</p>
                 </div>
                 <button
                     onClick={fetchData}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-primary/20 border border-gold/10 rounded-xl text-gold-soft hover:text-gold hover:bg-primary/40 transition-all duration-300 text-[11px] font-bold uppercase tracking-widest"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-primary/20 border border-gold/10 rounded-xl text-gold-soft hover:text-gold hover:bg-primary/40 transition-all duration-300 text-[11px] font-bold uppercase"
                 >
                     <RefreshCw className="h-4 w-4" />
                     Refresh Protocol
@@ -254,10 +254,10 @@ export default function SecurityDashboard() {
 
             {/* Active Defenses Grid */}
             <div className="animate-fadeInUp" style={{ animationDelay: '100ms' }}>
-                <h2 className="font-serif text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                <h4 className="font-serif text-[10px] font-bold text-text-muted uppercase mb-4 flex items-center gap-2">
                     <Activity className="h-4 w-4 text-gold" />
                     Protocol Guardians
-                </h2>
+                </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {defenses.map((defense, idx) => (
                         <div
@@ -269,12 +269,12 @@ export default function SecurityDashboard() {
                                 <div className="p-3 rounded-2xl bg-primary/20 border border-border group-hover:bg-primary/30 transition-all duration-500">
                                     <defense.icon className="h-5 w-5 text-gold" />
                                 </div>
-                                <span className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-success bg-success/15 px-2 py-1 rounded-lg border border-success/20">
+                                <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-success bg-success/15 px-2 py-1 rounded-lg border border-success/20">
                                     <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse"></span>
                                     Active
                                 </span>
                             </div>
-                            <h3 className="font-serif text-gold font-bold text-sm tracking-wide">{defense.name}</h3>
+                            <h4 className="font-serif text-gold font-bold text-sm">{defense.name}</h4>
                             <p className="text-text-muted text-[10px] mt-1 font-medium uppercase tracking-tight">{defense.desc}</p>
                         </div>
                     ))}
@@ -285,11 +285,11 @@ export default function SecurityDashboard() {
                 {/* Disaster Recovery Panel - Takes 2/5 */}
                 <div className="lg:col-span-2 bg-gradient-to-br from-card-bg to-card-bg-elevated border border-border rounded-2xl overflow-hidden shadow-xl backdrop-blur-sm animate-fadeInUp" style={{ animationDelay: '400ms' }}>
                     <div className="p-6 border-b border-border bg-primary/10">
-                        <h2 className="font-serif text-base font-bold text-gold tracking-widest uppercase flex items-center gap-2.5">
+                        <h4 className="font-serif text-base font-bold text-gold uppercase flex items-center gap-2.5">
                             <AlertTriangle className="h-5 w-5 text-warning" />
                             Disaster Protocol
-                        </h2>
-                        <p className="text-text-muted text-[10px] font-bold uppercase tracking-widest mt-1">Maintenance mode and emergency controls</p>
+                        </h4>
+                        <p className="text-text-muted text-[10px] font-bold uppercase mt-1">Maintenance mode and emergency controls</p>
                     </div>
 
                     <div className="p-6">
@@ -303,8 +303,8 @@ export default function SecurityDashboard() {
                                 <div className="flex items-center gap-3">
                                     <Server className={`h-5 w-5 ${maintenanceEnabled ? 'text-danger' : 'text-gold'}`} />
                                     <div>
-                                        <h3 className="font-serif text-gold font-bold text-sm">Lockdown Mode</h3>
-                                        <p className={`text-[10px] font-bold uppercase tracking-wider mt-0.5 ${maintenanceEnabled ? 'text-danger' : 'text-text-muted'}`}>
+                                        <h4 className="font-serif text-gold font-bold text-sm">Lockdown Mode</h4>
+                                        <p className={`text-[10px] font-bold uppercase mt-0.5 ${maintenanceEnabled ? 'text-danger' : 'text-text-muted'}`}>
                                             {maintenanceEnabled ? '⚠ Traffic redirection active' : 'All systems operational'}
                                         </p>
                                     </div>
@@ -355,11 +355,11 @@ export default function SecurityDashboard() {
                         {/* Quick Info */}
                         <div className="mt-4 grid grid-cols-2 gap-3">
                             <div className="bg-black/20 rounded-xl border border-border p-3">
-                                <p className="text-[9px] text-text-muted uppercase tracking-[0.2em] font-bold">Emergency Seal</p>
+                                <p className="text-[10px] text-text-muted uppercase font-bold">Emergency Seal</p>
                                 <p className="text-gold text-sm font-bold mt-1">On Shutdown</p>
                             </div>
                             <div className="bg-black/20 rounded-xl border border-border p-3">
-                                <p className="text-[9px] text-text-muted uppercase tracking-[0.2em] font-bold">Auto Synthesis</p>
+                                <p className="text-[9px] text-text-muted uppercase font-bold">Auto Synthesis</p>
                                 <p className="text-gold text-sm font-bold mt-1">Daily 02:00</p>
                             </div>
                         </div>
@@ -370,18 +370,18 @@ export default function SecurityDashboard() {
                 <div className="lg:col-span-3 bg-gradient-to-br from-card-bg to-card-bg-elevated border border-border rounded-2xl overflow-hidden shadow-xl backdrop-blur-sm animate-fadeInUp" style={{ animationDelay: '500ms' }}>
                     <div className="p-6 border-b border-border bg-primary/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
-                            <h2 className="font-serif text-base font-bold text-gold tracking-widest uppercase flex items-center gap-2.5">
+                            <h4 className="font-serif text-base font-bold text-gold uppercase flex items-center gap-2.5">
                                 <HardDrive className="h-5 w-5 text-gold" />
                                 Database Archives
-                            </h2>
-                            <p className="text-text-muted text-[10px] font-bold uppercase tracking-widest mt-1">
+                            </h4>
+                            <p className="text-text-muted text-[10px] font-bold uppercase mt-1">
                                 {backups.length} archives stored · AES-256-GCM encrypted
                             </p>
                         </div>
                         <button
                             onClick={handleCreateBackup}
                             disabled={creatingBackup}
-                            className="flex items-center gap-2 px-6 py-2.5 bg-primary text-gold border border-gold/20 font-bold uppercase tracking-widest text-[11px] rounded-xl hover:bg-primary/80 transition-all duration-300 disabled:opacity-50 shadow-lg shadow-black/40"
+                            className="flex items-center gap-2 px-6 py-2.5 bg-primary text-gold border border-gold/20 font-bold uppercase text-[11px] rounded-xl hover:bg-primary/80 transition-all duration-300 disabled:opacity-50 shadow-lg shadow-black/40"
                         >
                             {creatingBackup ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />

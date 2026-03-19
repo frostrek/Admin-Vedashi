@@ -71,7 +71,7 @@ const SectionCard = ({ icon: Icon, title, children, defaultOpen = true }: {
                     <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/20 border border-border">
                         <Icon className="w-5 h-5 text-gold" />
                     </div>
-                    <h2 className="font-serif text-sm font-bold text-gold tracking-widest uppercase">{title}</h2>
+                    <h4 className="font-serif text-sm font-bold text-gold uppercase">{title}</h4>
                 </div>
                 {open ? <ChevronUp className="w-4 h-4 text-gold-soft" /> : <ChevronDown className="w-4 h-4 text-gold-soft" />}
             </button>
@@ -82,7 +82,7 @@ const SectionCard = ({ icon: Icon, title, children, defaultOpen = true }: {
 
 const Field = ({ label, hint, info, children }: { label: string; hint?: string; info?: string; children: React.ReactNode }) => (
     <div className="space-y-2">
-        <label className="flex items-center gap-2 text-[10px] font-bold text-text-muted uppercase tracking-[0.2em]">
+        <label className="flex items-center gap-2 text-[10px] font-bold text-text-muted uppercase">
             {label}
             {info && (
                 <span className="relative group cursor-pointer inline-flex items-center normal-case tracking-normal">
@@ -105,7 +105,7 @@ const Toggle = ({ checked, onChange, label, sub, info }: { checked: boolean; onC
             <input type="checkbox" className="sr-only" checked={checked} onChange={e => onChange(e.target.checked)} />
         </div>
         <div>
-            <div className="flex items-center gap-2 text-sm font-bold text-gold-soft tracking-wide">
+            <div className="flex items-center gap-2 text-sm font-bold text-gold-soft">
                 {label}
                 {info && (
                     <span className="relative group cursor-pointer inline-flex items-center font-sans tracking-normal font-medium">
@@ -116,7 +116,7 @@ const Toggle = ({ checked, onChange, label, sub, info }: { checked: boolean; onC
                     </span>
                 )}
             </div>
-            {sub && <p className="text-[10px] text-text-muted mt-0.5 font-medium uppercase tracking-widest">{sub}</p>}
+            {sub && <p className="text-[10px] text-text-muted mt-0.5 font-medium uppercase">{sub}</p>}
         </div>
     </label>
 );
@@ -138,7 +138,7 @@ const ColorField = ({ label, value, info, onChange }: { label: string; value: st
                 type="text"
                 value={value}
                 onChange={e => onChange(e.target.value)}
-                className={`${inputCls} font-mono uppercase tracking-widest`}
+                className={`${inputCls} font-mono uppercase`}
                 placeholder="#000000"
                 maxLength={7}
             />
@@ -248,7 +248,7 @@ export default function HeaderManagementPage() {
         <button
             onClick={() => saveSection(section)}
             disabled={saving}
-            className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-primary to-primary-light text-gold text-[10px] font-bold uppercase tracking-widest rounded-xl hover:shadow-[0_0_15px_rgba(197,164,109,0.2)] transition-all duration-300 disabled:opacity-50 border border-gold/20"
+            className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-primary to-primary-light text-gold text-[10px] font-bold uppercase rounded-xl hover:shadow-[0_0_15px_rgba(197,164,109,0.2)] transition-all duration-300 disabled:opacity-50 border border-gold/20"
         >
             {saving && activeSection === section
                 ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> saving…</>
@@ -285,9 +285,9 @@ export default function HeaderManagementPage() {
                         <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/20 border border-border shadow-lg">
                             <MonitorSmartphone className="w-6 h-6 text-gold" />
                         </div>
-                        <h1 className="font-serif text-3xl font-bold text-gold tracking-tighter">Header Canvas</h1>
+                        <h1 className="font-serif text-3xl font-bold text-gold">Header Canvas</h1>
                     </div>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-muted">
+                    <p className="text-[10px] font-bold uppercase text-text-muted">
                         Configure your storefront architecture — navigation links and dynamic settings.
                     </p>
                 </div>
@@ -295,14 +295,14 @@ export default function HeaderManagementPage() {
                     <button
                         onClick={load}
                         disabled={loading}
-                        className="flex items-center gap-2 px-5 py-2.5 border border-border bg-primary/10 text-[10px] font-bold uppercase tracking-widest text-gold-soft rounded-xl hover:bg-primary/20 transition-all duration-300"
+                        className="flex items-center gap-2 px-5 py-2.5 border border-border bg-primary/10 text-[10px] font-bold uppercase text-gold-soft rounded-xl hover:bg-primary/20 transition-all duration-300"
                     >
                         <RefreshCw className="w-4 h-4" /> Recalibrate
                     </button>
                     <button
                         onClick={saveAll}
                         disabled={saving}
-                        className="flex items-center gap-2 px-6 py-2.5 bg-primary border border-gold/20 text-gold text-[11px] font-bold uppercase tracking-widest rounded-xl hover:shadow-[0_0_20px_rgba(197,164,109,0.3)] transition-all duration-300 disabled:opacity-50"
+                        className="flex items-center gap-2 px-6 py-2.5 bg-primary border border-gold/20 text-gold text-[11px] font-bold uppercase rounded-xl hover:shadow-[0_0_20px_rgba(197,164,109,0.3)] transition-all duration-300 disabled:opacity-50"
                     >
                         {saving && activeSection === 'all'
                             ? <><Loader2 className="w-4 h-4 animate-spin" /> finalizing…</>
@@ -339,7 +339,7 @@ export default function HeaderManagementPage() {
                 {/* ── 1. Navigation Links ───────────────────────── */}
                 <SectionCard icon={Link2} title="Navigation Protocol">
                     <div className="mt-4 space-y-3">
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-text-muted/60 mb-4">Toggle visibility or reconfigure access nodes. Drag to reorder sequence.</p>
+                        <p className="text-[10px] font-bold uppercase text-text-muted/60 mb-4">Toggle visibility or reconfigure access nodes. Drag to reorder sequence.</p>
                         {header.nav_links.map((link, i) => (
                             <div
                                 key={i}
@@ -400,7 +400,7 @@ export default function HeaderManagementPage() {
                         <div className="flex items-center justify-between pt-4">
                             <button
                                 onClick={() => update('nav_links', [...header.nav_links, { label: '', url: '/', enabled: true }])}
-                                className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-gold hover:text-gold-soft transition-all group"
+                                className="flex items-center gap-2 text-[10px] font-bold uppercase text-gold hover:text-gold-soft transition-all group"
                             >
                                 <div className="p-2 bg-primary/20 rounded-lg group-hover:bg-primary/30 transition-all">
                                     <Plus className="w-4 h-4" />
@@ -421,7 +421,7 @@ export default function HeaderManagementPage() {
                 <button
                     onClick={saveAll}
                     disabled={saving}
-                    className="flex items-center gap-3 px-8 py-4 bg-primary border border-gold/30 text-gold font-bold text-base uppercase tracking-[0.1em] rounded-2xl hover:shadow-[0_0_30px_rgba(197,164,109,0.4)] hover:-translate-y-1 transition-all duration-500 disabled:opacity-50"
+                    className="flex items-center gap-3 px-8 py-4 bg-primary border border-gold/30 text-gold font-bold text-base uppercase rounded-2xl hover:shadow-[0_0_30px_rgba(197,164,109,0.4)] hover:-translate-y-1 transition-all duration-500 disabled:opacity-50"
                 >
                     {saving && activeSection === 'all'
                         ? <><Loader2 className="w-5 h-5 animate-spin" /> saving manifold…</>

@@ -39,14 +39,14 @@ export default function DashboardHeader({
                 <div className="max-w-lg">
                     <div className="flex items-center gap-2 mb-2">
                         {Icon && <Icon className="h-5 w-5 text-[#C5A46D]/80" />}
-                        <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C5A46D]/60">
+                        <span className="text-xs font-semibold uppercase text-[#C5A46D]/60">
                             Dashboard
                         </span>
                     </div>
 
-                    <h2 className="font-serif text-xl sm:text-2xl font-bold leading-tight text-[#E8D8B9]">
+                    <h1 className="font-serif text-xl sm:text-2xl font-bold leading-tight text-[#E8D8B9]">
                         {title}
-                    </h2>
+                    </h1>
 
                     <p className="mt-2 text-sm text-[#A89880] leading-relaxed">
                         {subtitle}

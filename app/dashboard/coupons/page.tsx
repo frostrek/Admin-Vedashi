@@ -277,7 +277,7 @@ export default function CouponsPage() {
                                     return (
                                         <tr key={c.coupon_id} className="border-b border-border/50 hover:bg-gold/[0.03] transition-colors">
                                             <td className="px-4 py-3">
-                                                <span className="font-mono font-bold text-gold tracking-wider">{c.code}</span>
+                                                <span className="font-mono font-bold text-gold">{c.code}</span>
                                             </td>
                                             <td className="px-4 py-3">
                                                 {c.discount_type === 'percentage' || c.discount_type === 'first_order'
@@ -340,9 +340,9 @@ export default function CouponsPage() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
                     <div className="bg-card-bg border border-border rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
                         <div className="flex items-center justify-between p-5 border-b border-border sticky top-0 bg-card-bg z-10">
-                            <h2 className="font-serif text-lg font-bold text-gold">
+                            <h4 className="font-serif text-lg font-bold text-gold">
                                 {editing ? 'Edit Coupon' : 'Create Coupon'}
-                            </h2>
+                            </h4>
                             <button onClick={() => setModalOpen(false)} className="text-text-muted hover:text-white"><X className="w-5 h-5" /></button>
                         </div>
 
@@ -350,12 +350,12 @@ export default function CouponsPage() {
                             {/* Code */}
                             <div>
                                 <label className="block text-sm font-medium text-text-secondary mb-1">Coupon Code <span className="text-red-500">*</span></label>
-                                <input
+                                    <input
                                     type="text" required
                                     value={form.code}
                                     onChange={e => setForm({ ...form, code: e.target.value.toUpperCase() })}
                                     placeholder="e.g. WELCOME20"
-                                    className="w-full rounded-lg border border-border bg-page-bg px-4 py-2.5 text-sm font-mono tracking-wider text-text-primary placeholder:text-text-muted focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40 uppercase"
+                                    className="w-full rounded-lg border border-border bg-page-bg px-4 py-2.5 text-sm font-mono text-text-primary placeholder:text-text-muted focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40 uppercase"
                                 />
                             </div>
 

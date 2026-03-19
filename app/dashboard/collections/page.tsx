@@ -258,33 +258,34 @@ export default function CollectionsPage() {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
                 <div>
-                    <h1 className="font-serif text-2xl font-bold text-gold">Seasonal Collections</h1>
-                    <p className="text-sm text-text-muted mt-1">Create and manage curated product collections</p>
+                    <h1 className="font-serif text-4xl md:text-5xl font-bold text-gold mb-2">Seasonal Collections</h1>
+                    <p className="text-base text-text-muted font-medium ml-1">Curate and manage product collections and seasonal offerings.</p>
                 </div>
                 <button
                     onClick={openCreate}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary-light text-[#E8D8B9] text-sm font-semibold rounded-lg transition-colors"
+                    className="flex items-center gap-2 px-8 py-3 bg-primary hover:bg-primary-dark shadow-lg hover:shadow-primary/20 text-white text-sm font-bold rounded-2xl transition-all transform active:scale-95"
                 >
-                    <Plus className="w-4 h-4" /> New Collection
+                    <Plus className="w-5 h-5" /> New Collection
                 </button>
             </div>
 
             {/* Filter Bar */}
-            <div className="flex items-center gap-3">
-                <label className="text-xs text-text-muted uppercase tracking-wider font-semibold">Status</label>
+            <div className="flex items-center gap-4 bg-sidebar-bg/50 backdrop-blur-md p-2 rounded-2xl w-fit border border-border">
+                <label className="text-xs text-text-muted uppercase font-semibold pl-3">Status</label>
                 <select
                     value={statusFilter}
                     onChange={e => setStatusFilter(e.target.value)}
-                    className="rounded-lg border border-border bg-page-bg px-3 py-2 text-sm text-text-primary focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40"
+                    className="appearance-none rounded-xl border border-border bg-card-bg/60 backdrop-blur-sm px-6 py-2.5 text-sm font-bold text-text-primary focus:border-gold focus:outline-none cursor-pointer min-w-[150px] transition-all"
                 >
-                    <option value="">All</option>
-                    <option value="draft">Draft</option>
+                    <option value="">All Collections</option>
+                    <option value="draft">Drafts</option>
                     <option value="active">Active</option>
                     <option value="archived">Archived</option>
                 </select>
-                <span className="ml-auto text-xs text-text-muted">{total} collection{total !== 1 ? 's' : ''}</span>
+                <div className="h-6 w-px bg-border/50 mx-2" />
+                <span className="text-sm font-bold text-text-muted pr-4">{total} Collection{total !== 1 ? 's' : ''}</span>
             </div>
 
             {/* Collections Table */}
@@ -379,9 +380,9 @@ export default function CollectionsPage() {
 
                         {/* Modal Header */}
                         <div className="flex items-center justify-between p-5 border-b border-border bg-card-bg z-10 shrink-0">
-                            <h2 className="font-serif text-xl font-bold text-gold">
+                            <h4 className="font-serif text-xl font-bold text-gold">
                                 {modalMode === 'create' ? 'Create Collection' : `Edit: ${editingCollection?.name}`}
-                            </h2>
+                            </h4>
                             <button onClick={() => setModalMode(null)} className="text-text-muted hover:text-white transition-colors"><X className="w-5 h-5" /></button>
                         </div>
 
@@ -389,7 +390,7 @@ export default function CollectionsPage() {
 
                             {/* Left Side: Collection Details Form */}
                             <div className="w-full md:w-1/2 p-5 overflow-y-auto border-r border-border custom-scrollbar">
-                                <h3 className="font-serif text-xs font-semibold uppercase tracking-wider text-text-muted mb-4">Collection Details</h3>
+                                <h4 className="font-serif text-xs font-semibold uppercase text-text-muted mb-4">Collection Details</h4>
                                 <div className="space-y-4">
                                     {/* Name */}
                                     <div>
@@ -509,7 +510,7 @@ export default function CollectionsPage() {
 
                             {/* Right Side: Product Management */}
                             <div className="w-full md:w-1/2 p-5 overflow-y-auto bg-page-bg/30 custom-scrollbar flex flex-col">
-                                <h3 className="font-serif text-xs font-semibold uppercase tracking-wider text-text-muted mb-4">Collection Products &nbsp;·&nbsp; {displayProducts.length}</h3>
+                                <h4 className="font-serif text-xs font-semibold uppercase text-text-muted mb-4">Collection Products &nbsp;·&nbsp; {displayProducts.length}</h4>
 
                                 {/* Add Product Search */}
                                 <div>
