@@ -33,6 +33,15 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
         created: number;
         updated: number;
         errors: { row: number; sku: string; error: string }[];
+        mediaErrors?: { url: string; error: string }[];
+    } | null>(null);
+    const [jobId, setJobId] = useState<string | null>(null);
+    const [progressStatus, setProgressStatus] = useState<{
+        status: string;
+        total_rows: number;
+        processed_rows: number;
+        successful: number;
+        failed: number;
     } | null>(null);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -82,24 +91,62 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
             const data = await res.json();
 
             if (data.success) {
-                setResults(data.data);
-                if (data.data.errors && data.data.errors.length > 0) {
-                    toast.error(`Import finished with ${data.data.errors.length} errors.`);
+                if (data.data.jobId) {
+                    // Large import - switch to polling mode
+                    setJobId(data.data.jobId);
+                    startPolling(data.data.jobId);
+                    toast.success('Large file detected. Importing in background...');
                 } else {
-                    toast.success('Import completed successfully!');
+                    // Small import - results returned immediately
+                    setResults(data.data);
+                    if ((data.data.errors && data.data.errors.length > 0) || (data.data.mediaErrors && data.data.mediaErrors.length > 0)) {
+                        toast.error(`Import finished with some issues.`);
+                    } else {
+                        toast.success('Import completed successfully!');
+                    }
+                    onSuccess();
+                    setIsUploading(false);
                 }
-
-                // Refresh list in parent but don't close modal yet so they can see results
-                onSuccess();
             } else {
                 toast.error(data.message || 'Import failed');
+                setIsUploading(false);
             }
         } catch (err) {
             console.error(err);
             toast.error('Network error during upload');
-        } finally {
             setIsUploading(false);
         }
+    };
+
+    const startPolling = (id: string) => {
+        const interval = setInterval(async () => {
+            try {
+                const res = await authFetch(`${API_URL}/api/products/import/csv/status/${id}`);
+                const data = await res.json();
+
+                if (data.success && data.data) {
+                    const job = data.data;
+                    setProgressStatus(job);
+
+                    if (job.status === 'completed') {
+                        clearInterval(interval);
+                        setResults(job.result);
+                        setJobId(null);
+                        setIsUploading(false);
+                        toast.success('Background import completed!');
+                        onSuccess();
+                    } else if (job.status === 'failed') {
+                        clearInterval(interval);
+                        setResults(job.result || { totalRows: job.total_rows, created: job.successful, updated: 0, errors: job.errors || [] });
+                        setJobId(null);
+                        setIsUploading(false);
+                        toast.error('Background import failed.');
+                    }
+                }
+            } catch (err) {
+                console.error('Polling error:', err);
+            }
+        }, 2000);
     };
 
     const handleDownloadTemplate = (format: 'csv' | 'xlsx') => {
@@ -118,6 +165,12 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
                 'Speciality_3': "",
                 'Intended Use': "Daily wellness",
                 'Description': "A premium ayurvedic supplement for vitality and stress relief.",
+                'product_image_1': "https://example.com/product-main.jpg",
+                'product_image_2': "",
+                'product_image_3': "",
+                'product_image_4': "",
+                'product_image_5': "",
+                'product_video': "",
                 
                 // ── Variant 1 ───────────────────────────────
                 'Variant_name1': "60 Capsules Single",
@@ -139,6 +192,12 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
                 'Length 1': "10",
                 'width 1': "5",
                 'height 1': "5",
+                'image_1_1': "https://example.com/variant-1.jpg",
+                'image_1_2': "",
+                'image_1_3': "",
+                'image_1_4': "",
+                'image_1_5': "",
+                'video_1': "",
 
                 // ── Variant 2 ───────────────────────────────
                 'Variant_name 2': "120 Capsules Twin Pack",
@@ -160,6 +219,12 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
                 'Length 2': "10",
                 'width 2': "10",
                 'height 2': "5",
+                'image_2_1': "",
+                'image_2_2': "",
+                'image_2_3': "",
+                'image_2_4': "",
+                'image_2_5': "",
+                'video_2': "",
 
                 // ── Variant 3 ───────────────────────────────
                 'Variant_name 3': "",
@@ -180,7 +245,13 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
                 'Shelf_life(months) 3': "",
                 'Length 3': "",
                 'width 3': "",
-                'height 3': ""
+                'height 3': "",
+                'image_3_1': "",
+                'image_3_2': "",
+                'image_3_3': "",
+                'image_3_4': "",
+                'image_3_5': "",
+                'video_3': ""
             }
         ];
 
@@ -207,6 +278,8 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
     const resetAndClose = () => {
         setFile(null);
         setResults(null);
+        setJobId(null);
+        setProgressStatus(null);
         onClose();
     };
 
@@ -275,8 +348,8 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
                                     <li><strong>SKU 1</strong>, <strong>Product Name</strong>, and <strong>Price 1</strong> are required for new products.</li>
                                     <li>If the SKU exists, the product will be <strong>updated</strong>. If not, a new product will be <strong>created</strong>.</li>
                                     <li>You can add up to <strong>3 variants</strong> per row (e.g., using SKU 1, SKU 2, SKU 3).</li>
-                                    <li>New products are imported as <strong>Drafts</strong> by default for your review.</li>
-                                    <li>Volume format: <strong>750 ml</strong>. Pack quantity: <strong>1</strong>, <strong>6</strong>, etc.</li>
+                                    <li>Supports media URLs in columns like <strong>product_image_1</strong> and <strong>image_1_1</strong>.</li>
+                                    <li>Large files (&gt;100 rows) are processed in the background.</li>
                                 </ul>
                                 <div className="mt-5 flex items-center gap-3">
                                     <button
@@ -293,6 +366,42 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
                                         <Download className="h-4 w-4" /> Excel (.xlsx) Template
                                     </button>
                                 </div>
+                            </div>
+                        </div>
+                    ) : jobId ? (
+                        <div className="py-12 px-6 text-center space-y-6">
+                            <div className="flex justify-center">
+                                <div className="relative">
+                                    <Loader2 className="h-16 w-16 text-primary animate-spin" />
+                                    <div className="absolute inset-0 flex items-center justify-center font-bold text-xs text-primary">
+                                        {progressStatus ? Math.round((progressStatus.processed_rows / progressStatus.total_rows) * 100) : 0}%
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <h3 className="text-lg font-semibold text-text-primary">Processing Background Import</h3>
+                                <p className="text-sm text-text-secondary">
+                                    Job ID: <code className="bg-page-bg px-1.5 py-0.5 rounded text-xs">{jobId}</code>
+                                </p>
+                            </div>
+
+                            <div className="max-w-md mx-auto space-y-4">
+                                <div className="w-full bg-page-bg rounded-full h-2.5 overflow-hidden border border-border">
+                                    <div 
+                                        className="bg-primary h-full transition-all duration-500" 
+                                        style={{ width: `${progressStatus ? (progressStatus.processed_rows / progressStatus.total_rows) * 100 : 0}%` }}
+                                    ></div>
+                                </div>
+                                <div className="flex items-center justify-between text-xs font-medium text-text-muted">
+                                    <span>Processed {progressStatus?.processed_rows || 0} / {progressStatus?.total_rows || 0} rows</span>
+                                    <span className="text-emerald-600">{progressStatus?.successful || 0} successful</span>
+                                </div>
+                            </div>
+
+                            <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl text-left">
+                                <p className="text-xs text-blue-700 leading-relaxed">
+                                    This might take a while depending on the number of images to download and upload to S3. You can close this modal; the import will continue in the background.
+                                </p>
                             </div>
                         </div>
                     ) : (
@@ -318,28 +427,35 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
                             </p>
 
                             {/* Errors List */}
-                            {results.errors.length > 0 && (
+                            {((results.errors && results.errors.length > 0) || (results.mediaErrors && results.mediaErrors.length > 0)) && (
                                 <div className="mt-6 border border-red-200 rounded-xl overflow-hidden">
                                     <div className="bg-red-50 px-4 py-3 flex items-center justify-between border-b border-red-100">
                                         <div className="flex items-center gap-2 text-red-700 font-medium text-sm">
-                                            <AlertCircle className="h-4 w-4" /> Import Errors
+                                            <AlertCircle className="h-4 w-4" /> Import Issues
                                         </div>
                                     </div>
                                     <div className="max-h-60 overflow-y-auto p-0">
                                         <table className="w-full text-left text-sm">
                                             <thead className="bg-white sticky top-0 border-b border-red-100/50 shadow-sm">
                                                 <tr className="text-xs text-red-800 uppercase">
-                                                    <th className="px-4 py-2 font-medium">Row</th>
-                                                    <th className="px-4 py-2 font-medium">SKU</th>
+                                                    <th className="px-4 py-2 font-medium">Row / Type</th>
+                                                    <th className="px-4 py-2 font-medium">SKU / URL</th>
                                                     <th className="px-4 py-2 font-medium">Error Details</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-red-100 bg-white">
-                                                {results.errors.map((err, idx) => (
-                                                    <tr key={idx} className="hover:bg-red-50/50">
-                                                        <td className="px-4 py-2.5 text-red-600 font-mono text-xs">{err.row}</td>
+                                                {results.errors?.map((err, idx) => (
+                                                    <tr key={`row-${idx}`} className="hover:bg-red-50/50">
+                                                        <td className="px-4 py-2.5 text-red-600 font-mono text-xs">Row {err.row}</td>
                                                         <td className="px-4 py-2.5 text-red-900 font-mono text-xs">{err.sku}</td>
                                                         <td className="px-4 py-2.5 text-red-600">{err.error}</td>
+                                                    </tr>
+                                                ))}
+                                                {results.mediaErrors?.map((err, idx) => (
+                                                    <tr key={`media-${idx}`} className="hover:bg-red-50/50 italic">
+                                                        <td className="px-4 py-2.5 text-amber-600 font-medium text-xs">Media</td>
+                                                        <td className="px-4 py-2.5 text-text-muted font-mono text-xs truncate max-w-[150px]" title={err.url}>{err.url}</td>
+                                                        <td className="px-4 py-2.5 text-amber-700">{err.error}</td>
                                                     </tr>
                                                 ))}
                                             </tbody>

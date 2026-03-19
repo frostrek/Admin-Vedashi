@@ -11,7 +11,13 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'ecommerce-backend-h23p.onrender.com',
+        hostname: 'd15o8yv09tizyc.cloudfront.net',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'vedashi-prod-assets.s3.ap-south-1.amazonaws.com',
         port: '',
         pathname: '/**',
       },
