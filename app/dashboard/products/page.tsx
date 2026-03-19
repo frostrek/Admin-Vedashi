@@ -856,7 +856,7 @@ export default function ProductsListPage() {
                                         <FileEdit className="h-9 w-9 text-primary/60" />
                                     </div>
                                     <div className="text-center">
-                                        <p className="text-lg font-serif font-semibold text-text-primary">No drafts saved yet</p>
+                                        <p className="text-lg font-semibold text-text-primary">No drafts saved yet</p>
                                         <p className="text-sm text-text-muted mt-1 max-w-[280px]">
                                             Start filling a product form and click&nbsp;<strong>Save as Draft</strong>&nbsp;to continue later.
                                         </p>
@@ -875,7 +875,7 @@ export default function ProductsListPage() {
                                         <Search className="h-7 w-7 text-primary/60" />
                                     </div>
                                     <div className="text-center">
-                                        <p className="text-lg font-serif font-semibold text-text-primary">No matching drafts</p>
+                                        <p className="text-lg font-semibold text-text-primary">No matching drafts</p>
                                         <p className="text-sm text-text-muted mt-1 max-w-[280px]">
                                             Try adjusting your search query or category filter.
                                         </p>
@@ -1040,7 +1040,7 @@ export default function ProductsListPage() {
                             <div className="absolute right-0 mt-2 w-80 z-[70] bg-card-bg border border-border rounded-2xl shadow-2xl overflow-hidden animate-fadeInUp flex flex-col max-h-[80vh]">
                                 <div className="p-5 pb-4 border-b border-border/50 shrink-0">
                                     <div className="flex items-center justify-between">
-                                        <h3 className="text-sm font-semibold text-text-primary flex items-center gap-2">
+                                        <h3 className="font-serif text-sm font-semibold text-text-primary flex items-center gap-2">
                                             <Filter className="h-4 w-4 text-gold" />
                                             Refine Products
                                         </h3>

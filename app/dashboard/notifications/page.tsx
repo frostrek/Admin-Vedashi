@@ -146,7 +146,7 @@ export default function NotificationsPage() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-serif font-bold text-gold">Promotional Notifications</h1>
+                    <h1 className="font-serif text-2xl font-bold text-gold">Promotional Notifications</h1>
                     <p className="text-sm text-text-muted mt-1">Create and send email campaigns to your customers</p>
                 </div>
                 <Link

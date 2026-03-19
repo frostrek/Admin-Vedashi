@@ -235,7 +235,7 @@ export default function SecurityDashboard() {
             {/* Page Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-fadeInUp" style={{ animationDelay: '0ms' }}>
                 <div>
-                    <h1 className="text-3xl font-serif font-bold text-gold flex items-center gap-3">
+                    <h1 className="font-serif text-3xl font-bold text-gold flex items-center gap-3">
                         <div className="p-2.5 bg-primary/20 rounded-2xl border border-border shadow-lg">
                             <ShieldAlert className="h-6 w-6 text-gold" />
                         </div>
@@ -254,7 +254,7 @@ export default function SecurityDashboard() {
 
             {/* Active Defenses Grid */}
             <div className="animate-fadeInUp" style={{ animationDelay: '100ms' }}>
-                <h2 className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                <h2 className="font-serif text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
                     <Activity className="h-4 w-4 text-gold" />
                     Protocol Guardians
                 </h2>
@@ -274,7 +274,7 @@ export default function SecurityDashboard() {
                                     Active
                                 </span>
                             </div>
-                            <h3 className="text-gold font-serif font-bold text-sm tracking-wide">{defense.name}</h3>
+                            <h3 className="font-serif text-gold font-bold text-sm tracking-wide">{defense.name}</h3>
                             <p className="text-text-muted text-[10px] mt-1 font-medium uppercase tracking-tight">{defense.desc}</p>
                         </div>
                     ))}
@@ -285,7 +285,7 @@ export default function SecurityDashboard() {
                 {/* Disaster Recovery Panel - Takes 2/5 */}
                 <div className="lg:col-span-2 bg-gradient-to-br from-card-bg to-card-bg-elevated border border-border rounded-2xl overflow-hidden shadow-xl backdrop-blur-sm animate-fadeInUp" style={{ animationDelay: '400ms' }}>
                     <div className="p-6 border-b border-border bg-primary/10">
-                        <h2 className="text-base font-serif font-bold text-gold tracking-widest uppercase flex items-center gap-2.5">
+                        <h2 className="font-serif text-base font-bold text-gold tracking-widest uppercase flex items-center gap-2.5">
                             <AlertTriangle className="h-5 w-5 text-warning" />
                             Disaster Protocol
                         </h2>
@@ -303,7 +303,7 @@ export default function SecurityDashboard() {
                                 <div className="flex items-center gap-3">
                                     <Server className={`h-5 w-5 ${maintenanceEnabled ? 'text-danger' : 'text-gold'}`} />
                                     <div>
-                                        <h3 className="text-gold font-serif font-bold text-sm">Lockdown Mode</h3>
+                                        <h3 className="font-serif text-gold font-bold text-sm">Lockdown Mode</h3>
                                         <p className={`text-[10px] font-bold uppercase tracking-wider mt-0.5 ${maintenanceEnabled ? 'text-danger' : 'text-text-muted'}`}>
                                             {maintenanceEnabled ? '⚠ Traffic redirection active' : 'All systems operational'}
                                         </p>
@@ -356,11 +356,11 @@ export default function SecurityDashboard() {
                         <div className="mt-4 grid grid-cols-2 gap-3">
                             <div className="bg-black/20 rounded-xl border border-border p-3">
                                 <p className="text-[9px] text-text-muted uppercase tracking-[0.2em] font-bold">Emergency Seal</p>
-                                <p className="text-gold font-serif text-sm font-bold mt-1">On Shutdown</p>
+                                <p className="text-gold text-sm font-bold mt-1">On Shutdown</p>
                             </div>
                             <div className="bg-black/20 rounded-xl border border-border p-3">
                                 <p className="text-[9px] text-text-muted uppercase tracking-[0.2em] font-bold">Auto Synthesis</p>
-                                <p className="text-gold font-serif text-sm font-bold mt-1">Daily 02:00</p>
+                                <p className="text-gold text-sm font-bold mt-1">Daily 02:00</p>
                             </div>
                         </div>
                     </div>
@@ -370,7 +370,7 @@ export default function SecurityDashboard() {
                 <div className="lg:col-span-3 bg-gradient-to-br from-card-bg to-card-bg-elevated border border-border rounded-2xl overflow-hidden shadow-xl backdrop-blur-sm animate-fadeInUp" style={{ animationDelay: '500ms' }}>
                     <div className="p-6 border-b border-border bg-primary/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
-                            <h2 className="text-base font-serif font-bold text-gold tracking-widest uppercase flex items-center gap-2.5">
+                            <h2 className="font-serif text-base font-bold text-gold tracking-widest uppercase flex items-center gap-2.5">
                                 <HardDrive className="h-5 w-5 text-gold" />
                                 Database Archives
                             </h2>

@@ -276,7 +276,7 @@ export default function SynonymsPage() {
                     <div className="bg-card-bg rounded-2xl shadow-2xl w-full max-w-md border border-border overflow-hidden animate-in zoom-in-95 duration-200">
                         <div className="p-6 border-b border-border-subtle relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-gold/5 rounded-full blur-2xl transform translate-x-1/2 -translate-y-1/2"></div>
-                            <h2 className="text-xl font-bold font-serif text-gold-soft relative z-10">
+                            <h2 className="font-serif text-xl font-bold text-gold-soft relative z-10">
                                 {isEditing ? 'Edit Synonym' : 'Add Synonym'}
                             </h2>
                         </div>

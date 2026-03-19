@@ -1428,7 +1428,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
 
                                     {/* Product Availability Scheduling */}
                                     <div className="sm:col-span-2 mt-4 pt-4 border-t border-border">
-                                        <h4 className="font-semibold text-gold-soft mb-4 text-sm flex items-center gap-2">
+                                        <h4 className="font-serif font-semibold text-gold-soft mb-4 text-sm flex items-center gap-2">
                                             <AlertCircle size={16} /> Product Availability Scheduling
                                         </h4>
                                         <p className="text-xs text-text-secondary mb-4 max-w-2xl">
@@ -1539,7 +1539,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                         {Object.entries(dimConfigs).filter(([_, c]) => c.active).map(([key, config]) => (
                                             <div key={key} className="bg-white/[0.03] border border-border rounded-xl p-4 space-y-3">
                                                 <div className="flex items-center justify-between">
-                                                    <h4 className="text-sm font-semibold text-text-primary capitalize">BY {key}</h4>
+                                                    <h4 className="font-serif text-sm font-semibold text-text-primary capitalize">BY {key}</h4>
                                                     <span className="text-[10px] text-text-muted bg-white/5 px-2 py-0.5 rounded-full">{config.values.length} values</span>
                                                 </div>
 

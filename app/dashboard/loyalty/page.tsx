@@ -243,7 +243,7 @@ export default function LoyaltyAdminPage() {
             <div className="bg-card-bg/60 backdrop-blur-md rounded-2xl p-6 border border-border/40 shadow-sm">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-serif font-bold text-gold flex items-center gap-2">
+                        <h1 className="font-serif text-2xl font-bold text-gold flex items-center gap-2">
                             <Gift className="h-6 w-6" /> Loyalty & Rewards
                         </h1>
                         <p className="text-sm text-text-primary mt-1 max-w-xl font-medium">Manage tiers, points rules, and exclusive promotions with ease.</p>
@@ -307,7 +307,7 @@ export default function LoyaltyAdminPage() {
                                         <p className="text-sm text-text-muted font-medium group-hover:text-gold transition-colors">Active Wallets</p>
                                         <div className="p-2 bg-purple-500/10 rounded-lg group-hover:bg-purple-500/20"><Database className="h-4 w-4 text-purple-400" /></div>
                                     </div>
-                                    <h3 className="text-2xl font-bold text-text-primary mb-1 font-mono">{formatNumber(stats.stats?.total_wallets || stats.total_wallets)}</h3>
+                                    <h3 className="font-serif text-2xl font-bold text-text-primary mb-1 font-mono">{formatNumber(stats.stats?.total_wallets || stats.total_wallets)}</h3>
                                     <p className="text-xs text-text-muted">Customers with point balances</p>
                                 </div>
 
@@ -316,7 +316,7 @@ export default function LoyaltyAdminPage() {
                                         <p className="text-sm text-text-muted font-medium">Live Promotions</p>
                                         <div className="p-2 bg-gold/10 rounded-lg"><Percent className="h-4 w-4 text-gold" /></div>
                                     </div>
-                                    <h3 className="text-2xl font-bold text-text-primary mb-1 font-mono">{stats.active_promotions}</h3>
+                                    <h3 className="font-serif text-2xl font-bold text-text-primary mb-1 font-mono">{stats.active_promotions}</h3>
                                     <p className="text-xs text-text-muted">Currently active campaigns</p>
                                 </div>
                             </div>

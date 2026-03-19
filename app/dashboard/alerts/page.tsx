@@ -161,7 +161,7 @@ export default function AlertsPage() {
                                     </div>
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2">
-                                            <h3 className="text-sm font-semibold text-text-primary">Order Management</h3>
+                                            <h3 className="font-serif text-sm font-semibold text-text-primary">Order Management</h3>
                                             <span className="text-[10px] bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full font-medium">New Order</span>
                                         </div>
                                         <p className="text-sm text-text-secondary mt-1">
@@ -187,7 +187,7 @@ export default function AlertsPage() {
                                     </div>
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2">
-                                            <h3 className="text-sm font-semibold text-text-primary">Product Management</h3>
+                                            <h3 className="font-serif text-sm font-semibold text-text-primary">Product Management</h3>
                                             <span className="text-[10px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full font-medium">Low Stock</span>
                                         </div>
                                         <p className="text-sm text-text-secondary mt-1">
@@ -213,7 +213,7 @@ export default function AlertsPage() {
                                     </div>
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2">
-                                            <h3 className="text-sm font-semibold text-text-primary">Customer Enquiries</h3>
+                                            <h3 className="font-serif text-sm font-semibold text-text-primary">Customer Enquiries</h3>
                                             <span className="text-[10px] bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full font-medium">New Enquiry</span>
                                         </div>
                                         <p className="text-sm text-text-secondary mt-1">

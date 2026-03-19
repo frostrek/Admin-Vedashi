@@ -11,11 +11,11 @@ export default function NotFound() {
                 </div>
             </div>
 
-            <h1 className="text-7xl md:text-8xl font-serif font-black mb-2 text-gold-soft tracking-tight">
+            <h1 className="font-serif text-7xl md:text-8xl font-black mb-2 text-gold-soft tracking-tight">
                 404
             </h1>
 
-            <h2 className="text-lg md:text-xl mb-3 font-serif text-text-secondary">
+            <h2 className="font-serif text-lg md:text-xl mb-3 text-text-secondary">
                 Oops! This path has faded away
             </h2>
 

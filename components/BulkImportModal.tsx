@@ -218,7 +218,7 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-border/50 bg-card-bg">
                     <div>
-                        <h2 className="text-xl font-bold font-serif text-text-primary">Bulk Import Products</h2>
+                        <h2 className="font-serif text-xl font-bold text-text-primary">Bulk Import Products</h2>
                         <p className="text-sm text-text-secondary">Upload a CSV or Excel file to create or update products in bulk.</p>
                     </div>
                     <button onClick={resetAndClose} className="p-2 text-text-muted hover:text-text-primary rounded-full hover:bg-page-bg transition-colors">
@@ -269,7 +269,7 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
 
                             {/* Instructions */}
                             <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
-                                <h3 className="text-sm font-semibold text-amber-800 mb-2">Important Instructions</h3>
+                                <h3 className="font-serif text-sm font-semibold text-amber-800 mb-2">Important Instructions</h3>
                                 <ul className="text-sm text-amber-900/80 space-y-1.5 list-disc pl-4">
                                     <li>The file must be a valid <strong>.csv, .xlsx, or .xls</strong> file.</li>
                                     <li><strong>SKU 1</strong>, <strong>Product Name</strong>, and <strong>Price 1</strong> are required for new products.</li>

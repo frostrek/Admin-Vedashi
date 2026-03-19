@@ -260,7 +260,7 @@ export default function CollectionsPage() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-serif font-bold text-gold">Seasonal Collections</h1>
+                    <h1 className="font-serif text-2xl font-bold text-gold">Seasonal Collections</h1>
                     <p className="text-sm text-text-muted mt-1">Create and manage curated product collections</p>
                 </div>
                 <button
@@ -379,7 +379,7 @@ export default function CollectionsPage() {
 
                         {/* Modal Header */}
                         <div className="flex items-center justify-between p-5 border-b border-border bg-card-bg z-10 shrink-0">
-                            <h2 className="text-xl font-serif font-bold text-gold">
+                            <h2 className="font-serif text-xl font-bold text-gold">
                                 {modalMode === 'create' ? 'Create Collection' : `Edit: ${editingCollection?.name}`}
                             </h2>
                             <button onClick={() => setModalMode(null)} className="text-text-muted hover:text-white transition-colors"><X className="w-5 h-5" /></button>
@@ -389,7 +389,7 @@ export default function CollectionsPage() {
 
                             {/* Left Side: Collection Details Form */}
                             <div className="w-full md:w-1/2 p-5 overflow-y-auto border-r border-border custom-scrollbar">
-                                <h3 className="text-xs font-semibold uppercase tracking-wider text-text-muted mb-4">Collection Details</h3>
+                                <h3 className="font-serif text-xs font-semibold uppercase tracking-wider text-text-muted mb-4">Collection Details</h3>
                                 <div className="space-y-4">
                                     {/* Name */}
                                     <div>
@@ -509,7 +509,7 @@ export default function CollectionsPage() {
 
                             {/* Right Side: Product Management */}
                             <div className="w-full md:w-1/2 p-5 overflow-y-auto bg-page-bg/30 custom-scrollbar flex flex-col">
-                                <h3 className="text-xs font-semibold uppercase tracking-wider text-text-muted mb-4">Collection Products &nbsp;·&nbsp; {displayProducts.length}</h3>
+                                <h3 className="font-serif text-xs font-semibold uppercase tracking-wider text-text-muted mb-4">Collection Products &nbsp;·&nbsp; {displayProducts.length}</h3>
 
                                 {/* Add Product Search */}
                                 <div>

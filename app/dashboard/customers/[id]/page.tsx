@@ -169,7 +169,7 @@ export default function CustomerDetailPage() {
                 <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-gold/40 via-primary/40 to-gold/40"></div>
                 
                 <div className="flex flex-col md:flex-row gap-6 items-center">
-                    <div className="w-20 h-20 rounded-2xl bg-gold/10 border-2 border-gold/20 flex items-center justify-center text-gold text-3xl font-serif shadow-sm">
+                    <div className="w-20 h-20 rounded-2xl bg-gold/10 border-2 border-gold/20 flex items-center justify-center text-gold text-3xl shadow-sm">
                         {customer.full_name?.charAt(0) || 'P'}
                     </div>
                     <div className="flex-1 text-center md:text-left">
@@ -259,21 +259,21 @@ export default function CustomerDetailPage() {
                                 <IndianRupee className="h-5 w-5" />
                             </div>
                             <p className="text-[10px] font-bold text-gold-muted uppercase tracking-widest mb-1">Lifetime Spend</p>
-                            <p className="text-2xl font-serif font-bold text-text-primary">{formatINR(stats.totalSpent)}</p>
+                            <p className="text-2xl font-bold text-text-primary">{formatINR(stats.totalSpent)}</p>
                         </div>
                         <div className="p-6 rounded-2xl border border-border bg-card-bg shadow-sm hover-lift group">
                             <div className="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center text-gold mb-4 group-hover:scale-110 transition-transform">
                                 <ShoppingBag className="h-5 w-5" />
                             </div>
                             <p className="text-[10px] font-bold text-gold-muted uppercase tracking-widest mb-1">Total Orders</p>
-                            <p className="text-2xl font-serif font-bold text-text-primary">{stats.totalOrders}</p>
+                            <p className="text-2xl font-bold text-text-primary">{stats.totalOrders}</p>
                         </div>
                         <div className="p-6 rounded-2xl border border-border bg-card-bg shadow-sm hover-lift group">
                             <div className="w-10 h-10 rounded-xl bg-info/10 flex items-center justify-center text-info mb-4 group-hover:scale-110 transition-transform">
                                 <ArrowUpRight className="h-5 w-5" />
                             </div>
                             <p className="text-[10px] font-bold text-gold-muted uppercase tracking-widest mb-1">Avg. Order Value</p>
-                            <p className="text-2xl font-serif font-bold text-text-primary">{formatINR(stats.aov)}</p>
+                            <p className="text-2xl font-bold text-text-primary">{formatINR(stats.aov)}</p>
                         </div>
                     </div>
 

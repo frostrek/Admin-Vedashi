@@ -183,7 +183,7 @@ export default function ProfileStratumPage() {
                         <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/20 border border-gold/20 shadow-lg">
                             <User className="w-6 h-6 text-gold" />
                         </div>
-                        <h1 className={`text-3xl font-serif font-bold ${isDark ? 'text-gold' : 'text-emerald-950'} tracking-tighter`}>Admin Profile Stratum</h1>
+                        <h1 className={`text-3xl font-bold ${isDark ? 'text-gold' : 'text-emerald-950'} tracking-tighter`}>Admin Profile Stratum</h1>
                     </div>
                     <p className={`text-[10px] font-bold uppercase tracking-[0.2em] ${isDark ? 'text-text-muted' : 'text-emerald-900/40'} ml-16`}>
                         Orchestrate your administrative essence and security resonance.
@@ -232,14 +232,14 @@ export default function ProfileStratumPage() {
                                 <div className="flex flex-col md:flex-row gap-10 items-center border-b border-white/10 pb-10">
                                     <div className="relative group">
                                         <div className="w-36 h-36 rounded-full overflow-hidden border-4 border-gold shadow-[0_0_40px_rgba(197,164,109,0.3)] bg-primary/40 flex items-center justify-center">
-                                            <span className="text-5xl font-serif font-bold text-gold drop-shadow-md">
+                                            <span className="text-5xl font-bold text-gold drop-shadow-md">
                                                 {name.charAt(0).toUpperCase()}
                                             </span>
                                         </div>
                                     </div>
                                     <div className={`flex-1 text-center md:text-left space-y-4 ${pageLoading ? 'animate-pulse' : ''}`}>
                                         <div>
-                                            <h2 className={`text-3xl font-serif font-bold ${isDark ? 'text-gold' : 'text-emerald-950'} leading-tight drop-shadow-sm`}>
+                                            <h2 className={`text-3xl font-bold ${isDark ? 'text-gold' : 'text-emerald-950'} leading-tight drop-shadow-sm`}>
                                                 {pageLoading ? 'Synchronizing Essence...' : name}
                                             </h2>
                                             <p className={`text-[11px] ${isDark ? 'text-gold-soft/50' : 'text-emerald-900/40'} font-black uppercase tracking-[0.4em] mt-1`}>Administrator • Level 9 Specialist</p>
@@ -291,7 +291,7 @@ export default function ProfileStratumPage() {
                                         </div>
                                         <div className="space-y-2">
                                             <label className={labelCls}>Role Stratum</label>
-                                            <div className={`px-6 py-4 rounded-2xl border ${isDark ? 'border-white/10 bg-black/60 text-gold/60' : 'border-gold/10 bg-emerald-50 text-emerald-900/60'} text-sm font-bold uppercase tracking-[0.15em] italic font-serif`}>
+                                            <div className={`px-6 py-4 rounded-2xl border ${isDark ? 'border-white/10 bg-black/60 text-gold/60' : 'border-gold/10 bg-emerald-50 text-emerald-900/60'} text-sm font-bold uppercase tracking-[0.15em] italic`}>
                                                 Super Administrator (Unrestricted Access)
                                             </div>
                                         </div>
@@ -327,7 +327,7 @@ export default function ProfileStratumPage() {
                         {activeTab === 'security' && (
                             <form onSubmit={handleChangePassword} className="p-10 space-y-12 animate-fadeIn">
                                 <div className="space-y-4">
-                                    <h3 className="text-xl font-serif font-bold text-gold tracking-tight flex items-center gap-3">
+                                    <h3 className="font-serif text-xl font-bold text-gold tracking-tight flex items-center gap-3">
                                         <Key className="w-5 h-5" /> Key Calibration
                                     </h3>
                                     <p className="text-xs text-text-muted leading-relaxed">Ensure your administrative vault remains impenetrable by cycling your security keys periodically.</p>
@@ -404,14 +404,14 @@ export default function ProfileStratumPage() {
                         {activeTab === 'preferences' && (
                             <div className="p-10 space-y-12 animate-fadeIn">
                                 <div className="space-y-4 text-center">
-                                    <h3 className="text-2xl font-serif font-bold text-gold tracking-tight">Vibe Matrix</h3>
+                                    <h3 className="font-serif text-2xl font-bold text-gold tracking-tight">Vibe Matrix</h3>
                                     <p className="text-xs text-text-muted leading-relaxed uppercase tracking-widest font-bold">Tune the frequencies of your administrative environment.</p>
                                 </div>
                                 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div className={`p-8 rounded-3xl border ${isDark ? 'bg-white/5 border-white/10' : 'bg-primary/5 border-primary/10'} space-y-4`}>
                                         <div className="flex items-center justify-between">
-                                            <h4 className={`text-sm font-serif font-bold ${isDark ? 'text-gold' : 'text-emerald-950'}`}>Visual Aura</h4>
+                                            <h4 className={`text-sm font-bold ${isDark ? 'text-gold' : 'text-emerald-950'}`}>Visual Aura</h4>
                                             <Sparkles className="w-5 h-5 text-gold/40" />
                                         </div>
                                         <p className="text-[10px] text-text-muted uppercase tracking-widest font-bold">Control the luminous intensity of the stratum.</p>
@@ -434,7 +434,7 @@ export default function ProfileStratumPage() {
 
                                     <div className={`p-8 rounded-3xl border ${isDark ? 'bg-white/5 border-white/10' : 'bg-primary/5 border-primary/10'} space-y-4`}>
                                         <div className="flex items-center justify-between">
-                                            <h4 className={`text-sm font-serif font-bold ${isDark ? 'text-gold' : 'text-emerald-950'}`}>Sound Resonance</h4>
+                                            <h4 className={`text-sm font-bold ${isDark ? 'text-gold' : 'text-emerald-950'}`}>Sound Resonance</h4>
                                             <Bell className="w-5 h-5 text-gold/40" />
                                         </div>
                                         <p className="text-[10px] text-text-muted uppercase tracking-widest font-bold">Harmonize with interface notification vibrations.</p>
@@ -465,7 +465,7 @@ export default function ProfileStratumPage() {
                         {activeTab === 'activity' && (
                             <div className="p-10 space-y-8 animate-fadeIn">
                                 <div className="flex justify-between items-end">
-                                    <h3 className="text-xl font-serif font-bold text-gold tracking-tight flex items-center gap-3">
+                                    <h3 className="font-serif text-xl font-bold text-gold tracking-tight flex items-center gap-3">
                                         <History className="w-5 h-5" /> Recent Vibrations
                                     </h3>
                                     <span className="text-[10px] font-bold text-gold-soft uppercase tracking-[0.2em] opacity-40">Last 5 actions</span>

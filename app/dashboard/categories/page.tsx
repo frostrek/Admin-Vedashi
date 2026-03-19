@@ -284,7 +284,7 @@ export default function CategoriesPage() {
                             {/* Parents Section */}
                             {displayParents.length > 0 && (
                                 <div>
-                                    <h2 className="text-sm font-semibold text-text-secondary mb-4 flex items-center gap-2">
+                                    <h2 className="font-serif text-sm font-semibold text-text-secondary mb-4 flex items-center gap-2">
                                         <Tag className="h-4 w-4" /> Categories ({displayParents.length})
                                     </h2>
                                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -305,7 +305,7 @@ export default function CategoriesPage() {
                             {/* Subcategories Section */}
                             {displaySubcategories.length > 0 && (
                                 <div>
-                                    <h2 className="text-sm font-semibold text-text-secondary mb-4 flex items-center gap-2 pt-4">
+                                    <h2 className="font-serif text-sm font-semibold text-text-secondary mb-4 flex items-center gap-2 pt-4">
                                         <FolderTree className="h-4 w-4" /> Subcategories ({displaySubcategories.length})
                                     </h2>
                                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -384,7 +384,7 @@ export default function CategoriesPage() {
                                     </p>
                                     <p className="text-sm text-yellow-800/80 leading-relaxed">
                                         Deleting this subcategory will move all {deleteTarget.product_count || 0} items in it to the parent category:
-                                        <span className="block mt-1.5 font-bold text-yellow-950 font-serif tracking-tight text-base">
+                                        <span className="block mt-1.5 font-bold text-yellow-950 tracking-tight text-base">
                                             {parentNameMap[deleteTarget.parent_id] || 'the parent category'}
                                         </span>
                                     </p>

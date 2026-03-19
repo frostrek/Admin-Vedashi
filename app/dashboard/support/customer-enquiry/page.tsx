@@ -658,7 +658,7 @@ export default function AdminFeedbackPage() {
                                                     flex items-center justify-center mb-4 vd-float">
                                         <Search className="w-6 h-6 text-text-muted opacity-40" />
                                     </div>
-                                    <p className="font-serif text-base text-text-secondary mb-1">No results found</p>
+                                    <p className="text-base text-text-secondary mb-1">No results found</p>
                                     <p className="text-[11px] text-text-muted">Try adjusting your filters</p>
                                 </div>
                             ) : filtered.map((fb: any, idx: number) => {
@@ -1131,7 +1131,7 @@ export default function AdminFeedbackPage() {
                                         <div className="absolute inset-0 rounded-full border-4 border-t-primary animate-spin" />
                                     </div>
                                     <div className="text-center">
-                                        <p className="font-serif text-[15px] font-bold text-text-primary mb-1">Loading Profile</p>
+                                        <p className="text-[15px] font-bold text-text-primary mb-1">Loading Profile</p>
                                         <p className="text-[12px] text-text-muted">Fetching customer data…</p>
                                     </div>
                                 </div>
@@ -1279,7 +1279,7 @@ export default function AdminFeedbackPage() {
                                                                 <div className="flex items-start justify-between mb-4">
                                                                     <div>
                                                                         <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest mb-1">Dominant Dosha</p>
-                                                                        <p className={`font-serif text-[22px] font-bold ${dc.text} leading-tight`}>{dom} Prakriti</p>
+                                                                        <p className={`text-[22px] font-bold ${dc.text} leading-tight`}>{dom} Prakriti</p>
                                                                         <p className="text-[10.5px] text-text-muted mt-1 font-medium">
                                                                             Profiled {new Date(c360.dosha.created_at).toLocaleDateString('en-IN',{month:'short',day:'numeric',year:'numeric'})}
                                                                         </p>
@@ -1473,7 +1473,7 @@ export default function AdminFeedbackPage() {
                                 borderBottom: '1px solid #2e3d2e',
                                 background: '#252e25',
                             }}>
-                                <p style={{ fontFamily: 'serif', fontSize: 14, fontWeight: 700, color: '#d4e8d4', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, marginTop: 0 }}>
+                                <p style={{ fontSize: 14, fontWeight: 700, color: '#d4e8d4', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, marginTop: 0 }}>
                                     📋 Canned Responses
                                 </p>
                                 <div style={{ position: 'relative' }}>

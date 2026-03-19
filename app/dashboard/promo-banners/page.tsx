@@ -135,7 +135,7 @@ export default function PromoBannersPage() {
                         <div className="p-3 bg-gold/10 rounded-2xl border border-gold/20">
                             <Megaphone className="w-8 h-8 text-gold" />
                         </div>
-                        <h1 className="text-4xl font-serif font-bold text-gold tracking-tighter">
+                        <h1 className="font-serif text-4xl font-bold text-gold tracking-tighter">
                             Promotion Banners
                         </h1>
                     </div>
@@ -164,7 +164,7 @@ export default function PromoBannersPage() {
                 ) : banners.length === 0 ? (
                     <div className={`flex flex-col items-center justify-center p-40 border-2 border-dashed border-border/40 rounded-[2.5rem] m-6 ${isDark ? 'bg-black/10' : 'bg-primary/5'} text-text-muted`}>
                         <Megaphone className="w-20 h-20 mb-8 opacity-20 text-gold" />
-                        <p className={`text-xl font-serif font-bold ${isDark ? 'text-gold-soft' : 'text-emerald-950'} mb-2`}>Silent Frequencies</p>
+                        <p className={`text-xl font-bold ${isDark ? 'text-gold-soft' : 'text-emerald-950'} mb-2`}>Silent Frequencies</p>
                         <p className={`text-[10px] uppercase tracking-widest ${isDark ? 'opacity-60' : 'text-emerald-900/40'}`}>No promotional announcements have been manifested yet.</p>
                         <button onClick={openCreate} className={`mt-10 px-8 py-3 bg-primary border border-gold/20 text-gold text-[10px] font-bold uppercase tracking-widest rounded-xl hover:shadow-[0_0_20px_rgba(197,164,109,0.2)] transition-all duration-300`}>
                             Manifest First Aura
@@ -186,7 +186,7 @@ export default function PromoBannersPage() {
                                 {banners.map((b) => (
                                     <tr key={b.id} className={`group ${isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-primary/5'} transition-all duration-300`}>
                                         <td className="px-8 py-10">
-                                            <p className={`${isDark ? 'text-gold-soft' : 'text-emerald-950'} font-serif text-lg leading-relaxed max-w-md line-clamp-2 italic drop-shadow-md group-hover:text-gold transition-colors`}>
+                                            <p className={`${isDark ? 'text-gold-soft' : 'text-emerald-950'} text-lg leading-relaxed max-w-md line-clamp-2 italic drop-shadow-md group-hover:text-gold transition-colors`}>
                                                 "{b.message}"
                                             </p>
                                         </td>
@@ -250,7 +250,7 @@ export default function PromoBannersPage() {
                     <div className={`${isDark ? 'bg-gradient-to-br from-card-bg to-card-bg-elevated' : 'bg-white'} border border-border rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden animate-scaleIn`}>
                         <div className={`flex items-center justify-between p-8 border-b border-border ${isDark ? 'bg-black/40' : 'bg-primary/5'} backdrop-blur-sm sticky top-0 z-10`}>
                             <div>
-                                <h2 className={`text-2xl font-serif font-bold ${isDark ? 'text-gold' : 'text-emerald-950'} tracking-tight`}>
+                                <h2 className={`text-2xl font-bold ${isDark ? 'text-gold' : 'text-emerald-950'} tracking-tight`}>
                                     {editing ? 'Edit Banner' : 'Create Banner'}
                                 </h2>
                                 <p className={`text-[10px] ${isDark ? 'text-gold/40' : 'text-emerald-900/40'} font-bold uppercase tracking-[0.2em] mt-1`}>Campaign Configuration</p>

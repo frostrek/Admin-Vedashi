@@ -246,7 +246,7 @@ export default function MediaLibraryPage() {
                         <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/20 border border-border shadow-lg">
                             <Images className="w-6 h-6 text-gold" />
                         </div>
-                        <h1 className="text-3xl font-serif font-bold text-gold tracking-tight">Visual Repository</h1>
+                        <h1 className="font-serif text-3xl font-bold text-gold tracking-tight">Visual Repository</h1>
                     </div>
                     <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-muted">
                         Manage hero carousel slides for the storefront landing gallery.
@@ -262,7 +262,7 @@ export default function MediaLibraryPage() {
 
             {/* Settings Bar */}
             <div className={`border border-border rounded-3xl p-6 shadow-xl backdrop-blur-sm flex flex-col xl:flex-row xl:items-center justify-between gap-6 animate-fadeInUp ${isDark ? 'bg-gradient-to-br from-card-bg to-card-bg-elevated' : 'bg-white/80'}`} style={{ animationDelay: '100ms' }}>
-                <div className="flex items-center gap-3 text-gold font-serif font-bold text-base tracking-widest uppercase shrink-0">
+                <div className="flex items-center gap-3 text-gold font-bold text-base tracking-widest uppercase shrink-0">
                     <Settings className={`w-5 h-5 ${isDark ? 'text-gold' : 'text-emerald-900'}`} />
                     <span className={isDark ? 'text-gold' : 'text-emerald-950'}>System Dynamics</span>
                 </div>
@@ -342,7 +342,7 @@ export default function MediaLibraryPage() {
             <div className="bg-primary/5 border border-border/40 rounded-2xl p-4 text-[10px] font-bold uppercase tracking-[0.1em] text-text-muted flex items-center gap-3 animate-fadeInUp shadow-inner" style={{ animationDelay: '200ms' }}>
                 <Eye className="w-4 h-4 text-gold flex-shrink-0" />
                 <span>
-                    <span className="text-gold font-serif">{slides.filter(s => s.is_active).length}</span> Manifested slides currently active in the visual stratum.
+                    <span className="text-gold">{slides.filter(s => s.is_active).length}</span> Manifested slides currently active in the visual stratum.
                 </span>
             </div>
 
@@ -355,7 +355,7 @@ export default function MediaLibraryPage() {
             ) : slides.length === 0 ? (
                 <div className="flex flex-col items-center justify-center p-32 border-2 border-dashed border-border/40 rounded-3xl bg-black/10 text-text-muted animate-fadeIn">
                     <Images className="w-20 h-20 mb-6 opacity-20 text-gold" />
-                    <p className="text-lg font-serif font-bold text-gold-soft mb-2">No Visual Essences Found</p>
+                    <p className="text-lg font-bold text-gold-soft mb-2">No Visual Essences Found</p>
                     <p className="text-[10px] uppercase tracking-widest opacity-60 mb-8">Begin by manifesting your first storefront visual asset.</p>
                     <button onClick={openCreate} className="px-8 py-3 bg-primary border border-gold/20 text-gold text-[10px] font-bold uppercase tracking-widest rounded-xl hover:shadow-[0_0_20px_rgba(197,164,109,0.2)] transition-all duration-300">
                         Upload Essence
@@ -384,7 +384,7 @@ export default function MediaLibraryPage() {
 
                             {/* Static overlay text (visible normally) */}
                             <div className="absolute inset-x-0 bottom-0 p-5 bg-gradient-to-t from-black via-black/40 to-transparent pointer-events-none">
-                                <p className="text-gold font-serif font-bold text-xl truncate drop-shadow-2xl mb-1">
+                                <p className="text-gold font-bold text-xl truncate drop-shadow-2xl mb-1">
                                     {slide.headings[0]?.text || <span className="italic opacity-30">Unnamed Essence</span>}
                                 </p>
                                 <div className="flex items-center justify-between">
@@ -430,7 +430,7 @@ export default function MediaLibraryPage() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-fadeIn">
                     <div className="bg-gradient-to-br from-card-bg to-card-bg-elevated border border-border rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col animate-scaleIn">
                         <div className="flex items-center justify-between p-6 border-b border-border bg-black/40 backdrop-blur-sm sticky top-0 z-10">
-                            <h2 className="text-xl font-serif font-bold text-gold tracking-tight lowercase">
+                            <h2 className="font-serif text-xl font-bold text-gold tracking-tight lowercase">
                                 <span className="text-[10px] uppercase block tracking-[0.3em] font-bold text-gold/40 mb-1">Visual Configuration</span>
                                 {editing ? 'Refine Essence' : 'Manifest New Essence'}
                             </h2>
@@ -474,7 +474,7 @@ export default function MediaLibraryPage() {
                                                 {form.headings.map(h => {
                                                     const isNum = !isNaN(Number(h.fontSize)) && h.fontSize !== '';
                                                     return (
-                                                        <h1 key={h.id} style={{ color: h.color, fontSize: isNum ? `${parseInt(h.fontSize) / 2}px` : undefined }} className={`font-serif font-bold leading-tight drop-shadow-2xl ${!isNum ? `text-${h.fontSize}` : ''}`}>
+                                                        <h1 key={h.id} style={{ color: h.color, fontSize: isNum ? `${parseInt(h.fontSize) / 2}px` : undefined }} className={`font-bold leading-tight drop-shadow-2xl ${!isNum ? `text-${h.fontSize}` : ''}`}>
                                                             {h.text || 'Heading Preview'}
                                                         </h1>
                                                     )
@@ -526,7 +526,7 @@ export default function MediaLibraryPage() {
                                         <div className="w-16 h-16 bg-gold/10 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                                             <UploadCloud className="w-8 h-8 text-gold" />
                                         </div>
-                                        <p className="text-sm font-serif font-bold text-gold-soft mb-1">Manifest Visual Essence</p>
+                                        <p className="text-sm font-bold text-gold-soft mb-1">Manifest Visual Essence</p>
                                         <p className="text-[10px] uppercase tracking-widest text-text-muted opacity-60">JPEG, PNG, WebP up to 10MB</p>
                                         <div className="mt-6 flex items-center gap-2 text-[9px] uppercase tracking-widest text-gold opacity-40">
                                             <div className="h-px w-8 bg-gold/20" />
@@ -540,7 +540,7 @@ export default function MediaLibraryPage() {
                             {/* ── Dynamic Headings ── */}
                             <div className="space-y-4 pt-4 border-t border-border">
                                 <div className="flex items-center justify-between px-1">
-                                    <h3 className="text-[10px] font-bold tracking-[0.2em] text-text-muted uppercase">Headings</h3>
+                                    <h3 className="font-serif text-[10px] font-bold tracking-[0.2em] text-text-muted uppercase">Headings</h3>
                                     <button
                                         type="button"
                                         onClick={addHeading}
@@ -600,7 +600,7 @@ export default function MediaLibraryPage() {
                             {/* ── Dynamic Subheadings ── */}
                             <div className="space-y-4 pt-4 border-t border-border">
                                 <div className="flex items-center justify-between px-1">
-                                    <h3 className="text-[10px] font-bold tracking-[0.2em] text-text-muted uppercase">Subheadings</h3>
+                                    <h3 className="font-serif text-[10px] font-bold tracking-[0.2em] text-text-muted uppercase">Subheadings</h3>
                                     <button
                                         type="button"
                                         onClick={addSubheading}
@@ -657,7 +657,7 @@ export default function MediaLibraryPage() {
                             {/* ── Dynamic Buttons ── */}
                             <div className="space-y-4 pt-4 border-t border-border">
                                 <div className="flex items-center justify-between px-1">
-                                    <h3 className="text-[10px] font-bold tracking-[0.2em] text-text-muted uppercase">Interaction Nodes</h3>
+                                    <h3 className="font-serif text-[10px] font-bold tracking-[0.2em] text-text-muted uppercase">Interaction Nodes</h3>
                                     <button
                                         type="button"
                                         onClick={addButton}
@@ -729,7 +729,7 @@ export default function MediaLibraryPage() {
                             <div className="bg-black/40 rounded-2xl p-6 border border-border shadow-inner space-y-4">
                                 <label className="flex items-center justify-between text-[10px] font-bold text-text-muted uppercase tracking-[0.2em]">
                                     <span>Atmospheric Density</span>
-                                    <span className="text-gold bg-gold/10 px-3 py-1 rounded-lg border border-gold/20 font-serif">{Math.round(form.overlay_opacity * 100)}%</span>
+                                    <span className="text-gold bg-gold/10 px-3 py-1 rounded-lg border border-gold/20">{Math.round(form.overlay_opacity * 100)}%</span>
                                 </label>
                                 <input
                                     type="range" min={0} max={1} step={0.05}
@@ -749,7 +749,7 @@ export default function MediaLibraryPage() {
 
                             <label className="flex items-center justify-between cursor-pointer select-none p-5 rounded-2xl border border-border bg-black/20 hover:bg-black/40 hover:border-gold/20 transition-all duration-300">
                                 <div>
-                                    <p className="text-sm font-serif font-bold text-gold-soft tracking-wide">Manifest Immediately</p>
+                                    <p className="text-sm font-bold text-gold-soft tracking-wide">Manifest Immediately</p>
                                     <p className="text-[10px] text-text-muted mt-0.5 uppercase tracking-widest font-medium">Toggle visibility of this essence within the storefront</p>
                                 </div>
                                 <div className={`relative w-14 h-7 rounded-full transition-all duration-500 flex-shrink-0 ${form.is_active ? 'bg-gold shadow-[0_0_15px_rgba(197,164,109,0.3)]' : 'bg-border'}`}>

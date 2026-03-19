@@ -382,7 +382,7 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
                 {/* Header */}
                 <div className="flex items-center justify-between p-5 border-b border-border shrink-0">
                     <div>
-                        <h2 className="text-xl font-serif font-bold text-gold">Bulk Actions</h2>
+                        <h2 className="font-serif text-xl font-bold text-gold">Bulk Actions</h2>
                         <p className="text-xs text-text-muted mt-1">
                             Apply bulk discounts or update base pricing across multiple products.
                         </p>
@@ -543,7 +543,7 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
                                 <Check className="w-5 h-5" />
                             </div>
                             <div>
-                                <h4 className="text-sm font-semibold text-gold font-serif">Targeting Selection</h4>
+                                <h4 className="font-serif text-sm font-semibold text-gold">Targeting Selection</h4>
                                 <p className="text-xs text-text-muted">
                                     This action will apply to {selectedIds.length} products and {selectedVariantIds.length} specific variants you've checkboxed.
                                 </p>
@@ -607,7 +607,7 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
                             {/* Active Discounts List */}
                             {(activeDiscounts.length > 0 || fetchingDiscounts) && (
                                 <div className="mt-8 pt-6 border-t border-border">
-                                    <h3 className="text-sm font-semibold text-text-primary mb-4 flex items-center gap-2">
+                                    <h3 className="font-serif text-sm font-semibold text-text-primary mb-4 flex items-center gap-2">
                                         Active Discounts
                                         {fetchingDiscounts && <Loader2 className="w-3 h-3 animate-spin text-text-muted" />}
                                     </h3>
@@ -620,7 +620,7 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
                                                         <Percent className="w-5 h-5" />
                                                     </div>
                                                     <div>
-                                                        <h4 className="text-sm font-medium text-text-primary">
+                                                        <h4 className="font-serif text-sm font-medium text-text-primary">
                                                             {discount.value || 'All Products'}
                                                         </h4>
                                                         <p className="text-xs text-text-muted mt-0.5">

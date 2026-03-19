@@ -151,7 +151,7 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
                 {!isCollapsed && (
                     <Link href="/dashboard" className="flex items-center gap-2.5">
                         <div>
-                            <span className="font-serif text-xl font-bold text-gold-soft tracking-wide">VEDASHI</span>
+                            <span className="text-xl font-bold text-gold-soft tracking-wide">VEDASHI</span>
                         </div>
                     </Link>
                 )}

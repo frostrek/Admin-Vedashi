@@ -126,7 +126,7 @@ export default function RelatedProductsManager({ productId }: Props) {
         <div className="space-y-8">
             {/* Adding new relation */}
             <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <h3 className="font-serif text-lg font-semibold text-gray-900 mb-4 flex items-center">
                     <LinkIcon className="w-5 h-5 mr-2 text-purple-600" />
                     Add Related Product
                 </h3>
@@ -208,7 +208,7 @@ export default function RelatedProductsManager({ productId }: Props) {
             {/* List of existing relations */}
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
                 <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                    <h3 className="font-semibold text-gray-900">Current Relationships</h3>
+                    <h3 className="font-serif font-semibold text-gray-900">Current Relationships</h3>
                     <span className="px-2.5 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
                         {relations.length} Links
                     </span>

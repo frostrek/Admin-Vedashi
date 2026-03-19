@@ -117,7 +117,7 @@ export default function GDPRDashboard() {
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-serif font-bold text-text-primary mb-1 flex items-center gap-2">
+                    <h1 className="font-serif text-2xl font-bold text-text-primary mb-1 flex items-center gap-2">
                         <Shield className="h-6 w-6 text-gold" />
                         GDPR Compliance Center
                     </h1>
@@ -160,7 +160,7 @@ export default function GDPRDashboard() {
                 {activeTab === 'requests' && (
                     <div className="space-y-4 animate-fadeIn">
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-lg font-bold text-text-primary">Incoming DSRs</h2>
+                            <h2 className="font-serif text-lg font-bold text-text-primary">Incoming DSRs</h2>
                             <div className="flex gap-2">
                                 <div className="relative">
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
@@ -237,7 +237,7 @@ export default function GDPRDashboard() {
                 {activeTab === 'processors' && (
                     <div className="space-y-4 animate-fadeIn">
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-lg font-bold text-text-primary">Third-Party Processors</h2>
+                            <h2 className="font-serif text-lg font-bold text-text-primary">Third-Party Processors</h2>
                             <button 
                                 onClick={() => setIsAddingProcessor(true)}
                                 className="flex items-center gap-2 rounded-xl bg-gold px-4 py-2 font-semibold text-white transition hover:bg-gold-soft shadow-lg shadow-gold/20 text-sm"
@@ -259,7 +259,7 @@ export default function GDPRDashboard() {
                             ) : processors.map(proc => (
                                 <div key={proc.processor_id || proc.id} className="group relative border border-border-subtle rounded-xl p-5 bg-page-bg/50 hover:bg-page-bg transition">
                                     <div className="flex justify-between items-start mb-3">
-                                        <h3 className="text-text-primary font-bold">{proc.name}</h3>
+                                        <h3 className="font-serif text-text-primary font-bold">{proc.name}</h3>
                                         <div className="flex items-center gap-2">
                                             <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${(proc.dpa_signed || proc.dpa) ? 'bg-success/20 text-success' : 'bg-danger/20 text-danger'}`}>
                                                 DPA {(proc.dpa_signed || proc.dpa) ? 'Signed' : 'Missing'}
@@ -295,7 +295,7 @@ export default function GDPRDashboard() {
                                         <div className="h-16 w-16 rounded-full bg-success/10 flex items-center justify-center mb-4 border border-success/20">
                                             <Shield className="h-8 w-8 text-success" />
                                         </div>
-                                        <h3 className="text-lg font-bold text-text-primary mb-2">No Security Incidents</h3>
+                                        <h3 className="font-serif text-lg font-bold text-text-primary mb-2">No Security Incidents</h3>
                                         <p className="text-text-muted text-sm max-w-sm">
                                             There are currently no recorded data breaches. In the event of a breach, you must log it here within 72 hours of discovery.
                                         </p>
@@ -342,7 +342,7 @@ export default function GDPRDashboard() {
                         ) : (
                             <div className="max-w-3xl mx-auto border border-border-subtle bg-page-bg/50 rounded-xl p-6">
                                 <div className="flex items-center justify-between mb-6 pb-4 border-b border-border-subtle">
-                                    <h2 className="text-xl font-bold text-text-primary flex items-center gap-2">
+                                    <h2 className="font-serif text-xl font-bold text-text-primary flex items-center gap-2">
                                         <AlertTriangle className="h-5 w-5 text-danger" /> Log Data Breach
                                     </h2>
                                     <button onClick={() => setIsReportingBreach(false)} className="text-text-muted hover:text-text-primary bg-card-bg px-3 py-1.5 rounded-lg text-sm border border-border-subtle transition">Cancel</button>
@@ -412,7 +412,7 @@ export default function GDPRDashboard() {
                     <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsAddingProcessor(false)} />
                     <div className="relative bg-card-bg border border-border-subtle w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-fadeInUp">
                         <div className="p-6 border-b border-border-subtle bg-page-bg/30">
-                            <h3 className="text-xl font-bold text-text-primary">Add Data Processor</h3>
+                            <h3 className="font-serif text-xl font-bold text-text-primary">Add Data Processor</h3>
                             <p className="text-xs text-text-muted mt-1">Register a third-party service that handles user data</p>
                         </div>
                         

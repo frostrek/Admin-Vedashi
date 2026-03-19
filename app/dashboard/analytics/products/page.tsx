@@ -190,7 +190,7 @@ export default function ProductAnalyticsDashboard() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h1 className="text-2xl font-serif font-bold text-gold">Product Analytics</h1>
+                    <h1 className="font-serif text-2xl font-bold text-gold">Product Analytics</h1>
                     <p className="text-sm text-text-muted mt-1">Comprehensive performance tracking across products.</p>
                 </div>
 
@@ -288,7 +288,7 @@ export default function ProductAnalyticsDashboard() {
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                 {/* Revenue & Units Chart */}
                 <div className="bg-card-bg rounded-2xl border border-border-subtle p-5">
-                    <h2 className="text-sm font-semibold text-text-primary uppercase tracking-wider mb-6">Revenue & Sales Volume</h2>
+                    <h2 className="font-serif text-sm font-semibold text-text-primary uppercase tracking-wider mb-6">Revenue & Sales Volume</h2>
                     <div className="h-80 w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <ComposedChart data={revenueData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }} onClick={(data) => handleChartClick(data, 'revenue')} className="cursor-pointer">
@@ -320,7 +320,7 @@ export default function ProductAnalyticsDashboard() {
 
                 {/* Conversion Funnel */}
                 <div className="bg-card-bg rounded-2xl border border-border-subtle p-5">
-                    <h2 className="text-sm font-semibold text-text-primary uppercase tracking-wider mb-6">Conversion Funnel</h2>
+                    <h2 className="font-serif text-sm font-semibold text-text-primary uppercase tracking-wider mb-6">Conversion Funnel</h2>
                     <div className="h-80 w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={conversionData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }} onClick={(data) => handleChartClick(data, 'conversion')} className="cursor-pointer">
@@ -356,7 +356,7 @@ export default function ProductAnalyticsDashboard() {
                 {/* Top Selling */}
                 <div className="bg-card-bg rounded-2xl border border-border-subtle overflow-hidden flex flex-col">
                     <div className="px-5 py-4 border-b border-border-subtle flex justify-between items-center bg-page-bg/50">
-                        <h2 className="text-sm font-semibold text-text-primary uppercase tracking-wider">Top Selling Products</h2>
+                        <h2 className="font-serif text-sm font-semibold text-text-primary uppercase tracking-wider">Top Selling Products</h2>
                     </div>
                     <div className="p-0 overflow-x-auto flex-1">
                         <table className="w-full text-sm text-left">
@@ -407,7 +407,7 @@ export default function ProductAnalyticsDashboard() {
                 {/* Lowest Performing (Health Score) */}
                 <div className="bg-card-bg rounded-2xl border border-border-subtle overflow-hidden flex flex-col">
                     <div className="px-5 py-4 border-b border-border-subtle flex justify-between items-center bg-page-bg/50">
-                        <h2 className="text-sm font-semibold text-text-primary uppercase tracking-wider flex items-center gap-2">
+                        <h2 className="font-serif text-sm font-semibold text-text-primary uppercase tracking-wider flex items-center gap-2">
                             <AlertCircle className="h-4 w-4 text-danger" /> Needs Attention
                         </h2>
                     </div>
@@ -466,7 +466,7 @@ export default function ProductAnalyticsDashboard() {
                                     <Calendar className="h-5 w-5 text-primary" />
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-serif font-bold text-text-primary">Daily Breakdown</h3>
+                                    <h3 className="font-serif text-lg font-bold text-text-primary">Daily Breakdown</h3>
                                     <p className="text-sm text-text-muted">{selectedMetrics.displayDate}</p>
                                 </div>
                             </div>
@@ -531,7 +531,7 @@ export default function ProductAnalyticsDashboard() {
                             <div>
                                 <div className="flex items-center gap-2 mb-4">
                                     <Target className="h-4 w-4 text-primary" />
-                                    <h4 className="text-sm font-semibold text-text-primary uppercase tracking-wider">Top Drivers for this exact date</h4>
+                                    <h4 className="font-serif text-sm font-semibold text-text-primary uppercase tracking-wider">Top Drivers for this exact date</h4>
                                 </div>
                                 
                                 {isModalLoading ? (

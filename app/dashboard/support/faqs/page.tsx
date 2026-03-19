@@ -62,7 +62,7 @@ export default function AdminFaqsPage() {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-gold">FAQ Management</h1>
+                    <h1 className="font-serif text-2xl font-bold text-gold">FAQ Management</h1>
                     <p className="text-sm text-text-muted mt-1">{faqs.length} FAQs total</p>
                 </div>
                 <button
@@ -77,7 +77,7 @@ export default function AdminFaqsPage() {
             {/* Form */}
             {showForm && (
                 <form onSubmit={handleSubmit} className="bg-card-bg border border-border rounded-xl p-6 space-y-4">
-                    <h3 className="font-semibold text-gold-soft">{editId ? 'Edit FAQ' : 'New FAQ'}</h3>
+                    <h3 className="font-serif font-semibold text-gold-soft">{editId ? 'Edit FAQ' : 'New FAQ'}</h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <select
                             value={form.category}
@@ -133,7 +133,7 @@ export default function AdminFaqsPage() {
                 Object.entries(grouped).map(([category, items]) => (
                     <div key={category} className="bg-card-bg border border-border rounded-xl overflow-hidden">
                         <div className="px-4 py-3 border-b border-border bg-surface">
-                            <h3 className="text-sm font-semibold text-gold-soft">{category} ({items.length})</h3>
+                            <h3 className="font-serif text-sm font-semibold text-gold-soft">{category} ({items.length})</h3>
                         </div>
                         <div className="divide-y divide-border">
                             {items.map((faq: any) => (

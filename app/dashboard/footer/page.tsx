@@ -75,7 +75,7 @@ const SectionCard = ({ icon: Icon, title, subtitle, children, defaultOpen = true
                         <Icon className="w-5 h-5 text-gold" />
                     </div>
                     <div>
-                        <h2 className="text-sm font-serif font-bold text-gold tracking-widest uppercase">{title}</h2>
+                        <h2 className="font-serif text-sm font-bold text-gold tracking-widest uppercase">{title}</h2>
                         {subtitle && <p className="text-[10px] text-text-muted mt-0.5 font-medium uppercase tracking-widest">{subtitle}</p>}
                     </div>
                 </div>
@@ -205,7 +205,7 @@ export default function FooterManagementPage() {
                     <AlertCircle className="w-10 h-10 text-danger" />
                 </div>
                 <div className="space-y-2">
-                    <p className="text-xl font-serif text-gold-soft">Frequencies Disorganized</p>
+                    <p className="text-xl text-gold-soft">Frequencies Disorganized</p>
                     <p className="text-[10px] uppercase tracking-widest text-text-muted/60 leading-loose mx-auto max-w-xs">
                         The footer architecture remains unmanifested from the repository.
                     </p>
@@ -226,7 +226,7 @@ export default function FooterManagementPage() {
                         <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/20 border border-border shadow-lg">
                             <Layout className="w-6 h-6 text-gold" />
                         </div>
-                        <h1 className="text-3xl font-serif font-bold text-gold tracking-tighter">Footer Stratum</h1>
+                        <h1 className="font-serif text-3xl font-bold text-gold tracking-tighter">Footer Stratum</h1>
                     </div>
                     <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-muted">
                         Configure your storefront foundation — navigation strata, branding essence, and legal resonance.
@@ -305,7 +305,7 @@ export default function FooterManagementPage() {
                                     <div className="flex-1">
                                         <label className="block text-[8px] font-bold text-gold/40 uppercase tracking-[0.2em] mb-2 px-1">Stratum Title</label>
                                         <input
-                                            className={`${inputCls} font-serif font-bold text-lg bg-black/20 italic group-hover/col:text-gold transition-colors`}
+                                            className={`${inputCls} font-bold text-lg bg-black/20 italic group-hover/col:text-gold transition-colors`}
                                             value={col.column_title}
                                             onChange={e => {
                                                 const cols = [...footer.links];
@@ -621,7 +621,7 @@ export default function FooterManagementPage() {
                 <button
                     onClick={saveAll}
                     disabled={saving}
-                    className="flex items-center gap-3 px-8 py-4 bg-primary border border-gold/30 text-gold font-serif font-bold text-base uppercase tracking-[0.1em] rounded-2xl hover:shadow-[0_0_30px_rgba(197,164,109,0.4)] hover:-translate-y-1 transition-all duration-500 disabled:opacity-50"
+                    className="flex items-center gap-3 px-8 py-4 bg-primary border border-gold/30 text-gold font-bold text-base uppercase tracking-[0.1em] rounded-2xl hover:shadow-[0_0_30px_rgba(197,164,109,0.4)] hover:-translate-y-1 transition-all duration-500 disabled:opacity-50"
                 >
                     {saving && activeSection === 'all'
                         ? <><Loader2 className="w-5 h-5 animate-spin" /> saving manifold…</>

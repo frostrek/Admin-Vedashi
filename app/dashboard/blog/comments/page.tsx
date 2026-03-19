@@ -69,7 +69,7 @@ export default function CommentsModerationPage() {
 
             <div className="rounded-xl border border-border bg-card-bg overflow-hidden shadow-sm">
                 <div className="px-5 py-4 border-b border-border bg-page-bg/50">
-                    <h2 className="font-semibold text-text-primary flex items-center gap-2 capitalize">
+                    <h2 className="font-serif font-semibold text-text-primary flex items-center gap-2 capitalize">
                         <MessageSquare className="w-4 h-4 text-gold" />
                         {statusFilter} Comments
                     </h2>
@@ -83,7 +83,7 @@ export default function CommentsModerationPage() {
                 ) : comments.length === 0 ? (
                     <div className="p-16 text-center text-text-muted">
                         <CheckCircle className="w-12 h-12 mx-auto mb-3 text-green-500/50" />
-                        <h3 className="text-lg font-medium text-text-primary mb-1">No comments found!</h3>
+                        <h3 className="font-serif text-lg font-medium text-text-primary mb-1">No comments found!</h3>
                         <p>There are no comments matching this filter.</p>
                     </div>
                 ) : (

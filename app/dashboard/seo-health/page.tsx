@@ -130,17 +130,17 @@ export default function SeoHealthCheck() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-gradient-to-br from-card-bg to-card-bg-elevated p-6 rounded-2xl border border-border shadow-xl flex flex-col items-center justify-center text-center backdrop-blur-sm animate-fadeInUp" style={{ animationDelay: '100ms' }}>
-                    <span className="text-4xl font-serif font-bold text-gold">{products.length}</span>
+                    <span className="text-4xl font-bold text-gold">{products.length}</span>
                     <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted mt-2">Total Products Scanned</span>
                 </div>
                 <div className="bg-gradient-to-br from-card-bg to-card-bg-elevated p-6 rounded-2xl border border-border shadow-xl flex flex-col items-center justify-center text-center backdrop-blur-sm animate-fadeInUp" style={{ animationDelay: '200ms' }}>
-                    <span className="text-4xl font-serif font-bold text-success flex items-center gap-2">
+                    <span className="text-4xl font-bold text-success flex items-center gap-2">
                         <CheckCircle2 size={32} /> {healthyCount}
                     </span>
                     <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted mt-2">Healthy Products</span>
                 </div>
                 <div className="bg-gradient-to-br from-card-bg to-card-bg-elevated p-6 rounded-2xl border border-border shadow-xl flex flex-col items-center justify-center text-center backdrop-blur-sm animate-fadeInUp" style={{ animationDelay: '300ms' }}>
-                    <span className="text-4xl font-serif font-bold text-warning flex items-center gap-2">
+                    <span className="text-4xl font-bold text-warning flex items-center gap-2">
                         <AlertTriangle size={32} /> {warningProducts.length}
                     </span>
                     <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted mt-2">Needs Attention</span>
@@ -155,7 +155,7 @@ export default function SeoHealthCheck() {
                 {warningProducts.length === 0 ? (
                     <div className="p-12 text-center text-text-muted">
                         <CheckCircle2 className="mx-auto h-12 w-12 text-success opacity-50 mb-4" />
-                        <p className="text-lg font-serif font-medium text-gold">All products are fully optimized!</p>
+                        <p className="text-lg font-medium text-gold">All products are fully optimized!</p>
                         <p className="text-sm mt-1">No SEO warnings detected in current protocol registry.</p>
                     </div>
                 ) : (

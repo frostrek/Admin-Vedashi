@@ -71,7 +71,7 @@ const SectionCard = ({ icon: Icon, title, children, defaultOpen = true }: {
                     <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/20 border border-border">
                         <Icon className="w-5 h-5 text-gold" />
                     </div>
-                    <h2 className="text-sm font-serif font-bold text-gold tracking-widest uppercase">{title}</h2>
+                    <h2 className="font-serif text-sm font-bold text-gold tracking-widest uppercase">{title}</h2>
                 </div>
                 {open ? <ChevronUp className="w-4 h-4 text-gold-soft" /> : <ChevronDown className="w-4 h-4 text-gold-soft" />}
             </button>
@@ -105,7 +105,7 @@ const Toggle = ({ checked, onChange, label, sub, info }: { checked: boolean; onC
             <input type="checkbox" className="sr-only" checked={checked} onChange={e => onChange(e.target.checked)} />
         </div>
         <div>
-            <div className="flex items-center gap-2 text-sm font-serif font-bold text-gold-soft tracking-wide">
+            <div className="flex items-center gap-2 text-sm font-bold text-gold-soft tracking-wide">
                 {label}
                 {info && (
                     <span className="relative group cursor-pointer inline-flex items-center font-sans tracking-normal font-medium">
@@ -285,7 +285,7 @@ export default function HeaderManagementPage() {
                         <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/20 border border-border shadow-lg">
                             <MonitorSmartphone className="w-6 h-6 text-gold" />
                         </div>
-                        <h1 className="text-3xl font-serif font-bold text-gold tracking-tighter">Header Canvas</h1>
+                        <h1 className="font-serif text-3xl font-bold text-gold tracking-tighter">Header Canvas</h1>
                     </div>
                     <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-text-muted">
                         Configure your storefront architecture — navigation links and dynamic settings.
@@ -421,7 +421,7 @@ export default function HeaderManagementPage() {
                 <button
                     onClick={saveAll}
                     disabled={saving}
-                    className="flex items-center gap-3 px-8 py-4 bg-primary border border-gold/30 text-gold font-serif font-bold text-base uppercase tracking-[0.1em] rounded-2xl hover:shadow-[0_0_30px_rgba(197,164,109,0.4)] hover:-translate-y-1 transition-all duration-500 disabled:opacity-50"
+                    className="flex items-center gap-3 px-8 py-4 bg-primary border border-gold/30 text-gold font-bold text-base uppercase tracking-[0.1em] rounded-2xl hover:shadow-[0_0_30px_rgba(197,164,109,0.4)] hover:-translate-y-1 transition-all duration-500 disabled:opacity-50"
                 >
                     {saving && activeSection === 'all'
                         ? <><Loader2 className="w-5 h-5 animate-spin" /> saving manifold…</>

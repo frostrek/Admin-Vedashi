@@ -38,7 +38,7 @@ export default function RevenueBreakdown({
                 </div>
             ) : (
                 <>
-                    <p className="font-serif text-3xl font-bold text-gold mb-6 tracking-tight">
+                    <p className="text-3xl font-bold text-gold mb-6 tracking-tight">
                         ₹{total.toLocaleString('en-IN')}
                     </p>
 
