@@ -33,6 +33,11 @@ export async function initCsrf(): Promise<void> {
     }
 }
 
+/** Reset the cached CSRF token (call on logout so next session fetches a fresh one) */
+export function resetCsrfCache(): void {
+    cachedCsrfToken = null;
+}
+
 /** Build headers object that includes JWT Bearer token + CSRF token */
 export function authHeaders(extra?: Record<string, string>): Record<string, string> {
     const headers: Record<string, string> = { ...extra };
@@ -57,9 +62,12 @@ export async function logoutUser(): Promise<boolean> {
             headers: authHeaders(),
         });
         const json = await res.json();
+        // Reset CSRF cache so next login gets a fresh token
+        resetCsrfCache();
         return json.success;
     } catch (error) {
         console.error('[Admin API] Failed to logout:', error);
+        resetCsrfCache();
         return false;
     }
 }
@@ -1344,7 +1352,10 @@ export interface LoginResult {
  */
 export async function loginUser(email: string, password: string): Promise<LoginResult> {
     try {
-        const res = await authFetch(`${API_URL}/api/auth/login`, {
+        // Use plain fetch (NOT authFetch) because login is a public endpoint.
+        // authFetch would intercept 401s (wrong password) and dispatch
+        // admin-auth-failure, which clears auth state and breaks re-login.
+        const res = await fetch(`${API_URL}/api/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
