@@ -147,7 +147,7 @@ export default function NotificationsPage() {
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="font-serif text-2xl font-bold text-gold">Promotional Notifications</h1>
-                    <p className="text-sm text-text-muted mt-1">Create and send email campaigns to your customers</p>
+                    <p className="text-[15px] font-semibold text-brown">Create and send email campaigns to your customers</p>
                 </div>
                 <Link
                     href="/dashboard/notifications/create"
@@ -170,7 +170,7 @@ export default function NotificationsPage() {
                         <div className="flex items-center gap-3">
                             <stat.icon className={`w-5 h-5 ${stat.color}`} />
                             <div>
-                                <p className="text-xs text-text-muted">{stat.label}</p>
+                                <p className="text-lg font-bold text-text-muted">{stat.label}</p>
                                 <p className={`text-xl font-bold ${stat.color}`}>{stat.value.toLocaleString()}</p>
                             </div>
                         </div>
@@ -199,14 +199,14 @@ export default function NotificationsPage() {
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
-                            <thead>
-                                <tr className="border-b border-border text-text-muted">
-                                    <th className="text-left px-4 py-3 font-medium">Campaign</th>
-                                    <th className="text-left px-4 py-3 font-medium">Audience</th>
-                                    <th className="text-left px-4 py-3 font-medium">Status</th>
-                                    <th className="text-left px-4 py-3 font-medium">Recipients</th>
-                                    <th className="text-left px-4 py-3 font-medium">Date</th>
-                                    <th className="text-right px-4 py-3 font-medium">Actions</th>
+                            <thead className="bg-primary/5 text-sm font-semibold text-gold-muted uppercase">
+                                <tr>
+                                    <th className="text-left px-4 py-3">Campaign</th>
+                                    <th className="text-left px-4 py-3">Audience</th>
+                                    <th className="text-left px-4 py-3">Status</th>
+                                    <th className="text-left px-4 py-3">Recipients</th>
+                                    <th className="text-left px-4 py-3">Date</th>
+                                    <th className="text-right px-4 py-3">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>

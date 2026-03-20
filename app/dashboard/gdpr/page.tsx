@@ -121,7 +121,7 @@ export default function GDPRDashboard() {
                         <Shield className="h-6 w-6 text-gold" />
                         GDPR Compliance Center
                     </h1>
-                    <p className="text-text-muted font-semiboldtext-sm border-l-2 border-black/50 pl-3">
+                    <p className="text-brown font-semibold text-[15px] border-l-2 border-black/50 pl-3">
                         Monitor Data Subject Requests, register processors, and log data breaches.
                     </p>
                 </div>
@@ -174,14 +174,14 @@ export default function GDPRDashboard() {
 
                         <div className="overflow-x-auto">
                             <table className="w-full text-left text-sm text-text-muted">
-                                <thead className="bg-page-bg/50 text-xs uppercase text-text-muted">
+                                <thead className="bg-page-bg/50 text-sm font-semibold text-gold-muted uppercase">
                                     <tr>
-                                        <th className="px-4 py-3 font-semibold">Request ID</th>
-                                        <th className="px-4 py-3 font-semibold">Customer</th>
-                                        <th className="px-4 py-3 font-semibold">Type</th>
-                                        <th className="px-4 py-3 font-semibold">Date Received</th>
-                                        <th className="px-4 py-3 font-semibold">Status</th>
-                                        <th className="px-4 py-3 font-semibold text-right">Actions</th>
+                                        <th className="px-4 py-3">Request ID</th>
+                                        <th className="px-4 py-3">Customer</th>
+                                        <th className="px-4 py-3">Type</th>
+                                        <th className="px-4 py-3">Date Received</th>
+                                        <th className="px-4 py-3">Status</th>
+                                        <th className="px-4 py-3 text-right">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-border-subtle">
@@ -303,13 +303,13 @@ export default function GDPRDashboard() {
                                 ) : (
                                     <div className="overflow-x-auto">
                                         <table className="w-full text-left text-sm text-text-muted">
-                                            <thead className="bg-page-bg/50 text-xs uppercase text-text-muted">
+                                            <thead className="bg-page-bg/50 text-sm font-semibold text-gold-muted uppercase">
                                                 <tr>
-                                                    <th className="px-4 py-3 font-semibold">Incident Date</th>
-                                                    <th className="px-4 py-3 font-semibold">Nature</th>
-                                                    <th className="px-4 py-3 font-semibold">Affected</th>
-                                                    <th className="px-4 py-3 font-semibold">DPA Notified</th>
-                                                    <th className="px-4 py-3 font-semibold text-right">Records</th>
+                                                    <th className="px-4 py-3">Incident Date</th>
+                                                    <th className="px-4 py-3">Nature</th>
+                                                    <th className="px-4 py-3">Affected</th>
+                                                    <th className="px-4 py-3">DPA Notified</th>
+                                                    <th className="px-4 py-3 text-right">Records</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-border-subtle">

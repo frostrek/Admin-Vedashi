@@ -60,13 +60,13 @@
 
   --t-plum: #5D6B5D;
 
-  --t-sidebar-bg: #F0F4EF;
-  --t-sidebar-hover: #E4EBE2;
+  --t-sidebar-bg: #F0EBE1;
+  --t-sidebar-hover: #E6DFD3;
   --t-sidebar-active: #3B5D3B;
 
   --t-card-bg: #FFFFFF;
   --t-card-bg-elevated: #FFFFFF;
-  --t-page-bg: #F7FAF7;
+  --t-page-bg: #F9F7F2;
   --t-border: #D1D9D1;
   --t-border-subtle: #E2E8E2;
 
@@ -84,16 +84,16 @@
   --t-warning-dark: #7A6932;
   --t-info: #4A5A6A;
 
-  --background: #F6F1EA;
+  --background: #F9F7F2;
   --foreground: #2C1B16;
 
   /* Light-mode specific surface colors for non-Tailwind usage */
   --surface-input: #FFFFFF;
-  --surface-scrollbar-track: #EDE6DC;
+  --surface-scrollbar-track: #EAE3D8;
   --surface-scrollbar-thumb: #C5B6A5;
   --surface-scrollbar-thumb-hover: #B08D57;
-  --surface-shimmer-a: #EDE6DC;
-  --surface-shimmer-b: #E0D4C6;
+  --surface-shimmer-a: #EAE3D8;
+  --surface-shimmer-b: #DED5C6;
   --surface-selection-bg: rgba(59, 93, 59, 0.2);
   --surface-selection-color: #2C1B16;
   --surface-stock-bg: #FFFFFF;
@@ -496,6 +496,8 @@ select option {
 
 /* ─── Subtle background grain texture ─── */
 
+/* Removed background grain as requested by user */
+/*
 body::before {
   content: '';
   position: fixed;
@@ -505,6 +507,7 @@ body::before {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
   pointer-events: none;
 }
+*/
 
 /* ─── Luxury micro-interactions ─── */
 

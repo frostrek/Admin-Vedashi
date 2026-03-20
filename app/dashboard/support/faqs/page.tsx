@@ -133,7 +133,13 @@ export default function AdminFaqsPage() {
                 Object.entries(grouped).map(([category, items]) => (
                     <div key={category} className="bg-card-bg border border-border rounded-xl overflow-hidden">
                         <div className="px-4 py-3 border-b border-border bg-surface">
-                            <h3 className="font-serif text-sm font-semibold text-gold-soft">{category} ({items.length})</h3>
+                            <h3 className={`font-serif font-semibold text-gold-soft ${
+                                (category === 'Product Issues' || category === 'Shipping & Delivery') 
+                                ? '!text-[22px]' 
+                                : '!text-[22px]'
+                            }`}>
+                                {category} ({items.length})
+                            </h3>
                         </div>
                         <div className="divide-y divide-border">
                             {items.map((faq: any) => (

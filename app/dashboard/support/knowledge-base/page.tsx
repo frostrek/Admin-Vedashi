@@ -57,7 +57,7 @@ export default function AdminKBPage() {
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="font-serif text-2xl font-bold text-gold">Knowledge Base</h1>
-                    <p className="text-sm text-text-muted mt-1">{categories.length} categories · {articles.length} articles</p>
+                    <p className="text-[15px] font-semibold text-brown mt-1">{categories.length} categories · {articles.length} articles</p>
                 </div>
                 <div className="flex gap-2">
                     <button onClick={() => { setShowCatForm(!showCatForm); setShowArticleForm(false); }} className="flex items-center gap-2 bg-card-bg border border-border px-3 py-2 rounded-xl text-sm text-text-muted hover:text-gold">
@@ -110,7 +110,7 @@ export default function AdminKBPage() {
                     <div className="divide-y divide-border">
                         {categories.map((c: any) => (
                             <div key={c.category_id} className="px-4 py-3 flex items-center justify-between">
-                                <span className="text-sm text-text">{c.name} <span className="text-xs text-text-muted">/{c.slug}</span></span>
+                                <span className="text-[15px] font-medium text-text">{c.name} <span className="text-sm text-text-muted">/{c.slug}</span></span>
                                 <button onClick={() => { if (confirm('Delete?')) deleteAdminKBCategory(c.category_id).then(r => { if (r.success) { toast.success('Deleted'); load(); } }); }} className="p-1.5 rounded-lg hover:bg-danger/10 text-text-muted hover:text-danger"><Trash2 className="h-4 w-4" /></button>
                             </div>
                         ))}
@@ -122,14 +122,14 @@ export default function AdminKBPage() {
                 <div className="bg-card-bg border border-border rounded-xl p-12 text-center"><BookOpen className="h-10 w-10 text-text-muted/30 mx-auto mb-3" /><p className="text-sm text-text-muted">No articles</p></div>
             ) : (
                 <div className="bg-card-bg border border-border rounded-xl overflow-x-auto">
-                    <table className="w-full text-sm">
-                        <thead className="border-b border-border"><tr className="text-left text-xs text-text-muted uppercase"><th className="px-4 py-3">Title</th><th className="px-4 py-3">Category</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Views</th><th className="px-4 py-3">Actions</th></tr></thead>
+                    <table className="w-full text-[15px]">
+                        <thead className="border-b border-border"><tr className="text-left text-sm font-semibold text-text-muted uppercase"><th className="px-4 py-3">Title</th><th className="px-4 py-3">Category</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Views</th><th className="px-4 py-3">Actions</th></tr></thead>
                         <tbody className="divide-y divide-border">
                             {articles.map((a: any) => (
                                 <tr key={a.article_id} className="hover:bg-gold/[0.03]">
-                                    <td className="px-4 py-3"><p className="font-medium text-text">{a.title}</p><p className="text-xs text-text-muted">/{a.slug}</p></td>
+                                    <td className="px-4 py-3"><p className="font-semibold text-text">{a.title}</p><p className="text-sm text-text-muted">/{a.slug}</p></td>
                                     <td className="px-4 py-3 text-text-muted">{a.category_name || '—'}</td>
-                                    <td className="px-4 py-3"><span className={`text-[10px] uppercase font-bold ${a.status === 'published' ? 'text-green-400' : 'text-text-muted'}`}>{a.status}</span></td>
+                                    <td className="px-4 py-3"><span className={`text-xs uppercase font-bold ${a.status === 'published' ? 'text-green-400' : 'text-text-muted'}`}>{a.status}</span></td>
                                     <td className="px-4 py-3 text-text-muted">{a.view_count || 0}</td>
                                     <td className="px-4 py-3 flex gap-1">
                                         <button onClick={() => editArticle(a)} className="p-1.5 rounded-lg hover:bg-surface text-text-muted hover:text-gold"><Edit2 className="h-4 w-4" /></button>

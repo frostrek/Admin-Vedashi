@@ -125,25 +125,25 @@ export default function SeoHealthCheck() {
                     <ShieldAlert className="h-8 w-8 text-gold" />
                     SEO Health Check
                 </h1>
-                <p className="text-text-muted mt-2 uppercase text-[10px] font-bold">Audit your product catalog for missing or suboptimal SEO metadata.</p>
+                <p className="text-[15px] font-semibold text-brown mt-2">Audit your product catalog for missing or suboptimal SEO metadata.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-gradient-to-br from-card-bg to-card-bg-elevated p-6 rounded-2xl border border-border shadow-xl flex flex-col items-center justify-center text-center backdrop-blur-sm animate-fadeInUp" style={{ animationDelay: '100ms' }}>
                     <span className="text-4xl font-bold text-gold">{products.length}</span>
-                    <span className="text-[10px] font-bold uppercase text-text-muted mt-2">Total Products Scanned</span>
+                    <span className="text-sm font-semibold text-gold-muted mt-2 whitespace-nowrap">Total Products Scanned</span>
                 </div>
                 <div className="bg-gradient-to-br from-card-bg to-card-bg-elevated p-6 rounded-2xl border border-border shadow-xl flex flex-col items-center justify-center text-center backdrop-blur-sm animate-fadeInUp" style={{ animationDelay: '200ms' }}>
                     <span className="text-4xl font-bold text-success flex items-center gap-2">
                         <CheckCircle2 size={32} /> {healthyCount}
                     </span>
-                    <span className="text-[10px] font-bold uppercase text-text-muted mt-2">Healthy Products</span>
+                    <span className="text-sm font-semibold text-gold-muted mt-2 whitespace-nowrap">Healthy Products</span>
                 </div>
                 <div className="bg-gradient-to-br from-card-bg to-card-bg-elevated p-6 rounded-2xl border border-border shadow-xl flex flex-col items-center justify-center text-center backdrop-blur-sm animate-fadeInUp" style={{ animationDelay: '300ms' }}>
                     <span className="text-4xl font-bold text-warning flex items-center gap-2">
                         <AlertTriangle size={32} /> {warningProducts.length}
                     </span>
-                    <span className="text-[10px] font-bold uppercase text-text-muted mt-2">Needs Attention</span>
+                    <span className="text-sm font-semibold text-gold-muted mt-2 whitespace-nowrap">Needs Attention</span>
                 </div>
             </div>
 
@@ -161,11 +161,11 @@ export default function SeoHealthCheck() {
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-sm">
-                            <thead className="bg-primary/5 text-text-muted">
-                                <tr>
-                                    <th className="px-6 py-4 font-bold uppercase text-[10px]">Product / Formula</th>
-                                    <th className="px-6 py-4 font-bold uppercase text-[10px]">Anomalies Detected</th>
-                                    <th className="px-6 py-4 font-bold uppercase text-[10px] text-right">Action</th>
+                            <thead className="bg-primary/5 text-sm font-semibold text-gold-muted uppercase">
+                                <tr className="border-b border-border bg-page-bg/50">
+                                    <th className="px-5 py-3 text-sm font-bold text-gold-muted uppercase text-left">Product</th>
+                                    <th className="px-5 py-3 text-sm font-bold text-gold-muted uppercase text-left">Warnings</th>
+                                    <th className="px-5 py-3 text-sm font-bold text-gold-muted uppercase text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border-subtle">

@@ -235,7 +235,7 @@ export default function CouponsPage() {
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="font-serif text-2xl font-bold text-gold">Coupons</h1>
-                    <p className="text-sm text-text-muted mt-1">Create and manage discount coupons</p>
+                    <p className="text-[15px] font-semibold text-brown ">Create and manage discount coupons</p>
                 </div>
                 <button
                     onClick={openCreate}
@@ -259,16 +259,16 @@ export default function CouponsPage() {
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
+                        <table className="w-full text-base">
                             <thead>
                                 <tr className="border-b border-border text-text-muted">
                                     <SortableHeader label="Code" sortKey="code" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
-                                    <th className="text-left px-4 py-3 font-medium">Discount</th>
+                                    <th className="text-left px-4 py-3 font-semibold text-sm text-gold-muted uppercase">Discount</th>
                                     <SortableHeader label="Min Order" sortKey="min_order_amount" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
                                     <SortableHeader label="Usage" sortKey="used_count" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
-                                    <th className="text-left px-4 py-3 font-medium">Dates</th>
+                                    <th className="text-left px-4 py-3 font-semibold text-sm text-gold-muted uppercase">Dates</th>
                                     <SortableHeader label="Status" sortKey="is_active" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
-                                    <th className="text-right px-4 py-3 font-medium">Actions</th>
+                                    <th className="text-right px-4 py-3 font-semibold text-sm text-gold-muted uppercase">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -466,7 +466,7 @@ export default function CouponsPage() {
                             {/* Dates */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-text-secondary mb-1">
+                                    <label className="block text-md font-semibold text-text-secondary mb-1">
                                         <Calendar className="inline w-3.5 h-3.5 mr-1" />Start Date
                                     </label>
                                     <input

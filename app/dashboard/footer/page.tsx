@@ -228,7 +228,7 @@ export default function FooterManagementPage() {
                         </div>
                         <h1 className="font-serif text-3xl font-bold text-gold tracking-tighter">Footer Stratum</h1>
                     </div>
-                    <p className="text-[10px] font-bold uppercase text-text-muted">
+                    <p className="text-[15px] font-semibold text-brown">
                         Configure your storefront foundation — navigation strata, branding essence, and legal resonance.
                     </p>
                 </div>

@@ -241,7 +241,7 @@ export default function SecurityDashboard() {
                         </div>
                         Security & Operations
                     </h1>
-                    <p className="text-text-muted mt-2 text-[12px] font-semibold uppercase">Monitor active defenses, manage backups, and control disaster recovery</p>
+                    <p className="text-brown mt-2 text-[15px] font-semibold">Monitor active defenses, manage backups, and control disaster recovery</p>
                 </div>
                 <button
                     onClick={fetchData}
