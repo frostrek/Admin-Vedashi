@@ -36,52 +36,68 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     const [isLoading, setIsLoading] = useState(true);
 
     const login = useCallback(async (email: string, password: string): Promise<LoginResponse> => {
-        // Try real backend login first
-        const result: LoginResult = await apiLogin(email, password);
+        setIsLoading(true);
+        try {
+            // Try real backend login first
+            const result: LoginResult = await apiLogin(email, password);
 
-        // If the account is deactivated, bubble that up so the login page can show the reactivation modal
-        if (!result.success && result.deactivated) {
-            return { success: false, deactivated: true, error: result.error };
+            // If the account is deactivated, bubble that up so the login page can show the reactivation modal
+            if (!result.success && result.deactivated) {
+                setIsLoading(false);
+                return { success: false, deactivated: true, error: result.error };
+            }
+
+            if (result.success && result.customer) {
+                // Real backend login succeeded
+                const adminUser: AdminUser = {
+                    email: result.customer.email,
+                    name: result.customer.full_name || email.split('@')[0],
+                    role: 'admin',
+                    customer_id: result.customer.customer_id,
+                    phone: result.customer.phone,
+                };
+                setUser(adminUser);
+                localStorage.setItem(ADMIN_KEY, JSON.stringify(adminUser));
+                if (result.access_token) setToken(result.access_token);
+                if (result.refresh_token) setRefreshToken(result.refresh_token);
+                if (result.customer) setStoredUser(result.customer);
+                setIsLoading(false);
+                return { success: true };
+            }
+
+            // Removed fallback: users must be able to reach real backend to login
+            // SILENT_DEV_FALLBACK_REMOVED: Users were getting 401s after silent fallback
+            if (!result.success && result.error?.includes('Network error')) {
+                setIsLoading(false);
+                return {
+                    success: false,
+                    error: 'Backend unreachable. Please ensure the server is running on port 5000.'
+                };
+            }
+
+            setIsLoading(false);
+            return { success: false, error: result.error || 'Invalid credentials' };
+        } catch (err) {
+            console.error('[AdminAuth] Login process error:', err);
+            setIsLoading(false);
+            return { success: false, error: 'Login process failed. Please try again.' };
         }
-
-        if (result.success && result.customer) {
-            // Real backend login succeeded
-            const adminUser: AdminUser = {
-                email: result.customer.email,
-                name: result.customer.full_name || email.split('@')[0],
-                role: 'admin',
-                customer_id: result.customer.customer_id,
-                phone: result.customer.phone,
-            };
-            setUser(adminUser);
-            localStorage.setItem(ADMIN_KEY, JSON.stringify(adminUser));
-            if (result.access_token) setToken(result.access_token);
-            if (result.refresh_token) setRefreshToken(result.refresh_token);
-            if (result.customer) setStoredUser(result.customer);
-            return { success: true };
-        }
-
-        // Removed fallback: users must be able to reach real backend to login
-        // SILENT_DEV_FALLBACK_REMOVED: Users were getting 401s after silent fallback
-        if (!result.success && result.error?.includes('Network error')) {
-            return { 
-                success: false, 
-                error: 'Backend unreachable. Please ensure the server is running on port 5000.' 
-            };
-        }
-
-        return { success: false, error: result.error || 'Invalid credentials' };
     }, []);
 
     const logout = useCallback(async () => {
+        // Clear UI state immediately
+        setUser(null);
+        localStorage.removeItem(ADMIN_KEY);
+        clearAuth();
+
         try {
             await apiLogout();
         } catch (error) {
             console.error('Logout API failed:', error);
         }
-        setUser(null);
-        localStorage.removeItem(ADMIN_KEY);
-        clearAuth();
+        
+        // Redirect to storefront login
+        window.location.href = 'http://localhost:3000/in/login';
     }, []);
 
     const deactivate = useCallback(async (password: string) => {
@@ -117,7 +133,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         }
     }, [logout]);
 
-    const isAuthenticatedState = !!user && (typeof window !== 'undefined' ? !!localStorage.getItem('admin_refresh_token') : true);
+    const isAuthenticatedState = !!user;
 
     return (
         <AdminAuthContext.Provider value={{ user, isAuthenticated: isAuthenticatedState, isLoading, login, logout, deactivate }}>

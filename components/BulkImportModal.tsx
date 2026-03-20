@@ -171,7 +171,7 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
                 'product_image_4': "",
                 'product_image_5': "",
                 'product_video': "",
-                
+
                 // ── Variant 1 ───────────────────────────────
                 'Variant_name1': "60 Capsules Single",
                 'SKU1': "VED-001",
@@ -387,8 +387,8 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
 
                             <div className="max-w-md mx-auto space-y-4">
                                 <div className="w-full bg-page-bg rounded-full h-2.5 overflow-hidden border border-border">
-                                    <div 
-                                        className="bg-primary h-full transition-all duration-500" 
+                                    <div
+                                        className="bg-primary h-full transition-all duration-500"
                                         style={{ width: `${progressStatus ? (progressStatus.processed_rows / progressStatus.total_rows) * 100 : 0}%` }}
                                     ></div>
                                 </div>

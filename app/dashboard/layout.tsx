@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAdminAuth } from '@/context/AdminAuthContext';
 import AdminSidebar from '@/components/AdminSidebar';
@@ -12,7 +12,13 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     const { isAuthenticated, isLoading } = useAdminAuth();
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-    if (isLoading) {
+    useEffect(() => {
+        if (!isLoading && !isAuthenticated) {
+            window.location.href = 'http://localhost:3000/in/login';
+        }
+    }, [isLoading, isAuthenticated]);
+
+    if (isLoading || !isAuthenticated) {
         return (
             <div className="min-h-screen bg-page-bg flex items-center justify-center">
                 <div className="flex flex-col items-center gap-3">
@@ -21,13 +27,6 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                 </div>
             </div>
         );
-    }
-
-    if (!isAuthenticated) {
-        if (typeof window !== 'undefined') {
-            window.location.href = '/?logout=true';
-        }
-        return null;
     }
 
     return (
