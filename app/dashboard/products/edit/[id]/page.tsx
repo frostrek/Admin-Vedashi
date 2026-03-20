@@ -421,10 +421,21 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
 
     // ÔöÇÔöÇÔöÇ Step 2: Volume helpers ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
     const toggleDimensionActive = (dim: keyof typeof dimConfigs) => {
-        setDimConfigs(prev => ({
-            ...prev,
-            [dim]: { ...prev[dim], active: !prev[dim].active }
-        }));
+        setDimConfigs(prev => {
+            const isActivating = !prev[dim].active;
+            const next = { ...prev };
+            
+            if (isActivating) {
+                if (dim === 'weight') {
+                    next.volume = { ...next.volume, active: false };
+                } else if (dim === 'volume') {
+                    next.weight = { ...next.weight, active: false };
+                }
+            }
+            
+            next[dim] = { ...next[dim], active: isActivating };
+            return next;
+        });
     };
 
     const addDimensionValue = (dim: keyof typeof dimConfigs) => {
