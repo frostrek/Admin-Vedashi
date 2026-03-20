@@ -243,12 +243,12 @@ export default function PaymentLogsPage() {
                     <table className="w-full text-left border-separate border-spacing-0">
                         <thead>
                             <tr className={`border-b border-white/10 ${isDark ? 'bg-black/40 text-gold' : 'bg-emerald-900/10 text-emerald-950'} text-[11px] font-bold uppercase`}>
-                                <th className="px-10 py-6 border-b border-white/5">Transaction</th>
-                                <th className="px-10 py-6 border-b border-white/5">Details</th>
-                                <th className="px-8 py-6 border-b border-white/5 italic text-lg capitalize">Amount</th>
-                                <th className="px-8 py-6 border-b border-white/5">Gateway</th>
-                                <th className="px-10 py-6 border-b border-white/5 text-right">Status</th>
-                                <th className="px-8 py-6 border-b border-white/5 text-center">Actions</th>
+                                <th className="px-8 py-6 border-b border-white">Transaction</th>
+                                <th className="px-8 py-6 border-b border-white">Details</th>
+                                <th className="px-8 py-6 border-b border-white">Amount</th>
+                                <th className="px-8 py-6 border-b border-white">Gateway</th>
+                                <th className="px-8 py-6 border-b border-white">Status</th>
+                                <th className="px-8 py-6 border-b border-white">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
@@ -293,7 +293,7 @@ export default function PaymentLogsPage() {
                                             </div>
                                         </td>
                                         <td className="px-8 py-8">
-                                            <div className="text-xl font-bold text-gold italic drop-shadow-sm">
+                                            <div className="text-xl font-bold text-gold drop-shadow-sm">
                                                 {formatINR(parseFloat(log.amount))}
                                             </div>
                                         </td>
@@ -379,7 +379,7 @@ export default function PaymentLogsPage() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className={`p-4 rounded-xl border ${isDark ? 'bg-black/20 border-white/5' : 'bg-emerald-50 border-emerald-900/5'}`}>
                                     <div className="text-[10px] uppercase font-bold text-text-muted mb-1">Amount</div>
-                                    <div className="text-xl font-bold text-gold italic">{formatINR(parseFloat(selectedLog.amount))}</div>
+                                    <div className="text-xl font-bold text-gold">{formatINR(parseFloat(selectedLog.amount))}</div>
                                 </div>
                                 <div className={`p-4 rounded-xl border ${isDark ? 'bg-black/20 border-white/5' : 'bg-emerald-50 border-emerald-900/5'}`}>
                                     <div className="text-[10px] uppercase font-bold text-text-muted mb-1">Status</div>

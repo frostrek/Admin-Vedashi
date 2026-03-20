@@ -304,20 +304,20 @@ export default function LoyaltyAdminPage() {
                                     className="bg-card-bg border border-border rounded-xl p-5 hover:border-gold/30 transition-all cursor-pointer group active:scale-[0.98]"
                                 >
                                     <div className="flex justify-between items-center mb-2">
-                                        <p className="text-sm text-text-muted font-medium group-hover:text-gold transition-colors">Active Wallets</p>
+                                        <p className="text-sm text-text-secondary font-bold">Active Wallets</p>
                                         <div className="p-2 bg-purple-500/10 rounded-lg group-hover:bg-purple-500/20"><Database className="h-4 w-4 text-purple-400" /></div>
                                     </div>
                                     <h4 className="font-serif text-2xl font-bold text-text-primary mb-1 font-mono">{formatNumber(stats.stats?.total_wallets || stats.total_wallets)}</h4>
-                                    <p className="text-xs text-text-muted">Customers with point balances</p>
+                                    <p className="text-xs text-text-secondary font-medium">Customers with point balances</p>
                                 </div>
 
-                                <div className="bg-card-bg border border-border rounded-xl p-5 hover:border-gold/30 transition-colors">
+                                <div className="bg-card-bg border border-border rounded-xl p-5 hover:border-gold/30 transition-colors cursor-pointer group active:scale-[0.98]">
                                     <div className="flex justify-between items-center mb-2">
-                                        <p className="text-sm text-text-muted font-medium">Live Promotions</p>
+                                        <p className="text-sm text-text-secondary font-bold">Live Promotions</p>
                                         <div className="p-2 bg-gold/10 rounded-lg"><Percent className="h-4 w-4 text-gold" /></div>
                                     </div>
                                     <h4 className="font-serif text-2xl font-bold text-text-primary mb-1 font-mono">{stats.active_promotions}</h4>
-                                    <p className="text-xs text-text-muted">Currently active campaigns</p>
+                                    <p className="text-xs text-text-secondary font-medium">Currently active campaigns</p>
                                 </div>
                             </div>
                         </div>

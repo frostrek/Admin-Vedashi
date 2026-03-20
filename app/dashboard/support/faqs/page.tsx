@@ -63,11 +63,11 @@ export default function AdminFaqsPage() {
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="font-serif text-2xl font-bold text-gold">FAQ Management</h1>
-                    <p className="text-sm text-text-muted mt-1">{faqs.length} FAQs total</p>
+                    <p className="text-md text-text-muted font-semibold mt-1">{faqs.length} FAQs total</p>
                 </div>
                 <button
                     onClick={() => { setShowForm(!showForm); setEditId(null); setForm({ category: 'General', question: '', answer: '', sort_order: 0, is_visible: true }); }}
-                    className="flex items-center gap-2 bg-gold/20 text-gold px-4 py-2 rounded-xl text-sm font-semibold hover:bg-gold/30 transition-colors"
+                    className="flex items-center gap-2 bg-gold text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-gold transition-colors"
                 >
                     {showForm ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
                     {showForm ? 'Cancel' : 'Add FAQ'}
@@ -141,10 +141,10 @@ export default function AdminFaqsPage() {
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2 mb-1">
                                             {!faq.is_visible && <span className="text-[9px] uppercase px-1.5 py-0.5 rounded bg-gray-200 text-gray-500 font-bold">hidden</span>}
-                                            <span className="text-xs text-text-muted">Order: {faq.sort_order}</span>
+                                            <span className="text-md text-text-muted">Order: {faq.sort_order}</span>
                                         </div>
-                                        <p className="text-sm font-medium text-text">{faq.question}</p>
-                                        <p className="text-xs text-text-muted mt-1 line-clamp-2">{faq.answer}</p>
+                                        <p className="text-md font-medium text-text">{faq.question}</p>
+                                        <p className="text-md font-medium text-text-muted mt-1 line-clamp-2">{faq.answer}</p>
                                     </div>
                                     <div className="flex items-center gap-1 flex-shrink-0">
                                         <button onClick={() => handleToggle(faq.faq_id)} className="p-1.5 rounded-lg hover:bg-surface text-text-muted hover:text-gold transition-colors" title={faq.is_visible ? 'Hide' : 'Show'}>

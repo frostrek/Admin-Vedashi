@@ -23,7 +23,7 @@ export default function RevenueBreakdown({
         <div className="rounded-2xl border border-border bg-gradient-to-br from-card-bg to-card-bg-elevated p-5 sm:p-6">
             <div className="mb-5">
                 <h3 className="font-serif text-base font-semibold text-gold-soft">{title}</h3>
-                <p className="text-xs text-text-muted mt-0.5">Revenue breakdown by payment method</p>
+                <p className="text-sm text-text-muted mt-0.5">Revenue breakdown by payment method</p>
             </div>
 
             {loading ? (

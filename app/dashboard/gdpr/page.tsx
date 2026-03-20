@@ -121,7 +121,7 @@ export default function GDPRDashboard() {
                         <Shield className="h-6 w-6 text-gold" />
                         GDPR Compliance Center
                     </h1>
-                    <p className="text-text-muted text-sm border-l-2 border-gold/50 pl-3">
+                    <p className="text-text-muted font-semiboldtext-sm border-l-2 border-black/50 pl-3">
                         Monitor Data Subject Requests, register processors, and log data breaches.
                     </p>
                 </div>
