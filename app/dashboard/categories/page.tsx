@@ -172,7 +172,7 @@ export default function CategoriesPage() {
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
                 <div>
                     <h1 className="font-serif text-4xl md:text-5xl font-bold text-gold mb-2 tracking-tight">Categories</h1>
-                    <p className="text-base text-text-muted font-medium">
+                    <p className="text-[15px] font-semibold text-brown">
                         Organizing {parentCategories.length} core collections and {categories.length - parentCategories.length} specific rituals.
                     </p>
                 </div>

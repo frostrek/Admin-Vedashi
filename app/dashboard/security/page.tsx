@@ -241,7 +241,7 @@ export default function SecurityDashboard() {
                         </div>
                         Security & Operations
                     </h1>
-                    <p className="text-text-muted mt-2 text-[10px] font-bold uppercase">Monitor active defenses, manage backups, and control disaster recovery</p>
+                    <p className="text-brown mt-2 text-[15px] font-semibold">Monitor active defenses, manage backups, and control disaster recovery</p>
                 </div>
                 <button
                     onClick={fetchData}
@@ -254,7 +254,7 @@ export default function SecurityDashboard() {
 
             {/* Active Defenses Grid */}
             <div className="animate-fadeInUp" style={{ animationDelay: '100ms' }}>
-                <h4 className="font-serif text-[10px] font-bold text-text-muted uppercase mb-4 flex items-center gap-2">
+                <h4 className="font-serif text-[8px] font-bold text-text-muted uppercase mb-4 flex items-center gap-2">
                     <Activity className="h-4 w-4 text-gold" />
                     Protocol Guardians
                 </h4>

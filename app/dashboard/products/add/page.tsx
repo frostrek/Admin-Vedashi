@@ -314,10 +314,21 @@ export default function AddProductPage() {
     };
 
     const toggleDimensionActive = (dim: keyof typeof dimConfigs) => {
-        setDimConfigs(prev => ({
-            ...prev,
-            [dim]: { ...prev[dim], active: !prev[dim].active }
-        }));
+        setDimConfigs(prev => {
+            const isActivating = !prev[dim].active;
+            const next = { ...prev };
+            
+            if (isActivating) {
+                if (dim === 'weight') {
+                    next.volume = { ...next.volume, active: false };
+                } else if (dim === 'volume') {
+                    next.weight = { ...next.weight, active: false };
+                }
+            }
+            
+            next[dim] = { ...next[dim], active: isActivating };
+            return next;
+        });
     };
 
     // ÔöÇÔöÇÔöÇ Step 3: Generate Combinations
@@ -862,7 +873,7 @@ export default function AddProductPage() {
                     </button>
                     <div>
                         <h1 className="font-serif text-2xl font-bold text-gold-soft">Add New Product</h1>
-                        <p className="text-sm text-text-secondary">Fill in the details to create a new product</p>
+                        <p className="text-[15px] font-semibold text-brown">Fill in the details to create a new product</p>
                     </div>
                 </div>
 

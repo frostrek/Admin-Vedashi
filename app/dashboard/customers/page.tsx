@@ -81,16 +81,16 @@ export default function CustomersPage() {
     };
 
     const statusBadge = (customer: Customer) => {
-        if (customer.is_banned) return <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold bg-danger/15 text-danger"><XCircle className="h-3 w-3" />Banned</span>;
-        if (customer.is_suspended) return <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold bg-warning/15 text-warning"><AlertTriangle className="h-3 w-3" />Suspended</span>;
-        if (customer.is_deleted) return <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold bg-text-muted/15 text-text-muted"><UserX className="h-3 w-3" />Deleted</span>;
-        if (!customer.is_active) return <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold bg-text-muted/15 text-text-muted"><XCircle className="h-3 w-3" />Inactive</span>;
-        return <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold bg-success/15 text-success"><CheckCircle2 className="h-3 w-3" />Active</span>;
+        if (customer.is_banned) return <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold bg-danger/15 text-danger"><XCircle className="h-3 w-3" />Banned</span>;
+        if (customer.is_suspended) return <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold bg-warning/15 text-warning"><AlertTriangle className="h-3 w-3" />Suspended</span>;
+        if (customer.is_deleted) return <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold bg-text-muted/15 text-text-muted"><UserX className="h-3 w-3" />Deleted</span>;
+        if (!customer.is_active) return <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold bg-text-muted/15 text-text-muted"><XCircle className="h-3 w-3" />Inactive</span>;
+        return <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold bg-success/15 text-success"><CheckCircle2 className="h-3 w-3" />Active</span>;
     };
 
     const roleBadge = (role: string) => {
-        if (role === 'admin') return <span className="rounded-full px-2 py-0.5 text-[11px] font-semibold bg-gold/15 text-gold">Admin</span>;
-        return <span className="rounded-full px-2 py-0.5 text-[11px] font-semibold bg-info/15 text-info">Customer</span>;
+        if (role === 'admin') return <span className="rounded-full px-2 py-0.5 text-xs font-semibold bg-gold/15 text-gold">Admin</span>;
+        return <span className="rounded-full px-2 py-0.5 text-xs font-semibold bg-info/15 text-info">Customer</span>;
     };
 
     const verificationDot = (verified: boolean) => (
@@ -111,7 +111,7 @@ export default function CustomersPage() {
             <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
                 <div>
                     <h1 className="font-serif text-2xl font-bold text-gold-soft">Customers</h1>
-                    <p className="text-sm text-text-secondary">{customers.length} total customers</p>
+                    <p className="text-[15px] font-semibold text-brown">{customers.length} total customers</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
                     {/* Status Filter */}
@@ -150,13 +150,13 @@ export default function CustomersPage() {
             {/* Stats Strip */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
                 {[
-                    { label: 'Total Patients', value: customers.length, color: 'text-gold' },
+                    { label: 'Total Customer', value: customers.length, color: 'text-gold' },
                     { label: 'Recently Active', value: customers.filter(c => c.is_active && !c.is_banned && !c.is_suspended).length, color: 'text-success' },
                     { label: 'Verified Access', value: customers.filter(c => c.is_email_verified).length, color: 'text-info' },
                 ].map(stat => (
                     <div key={stat.label} className="rounded-xl border border-border bg-gradient-to-br from-card-bg to-card-bg-elevated p-4">
-                        <p className="text-xs text-text-muted uppercase mb-1">{stat.label}</p>
-                        <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
+                        <p className="text-sm font-bold text-text-muted uppercase mb-1">{stat.label}</p>
+                        <p className={`text-3xl font-bold ${stat.color}`}>{stat.value}</p>
                     </div>
                 ))}
             </div>
@@ -171,9 +171,9 @@ export default function CustomersPage() {
                                 <SortableHeader label="Total Orders" sortKey="total_orders" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
                                 <SortableHeader label="Total Spent" sortKey="total_spent" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
                                 <SortableHeader label="Last Active" sortKey="last_login_at" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
-                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase">Status</th>
+                                <th className="px-4 py-3 text-sm font-semibold text-gold-muted uppercase">Status</th>
                                 <SortableHeader label="Joined" sortKey="created_at" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
-                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase text-right">Actions</th>
+                                <th className="px-4 py-3 text-sm font-semibold text-gold-muted uppercase text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border-subtle">
@@ -181,23 +181,23 @@ export default function CustomersPage() {
                                 <tr>
                                     <td colSpan={7} className="px-4 py-12 text-center">
                                         <Users className="mx-auto h-10 w-10 text-text-muted/40 mb-2" />
-                                        <p className="text-sm text-text-muted">No customers found</p>
+                                        <p className="text-md text-text-muted">No customers found</p>
                                     </td>
                                 </tr>
                             ) : (
                                  filtered.map(customer => (
                                     <tr key={customer.customer_id} className="hover:bg-gold/[0.03] transition-all duration-300">
                                         <td className="px-4 py-3">
-                                            <p className="text-sm font-medium text-text-primary">{customer.full_name || '—'}</p>
-                                            <p className="text-xs text-text-muted">{customer.email}</p>
+                                            <p className="text-base font-bold text-text-primary">{customer.full_name || '—'}</p>
+                                            <p className="text-sm text-text-muted">{customer.email}</p>
                                         </td>
-                                        <td className="px-4 py-3 text-sm font-bold text-gold">
+                                        <td className="px-4 py-3 text-base font-bold text-gold">
                                             {(customer as any).total_orders || 0}
                                         </td>
-                                        <td className="px-4 py-3 text-sm font-bold text-text-primary">
+                                        <td className="px-4 py-3 text-base font-bold text-text-primary">
                                             {formatINR((customer as any).total_spent || 0)}
                                         </td>
-                                        <td className="px-4 py-3 text-sm text-text-secondary">
+                                        <td className="px-4 py-3 text-base text-text-secondary">
                                             {customer.last_login_at 
                                                 ? new Date(customer.last_login_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
                                                 : customer.updated_at 
@@ -206,7 +206,7 @@ export default function CustomersPage() {
                                             }
                                         </td>
                                         <td className="px-4 py-3">{statusBadge(customer)}</td>
-                                        <td className="px-4 py-3 text-sm text-text-secondary">
+                                        <td className="px-4 py-3 text-base text-text-secondary">
                                             {new Date(customer.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                                         </td>
                                         <td className="px-4 py-3 text-right">

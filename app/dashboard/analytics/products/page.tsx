@@ -191,7 +191,7 @@ export default function ProductAnalyticsDashboard() {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h1 className="font-serif text-2xl font-bold text-gold">Product Analytics</h1>
-                    <p className="text-sm text-text-muted mt-1">Comprehensive performance tracking across products.</p>
+                    <p className="text-[15px] font-semibold text-brown mt-1">Comprehensive performance tracking across products.</p>
                 </div>
 
                 <div className="flex items-center gap-3">
@@ -360,11 +360,11 @@ export default function ProductAnalyticsDashboard() {
                     </div>
                     <div className="p-0 overflow-x-auto flex-1">
                         <table className="w-full text-sm text-left">
-                            <thead className="text-xs text-text-muted uppercase bg-page-bg/50 border-b border-border-subtle">
+                            <thead className="text-sm text-gold-muted font-semibold uppercase bg-page-bg/50 border-b border-border-subtle">
                                 <tr>
-                                    <th className="px-5 py-3 font-medium">Product</th>
-                                    <th className="px-5 py-3 font-medium text-right">Units Sold</th>
-                                    <th className="px-5 py-3 font-medium text-right">Revenue</th>
+                                    <th className="px-5 py-3 font-semibold">Product</th>
+                                    <th className="px-5 py-3 font-semibold text-right">Units Sold</th>
+                                    <th className="px-5 py-3 font-semibold text-right">Revenue</th>
                                     <th className="px-5 py-3 w-16"></th>
                                 </tr>
                             </thead>
@@ -413,11 +413,11 @@ export default function ProductAnalyticsDashboard() {
                     </div>
                     <div className="p-0 overflow-x-auto flex-1">
                         <table className="w-full text-sm text-left">
-                            <thead className="text-xs text-text-muted uppercase bg-page-bg/50 border-b border-border-subtle">
+                            <thead className="text-sm text-gold-muted font-semibold uppercase bg-page-bg/50 border-b border-border-subtle">
                                 <tr>
-                                    <th className="px-5 py-3 font-medium">Product</th>
-                                    <th className="px-5 py-3 font-medium text-center">Health Score</th>
-                                    <th className="px-5 py-3 font-medium text-right">Conv. Score</th>
+                                    <th className="px-5 py-3 font-semibold">Product</th>
+                                    <th className="px-5 py-3 font-semibold text-center">Health Score</th>
+                                    <th className="px-5 py-3 font-semibold text-right">Conv. Score</th>
                                     <th className="px-5 py-3 w-16"></th>
                                 </tr>
                             </thead>
@@ -544,11 +544,11 @@ export default function ProductAnalyticsDashboard() {
                                 ) : (
                                     <div className="bg-page-bg rounded-xl border border-border-subtle overflow-hidden">
                                         <table className="w-full text-sm text-left">
-                                            <thead className="text-xs text-text-muted uppercase bg-card-bg border-b border-border-subtle">
+                                            <thead className="text-sm text-gold-muted font-semibold uppercase bg-card-bg border-b border-border-subtle">
                                                 <tr>
-                                                    <th className="px-5 py-3 font-medium">Product</th>
-                                                    <th className="px-5 py-3 font-medium text-right">Units Sold</th>
-                                                    <th className="px-5 py-3 font-medium text-right">Revenue Generated</th>
+                                                    <th className="px-5 py-3 font-semibold">Product</th>
+                                                    <th className="px-5 py-3 font-semibold text-right">Units Sold</th>
+                                                    <th className="px-5 py-3 font-semibold text-right">Revenue Generated</th>
                                                 </tr>
                                             </thead>
                                             <tbody>

@@ -170,7 +170,7 @@ export default function DashboardPage() {
                     <div className="flex items-center justify-between border-b border-border px-6 py-5">
                         <div>
                             <h4 className="font-serif text-base font-bold text-gold uppercase">Recent Fulfillment</h4>
-                            <p className="text-[10px] text-text-muted uppercase mt-1">Real-time protocol logistics and dispatch</p>
+                            <p className="text-[12px] text-text-muted font-bold uppercase mt-1">Real-time protocol logistics and dispatch</p>
                         </div>
                         <div className="flex items-center gap-3">
                             <Link href="/dashboard/orders" className="text-[11px] font-bold uppercase text-gold-soft hover:text-gold transition-colors duration-300">

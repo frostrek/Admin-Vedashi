@@ -248,7 +248,7 @@ export default function MediaLibraryPage() {
                         </div>
                         <h1 className="font-serif text-3xl font-bold text-gold">Visual Repository</h1>
                     </div>
-                    <p className="text-[10px] font-bold uppercase text-text-muted">
+                    <p className="text-[15px] font-semibold text-brown">
                         Manage hero carousel slides for the storefront landing gallery.
                     </p>
                 </div>
@@ -261,23 +261,28 @@ export default function MediaLibraryPage() {
             </div>
 
             {/* Settings Bar */}
-            <div className={`border border-border rounded-3xl p-6 shadow-xl backdrop-blur-sm flex flex-col xl:flex-row xl:items-center justify-between gap-6 animate-fadeInUp ${isDark ? 'bg-gradient-to-br from-card-bg to-card-bg-elevated' : 'bg-white/80'}`} style={{ animationDelay: '100ms' }}>
-                <div className="flex items-center gap-3 text-gold font-bold text-base uppercase shrink-0">
-                    <Settings className={`w-5 h-5 ${isDark ? 'text-gold' : 'text-emerald-900'}`} />
-                    <span className={isDark ? 'text-gold' : 'text-emerald-950'}>System Dynamics</span>
+            <div className={`border border-border rounded-[2.5rem] p-8 shadow-2xl backdrop-blur-md flex flex-col gap-8 animate-fadeInUp ${isDark ? 'bg-gradient-to-br from-card-bg to-card-bg-elevated shadow-black/60' : 'bg-white/90 shadow-emerald-900/10'}`} style={{ animationDelay: '100ms' }}>
+                <div className="flex items-center gap-4">
+                    <div className={`p-3 rounded-2xl border shadow-inner ${isDark ? 'bg-gold/10 border-gold/20' : 'bg-emerald-900/5 border-emerald-900/10'}`}>
+                        <Settings className={`w-6 h-6 ${isDark ? 'text-gold' : 'text-emerald-900'}`} />
+                    </div>
+                    <div className="flex flex-col">
+                        <h2 className={`font-serif text-2xl font-bold tracking-wide ${isDark ? 'text-gold' : 'text-emerald-950'}`}>System Dynamics</h2>
+                        <p className={`text-[12px] font-black uppercase tracking-[0.2em] opacity-50 ${isDark ? 'text-gold/60' : 'text-emerald-900/60'}`}>Engine Configuration & Global State</p>
+                    </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-x-6 gap-y-5 lg:justify-end flex-1">
+                <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 p-6 rounded-3xl border ${isDark ? 'bg-black/20 border-white/5 shadow-inner' : 'bg-emerald-50/50 border-emerald-900/5 shadow-sm'}`}>
                     {/* Speed Config */}
-                    <div className="flex items-center gap-3">
-                        <label className={`text-[10px] font-bold uppercase flex items-center gap-2 whitespace-nowrap ${isDark ? 'text-text-muted' : 'text-emerald-900/60'}`}>
-                            <Clock className="w-3.5 h-3.5 text-gold" /> Temporal Flow
+                    <div className="flex flex-col gap-3 group">
+                        <label className={`text-[15px] font-black uppercase tracking-widest flex items-center gap-2 ${isDark ? 'text-text-muted group-hover:text-gold' : 'text-emerald-900/60 group-hover:text-emerald-900'} transition-colors`}>
+                            <Clock className="w-3.5 h-3.5" /> Temporal Flow
                         </label>
                         <select
                             value={settings.slider_speed}
                             disabled={savingSettings}
                             onChange={(e) => saveSettings({ ...settings, slider_speed: parseInt(e.target.value) })}
-                            className={`border text-[10px] font-bold uppercase rounded-lg px-3 py-2 focus:ring-1 focus:ring-gold/10 disabled:opacity-50 transition-all outline-none ${isDark ? 'bg-black/20 border-border text-gold-soft focus:border-gold/30' : 'bg-white border-gold/10 text-emerald-950 focus:border-gold/40 shadow-sm'}`}
+                            className={`w-full border text-[11px] font-bold uppercase rounded-xl px-4 py-3 focus:ring-2 focus:ring-gold/10 disabled:opacity-50 transition-all outline-none cursor-pointer appearance-none ${isDark ? 'bg-black/40 border-white/5 text-gold-soft focus:border-gold/30' : 'bg-white border-gold/20 text-emerald-950 focus:border-gold shadow-sm'}`}
                         >
                             <option value={3000}>Fast (3s)</option>
                             <option value={5000}>Normal (5s)</option>
@@ -287,15 +292,15 @@ export default function MediaLibraryPage() {
                     </div>
 
                     {/* Arrow Config */}
-                    <div className="flex items-center gap-3">
-                        <label className={`text-[10px] font-bold uppercase flex items-center gap-2 whitespace-nowrap ${isDark ? 'text-text-muted' : 'text-emerald-900/60'}`}>
-                            <MousePointer2 className="w-3.5 h-3.5 text-gold" /> Navigation
+                    <div className="flex flex-col gap-3 group">
+                        <label className={`text-[15px] font-black uppercase tracking-widest flex items-center gap-2 ${isDark ? 'text-text-muted group-hover:text-gold' : 'text-emerald-900/60 group-hover:text-emerald-900'} transition-colors`}>
+                            <MousePointer2 className="w-3.5 h-3.5" /> Navigation
                         </label>
                         <select
                             value={settings.arrow_visibility}
                             disabled={savingSettings}
                             onChange={(e) => saveSettings({ ...settings, arrow_visibility: e.target.value as any })}
-                            className={`border text-[10px] font-bold uppercase rounded-lg px-3 py-2 focus:ring-1 focus:ring-gold/10 disabled:opacity-50 transition-all outline-none ${isDark ? 'bg-black/20 border-border text-gold-soft focus:border-gold/30' : 'bg-white border-gold/10 text-emerald-950 focus:border-gold/40 shadow-sm'}`}
+                            className={`w-full border text-[11px] font-bold uppercase rounded-xl px-4 py-3 focus:ring-2 focus:ring-gold/10 disabled:opacity-50 transition-all outline-none cursor-pointer appearance-none ${isDark ? 'bg-black/40 border-white/5 text-gold-soft focus:border-gold/30' : 'bg-white border-gold/20 text-emerald-950 focus:border-gold shadow-sm'}`}
                         >
                             <option value="hover">On Presence</option>
                             <option value="visible">Omnipresent</option>
@@ -304,15 +309,15 @@ export default function MediaLibraryPage() {
                     </div>
 
                     {/* Loop Config */}
-                    <div className="flex items-center gap-3">
-                        <label className={`text-[10px] font-bold uppercase flex items-center gap-2 whitespace-nowrap ${isDark ? 'text-text-muted' : 'text-emerald-900/60'}`}>
-                            <Repeat className="w-3.5 h-3.5 text-gold" /> Cycle
+                    <div className="flex flex-col gap-3 group">
+                        <label className={`text-[15px] font-black uppercase tracking-widest flex items-center gap-2 ${isDark ? 'text-text-muted group-hover:text-gold' : 'text-emerald-900/60 group-hover:text-emerald-900'} transition-colors`}>
+                            <Repeat className="w-3.5 h-3.5" /> Cycle
                         </label>
                         <select
                             value={settings.loop ? 'true' : 'false'}
                             disabled={savingSettings}
                             onChange={(e) => saveSettings({ ...settings, loop: e.target.value === 'true' })}
-                            className={`border text-[10px] font-bold uppercase rounded-lg px-3 py-2 focus:ring-1 focus:ring-gold/10 disabled:opacity-50 transition-all outline-none ${isDark ? 'bg-black/20 border-border text-gold-soft focus:border-gold/30' : 'bg-white border-gold/10 text-emerald-950 focus:border-gold/40 shadow-sm'}`}
+                            className={`w-full border text-[11px] font-bold uppercase rounded-xl px-4 py-3 focus:ring-2 focus:ring-gold/10 disabled:opacity-50 transition-all outline-none cursor-pointer appearance-none ${isDark ? 'bg-black/40 border-white/5 text-gold-soft focus:border-gold/30' : 'bg-white border-gold/20 text-emerald-950 focus:border-gold shadow-sm'}`}
                         >
                             <option value="true">Infinite</option>
                             <option value="false">Finite</option>
@@ -320,15 +325,15 @@ export default function MediaLibraryPage() {
                     </div>
 
                     {/* Transition Config */}
-                    <div className="flex items-center gap-3">
-                        <label className={`text-[10px] font-bold uppercase flex items-center gap-2 whitespace-nowrap ${isDark ? 'text-text-muted' : 'text-emerald-900/60'}`}>
-                            <MonitorPlay className="w-3.5 h-3.5 text-gold" /> Effect
+                    <div className="flex flex-col gap-3 group">
+                        <label className={`text-[15px] font-black uppercase tracking-widest flex items-center gap-2 ${isDark ? 'text-text-muted group-hover:text-gold' : 'text-emerald-900/60 group-hover:text-emerald-900'} transition-colors`}>
+                            <MonitorPlay className="w-3.5 h-3.5" /> Effect
                         </label>
                         <select
                             value={settings.slideshow_type}
                             disabled={savingSettings}
                             onChange={(e) => saveSettings({ ...settings, slideshow_type: e.target.value as any })}
-                            className={`border text-[10px] font-bold uppercase rounded-lg px-3 py-2 focus:ring-1 focus:ring-gold/10 disabled:opacity-50 transition-all outline-none ${isDark ? 'bg-black/20 border-border text-gold-soft focus:border-gold/30' : 'bg-white border-gold/10 text-emerald-950 focus:border-gold/40 shadow-sm'}`}
+                            className={`w-full border text-[11px] font-bold uppercase rounded-xl px-4 py-3 focus:ring-2 focus:ring-gold/10 disabled:opacity-50 transition-all outline-none cursor-pointer appearance-none ${isDark ? 'bg-black/40 border-white/5 text-gold-soft focus:border-gold/30' : 'bg-white border-gold/20 text-emerald-950 focus:border-gold shadow-sm'}`}
                         >
                             <option value="fade">Dissolve</option>
                             <option value="slide_right_to_left">Transversal Link</option>
@@ -339,7 +344,7 @@ export default function MediaLibraryPage() {
             </div>
 
             {/* Live preview bar */}
-            <div className="bg-primary/5 border border-border/40 rounded-2xl p-4 text-[10px] font-bold uppercase text-text-muted flex items-center gap-3 animate-fadeInUp shadow-inner" style={{ animationDelay: '200ms' }}>
+            <div className="bg-primary/5 border border-border/40 rounded-2xl p-4 text-[15px] font-bold uppercase text-text-muted flex items-center gap-3 animate-fadeInUp shadow-inner" style={{ animationDelay: '200ms' }}>
                 <Eye className="w-4 h-4 text-gold flex-shrink-0" />
                 <span>
                     <span className="text-gold">{slides.filter(s => s.is_active).length}</span> Manifested slides currently active in the visual stratum.
@@ -750,7 +755,7 @@ export default function MediaLibraryPage() {
                             <label className="flex items-center justify-between cursor-pointer select-none p-5 rounded-2xl border border-border bg-black/20 hover:bg-black/40 hover:border-gold/20 transition-all duration-300">
                                 <div>
                                     <p className="text-sm font-bold text-gold-soft">Manifest Immediately</p>
-                                    <p className="text-[10px] text-text-muted mt-0.5 uppercase font-medium">Toggle visibility of this essence within the storefront</p>
+                                    <p className="text-[15px] text-text-muted mt-0.5 uppercase font-medium">Toggle visibility of this essence within the storefront</p>
                                 </div>
                                 <div className={`relative w-14 h-7 rounded-full transition-all duration-500 flex-shrink-0 ${form.is_active ? 'bg-gold shadow-[0_0_15px_rgba(197,164,109,0.3)]' : 'bg-border'}`}>
                                     <div className={`absolute top-1.5 left-1.5 w-4 h-4 bg-white rounded-full shadow-lg transition-transform duration-500 ease-out ${form.is_active ? 'translate-x-7' : ''}`} />
@@ -769,7 +774,7 @@ export default function MediaLibraryPage() {
                                     Abort
                                 </button>
                                 <button type="submit" disabled={saving}
-                                    className="flex items-center gap-2 px-8 py-3 bg-primary border border-gold/20 text-gold text-[10px] font-bold uppercase rounded-xl hover:shadow-[0_0_20px_rgba(197,164,109,0.3)] transition-all duration-300 disabled:opacity-50">
+                                    className="flex items-center gap-2 px-8 py-3 bg-primary border border-gold/20 text-gold text-[15px] font-bold uppercase rounded-xl hover:shadow-[0_0_20px_rgba(197,164,109,0.3)] transition-all duration-300 disabled:opacity-50">
                                     {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Finalizing Essence…</> : <><Save className="w-4 h-4" /> {editing ? 'Commit Changes' : 'Manifest Slide'}</>}
                                 </button>
                             </div>

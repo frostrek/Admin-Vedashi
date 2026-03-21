@@ -181,7 +181,7 @@ function ActivityLogsPageContent() {
                         </div>
                         <h1 className={`text-3xl font-bold ${isDark ? 'text-gold' : 'text-emerald-950'}`}>Interaction Chronicles</h1>
                     </div>
-                    <p className={`text-[10px] font-bold uppercase ${isDark ? 'text-text-muted' : 'text-emerald-900/40'} ml-1`}>
+                    <p className={`text-[15px] font-semibold ${isDark ? 'text-gold-soft/60' : 'text-emerald-950/80'} ml-1`}>
                         An irreversible audit trail of administrative vibrations and system evolutions.
                     </p>
                 </div>
@@ -198,7 +198,7 @@ function ActivityLogsPageContent() {
             {/* Filters */}
             <form onSubmit={handleFilterSubmit} className={`grid grid-cols-1 sm:grid-cols-4 gap-4 p-6 ${isDark ? 'bg-card-bg border-border-subtle' : 'bg-white/80 border-gold/15 shadow-sm'} rounded-2xl border`}>
                 <div className="relative">
-                    <label className={`text-[10px] font-black uppercase ${isDark ? 'text-gold' : 'text-emerald-900'} mb-2 block ml-1`}>Actor Email</label>
+                    <label className={`text-[12px] font-black uppercase ${isDark ? 'text-gold' : 'text-emerald-900'} mb-2 block ml-1`}>Actor Email</label>
                     <div className="relative">
                         <Search className={`absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 ${isDark ? 'text-gold/40' : 'text-emerald-900/40'}`} />
                         <input
@@ -212,7 +212,7 @@ function ActivityLogsPageContent() {
                 </div>
 
                 <div className="relative">
-                    <label className={`text-[10px] font-black uppercase ${isDark ? 'text-gold' : 'text-emerald-900'} mb-2 block ml-1`}>Entity Type</label>
+                    <label className={`text-[12px] font-black uppercase ${isDark ? 'text-gold' : 'text-emerald-900'} mb-2 block ml-1`}>Entity Type</label>
                     <div className="relative">
                         <Filter className={`absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 ${isDark ? 'text-gold/40' : 'text-emerald-900/40'}`} />
                         <input
@@ -226,7 +226,7 @@ function ActivityLogsPageContent() {
                 </div>
 
                 <div className="relative">
-                    <label className={`text-[10px] font-black uppercase ${isDark ? 'text-gold' : 'text-emerald-900'} mb-2 block ml-1`}>Action</label>
+                    <label className={`text-[12px] font-black uppercase ${isDark ? 'text-gold' : 'text-emerald-900'} mb-2 block ml-1`}>Action</label>
                     <div className="relative">
                         <Filter className={`absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 ${isDark ? 'text-gold/40' : 'text-emerald-900/40'}`} />
                         <input
@@ -258,13 +258,13 @@ function ActivityLogsPageContent() {
                     <table className="w-full whitespace-nowrap">
                         <thead>
                             <tr className={`border-b ${isDark ? 'border-border/50 bg-sidebar-bg' : 'border-gold/10 bg-emerald-50/40'}`}>
-                                <th className={`px-5 py-4 text-left text-[10px] font-black ${isDark ? 'text-text-muted' : 'text-emerald-900/60'} uppercase`}>Time</th>
-                                <th className={`px-5 py-4 text-left text-[10px] font-black ${isDark ? 'text-text-muted' : 'text-emerald-900/60'} uppercase`}>Actor</th>
-                                <th className={`px-5 py-4 text-left text-[10px] font-black ${isDark ? 'text-text-muted' : 'text-emerald-900/60'} uppercase`}>Action</th>
-                                <th className={`px-5 py-4 text-left text-[10px] font-black ${isDark ? 'text-text-muted' : 'text-emerald-900/60'} uppercase`}>Entity Type</th>
-                                <th className={`px-5 py-4 text-left text-[10px] font-black ${isDark ? 'text-text-muted' : 'text-emerald-900/60'} uppercase`}>Entity ID</th>
-                                <th className={`px-5 py-4 text-left text-[10px] font-black ${isDark ? 'text-text-muted' : 'text-emerald-900/60'} uppercase`}>Metadata</th>
-                                <th className={`px-5 py-4 text-right text-[10px] font-black ${isDark ? 'text-text-muted' : 'text-emerald-900/60'} uppercase`}>Actions</th>
+                                <th className={`px-5 py-4 text-left text-sm font-semibold ${isDark ? 'text-gold-muted' : 'text-gold-muted'} uppercase`}>Time</th>
+                                <th className={`px-5 py-4 text-left text-sm font-semibold ${isDark ? 'text-gold-muted' : 'text-gold-muted'} uppercase`}>Actor</th>
+                                <th className={`px-5 py-4 text-left text-sm font-semibold ${isDark ? 'text-gold-muted' : 'text-gold-muted'} uppercase`}>Action</th>
+                                <th className={`px-5 py-4 text-left text-sm font-semibold ${isDark ? 'text-gold-muted' : 'text-gold-muted'} uppercase`}>Entity Type</th>
+                                <th className={`px-5 py-4 text-left text-sm font-semibold ${isDark ? 'text-gold-muted' : 'text-gold-muted'} uppercase`}>Entity ID</th>
+                                <th className={`px-5 py-4 text-left text-sm font-semibold ${isDark ? 'text-gold-muted' : 'text-gold-muted'} uppercase`}>Metadata</th>
+                                <th className={`px-5 py-4 text-right text-sm font-semibold ${isDark ? 'text-gold-muted' : 'text-gold-muted'} uppercase`}>Actions</th>
                             </tr>
                         </thead>
                         <tbody className={`divide-y ${isDark ? 'divide-border/30' : 'divide-gold/5'} relative`}>
@@ -277,10 +277,10 @@ function ActivityLogsPageContent() {
                                     <td colSpan={7} className="h-48 text-center">
                                         <div className="flex flex-col items-center justify-center p-8 text-danger/60">
                                             <ShieldAlert className="w-12 h-12 mb-4" />
-                                            <p className={`text-[10px] font-black uppercase`}>{error}</p>
+                                            <p className={`text-[12px] font-black uppercase`}>{error}</p>
                                             <button 
                                                 onClick={() => fetchLogs('1')}
-                                                className="mt-4 text-[10px] font-bold uppercase text-gold hover:underline"
+                                                className="mt-4 text-[12px] font-bold uppercase text-gold hover:underline"
                                             >
                                                 Try Again
                                             </button>
@@ -292,7 +292,7 @@ function ActivityLogsPageContent() {
                                     <td colSpan={7} className="h-48 text-center">
                                         <div className="flex flex-col items-center justify-center p-8 opacity-40">
                                             <FileText className="w-12 h-12 text-gold mb-4" />
-                                            <p className={`text-[10px] font-black uppercase ${isDark ? 'text-text-muted' : 'text-emerald-900'}`}>No traces found in this timeline</p>
+                                            <p className={`text-[12px] font-black uppercase ${isDark ? 'text-text-muted' : 'text-emerald-900'}`}>No traces found in this timeline</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -308,20 +308,20 @@ function ActivityLogsPageContent() {
                                         </td>
                                         <td className="px-5 py-4">
                                             <div className={`text-sm font-bold ${isDark ? 'text-text' : 'text-emerald-950'} group-hover:text-gold transition-colors`}>{log.actor_email || 'System'}</div>
-                                            <div className="text-[10px] text-text-muted opacity-60 font-mono">IP: {log.ip_address || 'N/A'}</div>
+                                            <div className="text-[12px] text-text-muted opacity-60 font-mono">IP: {log.ip_address || 'N/A'}</div>
                                         </td>
                                         <td className="px-5 py-4">
-                                            <span className={`px-3 py-1 text-[9px] font-black uppercase rounded-full ${isDark ? 'bg-gold/10 text-gold border-gold/20' : 'bg-emerald-900/5 text-emerald-900 border-emerald-900/10'} border shadow-sm`}>
+                                            <span className={`px-3 py-1 text-[12px] font-black uppercase rounded-full ${isDark ? 'bg-gold/10 text-gold border-gold/20' : 'bg-emerald-900/5 text-emerald-900 border-emerald-900/10'} border shadow-sm`}>
                                                 {log.action}
                                             </span>
                                         </td>
-                                        <td className={`px-5 py-4 text-xs font-bold uppercase ${isDark ? 'text-text' : 'text-emerald-950/80'}`}>
+                                        <td className={`px-5 py-4 text-[12px] font-bold uppercase ${isDark ? 'text-text' : 'text-emerald-950/80'}`}>
                                             {log.entity_type || '-'}
                                         </td>
-                                        <td className="px-5 py-4 text-[11px] font-mono text-text-muted/60">
+                                        <td className="px-5 py-4 text-[14px] font-semibold font-mono text-text-muted/60">
                                             {log.entity_id ? log.entity_id.substring(0, 8) + '...' : '-'}
                                         </td>
-                                        <td className="px-5 py-4 text-[11px] text-text-muted/60 max-w-[200px] truncate italic" title={log.metadata ? JSON.parse(typeof log.metadata === 'string' ? log.metadata : JSON.stringify(log.metadata)) : ''}>
+                                        <td className="px-5 py-4 text-[14px] font-semibold text-text-muted/60 max-w-[200px] truncate" title={log.metadata ? JSON.parse(typeof log.metadata === 'string' ? log.metadata : JSON.stringify(log.metadata)) : ''}>
                                             {log.metadata ? (typeof log.metadata === 'string' ? log.metadata : JSON.stringify(log.metadata)) : '-'}
                                         </td>
                                         <td className="px-5 py-4 text-right">

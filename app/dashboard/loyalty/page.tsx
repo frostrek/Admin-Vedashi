@@ -246,7 +246,7 @@ export default function LoyaltyAdminPage() {
                         <h1 className="font-serif text-2xl font-bold text-gold flex items-center gap-2">
                             <Gift className="h-6 w-6" /> Loyalty & Rewards
                         </h1>
-                        <p className="text-sm text-text-primary mt-1 max-w-xl font-medium">Manage tiers, points rules, and exclusive promotions with ease.</p>
+                        <p className="text-[15px] font-semibold text-brown mt-1 max-w-xl">Manage tiers, points rules, and exclusive promotions with ease.</p>
                     </div>
                 </div>
 
@@ -304,20 +304,20 @@ export default function LoyaltyAdminPage() {
                                     className="bg-card-bg border border-border rounded-xl p-5 hover:border-gold/30 transition-all cursor-pointer group active:scale-[0.98]"
                                 >
                                     <div className="flex justify-between items-center mb-2">
-                                        <p className="text-sm text-text-muted font-medium group-hover:text-gold transition-colors">Active Wallets</p>
+                                        <p className="text-sm text-text-secondary font-bold">Active Wallets</p>
                                         <div className="p-2 bg-purple-500/10 rounded-lg group-hover:bg-purple-500/20"><Database className="h-4 w-4 text-purple-400" /></div>
                                     </div>
                                     <h4 className="font-serif text-2xl font-bold text-text-primary mb-1 font-mono">{formatNumber(stats.stats?.total_wallets || stats.total_wallets)}</h4>
-                                    <p className="text-xs text-text-muted">Customers with point balances</p>
+                                    <p className="text-xs text-text-secondary font-medium">Customers with point balances</p>
                                 </div>
 
-                                <div className="bg-card-bg border border-border rounded-xl p-5 hover:border-gold/30 transition-colors">
+                                <div className="bg-card-bg border border-border rounded-xl p-5 hover:border-gold/30 transition-colors cursor-pointer group active:scale-[0.98]">
                                     <div className="flex justify-between items-center mb-2">
-                                        <p className="text-sm text-text-muted font-medium">Live Promotions</p>
+                                        <p className="text-sm text-text-secondary font-bold">Live Promotions</p>
                                         <div className="p-2 bg-gold/10 rounded-lg"><Percent className="h-4 w-4 text-gold" /></div>
                                     </div>
                                     <h4 className="font-serif text-2xl font-bold text-text-primary mb-1 font-mono">{stats.active_promotions}</h4>
-                                    <p className="text-xs text-text-muted">Currently active campaigns</p>
+                                    <p className="text-xs text-text-secondary font-medium">Currently active campaigns</p>
                                 </div>
                             </div>
                         </div>
@@ -337,13 +337,13 @@ export default function LoyaltyAdminPage() {
                             </div>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-sm">
-                                    <thead>
-                                        <tr className="border-b border-border text-text-primary bg-primary/10">
-                                            <th className="text-left px-5 py-4 font-bold uppercase text-[11px]">Tier Name</th>
-                                            <th className="text-left px-5 py-4 font-bold uppercase text-[11px]">Min Lifetime Pts</th>
-                                            <th className="text-left px-5 py-4 font-bold uppercase text-[11px]">Multiplier</th>
-                                            <th className="text-left px-5 py-4 font-bold uppercase text-[11px]">Benefits</th>
-                                            <th className="text-right px-5 py-4 font-bold uppercase text-[11px]">Actions</th>
+                                    <thead className="text-sm font-semibold text-gold-muted uppercase bg-primary/10">
+                                        <tr>
+                                            <th className="text-left px-5 py-4">Tier Name</th>
+                                            <th className="text-left px-5 py-4">Min Lifetime Pts</th>
+                                            <th className="text-left px-5 py-4">Multiplier</th>
+                                            <th className="text-left px-5 py-4">Benefits</th>
+                                            <th className="text-right px-5 py-4">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -400,13 +400,13 @@ export default function LoyaltyAdminPage() {
                             </div>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-sm">
-                                    <thead>
-                                        <tr className="border-b border-border text-text-secondary bg-primary/5">
-                                            <th className="text-left px-5 py-3 font-medium">Action Type</th>
-                                            <th className="text-left px-5 py-3 font-medium">Points</th>
-                                            <th className="text-left px-5 py-3 font-medium">Validity Limit</th>
-                                            <th className="text-left px-5 py-3 font-medium">Status</th>
-                                            <th className="text-right px-5 py-3 font-medium">Actions</th>
+                                    <thead className="text-sm font-semibold text-gold-muted uppercase bg-primary/5">
+                                        <tr>
+                                            <th className="text-left px-5 py-3">Action Type</th>
+                                            <th className="text-left px-5 py-3">Points</th>
+                                            <th className="text-left px-5 py-3">Validity Limit</th>
+                                            <th className="text-left px-5 py-3">Status</th>
+                                            <th className="text-right px-5 py-3">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -467,13 +467,13 @@ export default function LoyaltyAdminPage() {
                             </div>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-sm">
-                                    <thead>
-                                        <tr className="border-b border-border text-text-secondary bg-primary/5">
-                                            <th className="text-left px-5 py-3 font-medium">Campaign Name</th>
-                                            <th className="text-left px-5 py-3 font-medium">Multiplier / Bonus</th>
-                                            <th className="text-left px-5 py-3 font-medium">Dates</th>
-                                            <th className="text-left px-5 py-3 font-medium">Status</th>
-                                            <th className="text-right px-5 py-3 font-medium">Actions</th>
+                                    <thead className="text-sm font-semibold text-gold-muted uppercase bg-primary/5">
+                                        <tr>
+                                            <th className="text-left px-5 py-3">Campaign Name</th>
+                                            <th className="text-left px-5 py-3">Multiplier / Bonus</th>
+                                            <th className="text-left px-5 py-3">Dates</th>
+                                            <th className="text-left px-5 py-3">Status</th>
+                                            <th className="text-right px-5 py-3">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -536,13 +536,13 @@ export default function LoyaltyAdminPage() {
                             </div>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-sm">
-                                    <thead>
-                                        <tr className="border-b border-border text-text-secondary bg-primary/5">
-                                            <th className="text-left px-5 py-3 font-medium">Customer</th>
-                                            <th className="text-left px-5 py-3 font-medium">Balance</th>
-                                            <th className="text-left px-5 py-3 font-medium">Tier Status</th>
-                                            <th className="text-left px-5 py-3 font-medium">Last Activity</th>
-                                            <th className="text-right px-5 py-3 font-medium">Actions</th>
+                                    <thead className="text-sm font-semibold text-gold-muted uppercase bg-primary/5">
+                                        <tr>
+                                            <th className="text-left px-5 py-3">Customer</th>
+                                            <th className="text-left px-5 py-3">Balance</th>
+                                            <th className="text-left px-5 py-3">Tier Status</th>
+                                            <th className="text-left px-5 py-3">Last Activity</th>
+                                            <th className="text-right px-5 py-3">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>

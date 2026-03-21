@@ -145,7 +145,7 @@ export default function LegalManagement() {
                         <FileText className="h-6 w-6 text-gold" />
                         Legal Content Management
                     </h1>
-                    <p className="text-text-muted text-sm border-l-2 border-gold/50 pl-3">
+                    <p className="text-[15px] font-semibold text-brown border-l-2 border-gold/50 pl-3">
                         Manage Terms of Service, Privacy Policy, and other legal documents.
                     </p>
                 </div>
@@ -400,13 +400,13 @@ export default function LegalManagement() {
 
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-sm text-text-muted">
-                            <thead className="bg-page-bg/50 text-xs uppercase text-text-muted">
+                            <thead className="bg-page-bg/50 text-sm font-semibold text-gold-muted uppercase">
                                 <tr>
-                                    <th className="px-4 py-3 font-semibold">Title / Slug</th>
-                                    <th className="px-4 py-3 font-semibold">Version</th>
-                                    <th className="px-4 py-3 font-semibold">Status</th>
-                                    <th className="px-4 py-3 font-semibold">Last Updated</th>
-                                    <th className="px-4 py-3 font-semibold text-right">Actions</th>
+                                    <th className="px-4 py-3">Title / Slug</th>
+                                    <th className="px-4 py-3">Version</th>
+                                    <th className="px-4 py-3">Status</th>
+                                    <th className="px-4 py-3">Last Updated</th>
+                                    <th className="px-4 py-3 text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border-subtle">
