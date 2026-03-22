@@ -97,7 +97,8 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         }
         
         // Redirect to storefront login
-        window.location.href = 'http://localhost:3000/in/login';
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        window.location.href = isLocal ? 'http://localhost:3000/in/login' : 'https://vedashi.com/in/login';
     }, []);
 
     const deactivate = useCallback(async (password: string) => {

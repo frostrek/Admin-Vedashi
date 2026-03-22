@@ -14,7 +14,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         if (!isLoading && !isAuthenticated) {
-            window.location.href = 'http://localhost:3000/in/login';
+            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            window.location.href = isLocal ? 'http://localhost:3000/in/login' : 'https://vedashi.com/in/login';
         }
     }, [isLoading, isAuthenticated]);
 
