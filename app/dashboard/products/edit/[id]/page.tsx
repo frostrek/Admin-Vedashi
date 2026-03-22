@@ -421,10 +421,21 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
 
     // ÔöÇÔöÇÔöÇ Step 2: Volume helpers ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
     const toggleDimensionActive = (dim: keyof typeof dimConfigs) => {
-        setDimConfigs(prev => ({
-            ...prev,
-            [dim]: { ...prev[dim], active: !prev[dim].active }
-        }));
+        setDimConfigs(prev => {
+            const isActivating = !prev[dim].active;
+            const next = { ...prev };
+            
+            if (isActivating) {
+                if (dim === 'weight') {
+                    next.volume = { ...next.volume, active: false };
+                } else if (dim === 'volume') {
+                    next.weight = { ...next.weight, active: false };
+                }
+            }
+            
+            next[dim] = { ...next[dim], active: isActivating };
+            return next;
+        });
     };
 
     const addDimensionValue = (dim: keyof typeof dimConfigs) => {
@@ -1140,7 +1151,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                     </Link>
                     <div>
                         <h1 className="font-serif text-2xl font-bold text-gold-soft">Edit Product</h1>
-                        <p className="text-sm text-text-secondary">Update details for this product</p>
+                        <p className="text-[15px] font-semibold text-brown">Update details for this product</p>
                     </div>
                 </div>
 

@@ -55,7 +55,7 @@ export default function AdminHelpArticlesPage() {
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="font-serif text-2xl font-bold text-gold">Help Articles</h1>
-                    <p className="text-sm text-text-muted mt-1">{articles.length} articles total</p>
+                    <p className="text-[15px] font-semibold text-brown mt-1">{articles.length} articles total</p>
                 </div>
                 <button
                     onClick={() => { setShowForm(!showForm); setEditId(null); setForm({ section: 'General', title: '', slug: '', content: '', is_published: false }); }}

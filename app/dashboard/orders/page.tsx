@@ -62,7 +62,7 @@ interface OrderDetail {
 
 // ── Portal-based Filter Popover ──────────────────────────────────────────────
 interface FilterPopoverProps {
-    anchorRef: React.RefObject<HTMLButtonElement>;
+    anchorRef: React.RefObject<HTMLButtonElement | null>;
     onClose: () => void;
     filtered: Order[];
     absoluteMaxAmount: number;
@@ -601,9 +601,9 @@ export default function OrdersPage() {
             <div ref={headerRef} className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <h1 className="font-serif text-2xl font-bold text-gold-soft tracking-tight">Orders</h1>
-                    <p className="text-sm text-text-secondary mt-0.5">
-                        <span className="font-semibold text-text-primary">{orders.length}</span> total ·{' '}
-                        <span className="font-semibold text-text-primary">{filtered.length}</span> shown
+                    <p className="text-[15px] font-semibold text-brown mt-0.5">
+                        <span className="font-semibold text-brown">{orders.length}</span> total ·{' '}
+                        <span className="font-semibold text-brown">{filtered.length}</span> shown
                     </p>
                 </div>
                 <button
@@ -661,7 +661,7 @@ export default function OrdersPage() {
 
                     {/* Period */}
                     <div className="flex items-center gap-1.5 px-4 py-3 border-r border-border/60 hover:bg-gold/[0.03] transition-colors">
-                        <span className="text-[11px] text-text-muted uppercase tracking-wider font-semibold whitespace-nowrap">Period</span>
+                        <span className="text-[15px] text-text-muted uppercase tracking-wider font-semibold whitespace-nowrap">Period</span>
                         <div className="relative flex items-center">
                             <select value={filterDate} onChange={e => { setFilterDate(e.target.value); clearSelection(); }}
                                 className="appearance-none bg-transparent border-none outline-none text-sm font-medium text-text-primary cursor-pointer pr-4">
@@ -790,12 +790,12 @@ export default function OrdersPage() {
                                 </th>
                                 <SortableHeader label="Order ID" sortKey="id" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
                                 <SortableHeader label="Customer" sortKey="customer_name" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
-                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase">Items</th>
+                                <th className="px-4 py-3 text-sm font-semibold text-gold-muted uppercase">Items</th>
                                 <SortableHeader label="Total" sortKey="total" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
-                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase">Payment Status</th>
+                                <th className="px-4 py-3 text-sm font-semibold text-gold-muted uppercase">Payment Status</th>
                                 <SortableHeader label="Order Status" sortKey="status" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
                                 <SortableHeader label="Date" sortKey="created_at" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
-                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase text-right">Actions</th>
+                                <th className="px-4 py-3 text-sm font-semibold text-gold-muted uppercase text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border/50">

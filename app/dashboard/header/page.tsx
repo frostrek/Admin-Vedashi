@@ -287,7 +287,7 @@ export default function HeaderManagementPage() {
                         </div>
                         <h1 className="font-serif text-3xl font-bold text-gold">Header Canvas</h1>
                     </div>
-                    <p className="text-[10px] font-bold uppercase text-text-muted">
+                    <p className="text-[15px] font-semibold text-brown">
                         Configure your storefront architecture — navigation links and dynamic settings.
                     </p>
                 </div>
@@ -339,7 +339,7 @@ export default function HeaderManagementPage() {
                 {/* ── 1. Navigation Links ───────────────────────── */}
                 <SectionCard icon={Link2} title="Navigation Protocol">
                     <div className="mt-4 space-y-3">
-                        <p className="text-[10px] font-bold uppercase text-text-muted/60 mb-4">Toggle visibility or reconfigure access nodes. Drag to reorder sequence.</p>
+                        <p className="text-[15px] font-semibold text-text-muted/60 mb-4">Toggle visibility or reconfigure access nodes. Drag to reorder sequence.</p>
                         {header.nav_links.map((link, i) => (
                             <div
                                 key={i}

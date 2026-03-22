@@ -300,7 +300,7 @@ export default function AdminReviewsPage() {
                         </div>
                         <h1 className="font-serif text-4xl md:text-5xl font-bold text-emerald-950 tracking-tight">Reviews Moderation</h1>
                     </div>
-                    <p className="text-base text-emerald-900/70 font-medium ml-1">
+                    <p className="text-[15px] font-semibold text-brown">
                         Curating customer experiences and managing product resonance.
                     </p>
                 </div>

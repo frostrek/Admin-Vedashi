@@ -248,7 +248,7 @@ export default function MediaLibraryPage() {
                         </div>
                         <h1 className="font-serif text-3xl font-bold text-gold">Visual Repository</h1>
                     </div>
-                    <p className="text-[15px] font-bold uppercase text-text-muted">
+                    <p className="text-[15px] font-semibold text-brown">
                         Manage hero carousel slides for the storefront landing gallery.
                     </p>
                 </div>
@@ -275,7 +275,7 @@ export default function MediaLibraryPage() {
                 <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 p-6 rounded-3xl border ${isDark ? 'bg-black/20 border-white/5 shadow-inner' : 'bg-emerald-50/50 border-emerald-900/5 shadow-sm'}`}>
                     {/* Speed Config */}
                     <div className="flex flex-col gap-3 group">
-                        <label className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-2 ${isDark ? 'text-text-muted group-hover:text-gold' : 'text-emerald-900/60 group-hover:text-emerald-900'} transition-colors`}>
+                        <label className={`text-[15px] font-black uppercase tracking-widest flex items-center gap-2 ${isDark ? 'text-text-muted group-hover:text-gold' : 'text-emerald-900/60 group-hover:text-emerald-900'} transition-colors`}>
                             <Clock className="w-3.5 h-3.5" /> Temporal Flow
                         </label>
                         <select
@@ -293,7 +293,7 @@ export default function MediaLibraryPage() {
 
                     {/* Arrow Config */}
                     <div className="flex flex-col gap-3 group">
-                        <label className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-2 ${isDark ? 'text-text-muted group-hover:text-gold' : 'text-emerald-900/60 group-hover:text-emerald-900'} transition-colors`}>
+                        <label className={`text-[15px] font-black uppercase tracking-widest flex items-center gap-2 ${isDark ? 'text-text-muted group-hover:text-gold' : 'text-emerald-900/60 group-hover:text-emerald-900'} transition-colors`}>
                             <MousePointer2 className="w-3.5 h-3.5" /> Navigation
                         </label>
                         <select
@@ -310,7 +310,7 @@ export default function MediaLibraryPage() {
 
                     {/* Loop Config */}
                     <div className="flex flex-col gap-3 group">
-                        <label className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-2 ${isDark ? 'text-text-muted group-hover:text-gold' : 'text-emerald-900/60 group-hover:text-emerald-900'} transition-colors`}>
+                        <label className={`text-[15px] font-black uppercase tracking-widest flex items-center gap-2 ${isDark ? 'text-text-muted group-hover:text-gold' : 'text-emerald-900/60 group-hover:text-emerald-900'} transition-colors`}>
                             <Repeat className="w-3.5 h-3.5" /> Cycle
                         </label>
                         <select
@@ -326,7 +326,7 @@ export default function MediaLibraryPage() {
 
                     {/* Transition Config */}
                     <div className="flex flex-col gap-3 group">
-                        <label className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-2 ${isDark ? 'text-text-muted group-hover:text-gold' : 'text-emerald-900/60 group-hover:text-emerald-900'} transition-colors`}>
+                        <label className={`text-[15px] font-black uppercase tracking-widest flex items-center gap-2 ${isDark ? 'text-text-muted group-hover:text-gold' : 'text-emerald-900/60 group-hover:text-emerald-900'} transition-colors`}>
                             <MonitorPlay className="w-3.5 h-3.5" /> Effect
                         </label>
                         <select
@@ -755,7 +755,7 @@ export default function MediaLibraryPage() {
                             <label className="flex items-center justify-between cursor-pointer select-none p-5 rounded-2xl border border-border bg-black/20 hover:bg-black/40 hover:border-gold/20 transition-all duration-300">
                                 <div>
                                     <p className="text-sm font-bold text-gold-soft">Manifest Immediately</p>
-                                    <p className="text-[10px] text-text-muted mt-0.5 uppercase font-medium">Toggle visibility of this essence within the storefront</p>
+                                    <p className="text-[15px] text-text-muted mt-0.5 uppercase font-medium">Toggle visibility of this essence within the storefront</p>
                                 </div>
                                 <div className={`relative w-14 h-7 rounded-full transition-all duration-500 flex-shrink-0 ${form.is_active ? 'bg-gold shadow-[0_0_15px_rgba(197,164,109,0.3)]' : 'bg-border'}`}>
                                     <div className={`absolute top-1.5 left-1.5 w-4 h-4 bg-white rounded-full shadow-lg transition-transform duration-500 ease-out ${form.is_active ? 'translate-x-7' : ''}`} />
@@ -774,7 +774,7 @@ export default function MediaLibraryPage() {
                                     Abort
                                 </button>
                                 <button type="submit" disabled={saving}
-                                    className="flex items-center gap-2 px-8 py-3 bg-primary border border-gold/20 text-gold text-[10px] font-bold uppercase rounded-xl hover:shadow-[0_0_20px_rgba(197,164,109,0.3)] transition-all duration-300 disabled:opacity-50">
+                                    className="flex items-center gap-2 px-8 py-3 bg-primary border border-gold/20 text-gold text-[15px] font-bold uppercase rounded-xl hover:shadow-[0_0_20px_rgba(197,164,109,0.3)] transition-all duration-300 disabled:opacity-50">
                                     {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Finalizing Essence…</> : <><Save className="w-4 h-4" /> {editing ? 'Commit Changes' : 'Manifest Slide'}</>}
                                 </button>
                             </div>

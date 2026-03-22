@@ -181,7 +181,7 @@ function ActivityLogsPageContent() {
                         </div>
                         <h1 className={`text-3xl font-bold ${isDark ? 'text-gold' : 'text-emerald-950'}`}>Interaction Chronicles</h1>
                     </div>
-                    <p className={`text-[12px] font-bold uppercase ${isDark ? 'text-text-muted' : 'text-emerald-900/40'} ml-1`}>
+                    <p className={`text-[15px] font-semibold ${isDark ? 'text-gold-soft/60' : 'text-emerald-950/80'} ml-1`}>
                         An irreversible audit trail of administrative vibrations and system evolutions.
                     </p>
                 </div>
@@ -258,13 +258,13 @@ function ActivityLogsPageContent() {
                     <table className="w-full whitespace-nowrap">
                         <thead>
                             <tr className={`border-b ${isDark ? 'border-border/50 bg-sidebar-bg' : 'border-gold/10 bg-emerald-50/40'}`}>
-                                <th className={`px-5 py-4 text-left text-[14px] font-black ${isDark ? 'text-text-muted' : 'text-emerald-900/60'} uppercase`}>Time</th>
-                                <th className={`px-5 py-4 text-left text-[14px] font-black ${isDark ? 'text-text-muted' : 'text-emerald-900/60'} uppercase`}>Actor</th>
-                                <th className={`px-5 py-4 text-left text-[14px] font-black ${isDark ? 'text-text-muted' : 'text-emerald-900/60'} uppercase`}>Action</th>
-                                <th className={`px-5 py-4 text-left text-[14px] font-black ${isDark ? 'text-text-muted' : 'text-emerald-900/60'} uppercase`}>Entity Type</th>
-                                <th className={`px-5 py-4 text-left text-[14px] font-black ${isDark ? 'text-text-muted' : 'text-emerald-900/60'} uppercase`}>Entity ID</th>
-                                <th className={`px-5 py-4 text-left text-[14px] font-black ${isDark ? 'text-text-muted' : 'text-emerald-900/60'} uppercase`}>Metadata</th>
-                                <th className={`px-5 py-4 text-right text-[14px] font-black ${isDark ? 'text-text-muted' : 'text-emerald-900/60'} uppercase`}>Actions</th>
+                                <th className={`px-5 py-4 text-left text-sm font-semibold ${isDark ? 'text-gold-muted' : 'text-gold-muted'} uppercase`}>Time</th>
+                                <th className={`px-5 py-4 text-left text-sm font-semibold ${isDark ? 'text-gold-muted' : 'text-gold-muted'} uppercase`}>Actor</th>
+                                <th className={`px-5 py-4 text-left text-sm font-semibold ${isDark ? 'text-gold-muted' : 'text-gold-muted'} uppercase`}>Action</th>
+                                <th className={`px-5 py-4 text-left text-sm font-semibold ${isDark ? 'text-gold-muted' : 'text-gold-muted'} uppercase`}>Entity Type</th>
+                                <th className={`px-5 py-4 text-left text-sm font-semibold ${isDark ? 'text-gold-muted' : 'text-gold-muted'} uppercase`}>Entity ID</th>
+                                <th className={`px-5 py-4 text-left text-sm font-semibold ${isDark ? 'text-gold-muted' : 'text-gold-muted'} uppercase`}>Metadata</th>
+                                <th className={`px-5 py-4 text-right text-sm font-semibold ${isDark ? 'text-gold-muted' : 'text-gold-muted'} uppercase`}>Actions</th>
                             </tr>
                         </thead>
                         <tbody className={`divide-y ${isDark ? 'divide-border/30' : 'divide-gold/5'} relative`}>

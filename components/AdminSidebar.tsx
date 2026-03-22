@@ -6,7 +6,7 @@ import { useAdminAuth } from '@/context/AdminAuthContext';
 import {
     LayoutDashboard, Package, ShoppingCart, Tag, LogOut, Leaf,
     ChevronLeft, Menu, Truck, Megaphone, BarChart, Settings, Users, X, Shield, Search, Ticket,
-    FileText, MessageSquare, Star, ShieldAlert, LayoutTemplate, Images, HelpCircle, Send, MonitorSmartphone, Activity, Layers, DollarSign, Gift
+    FileText, MessageSquare, Star, ShieldAlert, LayoutTemplate, Images, HelpCircle, Send, MonitorSmartphone, Activity, Layers, DollarSign, Gift, FileBarChart2
 } from 'lucide-react';
 const useState = require('react').useState;
 const useEffect = require('react').useEffect;
@@ -30,6 +30,7 @@ const engagementNav = [
 const salesNav = [
     { href: '/dashboard/orders', label: 'Orders', icon: ShoppingCart },
     { href: '/dashboard/payments/logs', label: 'Payment Stratum', icon: DollarSign },
+    { href: '/dashboard/financial-report', label: 'Financial Report', icon: FileBarChart2 },
     { href: '#', label: 'Delivery', icon: Truck },
 ];
 

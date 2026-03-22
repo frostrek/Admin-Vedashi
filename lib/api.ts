@@ -647,7 +647,7 @@ export async function getOrders(params?: { dateFrom?: string; dateTo?: string })
             };
         });
     } catch (error) {
-        console.error('[Admin API] Failed to fetch orders:', error);
+        console.warn('[Admin API] Failed to fetch orders:', error);
         return [];
     }
 }

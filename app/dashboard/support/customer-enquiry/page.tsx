@@ -511,7 +511,7 @@ export default function AdminFeedbackPage() {
                                 <h1 className="font-serif text-lg lg:text-2xl font-bold text-[#A89250] leading-none mb-1">
                                     Customer Enquiries
                                 </h1>
-                                <p className="hidden sm:block text-xs text-[#A89250]/60 leading-none font-semibold">
+                                <p className="hidden sm:block text-[15px] font-semibold text-brown leading-none mt-1">
                                     Manage and resolve support requests
                                 </p>
                             </div>
@@ -586,12 +586,12 @@ export default function AdminFeedbackPage() {
                         </div>
 
                         <div className="hidden lg:flex items-center justify-between px-4 pt-3 pb-0 shrink-0">
-                            <span className="text-xs font-bold uppercase text-[#A89250]/60">
+                            <span className="text-sm font-bold uppercase text-[#A89250]/80">
                                 Inbox
                                 <span className="ml-2 text-xs font-bold bg-primary/15 text-primary border border-primary/25
                                                  px-2 py-0.5 rounded-full">{filtered.length}</span>
                             </span>
-                            <span className="text-xs text-[#A89250]/30 font-bold select-none">drag edge to resize</span>
+                            <span className="text-xs text-[#A89250]/60 font-semibold select-none">drag edge to resize</span>
                         </div>
 
                         {/* Search + filters */}
