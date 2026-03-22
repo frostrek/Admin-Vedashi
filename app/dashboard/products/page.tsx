@@ -696,7 +696,7 @@ export default function ProductsListPage() {
             <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
                 <div>
                     <h1 className="font-serif text-2xl font-bold text-gold-soft">Products</h1>
-                    <p className="text-sm text-text-secondary">{products.length} total products</p>
+                    <p className="text-[15px] font-semibold text-brown">{products.length} total products</p>
                 </div>
                 <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                     <button
@@ -1180,12 +1180,12 @@ export default function ProductsListPage() {
                         <thead>
                             <tr className="border-b border-border bg-page-bg">
                                 <SortableHeader label="Product" sortKey="product_name" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
-                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase">SKU</th>
+                                <th className="px-4 py-3 text-sm font-semibold text-gold-muted uppercase">SKU</th>
                                 <SortableHeader label="Category" sortKey="category" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
                                 <SortableHeader label="Price" sortKey="price" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
-                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase text-center">Best Seller</th>
+                                <th className="px-4 py-3 text-sm font-semibold text-gold-muted uppercase text-center">Best Seller</th>
                                 <SortableHeader label="Stock" sortKey="stock_quantity" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
-                                <th className="px-4 py-3 text-xs font-semibold text-gold-muted uppercase text-right">
+                                <th className="px-4 py-3 text-sm font-semibold text-gold-muted uppercase text-right">
                                     <div className="flex items-center justify-end gap-3">
                                         <input
                                             type="checkbox"
@@ -1338,13 +1338,13 @@ export default function ProductsListPage() {
                                                                 <table className="w-full text-left text-sm">
                                                                     <thead className="bg-page-bg/50 border-b border-border-subtle">
                                                                         <tr>
-                                                                            <th className="px-4 py-2 font-medium text-text-secondary text-xs uppercase">Image</th>
-                                                                            <th className="px-4 py-2 font-medium text-text-secondary text-xs uppercase">Name</th>
-                                                                            <th className="px-4 py-2 font-medium text-text-secondary text-xs uppercase">SKU</th>
-                                                                            <th className="px-4 py-2 font-medium text-text-secondary text-xs uppercase">Specification</th>
-                                                                            <th className="px-4 py-2 font-medium text-text-secondary text-xs uppercase">Price</th>
-                                                                            <th className="px-4 py-2 font-medium text-text-secondary text-xs uppercase">Stock</th>
-                                                                            <th className="px-4 py-2 font-medium text-text-secondary text-xs uppercase text-right">
+                                                                            <th className="px-4 py-2 font-semibold text-gold-muted text-sm uppercase">Image</th>
+                                                                            <th className="px-4 py-2 font-semibold text-gold-muted text-sm uppercase">Name</th>
+                                                                            <th className="px-4 py-2 font-semibold text-gold-muted text-sm uppercase">SKU</th>
+                                                                            <th className="px-4 py-2 font-semibold text-gold-muted text-sm uppercase">Specification</th>
+                                                                            <th className="px-4 py-2 font-semibold text-gold-muted text-sm uppercase">Price</th>
+                                                                            <th className="px-4 py-2 font-semibold text-gold-muted text-sm uppercase">Stock</th>
+                                                                            <th className="px-4 py-2 font-semibold text-gold-muted text-sm uppercase text-right">
                                                                                 <div className="flex items-center justify-end gap-3">
                                                                                     <input
                                                                                         type="checkbox"

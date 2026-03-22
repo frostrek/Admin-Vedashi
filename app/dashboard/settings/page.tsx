@@ -50,7 +50,7 @@ export default function SettingsPage() {
                 <h1 className="font-serif text-2xl font-bold text-gold-soft">
                     Account Settings
                 </h1>
-                <p className="mt-1 text-sm text-text-secondary">
+                <p className="mt-1 text-[15px] font-semibold text-brown">
                     Manage your account preferences and security
                 </p>
             </div>

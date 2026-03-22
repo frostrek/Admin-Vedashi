@@ -133,13 +133,13 @@ export default function PaymentLogsPage() {
                         </div>
                         <h1 className="font-serif text-3xl font-bold text-gold">Payments</h1>
                     </div>
-                    <p className={`text-[10px] font-bold uppercase ${isDark ? 'text-text-muted' : 'text-emerald-900/60'}`}>
+                    <p className="text-[15px] font-semibold text-brown">
                         Administrative payment auditing & reconciliation.
                     </p>
                 </div>
                 <button
                     onClick={fetchLogs}
-                    className="flex items-center gap-2 px-6 py-2.5 bg-primary border border-gold/20 text-gold text-[11px] font-bold uppercase rounded-xl hover:shadow-[0_0_20px_rgba(197,164,109,0.3)] transition-all duration-300 disabled:opacity-50"
+                    className="flex items-center gap-2 px-6 py-2.5 bg-primary border border-gold/20 text-gold text-sm font-bold uppercase rounded-xl hover:shadow-[0_0_20px_rgba(197,164,109,0.3)] transition-all duration-300 disabled:opacity-50"
                 >
                     <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                     Refresh Logs
@@ -154,9 +154,9 @@ export default function PaymentLogsPage() {
                         <div className="p-2.5 bg-gold/10 rounded-xl border border-gold/20">
                             <TrendingUp className="w-4 h-4 text-gold" />
                         </div>
-                        <span className="text-[10px] font-bold text-text-muted uppercase">Total Volume</span>
+                        <span className="text-[18px] font-bold text-text-muted uppercase">Total Volume</span>
                     </div>
-                    <div className="text-2xl font-bold text-gold-soft">{formatINR(stats.totalVolume)}</div>
+                    <div className="text-xl text-gold-soft">{formatINR(stats.totalVolume)}</div>
                 </div>
 
                 <div className="bg-gradient-to-br from-card-bg to-card-bg-elevated p-6 rounded-[2rem] border border-emerald-500/10 shadow-2xl relative overflow-hidden group">
@@ -165,9 +165,9 @@ export default function PaymentLogsPage() {
                         <div className="p-2.5 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
                             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                         </div>
-                        <span className="text-[10px] font-bold text-text-muted uppercase">Successful</span>
+                        <span className="text-[18px] font-bold text-text-muted uppercase">Successful</span>
                     </div>
-                    <div className="text-2xl font-bold text-gold-soft">{stats.successCount}</div>
+                    <div className="text-xl text-gold-soft">{stats.successCount}</div>
                 </div>
 
                 <div className="bg-gradient-to-br from-card-bg to-card-bg-elevated p-6 rounded-[2rem] border border-amber-500/10 shadow-2xl relative overflow-hidden group">
@@ -176,9 +176,9 @@ export default function PaymentLogsPage() {
                         <div className="p-2.5 bg-amber-500/10 rounded-xl border border-amber-500/20">
                             <Hourglass className="w-4 h-4 text-amber-400" />
                         </div>
-                        <span className="text-[10px] font-bold text-text-muted uppercase">Pending</span>
+                        <span className="text-[18px] font-bold text-text-muted uppercase">Pending</span>
                     </div>
-                    <div className="text-2xl font-bold text-gold-soft">{stats.pendingCount}</div>
+                    <div className="text-xl text-gold-soft">{stats.pendingCount}</div>
                 </div>
 
                 <div className="bg-gradient-to-br from-card-bg to-card-bg-elevated p-6 rounded-[2rem] border border-red-500/10 shadow-2xl relative overflow-hidden group">
@@ -187,9 +187,9 @@ export default function PaymentLogsPage() {
                         <div className="p-2.5 bg-red-500/10 rounded-xl border border-red-500/20">
                             <AlertCircle className="w-4 h-4 text-red-400" />
                         </div>
-                        <span className="text-[10px] font-bold text-text-muted uppercase">Failed</span>
+                        <span className="text-[18px] font-bold text-text-muted uppercase">Failed</span>
                     </div>
-                    <div className="text-2xl font-bold text-gold-soft">{stats.failedCount}</div>
+                    <div className="text-xl text-gold-soft">{stats.failedCount}</div>
                 </div>
             </div>
 
@@ -213,7 +213,7 @@ export default function PaymentLogsPage() {
                             <select
                                 value={statusFilter}
                                 onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-                                className={`w-full pl-12 pr-10 py-4 border border-white/10 ${isDark ? 'bg-black/80' : 'bg-white/90'} rounded-2xl text-[11px] font-bold uppercase ${isDark ? 'text-gold-soft' : 'text-emerald-950'} appearance-none cursor-pointer focus:ring-1 focus:ring-gold/20 focus:border-gold/50 outline-none transition-all shadow-inner hover:bg-black/9 active:bg-black/90`}
+                                className={`w-full pl-12 pr-10 py-4 border border-white/10 ${isDark ? 'bg-black/80' : 'bg-white/90'} rounded-2xl text-sm font-bold uppercase ${isDark ? 'text-gold-soft' : 'text-emerald-950'} appearance-none cursor-pointer focus:ring-1 focus:ring-gold/20 focus:border-gold/50 outline-none transition-all shadow-inner hover:bg-black/9 active:bg-black/90`}
                             >
                                 <option value="" className={isDark ? "bg-[#0a0a0a] text-gold-soft" : ""}>All Statuses</option>
                                 <option value="PAID" className={isDark ? "bg-[#0a0a0a] text-gold-soft" : ""}>Paid</option>
@@ -228,7 +228,7 @@ export default function PaymentLogsPage() {
                             <select
                                 value={gatewayFilter}
                                 onChange={(e) => { setGatewayFilter(e.target.value); setPage(1); }}
-                                className={`w-full pl-12 pr-10 py-4 border border-white/10 ${isDark ? 'bg-black/80' : 'bg-white/90'} rounded-2xl text-[11px] font-bold uppercase ${isDark ? 'text-gold-soft' : 'text-emerald-950'} appearance-none cursor-pointer focus:ring-1 focus:ring-gold/20 focus:border-gold/50 outline-none transition-all shadow-inner hover:bg-black/9 active:bg-black/90`}
+                                className={`w-full pl-12 pr-10 py-4 border border-white/10 ${isDark ? 'bg-black/80' : 'bg-white/90'} rounded-2xl text-sm font-bold uppercase ${isDark ? 'text-gold-soft' : 'text-emerald-950'} appearance-none cursor-pointer focus:ring-1 focus:ring-gold/20 focus:border-gold/50 outline-none transition-all shadow-inner hover:bg-black/9 active:bg-black/90`}
                             >
                                 <option value="" className={isDark ? "bg-[#0a0a0a] text-gold-soft" : ""}>All Gateways</option>
                                 <option value="razorpay" className={isDark ? "bg-[#0a0a0a] text-gold-soft" : ""}>Razorpay</option>
@@ -242,7 +242,7 @@ export default function PaymentLogsPage() {
                 <div className="overflow-x-auto custom-scrollbar">
                     <table className="w-full text-left border-separate border-spacing-0">
                         <thead>
-                            <tr className={`border-b border-white/10 ${isDark ? 'bg-black/40 text-gold' : 'bg-emerald-900/10 text-emerald-950'} text-[11px] font-bold uppercase`}>
+                            <tr className={`border-b border-white/10 ${isDark ? 'bg-black/40 text-gold' : 'bg-emerald-900/10 text-emerald-950'} text-sm font-bold uppercase`}>
                                 <th className="px-8 py-6 border-b border-white">Transaction</th>
                                 <th className="px-8 py-6 border-b border-white">Details</th>
                                 <th className="px-8 py-6 border-b border-white">Amount</th>
@@ -274,7 +274,7 @@ export default function PaymentLogsPage() {
                                             <div className={`font-bold text-lg group-hover:text-gold transition-colors ${isDark ? 'text-gold-soft' : 'text-emerald-950'}`}>
                                                 {log.razorpay_payment_id || log.transaction_reference || 'N/A'}
                                             </div>
-                                            <div className={`text-[10px] ${isDark ? 'text-gold-soft/50' : 'text-emerald-900/50'} mt-2 uppercase font-bold`}>
+                                            <div className={`text-sm ${isDark ? 'text-gold-soft/50' : 'text-emerald-900/50'} mt-2 uppercase font-bold`}>
                                                 {new Date(log.created_at).toLocaleString('en-IN', {
                                                     day: '2-digit', month: 'short', year: 'numeric',
                                                     hour: '2-digit', minute: '2-digit'
@@ -283,10 +283,10 @@ export default function PaymentLogsPage() {
                                         </td>
                                         <td className="px-10 py-8">
                                             <div className="flex flex-col gap-2 items-start">
-                                                <div className="text-[10px] font-mono bg-gold/10 px-3 py-1 rounded-lg text-gold-soft border border-gold/20 shadow-sm">
+                                            <div className="text-sm font-mono bg-gold/10 px-3 py-1 rounded-lg text-gold-soft border border-gold/20 shadow-sm">
                                                     #{log.order_id?.split('-')[0]}
                                                 </div>
-                                                <div className={`text-[11px] ${isDark ? 'text-gold-soft' : 'text-emerald-950'} font-bold uppercase flex items-center gap-2.5`}>
+                                                <div className={`text-base ${isDark ? 'text-gold-soft' : 'text-emerald-950'} font-bold uppercase flex items-center gap-2.5`}>
                                                     <div className={`w-1.5 h-1.5 rounded-full ${isDark ? 'bg-gold' : 'bg-emerald-600'}`} />
                                                     {log.customer_name || 'Generic'}
                                                 </div>
@@ -298,12 +298,12 @@ export default function PaymentLogsPage() {
                                             </div>
                                         </td>
                                         <td className="px-8 py-8">
-                                            <span className="inline-flex items-center px-4 py-1.5 bg-gold/5 border border-gold/20 text-gold-soft text-[10px] font-bold uppercase rounded-xl shadow-lg backdrop-blur-sm group-hover:bg-gold/10 transition-colors">
+                                            <span className="inline-flex items-center px-4 py-1.5 bg-gold/5 border border-gold/20 text-gold-soft text-sm font-bold uppercase rounded-xl shadow-lg backdrop-blur-sm group-hover:bg-gold/10 transition-colors">
                                                 {log.payment_gateway || log.payment_method}
                                             </span>
                                         </td>
                                         <td className="px-10 py-8 text-right">
-                                            <span className={`inline-flex items-center px-5 py-1.5 rounded-full text-[10px] font-bold uppercase border shadow-lg backdrop-blur-md transition-all ${getStatusStyle(log.payment_status)}`}>
+                                            <span className={`inline-flex items-center px-5 py-1.5 rounded-full text-sm font-bold uppercase border shadow-lg backdrop-blur-md transition-all ${getStatusStyle(log.payment_status)}`}>
                                                 {getStatusIcon(log.payment_status)}
                                                 {log.payment_status}
                                             </span>
@@ -327,7 +327,7 @@ export default function PaymentLogsPage() {
                 {/* ── Pagination ── */}
                 {!loading && total > 0 && (
                     <div className="p-6 border-t border-white/5 bg-black/40 flex items-center justify-between">
-                        <span className="text-[10px] font-bold uppercase text-text-muted/60">
+                        <span className="text-sm font-bold uppercase text-text-muted/60">
                             Showing <span className="text-gold-soft">{(page - 1) * limit + 1}</span> — <span className="text-gold-soft">{Math.min(page * limit, total)}</span> of <span className="text-gold">{total}</span> records
                         </span>
                         <div className="flex gap-3">

@@ -69,7 +69,7 @@ export default function SearchAnalyticsPage() {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h1 className="font-serif text-2xl font-bold text-gold-soft">Search Analytics</h1>
-                    <p className="text-sm text-text-muted mt-1">Monitor how customers search your store.</p>
+                    <p className="text-[15px] font-semibold text-brown mt-1">Monitor how customers search your store.</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <button
@@ -107,7 +107,7 @@ export default function SearchAnalyticsPage() {
                         </div>
                         <TrendingUp className="w-4 h-4 text-text-muted/40 group-hover:text-gold/60 transition-colors" />
                     </div>
-                    <p className="text-[11px] font-semibold uppercase text-text-muted mb-1">Total Searches</p>
+                    <p className="text-[15px] font-semibold uppercase text-text-muted mb-1">Total Searches</p>
                     <p className="text-3xl font-bold text-text-primary tabular-nums">{stats.total_searches.toLocaleString()}</p>
                 </div>
 
@@ -119,7 +119,7 @@ export default function SearchAnalyticsPage() {
                         </div>
                         <Zap className="w-4 h-4 text-text-muted/40 group-hover:text-gold/60 transition-colors" />
                     </div>
-                    <p className="text-[11px] font-semibold uppercase text-text-muted mb-1">Daily Average</p>
+                    <p className="text-[15px] font-semibold uppercase text-text-muted mb-1">Daily Average</p>
                     <p className="text-3xl font-bold text-text-primary tabular-nums">{avgDaily.toLocaleString()}</p>
                 </div>
 
@@ -131,7 +131,7 @@ export default function SearchAnalyticsPage() {
                         </div>
                         <CircleSlash className="w-4 h-4 text-text-muted/40 group-hover:text-gold/60 transition-colors" />
                     </div>
-                    <p className="text-[11px] font-semibold uppercase text-text-muted mb-1">Zero Results</p>
+                    <p className="text-[15px] font-semibold uppercase text-text-muted mb-1">Zero Results</p>
                     <p className="text-3xl font-bold text-text-primary tabular-nums">{zeroPercent}<span className="text-lg text-text-muted ml-0.5">%</span></p>
                 </div>
 
@@ -142,7 +142,7 @@ export default function SearchAnalyticsPage() {
                             <Calendar className="w-5 h-5 text-amber-400" />
                         </div>
                     </div>
-                    <p className="text-[11px] font-semibold uppercase text-text-muted mb-1">Period</p>
+                    <p className="text-[15px] font-semibold uppercase text-text-muted mb-1">Period</p>
                     <p className="text-xl font-bold text-text-primary">Last {stats.period_days} Days</p>
                 </div>
             </div>
@@ -266,7 +266,7 @@ export default function SearchAnalyticsPage() {
                         </div>
                     ) : (
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={stats.daily_volume} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                            <BarChart data={stats.daily_volume} margin={{ top: 10, right: 10, left: 5, bottom: 25 }}>
                                 <defs>
                                     <linearGradient id="barGold" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="0%" stopColor="#C6A75E" stopOpacity={0.9} />
@@ -277,28 +277,30 @@ export default function SearchAnalyticsPage() {
                                         <stop offset="100%" stopColor="#C6A75E" stopOpacity={0.85} />
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff08" />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#d4c9b0" strokeOpacity={0.5} />
                                 <XAxis
                                     dataKey="date"
-                                    axisLine={false}
+                                    axisLine={{ stroke: '#b8a88a' }}
                                     tickLine={false}
-                                    tick={{ fill: '#ffffff50', fontSize: 10 }}
+                                    tick={{ fill: '#6b5e4f', fontSize: 11, fontWeight: 500 }}
                                     tickFormatter={(val) => {
                                         const d = new Date(val);
                                         return `${d.getDate()} ${d.toLocaleString('default', { month: 'short' })}`;
                                     }}
-                                    dy={10}
+                                    dy={8}
                                     interval={stats.daily_volume.length > 14 ? Math.floor(stats.daily_volume.length / 7) : 0}
+                                    label={{ value: 'Date', position: 'insideBottom', offset: -18, fill: '#8b7d6b', fontSize: 12, fontWeight: 600 }}
                                 />
                                 <YAxis
-                                    axisLine={false}
+                                    axisLine={{ stroke: '#b8a88a' }}
                                     tickLine={false}
-                                    tick={{ fill: '#ffffff50', fontSize: 10 }}
-                                    width={40}
+                                    tick={{ fill: '#6b5e4f', fontSize: 11, fontWeight: 500 }}
+                                    width={45}
                                     allowDecimals={false}
+                                    label={{ value: 'Searches', angle: -90, position: 'insideLeft', offset: 10, fill: '#8b7d6b', fontSize: 12, fontWeight: 600 }}
                                 />
                                 <Tooltip
-                                    cursor={{ fill: '#ffffff08', radius: 6 }}
+                                    cursor={{ fill: '#C6A75E', fillOpacity: 0.08, radius: 6 }}
                                     contentStyle={{
                                         backgroundColor: '#1A1A1A',
                                         border: '1px solid #333',

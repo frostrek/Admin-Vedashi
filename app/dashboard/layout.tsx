@@ -32,15 +32,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
     return (
         <div className="flex min-h-screen bg-page-bg relative overflow-hidden">
-            {/* Command Center Background */}
-            <div 
-                className="fixed inset-0 z-0 pointer-events-none opacity-15 mix-blend-multiply transition-opacity duration-1000"
-                style={{ 
-                    backgroundImage: 'url("/dashboard_bg.png")',
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                }}
-            />
+            {/* Background removed as requested by user. Using flat beige background from body/layout instead. */}
             
             <AdminSidebar
                 collapsed={sidebarCollapsed}

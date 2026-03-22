@@ -185,7 +185,7 @@ export default function ProfileStratumPage() {
                         </div>
                         <h1 className={`text-3xl font-bold ${isDark ? 'text-gold' : 'text-emerald-950'} tracking-tighter`}>Admin Profile Stratum</h1>
                     </div>
-                    <p className={`text-[10px] font-bold uppercase ${isDark ? 'text-text-muted' : 'text-emerald-900/40'} ml-16`}>
+                    <p className="text-[15px] font-semibold text-brown ml-16">
                         Orchestrate your administrative essence and security resonance.
                     </p>
                 </div>

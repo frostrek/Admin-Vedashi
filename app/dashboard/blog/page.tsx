@@ -58,12 +58,12 @@ export default function AdminBlogPostsPage() {
     const getStatusBadge = (status: string) => {
         switch (status) {
             case 'published':
-                return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-green-100 text-green-700">Published</span>;
+                return <span className="inline-flex items-center px-2 py-0.5 rounded text-sm font-semibold bg-green-100 text-green-700">Published</span>;
             case 'archived':
-                return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-gray-100 text-gray-700">Archived</span>;
+                return <span className="inline-flex items-center px-2 py-0.5 rounded text-sm font-semibold bg-gray-100 text-gray-700">Archived</span>;
             case 'draft':
             default:
-                return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-amber-100 text-amber-700">Draft</span>;
+                return <span className="inline-flex items-center px-2 py-0.5 rounded text-sm font-semibold bg-amber-100 text-amber-700">Draft</span>;
         }
     };
 
@@ -74,7 +74,7 @@ export default function AdminBlogPostsPage() {
             <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
                 <div>
                     <h1 className="font-serif text-2xl font-bold text-gold-soft">Blog Posts</h1>
-                    <p className="text-sm text-text-secondary">{posts.length} articles found</p>
+                    <p className="text-[15px] font-semibold text-brown">{posts.length} articles found</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <Link
@@ -116,12 +116,12 @@ export default function AdminBlogPostsPage() {
                     <table className="w-full text-left whitespace-nowrap">
                         <thead>
                             <tr className="border-b border-border bg-page-bg/50">
-                                <th className="px-5 py-3 text-xs font-semibold text-gold-muted uppercase">Post</th>
-                                <th className="px-5 py-3 text-xs font-semibold text-gold-muted uppercase">Status</th>
-                                <th className="px-5 py-3 text-xs font-semibold text-gold-muted uppercase">Type / Category</th>
-                                <th className="px-5 py-3 text-xs font-semibold text-gold-muted uppercase">Stats</th>
-                                <th className="px-5 py-3 text-xs font-semibold text-gold-muted uppercase">Date</th>
-                                <th className="px-5 py-3 text-xs font-semibold text-gold-muted uppercase text-right">Actions</th>
+                                <th className="px-5 py-3 text-sm font-semibold text-gold-muted uppercase">Post</th>
+                                <th className="px-5 py-3 text-sm font-semibold text-gold-muted uppercase">Status</th>
+                                <th className="px-5 py-3 text-sm font-semibold text-gold-muted uppercase">Type / Category</th>
+                                <th className="px-5 py-3 text-sm font-semibold text-gold-muted uppercase">Stats</th>
+                                <th className="px-5 py-3 text-sm font-semibold text-gold-muted uppercase">Date</th>
+                                <th className="px-5 py-3 text-sm font-semibold text-gold-muted uppercase text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border-subtle">
@@ -149,8 +149,8 @@ export default function AdminBlogPostsPage() {
                                                     )}
                                                 </div>
                                                 <div>
-                                                    <p className="font-medium text-text-primary truncate max-w-[250px]" title={post.title}>{post.title}</p>
-                                                    <p className="text-xs text-text-muted truncate max-w-[250px]">/{post.slug}</p>
+                                                    <p className="text-base font-bold text-text-primary truncate max-w-[250px]" title={post.title}>{post.title}</p>
+                                                    <p className="text-sm text-text-muted truncate max-w-[250px]">/{post.slug}</p>
                                                 </div>
                                             </div>
                                         </td>
@@ -158,16 +158,16 @@ export default function AdminBlogPostsPage() {
                                             {getStatusBadge(post.status)}
                                         </td>
                                         <td className="px-5 py-3">
-                                            <div className="text-sm text-text-primary capitalize">{post.blog_type?.replace(/_/g, ' ') || 'Standard'}</div>
-                                            <div className="text-xs text-text-muted">{post.category_name || '-'}</div>
+                                            <div className="text-base text-text-primary capitalize">{post.blog_type?.replace(/_/g, ' ') || 'Standard'}</div>
+                                            <div className="text-sm text-text-muted">{post.category_name || '-'}</div>
                                         </td>
-                                        <td className="px-5 py-3 text-xs">
+                                        <td className="px-5 py-3 text-sm">
                                             <div className="flex items-center gap-3 text-text-secondary">
                                                 <span title="Views">👁️ {post.view_count || 0}</span>
                                                 <span title="Comments">💬 {post.comment_count || 0}</span>
                                             </div>
                                         </td>
-                                        <td className="px-5 py-3 text-xs text-text-secondary">
+                                        <td className="px-5 py-3 text-sm text-text-secondary">
                                             {post.published_at ? new Date(post.published_at).toLocaleDateString() : '-'}
                                         </td>
                                         <td className="px-5 py-3">
