@@ -240,7 +240,7 @@ function CreateCampaignForm() {
                     <h1 className="font-serif text-2xl font-bold text-gold">
                         {editId ? 'Edit Campaign' : 'New Campaign'}
                     </h1>
-                    <p className="text-sm text-text-muted mt-0.5">Create a promotional email campaign</p>
+                    <p className="text-[15px] font-semibold text-brown mt-0.5">Create a promotional email campaign</p>
                 </div>
             </div>
 
@@ -503,8 +503,8 @@ function CreateCampaignForm() {
                         {/* Modal Header */}
                         <div className="flex items-center justify-between p-4 border-b border-border/50 bg-page-bg/50">
                             <div>
-                                <h4 className="font-serif text-lg font-bold text-gold">Recipient List</h4>
-                                <p className="text-xs text-text-muted mt-0.5">{recipientCount} matching customers</p>
+                                <h1 className="font-serif text-2xl font-bold text-gold-soft">Add New Product</h1>
+                        <p className="text-[15px] font-semibold text-brown">Fill in the details to create a new product</p>
                             </div>
                             <button
                                 onClick={() => setShowRecipientsModal(false)}

@@ -261,7 +261,7 @@ export default function CollectionsPage() {
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
                 <div>
                     <h1 className="font-serif text-4xl md:text-5xl font-bold text-gold mb-2">Seasonal Collections</h1>
-                    <p className="text-base text-text-muted font-medium ml-1">Curate and manage product collections and seasonal offerings.</p>
+                    <p className="text-[15px] font-semibold text-brown">Curate and manage product collections and seasonal offerings.</p>
                 </div>
                 <button
                     onClick={openCreate}
@@ -307,12 +307,12 @@ export default function CollectionsPage() {
                         <table className="w-full text-sm">
                             <thead>
                                 <tr className="border-b border-border text-text-muted">
-                                    <th className="text-left px-4 py-3 font-medium">Collection</th>
-                                    <th className="text-left px-4 py-3 font-medium">Status</th>
-                                    <th className="text-left px-4 py-3 font-medium">Products</th>
-                                    <th className="text-left px-4 py-3 font-medium">Schedule</th>
-                                    <th className="text-left px-4 py-3 font-medium">Featured</th>
-                                    <th className="text-right px-4 py-3 font-medium">Actions</th>
+                                    <th className="text-left px-4 py-3 font-semibold text-sm text-gold-muted uppercase">Collection</th>
+                                    <th className="text-left px-4 py-3 font-semibold text-sm text-gold-muted uppercase">Status</th>
+                                    <th className="text-left px-4 py-3 font-semibold text-sm text-gold-muted uppercase">Products</th>
+                                    <th className="text-left px-4 py-3 font-semibold text-sm text-gold-muted uppercase">Schedule</th>
+                                    <th className="text-left px-4 py-3 font-semibold text-sm text-gold-muted uppercase">Featured</th>
+                                    <th className="text-right px-4 py-3 font-semibold text-sm text-gold-muted uppercase">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>

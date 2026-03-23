@@ -47,7 +47,7 @@ export default function CommentsModerationPage() {
             <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
                 <div>
                     <h1 className="font-serif text-2xl font-bold text-gold-soft">Comments Management</h1>
-                    <p className="text-sm text-text-secondary">View and moderate blog comments</p>
+                    <p className="text-[15px] font-semibold text-brown">View and moderate blog comments</p>
                 </div>
             </div>
 
@@ -97,12 +97,12 @@ export default function CommentsModerationPage() {
                                     <div className="flex-1">
                                         <div className="flex items-center justify-between mb-1">
                                             <div className="flex items-center gap-2">
-                                                <span className="font-semibold text-text-primary">{comment.commenter_name}</span>
+                                                <span className="font-bold text-base text-text-primary">{comment.commenter_name}</span>
                                                 {comment.commenter_email && (
-                                                    <span className="text-xs text-text-muted">&lt;{comment.commenter_email}&gt;</span>
+                                                    <span className="text-sm text-text-muted">&lt;{comment.commenter_email}&gt;</span>
                                                 )}
-                                                {comment.status === 'approved' && <span className="text-xs px-2 py-0.5 rounded bg-green-500/10 text-green-500 font-medium">APPROVED</span>}
-                                                {comment.status === 'rejected' && <span className="text-xs px-2 py-0.5 rounded bg-red-500/10 text-red-500 font-medium">REJECTED</span>}
+                                                {comment.status === 'approved' && <span className="text-sm px-2 py-0.5 rounded bg-green-500/10 text-green-500 font-medium">APPROVED</span>}
+                                                {comment.status === 'rejected' && <span className="text-sm px-2 py-0.5 rounded bg-red-500/10 text-red-500 font-medium">REJECTED</span>}
                                             </div>
                                             <span className="text-xs text-text-muted">
                                                 {new Date(comment.created_at).toLocaleString()}
@@ -110,12 +110,12 @@ export default function CommentsModerationPage() {
                                         </div>
 
                                         {comment.post_title && (
-                                            <div className="text-xs text-text-secondary mb-3 flex items-center gap-1">
-                                                On post: <span className="font-medium text-gold-muted">{comment.post_title}</span>
+                                            <div className="text-sm text-text-secondary mb-3 flex items-center gap-1">
+                                                On post: <span className="font-medium text-gold-muted text-base">{comment.post_title}</span>
                                             </div>
                                         )}
 
-                                        <div className="bg-page-bg rounded-lg p-3 text-sm text-text-primary border border-border mb-4">
+                                        <div className="bg-page-bg rounded-lg p-3 text-base text-text-primary border border-border mb-4">
                                             {comment.body}
                                         </div>
 
@@ -123,7 +123,7 @@ export default function CommentsModerationPage() {
                                             {comment.status !== 'approved' && (
                                                 <button
                                                     onClick={() => handleModerate(comment.comment_id, 'approved')}
-                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white rounded text-xs font-semibold transition-colors"
+                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/10 text-green-500 hover:bg-green-500 hover:text-white rounded text-sm font-semibold transition-colors"
                                                 >
                                                     <CheckCircle className="w-3.5 h-3.5" /> Approve
                                                 </button>
@@ -131,14 +131,14 @@ export default function CommentsModerationPage() {
                                             {comment.status !== 'rejected' && (
                                                 <button
                                                     onClick={() => handleModerate(comment.comment_id, 'rejected')}
-                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-white rounded text-xs font-semibold transition-colors"
+                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-white rounded text-sm font-semibold transition-colors"
                                                 >
                                                     <XCircle className="w-3.5 h-3.5" /> Reject
                                                 </button>
                                             )}
                                             <button
                                                 onClick={() => handleDelete(comment.comment_id)}
-                                                className="flex items-center gap-1.5 px-3 py-1.5 text-danger hover:bg-danger/10 rounded text-xs font-medium ml-auto transition-colors"
+                                                className="flex items-center gap-1.5 px-3 py-1.5 text-danger hover:bg-danger/10 rounded text-sm font-medium ml-auto transition-colors"
                                             >
                                                 <Trash2 className="w-3.5 h-3.5" /> Delete
                                             </button>

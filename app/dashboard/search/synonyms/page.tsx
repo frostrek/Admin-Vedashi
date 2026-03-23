@@ -147,7 +147,7 @@ export default function SynonymsPage() {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h1 className="font-serif text-2xl font-bold text-gold-soft">Search Synonyms</h1>
-                    <p className="text-sm text-text-muted mt-1">Map search terms to related words for better results.</p>
+                    <p className="text-[15px] font-semibold text-brown mt-1">Map search terms to related words for better results.</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <button
@@ -186,8 +186,8 @@ export default function SynonymsPage() {
             <div className="rounded-xl border border-border bg-gradient-to-br from-card-bg to-card-bg-elevated overflow-hidden shadow-sm">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="bg-page-bg border-b border-border-subtle text-xs font-semibold text-text-muted uppercase">
+                        <thead className="bg-page-bg border-b border-border-subtle text-sm font-semibold text-gold-muted uppercase">
+                            <tr>
                                 <th className="px-6 py-4">Keyword</th>
                                 <th className="px-6 py-4">Synonyms</th>
                                 <th className="px-6 py-4 text-center">Status</th>

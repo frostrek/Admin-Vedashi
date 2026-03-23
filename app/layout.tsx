@@ -4,6 +4,7 @@ import "./globals.css";
 import { AdminAuthProvider } from "@/context/AdminAuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { Toaster } from "react-hot-toast";
+import ReactQueryProvider from "./providers";
 
 const roboto = Roboto({
   subsets: ["latin"],
@@ -29,22 +30,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen">
         <ThemeProvider>
           <AdminAuthProvider>
-            <Toaster
-              position="top-right"
-              containerStyle={{ zIndex: 999999 }}
-              toastOptions={{
-                className: 'theme-toast',
-                style: {
-                  background: 'var(--t-card-bg-elevated)',
-                  color: 'var(--foreground)',
-                  borderRadius: '10px',
-                  fontSize: '14px',
-                  border: '1px solid var(--t-border)',
-                  boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
-                },
-              }}
-            />
-            {children}
+            <ReactQueryProvider>
+              <Toaster
+                position="top-right"
+                containerStyle={{ zIndex: 999999 }}
+                toastOptions={{
+                  className: 'theme-toast',
+                  style: {
+                    background: 'var(--t-card-bg-elevated)',
+                    color: 'var(--foreground)',
+                    borderRadius: '10px',
+                    fontSize: '14px',
+                    border: '1px solid var(--t-border)',
+                    boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
+                  },
+                }}
+              />
+              {children}
+            </ReactQueryProvider>
           </AdminAuthProvider>
         </ThemeProvider>
       </body>

@@ -873,7 +873,7 @@ export default function AddProductPage() {
                     </button>
                     <div>
                         <h1 className="font-serif text-2xl font-bold text-gold-soft">Add New Product</h1>
-                        <p className="text-sm text-text-secondary">Fill in the details to create a new product</p>
+                        <p className="text-[15px] font-semibold text-brown">Fill in the details to create a new product</p>
                     </div>
                 </div>
 

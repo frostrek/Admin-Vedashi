@@ -139,7 +139,7 @@ export default function PromoBannersPage() {
                             Promotion Banners
                         </h1>
                     </div>
-                    <p className={`${isDark ? 'text-gold-soft/60' : 'text-emerald-950/80'} text-[10px] font-bold uppercase pl-16`}>
+                    <p className={`${isDark ? 'text-gold-soft/60' : 'text-emerald-950/80'} text-[15px] font-semibold pl-16`}>
                         Orchestrate global promotional banners across the storefront.
                     </p>
                 </div>
@@ -174,7 +174,7 @@ export default function PromoBannersPage() {
                     <div className="overflow-x-auto custom-scrollbar">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className={`border-b border-border ${isDark ? 'bg-black/40 text-gold/40' : 'bg-primary/10 text-emerald-950'} text-[11px] font-bold uppercase`}>
+                                <tr className={`border-b border-border ${isDark ? 'bg-black/40' : 'bg-primary/10'} text-sm font-semibold text-gold-muted uppercase`}>
                                     <th className="px-8 py-6">Message</th>
                                     <th className="px-8 py-6">Effect</th>
                                     <th className="px-8 py-6">Colours</th>

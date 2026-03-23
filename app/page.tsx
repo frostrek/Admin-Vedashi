@@ -106,7 +106,7 @@ export default function AdminLoginPage() {
               value={email}
               onChange={e => setEmail(e.target.value)}
               className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/15 transition-all duration-300"
-               placeholder="admin@vedashi.com"
+              placeholder="admin@vedashi.com"
               required
             />
           </div>
