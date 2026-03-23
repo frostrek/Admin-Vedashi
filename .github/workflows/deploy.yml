@@ -23,7 +23,7 @@ jobs:
 
   deploy:
     needs: check-commit
-    if: needs.check-commit.outputs.should-deploy == 'true' || github.event_name == 'workflow_dispatch'
+    if: needs.check-commit.outputs.should-deploy == 'true' || contains(github.event.head_commit.message, 'Merge')
     runs-on: ubuntu-latest
 
     steps:
