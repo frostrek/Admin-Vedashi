@@ -5,8 +5,9 @@
 
 import { getToken } from '@/lib/auth';
 import { authFetch } from '@/lib/api';
+import { env } from '@/lib/env';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API_URL = env.NEXT_PUBLIC_API_URL;
 
 function authHeaders(extra?: Record<string, string>): Record<string, string> {
     const headers: Record<string, string> = { 'Content-Type': 'application/json', ...extra };
