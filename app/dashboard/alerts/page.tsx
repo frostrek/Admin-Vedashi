@@ -100,7 +100,7 @@ export default function AlertsPage() {
             date: new Date(o.created_at || Date.now()) 
         })),
         ...products.map(p => ({ 
-            id: p.product_id, 
+            id: (p as any).variant_id || p.product_id, 
             type: 'product', 
             data: p, 
             date: new Date(p.created_at || Date.now()) 
@@ -191,7 +191,7 @@ export default function AlertsPage() {
                                             <span className="text-[10px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full font-medium">Low Stock</span>
                                         </div>
                                         <p className="text-sm text-text-secondary mt-1">
-                                            <Link href={`/dashboard/products/edit/${product.slug || product.product_id}`} className="text-gold font-medium hover:underline">{product.product_name}</Link> is running low on stock ({product.stock_quantity ?? 0} remaining). Consider restocking soon.
+                                            <Link href={`/dashboard/products/edit/${product.slug || product.product_id}`} className="text-gold font-medium hover:underline">{product.product_name}</Link>{(product as any).variant_name ? ` (${(product as any).variant_name})` : ''} is running low on stock ({product.stock_quantity ?? 0} remaining). Consider restocking soon.
                                         </p>
                                         <p className="text-xs text-text-muted mt-2">{alert.date.toLocaleDateString()}</p>
                                     </div>

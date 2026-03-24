@@ -261,6 +261,7 @@ export interface Customer {
     phone?: string;
     bio?: string;
     date_of_birth?: string;
+    preferences?: any;
     role: string;
     is_email_verified: boolean;
     is_mobile_verified: boolean;

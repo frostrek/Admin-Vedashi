@@ -20,8 +20,10 @@ import {
     DecryptedBackup
 } from '@/lib/api';
 import ConfirmModal from '@/components/ConfirmModal';
+import { useTheme } from '@/context/ThemeContext';
 
 export default function SecurityDashboard() {
+    const { isDark } = useTheme();
     const [backups, setBackups] = useState<BackupData[]>([]);
     const [loadingBackups, setLoadingBackups] = useState(true);
     const [creatingBackup, setCreatingBackup] = useState(false);
@@ -235,17 +237,17 @@ export default function SecurityDashboard() {
             {/* Page Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-fadeInUp" style={{ animationDelay: '0ms' }}>
                 <div>
-                    <h1 className="font-serif text-3xl font-bold text-gold flex items-center gap-3">
-                        <div className="p-2.5 bg-primary/20 rounded-2xl border border-border shadow-lg">
+                    <h1 className={`font-serif text-3xl font-bold ${isDark ? 'text-gold' : 'text-emerald-950'} flex items-center gap-3`}>
+                        <div className={`p-2.5 rounded-2xl border shadow-lg ${isDark ? 'bg-primary/20 border-border' : 'bg-gold/10 border-gold/20'}`}>
                             <ShieldAlert className="h-6 w-6 text-gold" />
                         </div>
                         Security & Operations
                     </h1>
-                    <p className="text-brown mt-2 text-[15px] font-semibold">Monitor active defenses, manage backups, and control disaster recovery</p>
+                    <p className={`mt-2 text-[15px] font-semibold ${isDark ? 'text-brown' : 'text-emerald-950/80'} ml-1`}>Monitor active defenses, manage backups, and control disaster recovery</p>
                 </div>
                 <button
                     onClick={fetchData}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-primary/20 border border-gold/10 rounded-xl text-gold-soft hover:text-gold hover:bg-primary/40 transition-all duration-300 text-[11px] font-bold uppercase"
+                    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl border transition-all duration-300 text-[11px] font-bold uppercase ${isDark ? 'bg-primary/20 border-gold/10 text-gold-soft hover:text-gold hover:bg-primary/40' : 'bg-primary text-gold hover:bg-primary-light border-gold/20 shadow-md'}`}
                 >
                     <RefreshCw className="h-4 w-4" />
                     Refresh Protocol
@@ -254,7 +256,7 @@ export default function SecurityDashboard() {
 
             {/* Active Defenses Grid */}
             <div className="animate-fadeInUp" style={{ animationDelay: '100ms' }}>
-                <h4 className="font-serif text-[8px] font-bold text-text-muted uppercase mb-4 flex items-center gap-2">
+                <h4 className={`font-serif text-[8px] font-bold uppercase mb-4 flex items-center gap-2 ${isDark ? 'text-text-muted' : 'text-emerald-900/60'}`}>
                     <Activity className="h-4 w-4 text-gold" />
                     Protocol Guardians
                 </h4>
@@ -262,11 +264,11 @@ export default function SecurityDashboard() {
                     {defenses.map((defense, idx) => (
                         <div
                             key={defense.name}
-                            className="group bg-gradient-to-br from-card-bg to-card-bg-elevated border border-border rounded-2xl p-5 hover:shadow-xl hover:-translate-y-1 transition-all duration-500 backdrop-blur-sm"
+                            className={`group border rounded-2xl p-5 hover:shadow-xl hover:-translate-y-1 transition-all duration-500 backdrop-blur-sm ${isDark ? 'bg-gradient-to-br from-card-bg to-card-bg-elevated border-border' : 'bg-white/95 border-gold/15 shadow-sm'}`}
                             style={{ animationDelay: `${150 + (idx * 50)}ms` }}
                         >
                             <div className="flex items-start justify-between mb-4">
-                                <div className="p-3 rounded-2xl bg-primary/20 border border-border group-hover:bg-primary/30 transition-all duration-500">
+                                <div className={`p-3 rounded-2xl border transition-all duration-500 ${isDark ? 'bg-primary/20 border-border group-hover:bg-primary/30' : 'bg-gold/5 border-gold/20 group-hover:bg-gold/15'}`}>
                                     <defense.icon className="h-5 w-5 text-gold" />
                                 </div>
                                 <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-success bg-success/15 px-2 py-1 rounded-lg border border-success/20">
@@ -274,8 +276,8 @@ export default function SecurityDashboard() {
                                     Active
                                 </span>
                             </div>
-                            <h4 className="font-serif text-gold font-bold text-sm">{defense.name}</h4>
-                            <p className="text-text-muted text-[10px] mt-1 font-medium uppercase tracking-tight">{defense.desc}</p>
+                            <h4 className={`font-serif font-bold text-sm ${isDark ? 'text-gold' : 'text-emerald-950'}`}>{defense.name}</h4>
+                            <p className={`text-[10px] mt-1 font-medium uppercase tracking-tight ${isDark ? 'text-text-muted' : 'text-emerald-900/60'}`}>{defense.desc}</p>
                         </div>
                     ))}
                 </div>
@@ -283,35 +285,35 @@ export default function SecurityDashboard() {
 
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
                 {/* Disaster Recovery Panel - Takes 2/5 */}
-                <div className="lg:col-span-2 bg-gradient-to-br from-card-bg to-card-bg-elevated border border-border rounded-2xl overflow-hidden shadow-xl backdrop-blur-sm animate-fadeInUp" style={{ animationDelay: '400ms' }}>
-                    <div className="p-6 border-b border-border bg-primary/10">
-                        <h4 className="font-serif text-base font-bold text-gold uppercase flex items-center gap-2.5">
+                <div className={`lg:col-span-2 border rounded-2xl overflow-hidden shadow-xl backdrop-blur-sm animate-fadeInUp ${isDark ? 'bg-gradient-to-br from-card-bg to-card-bg-elevated border-border' : 'bg-white/95 border-gold/15 shadow-gold/5'}`} style={{ animationDelay: '400ms' }}>
+                    <div className={`p-6 border-b ${isDark ? 'border-border bg-primary/10' : 'border-gold/10 bg-emerald-50/40'}`}>
+                        <h4 className={`font-serif text-base font-bold uppercase flex items-center gap-2.5 ${isDark ? 'text-gold' : 'text-emerald-950'}`}>
                             <AlertTriangle className="h-5 w-5 text-warning" />
                             Disaster Protocol
                         </h4>
-                        <p className="text-text-muted text-[10px] font-bold uppercase mt-1">Maintenance mode and emergency controls</p>
+                        <p className={`text-[10px] font-bold uppercase mt-1 ${isDark ? 'text-text-muted' : 'text-emerald-900/60'}`}>Maintenance mode and emergency controls</p>
                     </div>
 
                     <div className="p-6">
                         {/* Maintenance Mode Toggle */}
                         <div className={`rounded-2xl border p-5 transition-all duration-500 ${maintenanceEnabled
-                            ? 'border-danger/30 bg-danger/5'
-                            : 'border-border bg-black/20'
+                            ? (isDark ? 'border-danger/30 bg-danger/5' : 'border-danger/30 bg-red-50/50')
+                            : (isDark ? 'border-border bg-black/20' : 'border-border-subtle bg-black/5')
                             }`}>
 
                             <div className="flex items-center justify-between mb-4">
                                 <div className="flex items-center gap-3">
                                     <Server className={`h-5 w-5 ${maintenanceEnabled ? 'text-danger' : 'text-gold'}`} />
                                     <div>
-                                        <h4 className="font-serif text-gold font-bold text-sm">Lockdown Mode</h4>
-                                        <p className={`text-[10px] font-bold uppercase mt-0.5 ${maintenanceEnabled ? 'text-danger' : 'text-text-muted'}`}>
+                                        <h4 className={`font-serif font-bold text-sm ${maintenanceEnabled ? 'text-danger' : (isDark ? 'text-gold' : 'text-emerald-950')}`}>Lockdown Mode</h4>
+                                        <p className={`text-[10px] font-bold uppercase mt-0.5 ${maintenanceEnabled ? 'text-danger' : (isDark ? 'text-text-muted' : 'text-emerald-900/60')}`}>
                                             {maintenanceEnabled ? '⚠ Traffic redirection active' : 'All systems operational'}
                                         </p>
                                     </div>
                                 </div>
 
                                 {loadingMaintenance ? (
-                                    <Loader2 className="h-5 w-5 animate-spin text-text-muted" />
+                                    <Loader2 className={`h-5 w-5 animate-spin ${isDark ? 'text-text-muted' : 'text-emerald-900/40'}`} />
                                 ) : (
                                     <button
                                         onClick={handleToggleMaintenance}
@@ -324,7 +326,7 @@ export default function SecurityDashboard() {
                                         ) : maintenanceEnabled ? (
                                             <ToggleRight className="h-10 w-10 text-danger hover:text-danger/70 transition-colors" />
                                         ) : (
-                                            <ToggleLeft className="h-10 w-10 text-text-muted hover:text-gold transition-colors" />
+                                            <ToggleLeft className={`h-10 w-10 transition-colors ${isDark ? 'text-text-muted hover:text-gold' : 'text-emerald-900/40 hover:text-gold'}`} />
                                         )}
                                     </button>
                                 )}
@@ -332,19 +334,19 @@ export default function SecurityDashboard() {
 
                             {/* Message editor (always visible) */}
                             <div className="mt-3">
-                                <label className="block text-xs text-text-muted mb-1.5 font-medium">
+                                <label className={`block text-xs mb-1.5 font-medium ${isDark ? 'text-text-muted' : 'text-emerald-900/70'}`}>
                                     {maintenanceEnabled ? 'Active message shown to visitors:' : 'Message to display when enabled:'}
                                 </label>
                                 <textarea
                                     value={maintenanceMessage}
                                     onChange={(e) => setMaintenanceMessage(e.target.value)}
-                                    className="w-full bg-black/20 border border-border rounded-xl p-4 text-gold-soft text-sm font-medium focus:outline-none focus:border-gold/30 focus:ring-1 focus:ring-gold/10 transition-all h-[100px] resize-none"
+                                    className={`w-full border rounded-xl p-4 text-sm font-medium focus:outline-none transition-all h-[100px] resize-none ${isDark ? 'bg-black/20 border-border text-gold-soft focus:border-gold/30 focus:ring-1 focus:ring-gold/10' : 'bg-white border-gold/20 text-emerald-950 focus:border-gold/50 focus:ring-1 focus:ring-gold/20'}`}
                                     placeholder="Enter maintenance directive for entities..."
                                 />
                                 {maintenanceEnabled && (
                                     <button
                                         onClick={handleUpdateMessage}
-                                        className="mt-2 px-4 py-1.5 text-xs font-medium bg-gold/10 border border-gold/20 text-gold rounded-lg hover:bg-gold/20 transition-all"
+                                        className={`mt-2 px-4 py-1.5 text-xs font-medium border rounded-lg transition-all ${isDark ? 'bg-gold/10 border-gold/20 text-gold hover:bg-gold/20' : 'bg-emerald-50 border-gold/30 text-emerald-900 hover:bg-emerald-100'}`}
                                     >
                                         Update Message
                                     </button>
@@ -354,27 +356,27 @@ export default function SecurityDashboard() {
 
                         {/* Quick Info */}
                         <div className="mt-4 grid grid-cols-2 gap-3">
-                            <div className="bg-black/20 rounded-xl border border-border p-3">
-                                <p className="text-[10px] text-text-muted uppercase font-bold">Emergency Seal</p>
-                                <p className="text-gold text-sm font-bold mt-1">On Shutdown</p>
+                            <div className={`rounded-xl border p-3 ${isDark ? 'bg-black/20 border-border' : 'bg-black/5 border-border-subtle'}`}>
+                                <p className={`text-[10px] uppercase font-bold ${isDark ? 'text-text-muted' : 'text-emerald-900/60'}`}>Emergency Seal</p>
+                                <p className={`text-sm font-bold mt-1 ${isDark ? 'text-gold' : 'text-emerald-950'}`}>On Shutdown</p>
                             </div>
-                            <div className="bg-black/20 rounded-xl border border-border p-3">
-                                <p className="text-[9px] text-text-muted uppercase font-bold">Auto Synthesis</p>
-                                <p className="text-gold text-sm font-bold mt-1">Daily 02:00</p>
+                            <div className={`rounded-xl border p-3 ${isDark ? 'bg-black/20 border-border' : 'bg-black/5 border-border-subtle'}`}>
+                                <p className={`text-[9px] uppercase font-bold ${isDark ? 'text-text-muted' : 'text-emerald-900/60'}`}>Auto Synthesis</p>
+                                <p className={`text-sm font-bold mt-1 ${isDark ? 'text-gold' : 'text-emerald-950'}`}>Daily 02:00</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Backups Panel - Takes 3/5 */}
-                <div className="lg:col-span-3 bg-gradient-to-br from-card-bg to-card-bg-elevated border border-border rounded-2xl overflow-hidden shadow-xl backdrop-blur-sm animate-fadeInUp" style={{ animationDelay: '500ms' }}>
-                    <div className="p-6 border-b border-border bg-primary/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className={`lg:col-span-3 border rounded-2xl overflow-hidden shadow-xl backdrop-blur-sm animate-fadeInUp ${isDark ? 'bg-gradient-to-br from-card-bg to-card-bg-elevated border-border' : 'bg-white/95 border-gold/15 shadow-gold/5'}`} style={{ animationDelay: '500ms' }}>
+                    <div className={`p-6 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${isDark ? 'border-border bg-primary/10' : 'border-gold/10 bg-emerald-50/40'}`}>
                         <div>
-                            <h4 className="font-serif text-base font-bold text-gold uppercase flex items-center gap-2.5">
+                            <h4 className={`font-serif text-base font-bold uppercase flex items-center gap-2.5 ${isDark ? 'text-gold' : 'text-emerald-950'}`}>
                                 <HardDrive className="h-5 w-5 text-gold" />
                                 Database Archives
                             </h4>
-                            <p className="text-text-muted text-[10px] font-bold uppercase mt-1">
+                            <p className={`text-[10px] font-bold uppercase mt-1 ${isDark ? 'text-text-muted' : 'text-emerald-900/60'}`}>
                                 {backups.length} archives stored · AES-256-GCM encrypted
                             </p>
                         </div>
@@ -394,37 +396,37 @@ export default function SecurityDashboard() {
 
                     <div className="p-0">
                         {loadingBackups ? (
-                            <div className="p-12 text-center text-text-muted">
+                            <div className={`p-12 text-center ${isDark ? 'text-text-muted' : 'text-emerald-900/60'}`}>
                                 <Loader2 className="h-6 w-6 animate-spin mx-auto mb-3 text-gold" />
                                 <p className="text-sm">Loading backups...</p>
                             </div>
                         ) : backups.length === 0 ? (
                             <div className="p-12 text-center">
-                                <Database className="h-12 w-12 text-border-subtle mx-auto mb-4" />
-                                <p className="text-text-primary font-medium">No backups yet</p>
-                                <p className="text-text-muted text-sm mt-1">Backups run automatically at 2:00 AM IST daily</p>
+                                <Database className={`h-12 w-12 mx-auto mb-4 ${isDark ? 'text-border-subtle' : 'text-gold/20'}`} />
+                                <p className={`font-medium ${isDark ? 'text-text-primary' : 'text-emerald-950'}`}>No backups yet</p>
+                                <p className={`text-sm mt-1 ${isDark ? 'text-text-muted' : 'text-emerald-900/60'}`}>Backups run automatically at 2:00 AM IST daily</p>
                             </div>
                         ) : (
-                            <div className="divide-y divide-border-subtle">
+                            <div className={`divide-y ${isDark ? 'divide-border-subtle' : 'divide-gold/10'}`}>
                                 {backups.map((backup, i) => (
                                     <div
                                         key={backup.filename}
-                                        className="flex items-center justify-between p-4 px-6 hover:bg-primary/5 transition-all duration-300 group"
+                                        className={`flex items-center justify-between p-4 px-6 transition-all duration-300 group ${isDark ? 'hover:bg-primary/5' : 'hover:bg-emerald-50/50'}`}
                                     >
                                         <div className="flex items-center gap-4 min-w-0 flex-1">
-                                            <div className="p-3 bg-primary/20 border border-border rounded-2xl group-hover:bg-primary/30 transition-all duration-500">
+                                            <div className={`p-3 rounded-2xl border transition-all duration-500 ${isDark ? 'bg-primary/20 border-border group-hover:bg-primary/30' : 'bg-gold/5 border-gold/20 group-hover:bg-gold/15'}`}>
                                                 <Database className="h-4 w-4 text-gold" />
                                             </div>
                                             <div className="min-w-0">
-                                                <p className="text-gold font-mono text-sm truncate group-hover:text-gold-soft transition-colors">
+                                                <p className={`font-mono text-sm truncate transition-colors ${isDark ? 'text-gold group-hover:text-gold-soft' : 'text-emerald-950 group-hover:text-emerald-900'}`}>
                                                     {backup.filename}
                                                 </p>
                                                 <div className="flex items-center gap-3 mt-1">
-                                                    <span className="text-text-muted text-[10px] font-bold uppercase tracking-tight flex items-center gap-1">
+                                                    <span className={`text-[10px] font-bold uppercase tracking-tight flex items-center gap-1 ${isDark ? 'text-text-muted' : 'text-emerald-900/60'}`}>
                                                         <Clock className="h-3 w-3" />
                                                         {new Date(backup.created_at).toLocaleString()}
                                                     </span>
-                                                    <span className="text-text-muted text-[10px] font-bold uppercase tracking-tight bg-primary/10 px-2 py-0.5 rounded-md">
+                                                    <span className={`text-[10px] font-bold uppercase tracking-tight px-2 py-0.5 rounded-md ${isDark ? 'text-text-muted bg-primary/10' : 'text-emerald-900/70 bg-gold/10'}`}>
                                                         {formatRelativeTime(backup.created_at)}
                                                     </span>
                                                 </div>
@@ -432,20 +434,20 @@ export default function SecurityDashboard() {
                                         </div>
 
                                         <div className="flex items-center gap-4 flex-shrink-0">
-                                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-mono font-bold bg-primary/20 text-gold-soft border border-border shadow-md">
+                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-mono font-bold border shadow-md ${isDark ? 'bg-primary/20 text-gold-soft border-border' : 'bg-gold/10 text-emerald-900 border-gold/20'}`}>
                                                 <Lock className="h-3 w-3" />
                                                 {formatSize(backup.size)}
                                             </span>
                                             <button
                                                 onClick={() => openDecryptModal(backup.filename)}
-                                                className="p-2.5 text-text-muted hover:text-gold hover:bg-primary/20 rounded-xl transition-all duration-300 opacity-0 group-hover:opacity-100"
+                                                className={`p-2.5 rounded-xl transition-all duration-300 opacity-0 group-hover:opacity-100 ${isDark ? 'text-text-muted hover:text-gold hover:bg-primary/20' : 'text-emerald-900/40 hover:text-gold hover:bg-gold/10'}`}
                                                 title="Decrypt & view archive"
                                             >
                                                 <Unlock className="h-4 w-4" />
                                             </button>
                                             <button
                                                 onClick={() => confirmDelete(backup.filename)}
-                                                className="p-2.5 text-text-muted hover:text-danger hover:bg-danger/10 rounded-xl transition-all duration-300 opacity-0 group-hover:opacity-100"
+                                                className={`p-2.5 rounded-xl transition-all duration-300 opacity-0 group-hover:opacity-100 ${isDark ? 'text-text-muted hover:text-danger hover:bg-danger/10' : 'text-emerald-900/40 hover:text-danger hover:bg-danger/10'}`}
                                                 title="Delete archive"
                                             >
                                                 <Trash2 className="h-4 w-4" />
