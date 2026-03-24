@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { getToken } from '../auth';
+import { env } from '../env';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API_URL = env.NEXT_PUBLIC_API_URL;
 
 export interface FinancialReportParams {
     startDate: string; // ISO format (YYYY-MM-DD)
