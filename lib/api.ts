@@ -361,7 +361,8 @@ export async function updateCustomerStatus(id: string, updates: Partial<Pick<Cus
 
 export async function getProducts(status = 'active'): Promise<Product[]> {
     try {
-        const res = await fetch(`${API_URL}/api/products?status=${encodeURIComponent(status)}`, {
+        const t = Date.now();
+        const res = await fetch(`${API_URL}/api/products?status=${encodeURIComponent(status)}&t=${t}`, {
             headers: authHeaders(),
             credentials: 'include',
         });
@@ -451,12 +452,15 @@ export async function getProduct(id: string, skipCache: boolean = false): Promis
         const json: ApiResponse<any> = await res.json();
         if (json.success && json.data) {
             const product = json.data;
-            // Compute total stock from variants (source of truth)
-            const variantStock = product.variants?.reduce(
-                (sum: number, v: any) => sum + (v.stock_quantity ?? 0), 0
-            ) ?? 0;
-            const stockQty = variantStock > 0 ? variantStock
-                : (product.stock_quantity != null ? product.stock_quantity : 0);
+            const hasVariants = !!(product.variants && product.variants.length > 0);
+            
+            // Calculate aggregated stock from variants, if any
+            const variantStockCount = hasVariants 
+                ? (product.variants?.reduce((sum: number, v: any) => sum + (v.stock_quantity ?? 0), 0) ?? 0)
+                : 0;
+
+            const stockQty = hasVariants ? variantStockCount : (product.stock_quantity ?? 0);
+            
             // Price lives on variants — prefer default variant, fallback to first active
             const defaultVariant = product.variants?.find((v: any) => v.is_default)
                 ?? product.variants?.find((v: any) => v.is_active !== false)
