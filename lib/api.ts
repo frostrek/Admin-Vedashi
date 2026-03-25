@@ -281,12 +281,10 @@ export interface Customer {
     email: string;
     phone?: string;
     bio?: string;
-    date_of_birth?: string;
     preferences?: any;
     role: string;
     is_email_verified: boolean;
     is_mobile_verified: boolean;
-    is_age_verified: boolean;
     is_active: boolean;
     is_suspended: boolean;
     is_banned: boolean;
