@@ -6,7 +6,8 @@ import {
     getOrders, getOrderById, updateOrderStatus as apiUpdateStatus,
     updatePaymentStatus as apiUpdatePayment, bulkUpdateOrderStatus,
     bulkUpdateOrderPaymentStatus, Order, downloadInvoiceAdmin, formatINR,
-    getPaymentInfo, initiateRefund, getRefunds, PaymentInfo, RefundRecord
+    getPaymentInfo, initiateRefund, getRefunds, PaymentInfo, RefundRecord,
+    cancelShipment, regenerateLabel, approveReturn, rejectReturn
 } from '@/lib/api';
 import {
     ShoppingCart, Eye, X, Package, User, CreditCard, MapPin,
@@ -58,6 +59,20 @@ interface OrderDetail {
         variant?: { variant_id: string; variant_name?: string; size_label?: string; volume_ml?: number };
         thumbnail_url?: string;
     }[];
+    
+    // Shipment & Tracking
+    awb_code?: string;
+    tracking_url?: string;
+    courier_name?: string;
+    shipment_status?: string;
+    shiprocket_order_id?: string;
+    shipment_id?: string;
+    
+    // Returns
+    return_status?: string;
+    return_reason?: string;
+    return_awb?: string;
+    return_tracking_url?: string;
 }
 
 // ── Portal-based Filter Popover ──────────────────────────────────────────────
@@ -1014,16 +1029,123 @@ export default function OrdersPage() {
                                         </div>
                                     )}
                                 </div>
+                                {/* Return Management */}
+                                {selectedOrder.return_status && (
+                                    <div className="rounded-xl border border-border bg-card-bg p-4 space-y-3">
+                                        <div className="flex items-center gap-2 text-warning text-[10px] font-semibold uppercase tracking-widest mb-2"><RotateCcw className="h-3.5 w-3.5" /> Returns Management</div>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs text-text-secondary">Return Status</span>
+                                            <span className={`text-[10px] font-semibold uppercase rounded-full px-2 py-0.5 ${selectedOrder.return_status === 'requested' ? 'bg-warning/15 text-warning' : selectedOrder.return_status === 'approved' ? 'bg-success/15 text-success' : selectedOrder.return_status === 'rejected' ? 'bg-danger/15 text-danger' : 'bg-border/30 text-text-muted'}`}>
+                                                {selectedOrder.return_status.replace(/_/g, ' ')}
+                                            </span>
+                                        </div>
+                                        {selectedOrder.return_reason && (
+                                            <div className="rounded-lg bg-page-bg/50 border border-border/50 p-2 mt-2">
+                                                <span className="text-[10px] text-text-muted uppercase font-semibold tracking-wider block mb-1">Reason</span>
+                                                <span className="text-xs text-text-primary">{selectedOrder.return_reason}</span>
+                                            </div>
+                                        )}
+                                        {selectedOrder.return_awb && (
+                                            <div className="flex items-center justify-between mt-2">
+                                                <span className="text-xs text-text-secondary">Return AWB</span>
+                                                <span className="text-[10px] font-mono text-text-muted bg-border/20 px-1.5 py-0.5 rounded">{selectedOrder.return_awb}</span>
+                                            </div>
+                                        )}
+                                        {selectedOrder.return_tracking_url && (
+                                            <a href={selectedOrder.return_tracking_url} target="_blank" rel="noopener noreferrer" className="block text-center rounded-xl bg-warning/10 py-2 text-xs font-semibold text-warning hover:bg-warning/20 transition-all mt-3">
+                                                Track Return
+                                            </a>
+                                        )}
+                                        {selectedOrder.return_status === 'requested' && (
+                                            <div className="flex gap-2 mt-3 text-white">
+                                                <button
+                                                    onClick={async () => {
+                                                        const tid = toast.loading('Approving...');
+                                                        const success = await approveReturn(selectedOrder.id);
+                                                        if (success) { toast.success('Return Approved', { id: tid }); const u = await getOrderById(selectedOrder.id); if(u) setSelectedOrder(u as any); }
+                                                        else toast.error('Failed to approve', { id: tid });
+                                                    }}
+                                                    className="flex-1 rounded-xl bg-success/80 py-2.5 text-xs font-semibold hover:bg-success transition-all shadow-lg shadow-success/20">
+                                                    Approve
+                                                </button>
+                                                <button
+                                                    onClick={async () => {
+                                                        const tid = toast.loading('Rejecting...');
+                                                        const success = await rejectReturn(selectedOrder.id);
+                                                        if (success) { toast.success('Return Rejected', { id: tid }); const u = await getOrderById(selectedOrder.id); if(u) setSelectedOrder(u as any); }
+                                                        else toast.error('Failed to reject', { id: tid });
+                                                    }}
+                                                    className="flex-1 rounded-xl bg-danger/80 py-2.5 text-xs font-semibold hover:bg-danger transition-all shadow-lg shadow-danger/20">
+                                                    Reject
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                             {selectedOrder.shipping_address && (
-                                <div className="rounded-xl border border-border bg-card-bg p-4">
+                                <div className="rounded-xl border border-border bg-card-bg p-4 flex-shrink-0">
                                     <div className="flex items-center gap-2 text-gold-muted text-[10px] font-semibold uppercase tracking-widest mb-2"><MapPin className="h-3.5 w-3.5" /> Shipping Address</div>
                                     <p className="text-sm text-text-primary leading-relaxed">
                                         {[selectedOrder.shipping_address.address_line1, selectedOrder.shipping_address.address_line2, selectedOrder.shipping_address.city, selectedOrder.shipping_address.state, selectedOrder.shipping_address.pincode, selectedOrder.shipping_address.country].filter(Boolean).join(', ')}
                                     </p>
                                 </div>
                             )}
-                            <div className="rounded-xl border border-border bg-card-bg p-4">
+
+                            {/* Logistics & Tracking */}
+                            <div className="rounded-xl border border-border bg-card-bg p-4 space-y-3 flex-shrink-0">
+                                <div className="flex items-center gap-2 text-gold-muted text-[10px] font-semibold uppercase tracking-widest mb-2"><Package className="h-3.5 w-3.5" /> Logistics & Tracking</div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-xs text-text-secondary">Shipment Status</span>
+                                    <span className="text-[10px] font-bold text-text-primary uppercase tracking-wider bg-border/20 px-2 py-0.5 rounded">{selectedOrder.shipment_status || 'UNSHIPPED'}</span>
+                                </div>
+                                {selectedOrder.courier_name && (
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-xs text-text-secondary">Courier</span>
+                                        <span className="text-xs font-medium text-text-primary">{selectedOrder.courier_name}</span>
+                                    </div>
+                                )}
+                                {selectedOrder.awb_code && (
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-xs text-text-secondary">AWB Code</span>
+                                        <span className="text-[10px] font-mono text-text-muted bg-border/20 px-1.5 py-0.5 rounded">{selectedOrder.awb_code}</span>
+                                    </div>
+                                )}
+                                {selectedOrder.tracking_url && (
+                                    <a href={selectedOrder.tracking_url} target="_blank" rel="noopener noreferrer" className="block w-full text-center rounded-xl bg-gold/10 py-2.5 text-[11px] font-bold tracking-wider text-gold hover:bg-gold/20 transition-all mt-2 uppercase">
+                                        Track Order
+                                    </a>
+                                )}
+                                {!['shipped', 'delivered', 'cancelled', 'returned'].includes(selectedOrder.status.toLowerCase()) && (
+                                    <div className="flex gap-2 mt-3">
+                                        {selectedOrder.shipment_id && (
+                                            <button
+                                                onClick={async () => {
+                                                    const tid = toast.loading('Regenerating Label...');
+                                                    const success = await regenerateLabel(selectedOrder.id);
+                                                    if (success) { toast.success('Label generated', { id: tid }); const u = await getOrderById(selectedOrder.id); if(u) setSelectedOrder(u as any); }
+                                                    else toast.error('Failed to regenerate label', { id: tid });
+                                                }}
+                                                className="flex-1 rounded-xl border border-border bg-page-bg/50 py-2.5 text-[11px] font-bold uppercase tracking-wider text-text-secondary hover:bg-border/30 hover:text-text-primary transition-all shadow-sm">
+                                                Regen Label
+                                            </button>
+                                        )}
+                                        <button
+                                            onClick={async () => {
+                                                if (!confirm('Are you sure you want to cancel the shipment with the courier?')) return;
+                                                const tid = toast.loading('Cancelling Shipment...');
+                                                const success = await cancelShipment(selectedOrder.id);
+                                                if (success) { toast.success('Shipment cancelled', { id: tid }); const u = await getOrderById(selectedOrder.id); if(u) setSelectedOrder(u as any); }
+                                                else toast.error('Failed to cancel shipment', { id: tid });
+                                            }}
+                                            className="flex-1 rounded-xl border border-danger/20 bg-danger/10 py-2.5 text-[11px] font-bold uppercase tracking-wider text-danger hover:bg-danger/20 transition-all shadow-sm">
+                                            Cancel Shipment
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="rounded-xl border border-border bg-card-bg p-4 flex-1 flex flex-col">
                                 <div className="flex items-center gap-2 text-gold-muted text-[10px] font-semibold uppercase tracking-widest mb-3">
                                     <Package className="h-3.5 w-3.5" /> Items
                                     <span className="ml-auto text-text-muted font-normal normal-case text-xs">{selectedOrder.items?.length ?? 0} item{(selectedOrder.items?.length ?? 0) !== 1 ? 's' : ''}</span>

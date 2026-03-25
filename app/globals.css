@@ -605,3 +605,58 @@ body::before {
   border: 0;
   border-top: 1px solid var(--t-border-subtle);
 }
+
+/* ─── Vibe Matrix Animations & Glows ─── */
+
+:root {
+  --vibe-aura-opacity: 0.15;
+  --vibe-pulse-speed: 2s;
+  --vibe-aura-color: #A89250; /* gold-ish */
+}
+
+/* Aura class overrides */
+.aura-minimal { --vibe-aura-opacity: 0.05; }
+.aura-balanced { --vibe-aura-opacity: 0.2; }
+.aura-intense  { --vibe-aura-opacity: 0.45; }
+
+/* Dosha-specific theme overrides (subtle) */
+.theme-vata {
+  --t-primary: #5A8A8A; /* Air/Ether - Teal/Blue */
+  --t-gold: #9EB2B2;
+}
+
+.theme-pitta {
+  --t-primary: #8C4A4A; /* Fire/Water - Deep Red/Rust */
+  --t-gold: #C5A46D;
+}
+
+.theme-kapha {
+  --t-primary: #5A6A4A; /* Water/Earth - Moss/Olive */
+  --t-gold: #8B7A3D;
+}
+
+/* Global Vibe Effects on existing classes */
+.shadow-lg, .shadow-xl {
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1), 0 0 calc(25px * var(--vibe-aura-opacity)) var(--vibe-aura-color) !important;
+  transition: box-shadow 0.4s ease !important;
+}
+
+/* Pulsing effect sensitivity */
+.animate-pulse {
+  animation: pulse var(--vibe-pulse-speed) cubic-bezier(0.4, 0, 0.6, 1) infinite !important;
+}
+
+/* New Vibe Glow Utility */
+.vibe-glow {
+  filter: drop-shadow(0 0 calc(30px * var(--vibe-aura-opacity)) var(--vibe-aura-color)) !important;
+}
+
+/* Harmony Pulse Animation */
+@keyframes harmonyPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.02); opacity: 0.8; }
+}
+
+.harmony-pulse {
+  animation: harmonyPulse var(--vibe-pulse-speed) ease-in-out infinite;
+}

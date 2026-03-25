@@ -1,0 +1,3 @@
+﻿app/dashboard/analytics/products/page.tsx(727,58): error TS2304: Cannot find name 'Info'.
+context/VibeContext.tsx(58,50): error TS2339: Property 'preferences' does not exist on type 'Customer'.
+context/VibeContext.tsx(59,53): error TS2339: Property 'preferences' does not exist on type 'Customer'.

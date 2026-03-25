@@ -5,8 +5,9 @@
  */
 
 import { getToken, setToken, getRefreshToken, setRefreshToken } from '@/lib/auth';
+import { env } from '@/lib/env';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API_URL = env.NEXT_PUBLIC_API_URL;
 
 let cachedCsrfToken: string | null = null;
 
@@ -146,6 +147,25 @@ export async function authFetch(input: RequestInfo | URL, init?: RequestInit): P
             }
         }
     }
+
+    // Auto-retry once on CSRF failure
+    if (res.status === 403 && isStateChanging && typeof window !== 'undefined') {
+        const cloned = res.clone();
+        try {
+            const data = await cloned.json();
+            if (data.message === 'CSRF token invalid or expired' || data.message === 'CSRF token missing') {
+                cachedCsrfToken = null;
+                await initCsrf();
+                if (cachedCsrfToken) {
+                    fetchInit.headers = { ...fetchInit.headers, 'X-CSRF-Token': cachedCsrfToken };
+                }
+                res = await fetch(input, fetchInit);
+            }
+        } catch {
+            // ignore non-json error
+        }
+    }
+
     return res;
 }
 
@@ -233,6 +253,7 @@ export interface Product {
     intended_use?: string;
     price?: number;
     quantity?: number; // request-only: sets default variant stock (not returned in responses)
+    is_taxable?: boolean;
 
     stock_quantity?: number;
     country_of_origin?: string;
@@ -261,6 +282,7 @@ export interface Customer {
     phone?: string;
     bio?: string;
     date_of_birth?: string;
+    preferences?: any;
     role: string;
     is_email_verified: boolean;
     is_mobile_verified: boolean;
@@ -578,6 +600,20 @@ export interface Order {
     payment_status?: string;
     payment_method?: string;
     created_at: string;
+    
+    // Shipment & Tracking
+    awb_code?: string;
+    tracking_url?: string;
+    courier_name?: string;
+    shipment_status?: string;
+    shiprocket_order_id?: string;
+    shipment_id?: string;
+    
+    // Returns
+    return_status?: string;
+    return_reason?: string;
+    return_awb?: string;
+    return_tracking_url?: string;
 }
 
 /** Fetches orders from the real API. Returns [] on failure. */
@@ -685,6 +721,18 @@ export async function getOrderById(id: string): Promise<Order | null> {
                 ...(row.order_notes ? { order_notes: row.order_notes } : {}),
                 ...(row.shipping_address ? { shipping_address: row.shipping_address } : {}),
                 payment_method: row.payment_method || 'cod',
+                
+                // Shipment and Returns Mappings
+                ...(row.awb_code ? { awb_code: row.awb_code } : {}),
+                ...(row.tracking_url ? { tracking_url: row.tracking_url } : {}),
+                ...(row.courier_name ? { courier_name: row.courier_name } : {}),
+                ...(row.shipment_status ? { shipment_status: row.shipment_status } : {}),
+                ...(row.shiprocket_order_id ? { shiprocket_order_id: row.shiprocket_order_id } : {}),
+                ...(row.shipment_id ? { shipment_id: row.shipment_id } : {}),
+                ...(row.return_status ? { return_status: row.return_status } : {}),
+                ...(row.return_reason ? { return_reason: row.return_reason } : {}),
+                ...(row.return_awb ? { return_awb: row.return_awb } : {}),
+                ...(row.return_tracking_url ? { return_tracking_url: row.return_tracking_url } : {}),
             } as any;
         }
         return null;
@@ -715,6 +763,62 @@ export async function updatePaymentStatus(id: string, paymentStatus: string): Pr
             headers: authHeaders({ 'Content-Type': 'application/json' }),
             credentials: 'include',
             body: JSON.stringify({ payment_status: paymentStatus }),
+        });
+        const json: ApiResponse = await res.json();
+        return json.success;
+    } catch {
+        return false;
+    }
+}
+
+export async function cancelShipment(orderId: string): Promise<boolean> {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/shipment/${orderId}/cancel`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            credentials: 'include',
+        });
+        const json: ApiResponse = await res.json();
+        return json.success;
+    } catch {
+        return false;
+    }
+}
+
+export async function regenerateLabel(orderId: string): Promise<boolean> {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/shipment/${orderId}/regenerate`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            credentials: 'include',
+        });
+        const json: ApiResponse = await res.json();
+        return json.success;
+    } catch {
+        return false;
+    }
+}
+
+export async function approveReturn(orderId: string): Promise<boolean> {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/return/${orderId}/approve`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            credentials: 'include',
+        });
+        const json: ApiResponse = await res.json();
+        return json.success;
+    } catch {
+        return false;
+    }
+}
+
+export async function rejectReturn(orderId: string): Promise<boolean> {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/return/${orderId}/reject`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            credentials: 'include',
         });
         const json: ApiResponse = await res.json();
         return json.success;

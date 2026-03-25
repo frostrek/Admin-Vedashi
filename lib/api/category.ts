@@ -7,8 +7,9 @@ import { authFetch } from '@/lib/api';
 
 import { Category, CreateCategoryPayload, UpdateCategoryPayload } from '@/types/category';
 import { getToken } from '@/lib/auth';
+import { env } from '@/lib/env';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API_URL = env.NEXT_PUBLIC_API_URL;
 
 /** Build headers with auth token for admin endpoints */
 function authHeaders(extra?: Record<string, string>): Record<string, string> {

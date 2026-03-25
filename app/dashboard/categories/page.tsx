@@ -285,7 +285,7 @@ export default function CategoriesPage() {
                                 <div>
                                     <h4 className="font-serif text-2xl font-bold text-text-primary mb-6 flex items-center gap-3">
                                         <div className="h-2 w-2 rounded-full bg-gold shadow-[0_0_8px_#D4A847]" />
-                                        Primary Collections <span className="text-sm font-medium text-text-muted">({displayParents.length})</span>
+                                        Categories <span className="text-sm font-medium text-text-muted">({displayParents.length})</span>
                                     </h4>
                                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                                         {displayParents.map((cat) => (
@@ -307,7 +307,7 @@ export default function CategoriesPage() {
                                 <div>
                                     <h4 className="font-serif text-2xl font-bold text-text-primary mb-6 flex items-center gap-3 pt-8">
                                         <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_#3B5D3B]" />
-                                        Deep Rituals <span className="text-sm font-medium text-text-muted">({displaySubcategories.length})</span>
+                                        Subcategories<span className="text-sm font-medium text-text-muted">({displaySubcategories.length})</span>
                                     </h4>
                                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                                         {displaySubcategories.map((cat) => (

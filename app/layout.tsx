@@ -19,6 +19,8 @@ const playfair = Playfair_Display({
   display: "swap",
 });
 
+import { VibeProvider } from "@/context/VibeContext";
+
 export const metadata: Metadata = {
   title: "Vedashi — Admin Panel",
   description: "Manage products, orders, and categories for Vedashi",
@@ -30,24 +32,26 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen">
         <ThemeProvider>
           <AdminAuthProvider>
-            <ReactQueryProvider>
-              <Toaster
-                position="top-right"
-                containerStyle={{ zIndex: 999999 }}
-                toastOptions={{
-                  className: 'theme-toast',
-                  style: {
-                    background: 'var(--t-card-bg-elevated)',
-                    color: 'var(--foreground)',
-                    borderRadius: '10px',
-                    fontSize: '14px',
-                    border: '1px solid var(--t-border)',
-                    boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
-                  },
-                }}
-              />
-              {children}
-            </ReactQueryProvider>
+            <VibeProvider>
+              <ReactQueryProvider>
+                <Toaster
+                  position="top-right"
+                  containerStyle={{ zIndex: 999999 }}
+                  toastOptions={{
+                    className: 'theme-toast',
+                    style: {
+                      background: 'var(--t-card-bg-elevated)',
+                      color: 'var(--foreground)',
+                      borderRadius: '10px',
+                      fontSize: '14px',
+                      border: '1px solid var(--t-border)',
+                      boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
+                    },
+                  }}
+                />
+                {children}
+              </ReactQueryProvider>
+            </VibeProvider>
           </AdminAuthProvider>
         </ThemeProvider>
       </body>
