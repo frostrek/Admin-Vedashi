@@ -147,6 +147,25 @@ export async function authFetch(input: RequestInfo | URL, init?: RequestInit): P
             }
         }
     }
+
+    // Auto-retry once on CSRF failure
+    if (res.status === 403 && isStateChanging && typeof window !== 'undefined') {
+        const cloned = res.clone();
+        try {
+            const data = await cloned.json();
+            if (data.message === 'CSRF token invalid or expired' || data.message === 'CSRF token missing') {
+                cachedCsrfToken = null;
+                await initCsrf();
+                if (cachedCsrfToken) {
+                    fetchInit.headers = { ...fetchInit.headers, 'X-CSRF-Token': cachedCsrfToken };
+                }
+                res = await fetch(input, fetchInit);
+            }
+        } catch {
+            // ignore non-json error
+        }
+    }
+
     return res;
 }
 
@@ -234,6 +253,7 @@ export interface Product {
     intended_use?: string;
     price?: number;
     quantity?: number; // request-only: sets default variant stock (not returned in responses)
+    is_taxable?: boolean;
 
     stock_quantity?: number;
     country_of_origin?: string;

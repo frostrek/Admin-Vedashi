@@ -86,8 +86,10 @@ export default function AddProductPage() {
         sub_category_id: '',
         country_of_origin: '',
         form_type: '',
-        specialities: [] as string[],        intended_use: '',
+        specialities: [] as string[],
+        intended_use: '',
         description: '',
+        is_taxable: true,
         available_from_date: '',
         available_from_time: '',
         available_until_date: '',
@@ -573,6 +575,7 @@ export default function AddProductPage() {
             intended_use: form.intended_use.trim() || undefined,
             form: form.form_type || undefined,
             specialities: form.specialities,
+            is_taxable: form.is_taxable,
             sku: draftSku,
             status: 'draft',
             specifications: form.country_of_origin ? { country_of_origin: form.country_of_origin } : undefined,
@@ -686,6 +689,7 @@ export default function AddProductPage() {
             intended_use: form.intended_use.trim() || undefined,
             form: form.form_type || undefined,
             specialities: form.specialities.length > 0 ? form.specialities : undefined,
+            is_taxable: form.is_taxable,
             // SKU from the default variant (required by products table unique constraint)
             sku: (variants.find(v => v.isDefault) ?? variants[0]).sku.trim(),
 
@@ -1132,6 +1136,25 @@ export default function AddProductPage() {
                                                 );
                                             })}
                                         </div>
+                                    </div>
+
+                                    {/* Is Taxable Toggle */}
+                                    <div className="sm:col-span-2">
+                                        <label className="flex items-center gap-3 p-4 border border-border rounded-xl cursor-pointer hover:border-gold/30 hover:bg-gold/[0.02] transition-all group">
+                                            <div className={`relative w-10 h-5 rounded-full transition-colors duration-200 ${form.is_taxable ? 'bg-gold' : 'bg-gray-300'}`}>
+                                                <div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200 ${form.is_taxable ? 'translate-x-5' : 'translate-x-0'}`} />
+                                            </div>
+                                            <input
+                                                type="checkbox"
+                                                className="hidden"
+                                                checked={form.is_taxable}
+                                                onChange={e => update('is_taxable', e.target.checked)}
+                                            />
+                                            <div>
+                                                <span className="text-sm font-semibold text-text-primary block group-hover:text-gold-soft transition-colors">Is This Product Taxable?</span>
+                                                <span className="text-xs text-text-muted">Uncheck for tax-exempt items. If enabled, standard VAT and Excise tax will be calculated.</span>
+                                            </div>
+                                        </label>
                                     </div>
                                     {/* Intended Use - full width */}
                                     <div className="sm:col-span-2">
