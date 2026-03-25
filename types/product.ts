@@ -14,6 +14,7 @@ export interface Product {
     intended_use?: string;
     price: number;
     quantity?: number;
+    is_taxable?: boolean;
 
     specifications?: ProductSpecifications;
     packaging?: ProductPackaging;

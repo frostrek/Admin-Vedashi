@@ -253,6 +253,7 @@ export interface Product {
     intended_use?: string;
     price?: number;
     quantity?: number; // request-only: sets default variant stock (not returned in responses)
+    is_taxable?: boolean;
 
     stock_quantity?: number;
     country_of_origin?: string;
