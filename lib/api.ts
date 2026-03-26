@@ -559,6 +559,28 @@ export async function deleteProduct(id: string): Promise<boolean> {
     }
 }
 
+export async function bulkDeleteProducts(productIds: string[]): Promise<{ success: boolean; successCount?: number; failedCount?: number; error?: string }> {
+    try {
+        const res = await authFetch(`${API_URL}/api/products/bulk-delete`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ productIds }),
+        });
+        const json = await res.json();
+        if (json.success) {
+            return {
+                success: true,
+                successCount: json.data?.successCount,
+                failedCount: json.data?.failedCount,
+            };
+        }
+        return { success: false, error: json.message || 'Failed to bulk delete products' };
+    } catch (error) {
+        console.error('[Admin API] Failed to bulk delete products:', error);
+        return { success: false, error: 'Network error processing bulk delete' };
+    }
+}
+
 export async function checkApiHealth(): Promise<boolean> {
     try {
         const res = await fetch(`${API_URL}/api/products?limit=1`, { credentials: 'include' });

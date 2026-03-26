@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, Fragment, useMemo } from 'react';
 import Link from 'next/link';
-import { getProducts, deleteProduct, Product, getRankingOverrides, setRankingOverride, removeRankingOverride, RankingOverride, searchProductsAdmin, getProduct, updateVariantStatus, updateDefaultVariant, getDraftProducts, updateProduct } from '@/lib/api';
+import { getProducts, deleteProduct, bulkDeleteProducts, Product, getRankingOverrides, setRankingOverride, removeRankingOverride, RankingOverride, searchProductsAdmin, getProduct, updateVariantStatus, updateDefaultVariant, getDraftProducts, updateProduct } from '@/lib/api';
 import { getCategories } from '@/lib/api/category';
 import { Category } from '@/types/category';
 import { Download, SlidersHorizontal, Filter, Package, Star, Loader2, Tag, ChevronDown, FileEdit, X, ChevronLeft, ChevronRight, Plus, Pencil, Trash2, Search, UploadCloud } from 'lucide-react';
@@ -60,12 +60,14 @@ export default function ProductsListPage() {
         onConfirm: () => void;
         confirmVariant?: 'danger' | 'primary';
         confirmLabel?: string;
+        loading?: boolean;
     }>({
         open: false,
         title: '',
         message: '',
         onConfirm: () => { },
-        confirmLabel: 'Confirm'
+        confirmLabel: 'Confirm',
+        loading: false
     });
     
     // Lock background scroll when Drafts modal is open
@@ -521,6 +523,33 @@ export default function ProductsListPage() {
         }
     };
 
+    const handleBulkDeleteProducts = () => {
+        if (selectedIds.size === 0) return;
+        setConfirmModal({
+            open: true,
+            title: 'Delete Selected Products',
+            message: `Are you sure you want to completely delete ${selectedIds.size} product(s) and all their variants? This action cannot be undone.`,
+            confirmVariant: 'danger',
+            confirmLabel: 'Delete',
+            onConfirm: async () => {
+                setConfirmModal(prev => ({ ...prev, loading: true }));
+                const { success, successCount, failedCount, error } = await bulkDeleteProducts(Array.from(selectedIds));
+                if (success) {
+                    toast.success(`Successfully deleted ${successCount} product(s)`);
+                    if (failedCount && failedCount > 0) {
+                        toast.error(`Failed to delete ${failedCount} product(s)`);
+                    }
+                    setSelectedIds(new Set());
+                    setSelectedVariantIds(new Set());
+                    loadProducts();
+                } else {
+                    toast.error(error || 'Failed to bulk delete products');
+                }
+                setConfirmModal(prev => ({ ...prev, open: false, loading: false }));
+            }
+        });
+    };
+
     const handleBulkPublishDrafts = () => {
         if (selectedDraftIds.size === 0) return;
         setConfirmModal({
@@ -699,6 +728,16 @@ export default function ProductsListPage() {
                     <p className="text-[15px] font-semibold text-brown">{products.length} total products</p>
                 </div>
                 <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                    {selectedIds.size > 0 && (
+                        <button
+                            onClick={handleBulkDeleteProducts}
+                            className="flex items-center gap-2 rounded-lg border border-danger/20 bg-danger/5 px-3 sm:px-4 py-2.5 text-sm font-semibold text-danger hover:bg-danger hover:text-white transition-all duration-300 shadow-sm animate-fadeIn"
+                            title={`Delete ${selectedIds.size} selected products`}
+                        >
+                            <Trash2 className="h-4 w-4" />
+                            <span className="hidden sm:inline">Delete Selected ({selectedIds.size})</span>
+                        </button>
+                    )}
                     <button
                         onClick={openDrafts}
                         className="flex items-center gap-2 rounded-lg border border-gold/10 bg-primary px-3 sm:px-4 py-2.5 text-sm font-semibold text-[#E8D8B9] hover:bg-primary-light transition-all duration-300 shadow-sm"
@@ -760,6 +799,7 @@ export default function ProductsListPage() {
                 confirmLabel={confirmModal.confirmLabel || "Confirm"}
                 confirmVariant={confirmModal.confirmVariant}
                 onConfirm={confirmModal.onConfirm}
+                loading={confirmModal.loading}
             >
                 {confirmModal.message}
             </ConfirmModal>
