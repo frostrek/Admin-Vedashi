@@ -488,8 +488,6 @@ export async function getProduct(id: string, skipCache: boolean = false): Promis
             const sale_start = defaultVariant?.sale_start ?? null;
             const sale_end = defaultVariant?.sale_end ?? null;
 
-            // alcohol_percentage lives on the products table only
-            const abv = product.alcohol_percentage ?? null;
             const images = product.assets
                 ?.map((a: any) => a.base64_data || a.asset_url)
                 .filter(Boolean) || [];

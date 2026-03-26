@@ -168,7 +168,7 @@ function CreateCampaignForm() {
             return;
         }
         if (form.target_audience === 'category_buyers' && selectedCategoryIds.length === 0) {
-            toast.error('Please select at least one alcohol type');
+            toast.error('Please select at least one category');
             return;
         }
 
@@ -331,7 +331,7 @@ function CreateCampaignForm() {
                     {form.target_audience === 'category_buyers' && (
                         <div className="mt-1 space-y-2">
                             <label className="block text-sm font-medium text-text-secondary">
-                                Select Alcohol Types <span className="text-red-400">*</span>
+                                Select Categories <span className="text-red-400">*</span>
                             </label>
 
                             {/* Selected tags */}

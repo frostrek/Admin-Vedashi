@@ -63,7 +63,6 @@ export interface CreateProductPayload {
     sub_category_id?: string;
     description?: string;
     intended_use?: string;
-    alcohol_percentage?: number | null;   // form field "abv"
     vintage_year?: number | null;         // form field "vintage_year"
     sku?: string;                         // taken from default variant
 
@@ -88,7 +87,6 @@ export interface ProductRecord {
     sub_category_id?: string;
     description?: string;
     intended_use?: string;
-    alcohol_percentage?: number;
     vintage_year?: number;
     sku?: string;
     status?: string;
