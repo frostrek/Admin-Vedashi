@@ -1444,6 +1444,7 @@ export interface LoginResult {
     success: boolean;
     error?: string;
     deactivated?: boolean;
+    requireCaptcha?: boolean;
     customer?: { customer_id: string; full_name: string; email: string; role?: string; phone?: string };
     access_token?: string;
     refresh_token?: string;
@@ -1454,7 +1455,7 @@ export interface LoginResult {
  * Returns { deactivated: true } when the account is inactive,
  * so the UI can display the reactivation modal.
  */
-export async function loginUser(email: string, password: string): Promise<LoginResult> {
+export async function loginUser(email: string, password: string, turnstileToken?: string): Promise<LoginResult> {
     try {
         // Use plain fetch (NOT authFetch) because login is a public endpoint.
         // authFetch would intercept 401s (wrong password) and dispatch
@@ -1463,7 +1464,7 @@ export async function loginUser(email: string, password: string): Promise<LoginR
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
-            body: JSON.stringify({ email, password }),
+            body: JSON.stringify({ email, password, turnstile_token: turnstileToken }),
         });
         const json = await res.json();
 
@@ -1479,6 +1480,7 @@ export async function loginUser(email: string, password: string): Promise<LoginR
                 success: false,
                 error: json.message || 'Login failed',
                 deactivated: isDeactivated,
+                requireCaptcha: json.requireCaptcha === true,
             };
         }
 

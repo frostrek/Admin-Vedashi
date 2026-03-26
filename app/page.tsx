@@ -7,6 +7,7 @@ import { reactivateAccount } from '@/lib/api';
 import { Leaf, RefreshCw, Eye, EyeOff } from 'lucide-react';
 import ConfirmModal from '@/components/ConfirmModal';
 import toast from 'react-hot-toast';
+import { Turnstile } from '@marsidev/react-turnstile';
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -22,6 +23,10 @@ export default function AdminLoginPage() {
   const [deactivatedEmail, setDeactivatedEmail] = useState('');
   const [deactivatedPassword, setDeactivatedPassword] = useState('');
 
+  // CAPTCHA state
+  const [requireCaptcha, setRequireCaptcha] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+
   useEffect(() => {
     if (isAuthenticated) {
       router.push('/dashboard');
@@ -35,8 +40,12 @@ export default function AdminLoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (requireCaptcha && !turnstileToken) {
+      toast.error('Please complete the CAPTCHA correctly.');
+      return;
+    }
     setLoading(true);
-    const result = await login(email, password);
+    const result = await login(email, password, turnstileToken || undefined);
     setLoading(false);
 
     if (result.success) {
@@ -48,6 +57,9 @@ export default function AdminLoginPage() {
       setDeactivatedPassword(password);
       setShowReactivateModal(true);
     } else {
+      if (result.requireCaptcha) {
+          setRequireCaptcha(true);
+      }
       toast.error(result.error || 'Login failed');
     }
   };
@@ -131,10 +143,32 @@ export default function AdminLoginPage() {
               </button>
             </div>
           </div>
+
+          {requireCaptcha && (
+            <div className="mb-6 flex justify-center w-full overflow-hidden rounded-lg">
+              <Turnstile
+                siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'}
+                onSuccess={(token) => {
+                  setTurnstileToken(token);
+                  // Optionally submit immediately if the user already clicked sign in
+                  if (turnstileToken === null) {
+                    toast.success('CAPTCHA solved!');
+                  }
+                }}
+                onError={() => {
+                  setTurnstileToken('');
+                  toast.error('CAPTCHA verification failed');
+                }}
+                onExpire={() => setTurnstileToken('')}
+                options={{ theme: 'light', size: 'normal' }}
+              />
+            </div>
+          )}
+
           <button
             type="submit"
-            disabled={loading}
-            className="w-full rounded-lg bg-primary py-3 text-sm font-semibold text-[#E8D8B9] hover:bg-primary-light border border-gold/10 transition-all duration-300 disabled:opacity-50 hover:shadow-lg hover:shadow-primary/20"
+            disabled={loading || (requireCaptcha && !turnstileToken)}
+            className="w-full rounded-lg bg-primary py-3 text-sm font-semibold text-[#E8D8B9] hover:bg-primary-light border border-gold/10 transition-all duration-300 disabled:opacity-50 hover:shadow-lg hover:shadow-primary/20 disabled:cursor-not-allowed"
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
