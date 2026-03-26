@@ -14,9 +14,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         if (!isLoading && !isAuthenticated) {
-            window.location.href = 'http://localhost:3000/in/login';
+            router.replace('/');
         }
-    }, [isLoading, isAuthenticated]);
+    }, [isLoading, isAuthenticated, router]);
 
     if (isLoading || !isAuthenticated) {
         return (
