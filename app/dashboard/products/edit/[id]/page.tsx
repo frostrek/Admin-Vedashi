@@ -703,6 +703,29 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                 return updated;
             }));
         }
+        if (currentStep === 3) {
+            const negativeField = variants.find(v => 
+                Number(v.stock) < 0 || 
+                Number(v.price) < 0 || 
+                Number(v.cost_price) < 0 || 
+                Number(v.sale_price) < 0 ||
+                Number(v.shelf_life) < 0 ||
+                Number(v.length_cm) < 0 ||
+                Number(v.width_cm) < 0 ||
+                Number(v.height_cm) < 0
+            );
+
+            if (negativeField) {
+                toast.error('Negative values are not allowed for stock, price, cost, or dimensions');
+                return;
+            }
+
+            const invalidVariant = variants.find(v => !v.sku.trim() || !v.price);
+            if (invalidVariant) {
+                toast.error('Please ensure all variants have an SKU and a Price (min 0.01)');
+                return;
+            }
+        }
         if (currentStep < STEPS.length) setCurrentStep(prev => prev + 1);
     };
 
@@ -1187,6 +1210,16 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                                     if (currentStep === 2 && !anyActiveDim && step.id > 2) {
                                                         toast.error('Please select at least one variant dimension');
                                                         return;
+                                                    } else if (currentStep === 3 && step.id > 3) {
+                                                        const invalidVariant = variants.find(v => !v.sku.trim() || !v.price || Number(v.stock) < 0);
+                                                        if (invalidVariant) {
+                                                            if (Number(invalidVariant.stock) < 0) {
+                                                                toast.error('Stock cannot be negative for any variant');
+                                                            } else {
+                                                                toast.error('Please ensure all variants have an SKU and a Price');
+                                                            }
+                                                            return;
+                                                        }
                                                     }
                                                     setCurrentStep(step.id);
                                                 }
@@ -1840,13 +1873,19 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                                                     />
                                                                 </td>
                                                                 <td className="px-4 py-3 align-top">
-                                                                    <input
-                                                                        type="number"
-                                                                        min="0"
-                                                                        value={variant.stock}
-                                                                        onChange={e => updateVariant(vIdx, 'stock', e.target.value ? parseInt(e.target.value) : 0)}
-                                                                        className="w-24 rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
-                                                                    />
+                                                                    <div className="relative">
+                                                                        <input
+                                                                            type="number"
+                                                                            value={variant.stock}
+                                                                            onChange={e => updateVariant(vIdx, 'stock', e.target.value ? parseInt(e.target.value) : 0)}
+                                                                            className={`w-24 rounded-md border px-3 py-1.5 text-sm focus:outline-none bg-transparent transition-colors ${Number(variant.stock) < 0 ? 'border-danger focus:border-danger text-danger' : 'border-border focus:border-gold/40'}`}
+                                                                        />
+                                                                        {Number(variant.stock) < 0 && (
+                                                                            <p className="absolute left-0 -bottom-4 text-[10px] text-danger whitespace-nowrap animate-in fade-in slide-in-from-top-1">
+                                                                                Stock cannot be negative
+                                                                            </p>
+                                                                        )}
+                                                                    </div>
                                                                 </td>
                                                                 <td className="px-4 py-3 text-center align-top pt-3">
                                                                     <div className="flex items-center justify-center gap-1">

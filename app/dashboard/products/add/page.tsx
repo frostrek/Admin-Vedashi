@@ -532,9 +532,25 @@ export default function AddProductPage() {
                 return;
             }
             // Ensure all variants have SKU and Price
-            const invalidVariant = variants.find(v => !v.sku.trim() || !v.price);
-            if (invalidVariant) {
-                toast.error('Please ensure all variants have an SKU and a Price');
+            const negativeField = variants.find(v => 
+                Number(v.stock) < 0 || 
+                Number(v.price) < 0 || 
+                Number(v.cost_price) < 0 || 
+                Number(v.sale_price) < 0 ||
+                Number(v.shelf_life) < 0 ||
+                Number(v.length_cm) < 0 ||
+                Number(v.width_cm) < 0 ||
+                Number(v.height_cm) < 0
+            );
+
+            if (negativeField) {
+                toast.error('Negative values are not allowed for stock, price, cost, or dimensions');
+                return;
+            }
+
+            const missingInfo = variants.find(v => !v.sku.trim() || !v.price);
+            if (missingInfo) {
+                toast.error('Please ensure all variants have an SKU and a Price (min 0.01)');
                 return;
             }
         }
@@ -1552,23 +1568,36 @@ export default function AddProductPage() {
                                                                             </div>
                                                                         </td>
                                                                         <td className="px-4 py-3 align-top">
-                                                                            <input
-                                                                                type="number"
-                                                                                step="0.01"
-                                                                                value={variant.price}
-                                                                                onChange={e => updateVariant(vIdx, 'price', e.target.value ? parseFloat(e.target.value) : 0)}
-                                                                                placeholder="0"
-                                                                                className="w-24 rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
-                                                                            />
+                                                                            <div className="relative">
+                                                                                <input
+                                                                                    type="number"
+                                                                                    step="0.01"
+                                                                                    value={variant.price}
+                                                                                    onChange={e => updateVariant(vIdx, 'price', e.target.value ? parseFloat(e.target.value) : 0)}
+                                                                                    placeholder="0"
+                                                                                    className={`w-24 rounded-md border px-3 py-1.5 text-sm focus:outline-none bg-transparent transition-colors ${Number(variant.price) < 0 ? 'border-danger focus:border-danger text-danger' : 'border-border focus:border-gold/40'}`}
+                                                                                />
+                                                                                {Number(variant.price) < 0 && (
+                                                                                    <p className="absolute left-0 -bottom-4 text-[10px] text-danger whitespace-nowrap animate-in fade-in slide-in-from-top-1">
+                                                                                        Price cannot be negative
+                                                                                    </p>
+                                                                                )}
+                                                                            </div>
                                                                         </td>
                                                                         <td className="px-4 py-3 align-top">
-                                                                            <input
-                                                                                type="number"
-                                                                                min="0"
-                                                                                value={variant.stock}
-                                                                                onChange={e => updateVariant(vIdx, 'stock', e.target.value ? parseInt(e.target.value) : 0)}
-                                                                                className="w-24 rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
-                                                                            />
+                                                                            <div className="relative">
+                                                                                <input
+                                                                                    type="number"
+                                                                                    value={variant.stock}
+                                                                                    onChange={e => updateVariant(vIdx, 'stock', e.target.value ? parseInt(e.target.value) : 0)}
+                                                                                    className={`w-24 rounded-md border px-3 py-1.5 text-sm focus:outline-none bg-transparent transition-colors ${Number(variant.stock) < 0 ? 'border-danger focus:border-danger text-danger' : 'border-border focus:border-gold/40'}`}
+                                                                                />
+                                                                                {Number(variant.stock) < 0 && (
+                                                                                    <p className="absolute left-0 -bottom-4 text-[10px] text-danger whitespace-nowrap animate-in fade-in slide-in-from-top-1">
+                                                                                        Stock cannot be negative
+                                                                                    </p>
+                                                                                )}
+                                                                            </div>
                                                                         </td>
                                                                         <td className="px-4 py-3 text-center align-top pt-3">
                                                                             <div className="flex items-center justify-center gap-1">
@@ -1602,25 +1631,35 @@ export default function AddProductPage() {
                                                                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                                                                                 <div>
                                                                                     <label className="block text-xs font-medium text-text-secondary mb-1">Cost Price ($)</label>
-                                                                                    <input
-                                                                                        type="number" step="0.01" min="0"
-                                                                                        value={variant.cost_price}
-                                                                                        onChange={e => updateVariant(vIdx, 'cost_price', e.target.value ? parseFloat(e.target.value) : 0)}
-                                                                                        onWheel={e => (e.target as HTMLInputElement).blur()}
-                                                                                        className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
-                                                                                        placeholder="0.00"
-                                                                                    />
+                                                                                    <div className="relative">
+                                                                                        <input
+                                                                                            type="number" step="0.01" min="0"
+                                                                                            value={variant.cost_price}
+                                                                                            onChange={e => updateVariant(vIdx, 'cost_price', e.target.value ? parseFloat(e.target.value) : 0)}
+                                                                                            onWheel={e => (e.target as HTMLInputElement).blur()}
+                                                                                            className={`w-full rounded-md border px-3 py-1.5 text-sm focus:outline-none bg-transparent transition-colors ${Number(variant.cost_price) < 0 ? 'border-danger focus:border-danger text-danger' : 'border-border focus:border-gold/40'}`}
+                                                                                            placeholder="0.00"
+                                                                                        />
+                                                                                        {Number(variant.cost_price) < 0 && (
+                                                                                            <p className="absolute left-0 -bottom-4 text-[10px] text-danger whitespace-nowrap">Cost cannot be negative</p>
+                                                                                        )}
+                                                                                    </div>
                                                                                 </div>
                                                                                 <div>
                                                                                     <label className="block text-xs font-medium text-text-secondary mb-1">Shelf Life (months)</label>
-                                                                                    <input
-                                                                                        type="number" min="0"
-                                                                                        value={variant.shelf_life}
-                                                                                        onChange={e => updateVariant(vIdx, 'shelf_life', e.target.value)}
-                                                                                        onWheel={e => (e.target as HTMLInputElement).blur()}
-                                                                                        className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
-                                                                                        placeholder="e.g. 24"
-                                                                                    />
+                                                                                    <div className="relative">
+                                                                                        <input
+                                                                                            type="number" min="0"
+                                                                                            value={variant.shelf_life}
+                                                                                            onChange={e => updateVariant(vIdx, 'shelf_life', e.target.value)}
+                                                                                            onWheel={e => (e.target as HTMLInputElement).blur()}
+                                                                                            className={`w-full rounded-md border px-3 py-1.5 text-sm focus:outline-none bg-transparent transition-colors ${Number(variant.shelf_life) < 0 ? 'border-danger focus:border-danger text-danger' : 'border-border focus:border-gold/40'}`}
+                                                                                            placeholder="e.g. 24"
+                                                                                        />
+                                                                                        {Number(variant.shelf_life) < 0 && (
+                                                                                            <p className="absolute left-0 -bottom-4 text-[10px] text-danger whitespace-nowrap">Cannot be negative</p>
+                                                                                        )}
+                                                                                    </div>
                                                                                 </div>
                                                                             </div>
 
@@ -1750,14 +1789,19 @@ export default function AddProductPage() {
                                                                                         <div className="space-y-3">
                                                                                             <div>
                                                                                                 <label className="block text-xs font-medium text-text-secondary mb-1">Sale Price ($)</label>
-                                                                                                <input
-                                                                                                    type="number" step="0.01" min="0"
-                                                                                                    value={variant.sale_price}
-                                                                                                    onChange={e => updateVariant(vIdx, 'sale_price', e.target.value)}
-                                                                                                    onWheel={e => (e.target as HTMLInputElement).blur()}
-                                                                                                    placeholder="0.00"
-                                                                                                    className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
-                                                                                                />
+                                                                                                <div className="relative">
+                                                                                                    <input
+                                                                                                        type="number" step="0.01" min="0"
+                                                                                                        value={variant.sale_price}
+                                                                                                        onChange={e => updateVariant(vIdx, 'sale_price', e.target.value)}
+                                                                                                        onWheel={e => (e.target as HTMLInputElement).blur()}
+                                                                                                        placeholder="0.00"
+                                                                                                        className={`w-full rounded-md border px-3 py-1.5 text-sm focus:outline-none bg-transparent transition-colors ${Number(variant.sale_price) < 0 ? 'border-danger focus:border-danger text-danger' : 'border-border focus:border-gold/40'}`}
+                                                                                                    />
+                                                                                                    {Number(variant.sale_price) < 0 && (
+                                                                                                        <p className="absolute left-0 -bottom-4 text-[10px] text-danger whitespace-nowrap">Cannot be negative</p>
+                                                                                                    )}
+                                                                                                </div>
                                                                                             </div>
                                                                                             <div className="grid grid-cols-2 gap-3">
                                                                                                 <div>
