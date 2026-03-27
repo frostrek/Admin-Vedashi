@@ -89,6 +89,7 @@ export default function AddProductPage() {
         specialities: [] as string[],
         intended_use: '',
         description: '',
+        short_description: '',
         is_taxable: true,
         available_from_date: '',
         available_from_time: '',
@@ -588,6 +589,7 @@ export default function AddProductPage() {
             sub_category_id: form.sub_category_id || undefined,
             country_of_origin: form.country_of_origin || undefined,
             description: form.description.trim() || undefined,
+            short_description: form.short_description.trim() || undefined,
             intended_use: form.intended_use.trim() || undefined,
             form: form.form_type || undefined,
             specialities: form.specialities,
@@ -702,6 +704,7 @@ export default function AddProductPage() {
             sub_category_id: form.sub_category_id || undefined,
             country_of_origin: form.country_of_origin || undefined,
             description: form.description.trim() || undefined,
+            short_description: form.short_description.trim() || undefined,
             intended_use: form.intended_use.trim() || undefined,
             form: form.form_type || undefined,
             specialities: form.specialities.length > 0 ? form.specialities : undefined,
@@ -1194,6 +1197,19 @@ export default function AddProductPage() {
                                             className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 resize-none transition-all"
                                             placeholder="Describe the product's health benefits, ingredients, and usage instructions..."
                                         />
+                                    </div>
+
+                                    {/* Short Description - full width */}
+                                    <div className="sm:col-span-2">
+                                        <label className="block text-sm font-medium text-text-primary mb-1.5">Short Description</label>
+                                        <textarea
+                                            value={form.short_description}
+                                            onChange={e => update('short_description', e.target.value)}
+                                            rows={2}
+                                            className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 resize-none transition-all"
+                                            placeholder="A brief one-line summary shown on the product page..."
+                                        />
+                                        <p className="text-xs text-text-muted mt-1">Displayed as the product tagline on the storefront.</p>
                                     </div>
 
                                     {/* Product Availability Scheduling */}
