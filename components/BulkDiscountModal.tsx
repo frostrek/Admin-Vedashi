@@ -15,7 +15,7 @@ interface BulkDiscountModalProps {
 }
 
 type TargetType = 'category' | 'sub_category' | 'brand' | 'all' | 'selected';
-type BulkActionType = 'discount' | 'pricing' | 'custom';
+type BulkActionType = 'discount' | 'pricing' | 'custom' | 'delete';
 type AdjustmentMode = 'increase' | 'decrease';
 type ValueType = 'percentage' | 'amount';
 
@@ -323,6 +323,60 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
         }
     };
 
+    const handleBulkDeleteSubmit = async () => {
+        const token = getToken();
+        if (!token) {
+            toast.error('You are not logged in. Please re-login.');
+            return false;
+        }
+
+        const confirmText = targetType === 'all' 
+            ? 'DELETE ALL' 
+            : (targetType === 'selected' ? `DELETE ${selectedIds.length} SELECTED` : `DELETE ALL IN ${targetValue.toUpperCase()}`);
+
+        const userConfirm = window.prompt(`DANGER: This will PERMANENTLY delete these products and all their variants. This cannot be undone.\n\nType "${confirmText}" to confirm:`);
+        
+        if (userConfirm !== confirmText) {
+            toast.error('Deletion cancelled. Confirmation text did not match.');
+            return false;
+        }
+
+        setLoading(true);
+        try {
+            const response = await authFetch(`${API_URL}/api/products/bulk-delete-by-criteria`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    targetType,
+                    targetValue: targetType === 'all' 
+                        ? undefined 
+                        : (targetType === 'selected' 
+                            ? { productIds: selectedIds, variantIds: selectedVariantIds } 
+                            : targetValue.trim()),
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                toast.success(data.message || 'Bulk deletion completed successfully!');
+                return true;
+            } else {
+                toast.error(data.message || 'Failed to perform bulk deletion.');
+                return false;
+            }
+        } catch (error) {
+            console.error('Bulk delete error:', error);
+            toast.error('An error occurred while performing bulk deletion.');
+            return false;
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent | undefined, action: 'apply' | 'remove' = 'apply') => {
         if (e) e.preventDefault();
 
@@ -341,6 +395,8 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
             success = await handleDiscountSubmit(action);
         } else if (activeTab === 'pricing') {
             success = await handlePricingSubmit();
+        } else if (activeTab === 'delete') {
+            success = await handleBulkDeleteSubmit();
         } else {
             success = await handleCustomSubmit();
         }
@@ -432,6 +488,18 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
                             }`}
                     >
                         Custom Update
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setActiveTab('delete');
+                        }}
+                        className={`flex-1 pb-3 text-sm font-semibold transition-colors border-b-2 ${activeTab === 'delete'
+                            ? 'text-red-500 border-red-500'
+                            : 'text-text-secondary border-transparent hover:text-red-400'
+                            }`}
+                    >
+                        Bulk Delete
                     </button>
                 </div>
 

@@ -637,15 +637,15 @@ export default function ProductsListPage() {
     };
 
     const handleToggleSelectAll = () => {
-        const currentPageIds = paginatedProducts.map(p => p.product_id);
-        const allSelected = currentPageIds.length > 0 && currentPageIds.every(id => selectedIds.has(id));
+        const targetIds = filtered.map(p => p.product_id);
+        const allSelected = targetIds.length > 0 && targetIds.every(id => selectedIds.has(id));
 
         setSelectedIds(prev => {
             const next = new Set(prev);
             if (allSelected) {
-                currentPageIds.forEach(id => next.delete(id));
+                targetIds.forEach(id => next.delete(id));
             } else {
-                currentPageIds.forEach(id => next.add(id));
+                targetIds.forEach(id => next.add(id));
             }
             return next;
         });
@@ -653,7 +653,7 @@ export default function ProductsListPage() {
         // Sync variants for all products being toggled
         setSelectedVariantIds(prev => {
             const next = new Set(prev);
-            currentPageIds.forEach(id => {
+            targetIds.forEach(id => {
                 const variants = productVariants[id] || [];
                 variants.forEach((v: any) => {
                     const vId = v.variant_id || v.sku;
@@ -1229,7 +1229,7 @@ export default function ProductsListPage() {
                                     <div className="flex items-center justify-end gap-3">
                                         <input
                                             type="checkbox"
-                                            checked={paginatedProducts.length > 0 && paginatedProducts.every(p => selectedIds.has(p.product_id))}
+                                            checked={filtered.length > 0 && filtered.every(p => selectedIds.has(p.product_id))}
                                             onChange={handleToggleSelectAll}
                                             className="h-4 w-4 rounded border-border text-primary focus:ring-primary/30 transition-all duration-300 cursor-pointer accent-primary"
                                         />

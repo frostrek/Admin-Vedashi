@@ -380,7 +380,7 @@ export async function updateCustomerStatus(id: string, updates: Partial<Pick<Cus
 export async function getProducts(status = 'active'): Promise<Product[]> {
     try {
         const t = Date.now();
-        const res = await fetch(`${API_URL}/api/products?status=${encodeURIComponent(status)}&t=${t}`, {
+        const res = await fetch(`${API_URL}/api/products?status=${encodeURIComponent(status)}&limit=10000000000&t=${t}`, {
             headers: authHeaders(),
             credentials: 'include',
         });
