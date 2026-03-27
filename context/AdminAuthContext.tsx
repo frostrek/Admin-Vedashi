@@ -99,7 +99,8 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         }
         
         // Redirect to storefront login
-        window.location.href = 'http://localhost:3000/in/login';
+        const storefrontUrl = process.env.NEXT_PUBLIC_STOREFRONT_URL || 'http://localhost:3000';
+        window.location.href = `${storefrontUrl}/in/login`;
     }, []);
 
     const deactivate = useCallback(async (password: string) => {
