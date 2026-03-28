@@ -1033,11 +1033,17 @@ export default function AddProductPage() {
                                 <div className="grid gap-5 sm:grid-cols-2">
                                     {/* Product Name - full width */}
                                     <div className="sm:col-span-2">
-                                        <label className="block text-sm font-medium text-text-primary mb-1.5">Product Name *</label>
+                                        <div className="flex justify-between items-end mb-1.5">
+                                            <label className="block text-sm font-medium text-text-primary">Product Name *</label>
+                                            <span className={`text-xs ${form.product_name.length >= 50 ? 'text-red-500' : 'text-text-muted'}`}>
+                                                {form.product_name.length}/50
+                                            </span>
+                                        </div>
                                         <input
                                             type="text"
                                             value={form.product_name}
                                             onChange={e => update('product_name', e.target.value)}
+                                            maxLength={50}
                                             className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 transition-all"
                                             placeholder="e.g. Ashwagandha Prowess"
                                             required
