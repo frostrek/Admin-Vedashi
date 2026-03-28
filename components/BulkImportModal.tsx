@@ -164,6 +164,7 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
                 'Speciality_3': "",
                 'Intended Use': "Daily wellness",
                 'Description': "A premium ayurvedic supplement for vitality and stress relief.",
+                'Short Description': "Premium Ashwagandha capsules for daily wellness & stress relief.",
                 'product_image_1': "https://example.com/product-main.jpg",
                 'product_image_2': "",
                 'product_image_3': "",
@@ -347,6 +348,7 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
                                     <li><strong>SKU 1</strong>, <strong>Product Name</strong>, and <strong>Price 1</strong> are required for new products.</li>
                                     <li>If the SKU exists, the product will be <strong>updated</strong>. If not, a new product will be <strong>created</strong>.</li>
                                     <li>You can add up to <strong>3 variants</strong> per row (e.g., using SKU 1, SKU 2, SKU 3).</li>
+                                    <li><strong>Short Description</strong> is optional — great for SEO and product cards.</li>
                                     <li>Supports media URLs in columns like <strong>product_image_1</strong> and <strong>image_1_1</strong>.</li>
                                     <li>Large files (&gt;100 rows) are processed in the background.</li>
                                 </ul>
