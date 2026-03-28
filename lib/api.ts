@@ -145,7 +145,17 @@ export async function authFetch(input: RequestInfo | URL, init?: RequestInit): P
                 window.dispatchEvent(new CustomEvent('admin-auth-failure'));
             }
         }
+    } else if (res.status === 403 && isStateChanging) {
+        // Handle CSRF expiration gracefully
+        cachedCsrfToken = null;
+        await initCsrf();
+        const freshCsrf = getCsrfToken();
+        if (freshCsrf) {
+            const newHeaders = { ...(fetchInit.headers || {}), 'X-CSRF-Token': freshCsrf };
+            res = await fetch(input, { ...fetchInit, headers: newHeaders });
+        }
     }
+
     return res;
 }
 
@@ -574,11 +584,11 @@ export interface Order {
     grand_total?: number;
     final_price?: number;
     subtotal?: number;
-    status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
+    status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled' | 'on_hold';
     payment_status?: string;
     payment_method?: string;
     created_at: string;
-    
+
     // Shipment & Tracking
     awb_code?: string;
     tracking_url?: string;
@@ -586,12 +596,13 @@ export interface Order {
     shipment_status?: string;
     shiprocket_order_id?: string;
     shipment_id?: string;
-    
+
     // Returns
     return_status?: string;
     return_reason?: string;
     return_awb?: string;
     return_tracking_url?: string;
+    has_shipment?: boolean;
 }
 
 /** Fetches orders from the real API. Returns [] on failure. */
@@ -658,6 +669,7 @@ export async function getOrders(params?: { dateFrom?: string; dateTo?: string })
                 payment_status: row.payment_status,
                 payment_method: row.payment_method || 'cod',
                 created_at: row.created_at ?? new Date().toISOString(),
+                has_shipment: !!row.has_shipment,
             };
         });
     } catch (error) {
@@ -699,7 +711,7 @@ export async function getOrderById(id: string): Promise<Order | null> {
                 ...(row.order_notes ? { order_notes: row.order_notes } : {}),
                 ...(row.shipping_address ? { shipping_address: row.shipping_address } : {}),
                 payment_method: row.payment_method || 'cod',
-                
+
                 // Shipment and Returns Mappings
                 ...(row.awb_code ? { awb_code: row.awb_code } : {}),
                 ...(row.tracking_url ? { tracking_url: row.tracking_url } : {}),
@@ -854,7 +866,7 @@ export async function downloadInvoiceAdmin(orderId: string): Promise<{ success: 
         try {
             const url = `${API_URL}/api/invoices/${orderId}/download`;
             const res = await fetch(url, { headers: authHeaders(), credentials: 'include' });
-            
+
             if (!res.ok) {
                 if (res.status === 409 && attempt < maxRetries) {
                     // Invoice is generating. Wait and retry automatically.
@@ -1830,7 +1842,7 @@ export async function getAdminAllComments(params?: { status?: string, cursor?: s
         if (params?.status) q.append('status', params.status);
         if (params?.cursor) q.append('cursor', params.cursor);
         if (params?.limit) q.append('limit', params.limit.toString());
-        
+
         const res = await authFetch(`${API_URL}/api/blog/admin/comments?${q.toString()}`, { headers: authHeaders() });
         const json = await res.json();
         return json.success ? json.data : { comments: [], nextCursor: null, hasMore: false };
@@ -2285,7 +2297,7 @@ export async function toggleMaintenanceMode(enable: boolean, message?: string): 
 
 /* ─── Payment Logs (Admin) ─── */
 
-export async function getPaymentLogs(params: { limit?: number; offset?: number; search?: string; status?: string; gateway?: string } = {}) {
+export async function getPaymentLogs(params: { limit?: number; offset?: number; search?: string; status?: string; gateway?: string; type?: string; startDate?: string; endDate?: string } = {}) {
     try {
         const sp = new URLSearchParams();
         if (params.limit) sp.set('limit', String(params.limit));
@@ -2293,6 +2305,9 @@ export async function getPaymentLogs(params: { limit?: number; offset?: number; 
         if (params.search) sp.set('search', params.search);
         if (params.status) sp.set('status', params.status);
         if (params.gateway) sp.set('gateway', params.gateway);
+        if (params.type) sp.set('type', params.type);
+        if (params.startDate) sp.set('startDate', params.startDate);
+        if (params.endDate) sp.set('endDate', params.endDate);
 
         const res = await authFetch(`${API_URL}/api/admin/payments/logs?${sp.toString()}`, { headers: authHeaders() });
         const json = await res.json();
@@ -2300,6 +2315,17 @@ export async function getPaymentLogs(params: { limit?: number; offset?: number; 
     } catch (error) {
         console.error('[Admin API] getPaymentLogs failed:', error);
         return { logs: [], total: 0 };
+    }
+}
+
+export async function getOrderPaymentTimeline(orderId: string) {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/payments/order/${orderId}/logs`, { headers: authHeaders() });
+        const json = await res.json();
+        return json.success ? json.data : [];
+    } catch (error) {
+        console.error('[Admin API] getOrderPaymentTimeline failed:', error);
+        return [];
     }
 }
 
@@ -2490,18 +2516,18 @@ export async function getActivityLogs(params?: Record<string, string>): Promise<
             headers: authHeaders(),
         });
         const json = await res.json();
-            if (json.success && json.data) {
-                return {
-                    logs: json.data.logs || [],
-                    pagination: json.data.pagination || { total: 0, page: 1, limit: 20, totalPages: 0 }
-                };
-            }
-            throw new Error(json.message || 'Failed to fetch activity logs');
-        } catch (error: any) {
-            console.error('[Admin API] getActivityLogs failed:', error);
-            throw error;
+        if (json.success && json.data) {
+            return {
+                logs: json.data.logs || [],
+                pagination: json.data.pagination || { total: 0, page: 1, limit: 20, totalPages: 0 }
+            };
         }
+        throw new Error(json.message || 'Failed to fetch activity logs');
+    } catch (error: any) {
+        console.error('[Admin API] getActivityLogs failed:', error);
+        throw error;
     }
+}
 
 /* ─── Loyalty & Rewards (Admin) ─── */
 
@@ -2819,4 +2845,531 @@ export async function createAdminGdprBreach(data: any) {
         console.error('[Admin API] Failed to log GDPR breach:', error);
         return { success: false };
     }
+}
+
+// ─── Shipments ────────────────────────────────────────────────────
+
+export async function fetchShipments(params: Record<string, string> = {}) {
+    try {
+        const searchParams = new URLSearchParams();
+        Object.entries(params).forEach(([k, v]) => { if (v) searchParams.set(k, v); });
+        const res = await authFetch(`${API_URL}/api/admin/shipments?${searchParams.toString()}`, {
+            headers: authHeaders(),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to fetch shipments:', error);
+        return { success: false, data: { shipments: [], meta: { total: 0 } } };
+    }
+}
+
+export async function fetchShipmentById(id: string) {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/shipments/${id}`, {
+            headers: authHeaders(),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to fetch shipment:', error);
+        return { success: false };
+    }
+}
+
+export async function createShipment(orderId: string) {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/shipments/create`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ order_id: orderId }),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to create shipment:', error);
+        return { success: false };
+    }
+}
+
+export async function trackShipmentById(id: string) {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/shipments/${id}/track`, {
+            headers: authHeaders(),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to track shipment:', error);
+        return { success: false };
+    }
+}
+
+export async function cancelShipmentById(id: string) {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/shipments/${id}/cancel`, {
+            method: 'POST',
+            headers: authHeaders(),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to cancel shipment:', error);
+        return { success: false };
+    }
+}
+
+export async function fetchShipmentCouriers() {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/shipments/couriers`, {
+            headers: authHeaders(),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to fetch couriers:', error);
+        return { success: false, data: [] };
+    }
+}
+
+export async function fetchCourierOptions(id: string) {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/shipments/${id}/couriers`, {
+            headers: authHeaders(),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to fetch courier options:', error);
+        return { success: false, data: { couriers: [] } };
+    }
+}
+
+export async function assignShipmentCourier(id: string, courier_id: number, courier_name: string) {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/shipments/${id}/assign-courier`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ courier_id, courier_name }),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to assign courier:', error);
+        return { success: false, message: 'Network error' };
+    }
+}
+
+export async function generateShipmentLabel(id: string) {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/shipments/${id}/label`, {
+            method: 'POST',
+            headers: authHeaders(),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to generate label:', error);
+        return { success: false, message: 'Network error while generating label' };
+    }
+}
+
+export async function bulkGetShipmentLabels(shipmentIds: string[]) {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/shipments/bulk-labels`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ shipment_ids: shipmentIds }),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to get bulk labels:', error);
+        return { success: false };
+    }
+}
+
+export async function scheduleShipmentPickup(id: string, pickup_date: string) {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/shipments/${id}/schedule-pickup`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ pickup_date }),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to schedule pickup:', error);
+        return { success: false, message: 'Network error while scheduling pickup' };
+    }
+}
+
+/* ─── Returns Management ─── */
+
+export async function fetchReturns(params: Record<string, string> = {}): Promise<ApiResponse<any>> {
+    try {
+        const qs = new URLSearchParams(params).toString();
+        const res = await authFetch(`${API_URL}/api/admin/returns${qs ? '?' + qs : ''}`, {
+            headers: authHeaders(),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to fetch returns:', error);
+        return { success: false, message: 'Network error' };
+    }
+}
+
+export async function fetchReturnById(id: string): Promise<ApiResponse<any>> {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/returns/${id}`, {
+            headers: authHeaders(),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to fetch return:', error);
+        return { success: false, message: 'Network error' };
+    }
+}
+
+export async function createReturnRequest(data: { order_id: string; reason?: string; type?: string }): Promise<ApiResponse<any>> {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/returns`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify(data),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to create return:', error);
+        return { success: false, message: 'Network error' };
+    }
+}
+
+export async function approveReturnById(id: string): Promise<ApiResponse<any>> {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/returns/${id}/approve`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to approve return:', error);
+        return { success: false, message: 'Network error' };
+    }
+}
+
+export async function generateReturnAWB(id: string, courier_id?: number): Promise<ApiResponse<any>> {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/returns/${id}/generate-awb`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: courier_id ? JSON.stringify({ courier_id }) : undefined,
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to generate return AWB:', error);
+        return { success: false, message: 'Network error' };
+    }
+}
+
+export async function rejectReturnById(id: string): Promise<ApiResponse<any>> {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/returns/${id}/reject`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to reject return:', error);
+        return { success: false, message: 'Network error' };
+    }
+}
+
+export async function completeReturnById(id: string): Promise<ApiResponse<any>> {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/returns/${id}/complete`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to complete return:', error);
+        return { success: false, message: 'Network error' };
+    }
+}
+
+export async function trackReturnShipment(id: string): Promise<ApiResponse<any>> {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/returns/${id}/track`, {
+            headers: authHeaders(),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to track return:', error);
+        return { success: false, message: 'Network error' };
+    }
+}
+
+export async function cancelReturnShipment(id: string): Promise<ApiResponse<any>> {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/returns/${id}/cancel-shipment`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to cancel return shipment:', error);
+        return { success: false, message: 'Network error' };
+    }
+}
+
+export async function cancelReturnOrder(id: string): Promise<ApiResponse<any>> {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/returns/${id}/cancel-order`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to cancel return order:', error);
+        return { success: false, message: 'Network error' };
+    }
+}
+
+/* ─── Refund from Return ─── */
+
+export async function fetchRefundableAmount(orderId: string): Promise<ApiResponse<any>> {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/refunds/order/${orderId}/refundable`, {
+            headers: authHeaders(),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to fetch refundable amount:', error);
+        return { success: false, message: 'Network error' };
+    }
+}
+
+export async function initiateReturnRefund(returnId: string, data: { refund_type: 'full' | 'partial'; amount?: number; notes?: string }): Promise<ApiResponse<any>> {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/returns/${returnId}/initiate-refund`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify(data),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to initiate return refund:', error);
+        return { success: false, message: 'Network error' };
+    }
+}
+
+/* ─── Refunds Management ─── */
+
+export async function fetchRefundsList(params: Record<string, string> = {}): Promise<ApiResponse<any>> {
+    try {
+        const qs = new URLSearchParams(params).toString();
+        const res = await authFetch(`${API_URL}/api/admin/refunds${qs ? `?${qs}` : ''}`, {
+            headers: authHeaders(),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to fetch refunds:', error);
+        return { success: false, message: 'Network error' };
+    }
+}
+
+export async function fetchRefundById(id: string): Promise<ApiResponse<any>> {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/refunds/${id}`, {
+            headers: authHeaders(),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to fetch refund:', error);
+        return { success: false, message: 'Network error' };
+    }
+}
+
+export async function fetchRefundStats(): Promise<ApiResponse<any>> {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/refunds/stats`, {
+            headers: authHeaders(),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to fetch refund stats:', error);
+        return { success: false, message: 'Network error' };
+    }
+}
+
+export async function createRefund(data: { order_id: string; amount: number; mode?: string; reason?: string; notes?: string; return_id?: string }): Promise<ApiResponse<any>> {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/refunds`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify(data),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to create refund:', error);
+        return { success: false, message: 'Network error' };
+    }
+}
+
+export async function processRefund(id: string, data: { mode?: string; amount?: number; transaction_ref?: string; notes?: string; speed?: string } = {}): Promise<ApiResponse<any>> {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/refunds/${id}/process`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify(data),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to process refund:', error);
+        return { success: false, message: 'Network error' };
+    }
+}
+
+export async function retryRefund(id: string, data: { mode?: string; transaction_ref?: string; notes?: string } = {}): Promise<ApiResponse<any>> {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/refunds/${id}/retry`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify(data),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to retry refund:', error);
+        return { success: false, message: 'Network error' };
+    }
+}
+
+/* ─── Dev Testing (DEV ONLY) ─── */
+
+export async function devGetStatus(): Promise<ApiResponse<any>> {
+    try {
+        const res = await authFetch(`${API_URL}/api/dev/status`, { headers: authHeaders() });
+        return await res.json();
+    } catch { return { success: false, message: 'Network error' }; }
+}
+
+export async function devCreateTestReturn(data: { type?: string; status?: string } = {}): Promise<ApiResponse<any>> {
+    try {
+        const res = await authFetch(`${API_URL}/api/dev/create-test-return`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify(data),
+        });
+        return await res.json();
+    } catch { return { success: false, message: 'Network error' }; }
+}
+
+export async function devCreateTestRefund(data: { mode?: string; amount?: number } = {}): Promise<ApiResponse<any>> {
+    try {
+        const res = await authFetch(`${API_URL}/api/dev/create-test-refund`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify(data),
+        });
+        return await res.json();
+    } catch { return { success: false, message: 'Network error' }; }
+}
+
+export async function devSimulateReturnApproval(returnId: string): Promise<ApiResponse<any>> {
+    try {
+        const res = await authFetch(`${API_URL}/api/dev/simulate-return-approval`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ return_id: returnId }),
+        });
+        return await res.json();
+    } catch { return { success: false, message: 'Network error' }; }
+}
+
+export async function devSimulateReturnAWB(returnId: string): Promise<ApiResponse<any>> {
+    try {
+        const res = await authFetch(`${API_URL}/api/dev/simulate-return-awb`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ return_id: returnId }),
+        });
+        return await res.json();
+    } catch { return { success: false, message: 'Network error' }; }
+}
+
+export async function devSimulateCancelReturnShipment(returnId: string): Promise<ApiResponse<any>> {
+    try {
+        const res = await authFetch(`${API_URL}/api/dev/simulate-cancel-return-shipment`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ return_id: returnId }),
+        });
+        return await res.json();
+    } catch { return { success: false, message: 'Network error' }; }
+}
+
+export async function devSimulateCancelReturnOrder(returnId: string): Promise<ApiResponse<any>> {
+    try {
+        const res = await authFetch(`${API_URL}/api/dev/simulate-cancel-return-order`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ return_id: returnId }),
+        });
+        return await res.json();
+    } catch { return { success: false, message: 'Network error' }; }
+}
+
+export async function devSimulateReturnPickedUp(returnId: string): Promise<ApiResponse<any>> {
+    try {
+        const res = await authFetch(`${API_URL}/api/dev/simulate-return-picked-up`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ return_id: returnId }),
+        });
+        return await res.json();
+    } catch { return { success: false, message: 'Network error' }; }
+}
+
+export async function devSimulateReturnInTransit(returnId: string): Promise<ApiResponse<any>> {
+    try {
+        const res = await authFetch(`${API_URL}/api/dev/simulate-return-in-transit`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ return_id: returnId }),
+        });
+        return await res.json();
+    } catch { return { success: false, message: 'Network error' }; }
+}
+
+export async function devSimulateReturnReceived(returnId: string): Promise<ApiResponse<any>> {
+    try {
+        const res = await authFetch(`${API_URL}/api/dev/simulate-return-received`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ return_id: returnId }),
+        });
+        return await res.json();
+    } catch { return { success: false, message: 'Network error' }; }
+}
+
+export async function devSimulateFullFlow(): Promise<ApiResponse<any>> {
+    try {
+        const res = await authFetch(`${API_URL}/api/dev/simulate-full-flow`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+        });
+        return await res.json();
+    } catch { return { success: false, message: 'Network error' }; }
+}
+
+export async function devSimulateRefundFailure(refundId: string): Promise<ApiResponse<any>> {
+    try {
+        const res = await authFetch(`${API_URL}/api/dev/simulate-refund-failure`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ refund_id: refundId }),
+        });
+        return await res.json();
+    } catch { return { success: false, message: 'Network error' }; }
+}
+
+export async function devSimulateRtoStep(opts: { step: number; order_id?: string; shipment_id?: string; return_id?: string; payment_method?: string }): Promise<ApiResponse<any>> {
+    try {
+        const res = await authFetch(`${API_URL}/api/dev/simulate-rto-step`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify(opts),
+        });
+        return await res.json();
+    } catch { return { success: false, message: 'Network error' }; }
 }

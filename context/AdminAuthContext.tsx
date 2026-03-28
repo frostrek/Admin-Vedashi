@@ -95,7 +95,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         } catch (error) {
             console.error('Logout API failed:', error);
         }
-        
+
         // Redirect to storefront login
         window.location.href = 'http://localhost:3000/in/login';
     }, []);

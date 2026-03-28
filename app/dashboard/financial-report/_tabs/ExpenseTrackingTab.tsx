@@ -213,11 +213,32 @@ export default function ExpenseTrackingTab({ data }: { data?: ExpenseBreakdown }
 
         {/* KPI Strip */}
         <div className="ext-kpi">
-          <KPICard label="Shipping Costs" value={formatINR(t.shipping)} tooltip="Total shipping charges from orders" />
-          <KPICard label="Tax Collected" value={formatINR(t.tax)} tooltip="GST + VAT collected" />
-          <KPICard label="Discounts Given" value={formatINR(t.discounts)} tooltip="Sale + Coupon + Loyalty discounts" />
-          <KPICard label="Est. Gateway Fees" value={formatINR(t.gatewayFees)} tooltip="~2% of online payment revenue" />
-          <KPICard label="Gross Profit" value={formatINR(computedGrossProfit)} tooltip="Revenue − All Expenses" delta={computedGrossMargin} />
+          <KPICard 
+            label="Shipping Costs" 
+            value={formatINR(t.shipping)} 
+            tooltip="Total shipping charges paid by customers or incurred for delivery." 
+          />
+          <KPICard 
+            label="Tax Collected" 
+            value={formatINR(t.tax)} 
+            tooltip="Total GST and other applicable taxes collected on orders." 
+          />
+          <KPICard 
+            label="Discounts Given" 
+            value={formatINR(t.discounts)} 
+            tooltip="Total value of sale discounts, coupon codes, and loyalty redemptions." 
+          />
+          <KPICard 
+            label="Est. Gateway Fees" 
+            value={formatINR(t.gatewayFees)} 
+            tooltip="Estimated processing fees charged by payment providers, typically ~2% of online payments." 
+          />
+          <KPICard 
+            label="Gross Profit" 
+            value={formatINR(computedGrossProfit)} 
+            tooltip="Calculated profit after deducting all tracked expenses (Shipping, Tax, Discounts, Fees) from Total Revenue." 
+            delta={computedGrossMargin} 
+          />
         </div>
 
         {/* Charts Row */}

@@ -56,6 +56,7 @@ interface VariantRow {
     length_cm: string;
     width_cm: string;
     height_cm: string;
+    item_weight_kg_input: string;
     images: { preview: string; file?: File; asset_id?: string; alt_text?: string }[];
     videos: { preview: string; file?: File; asset_id?: string; alt_text?: string }[];
     defaultImageIndex: number;
@@ -134,7 +135,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
     // ÔöÇÔöÇÔöÇ Step 3: Variants Table State ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
     const [autoGenerate, setAutoGenerate] = useState(false);
     const [variants, setVariants] = useState<VariantRow[]>([
-        { pack: '', volume: '', variant_name: '', sku: '', price: 0, cost_price: 0, stock: 0, shelf_life: '', length_cm: '', width_cm: '', height_cm: '', images: [], videos: [], defaultImageIndex: 0, sale_price: '', sale_start_date: '', sale_start_time: '', sale_end_date: '', sale_end_time: '', isDefault: false, isActive: true }
+        { pack: '', volume: '', variant_name: '', sku: '', price: 0, cost_price: 0, stock: 0, shelf_life: '', length_cm: '', width_cm: '', height_cm: '', item_weight_kg_input: '', images: [], videos: [], defaultImageIndex: 0, sale_price: '', sale_start_date: '', sale_start_time: '', sale_end_date: '', sale_end_time: '', isDefault: false, isActive: true }
     ]);
     const [expandedVariantIndex, setExpandedVariantIndex] = useState<number | null>(null);
     const [sharedImages, setSharedImages] = useState(false);
@@ -330,6 +331,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                         length_cm: v.length_cm != null ? String(v.length_cm) : '',
                         width_cm: v.width_cm != null ? String(v.width_cm) : '',
                         height_cm: v.height_cm != null ? String(v.height_cm) : '',
+                        item_weight_kg_input: v.item_weight_kg != null ? String(v.item_weight_kg * 1000) : '',
                         images: existingImages,
                         videos: existingVideos,
                         defaultImageIndex: 0,
@@ -447,6 +449,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
         else if (dim === 'volume') finalVal = `${val} ${volUnit}`;
         else if (dim === 'count') finalVal = `${val} ${countUnit}`;
         else if (dim === 'strength') finalVal = `${val} ${strengthUnit}`;
+        else if (dim === 'pack') finalVal = val;
         else if (dim === 'combo') finalVal = val.toLowerCase() === 'yes' || val === 'true' ? 'Yes' : 'No';
 
         if (!dimConfigs[dim].values.includes(finalVal)) {
@@ -519,7 +522,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
         const anyActiveDim = Object.values(dimConfigs).some(d => d.active);
         const newVariant: any = {
             variant_name: '', sku: '', price: 0, cost_price: 0, stock: 0,
-            shelf_life: '', length_cm: '', width_cm: '', height_cm: '', weight_kg: '',
+            shelf_life: '', length_cm: '', width_cm: '', height_cm: '', item_weight_kg_input: '',
             images: [], videos: [], defaultImageIndex: 0,
             sale_price: '', sale_start_date: '', sale_start_time: '', sale_end_date: '', sale_end_time: '',
             isDefault: false,
@@ -785,6 +788,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                         length_cm: v.length_cm || undefined,
                         width_cm: v.width_cm || undefined,
                         height_cm: v.height_cm || undefined,
+                        item_weight_kg: v.item_weight_kg_input ? (parseFloat(v.item_weight_kg_input) / 1000) : undefined,
                         shelf_life: v.shelf_life || undefined,
                         // New fields
                         weight_g,
@@ -989,6 +993,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                             length_cm: v.length_cm || undefined,
                             width_cm: v.width_cm || undefined,
                             height_cm: v.height_cm || undefined,
+                            item_weight_kg: v.item_weight_kg_input ? (parseFloat(v.item_weight_kg_input) / 1000) : undefined,
                             shelf_life: v.shelf_life || undefined,
                             // New fields
                             weight_g: weight_g,
@@ -1882,6 +1887,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                                                                 <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3">Dimensions</p>
                                                                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                                                                                     {([
+                                                                                        { label: 'Weight (g)', field: 'item_weight_kg_input' as keyof VariantRow },
                                                                                         { label: 'Length (cm)', field: 'length_cm' as keyof VariantRow },
                                                                                         { label: 'Width (cm)', field: 'width_cm' as keyof VariantRow },
                                                                                         { label: 'Height (cm)', field: 'height_cm' as keyof VariantRow },

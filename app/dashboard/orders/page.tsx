@@ -6,14 +6,15 @@ import {
     getOrders, getOrderById, updateOrderStatus as apiUpdateStatus,
     updatePaymentStatus as apiUpdatePayment, bulkUpdateOrderStatus,
     bulkUpdateOrderPaymentStatus, Order, downloadInvoiceAdmin, formatINR,
-    getPaymentInfo, initiateRefund, getRefunds, PaymentInfo, RefundRecord,
-    cancelShipment, regenerateLabel, approveReturn, rejectReturn
+    getPaymentInfo, createRefund, getRefunds, PaymentInfo, RefundRecord,
+    cancelShipment, regenerateLabel, approveReturn, rejectReturn,
+    createShipment
 } from '@/lib/api';
 import {
     ShoppingCart, Eye, X, Package, User, CreditCard, MapPin,
     RefreshCw, Download, FileText, RotateCcw, Banknote, Shield,
     CheckSquare, Square, ChevronDown, Search, ChevronLeft, ChevronRight,
-    SlidersHorizontal, Calendar
+    SlidersHorizontal, Calendar, Truck
 } from 'lucide-react';
 import SortableHeader, { SortDir, compare } from '@/components/SortableHeader';
 import toast from 'react-hot-toast';
@@ -22,7 +23,43 @@ import ExportModal from '@/components/orders/ExportModal';
 import PriceRangeSlider from '@/components/PriceRangeSlider';
 import { gsap } from 'gsap';
 
-const statusOptions = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'] as const;
+const statusOptions = ['pending', 'confirmed', 'on_hold', 'shipped', 'delivered', 'requested', 'returned', 'cancelled'] as const;
+
+function formatStatus(s: string) {
+    return s.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+
+function getFulfillmentStatus(order: any) {
+    const is_confirmed = order.status !== 'pending' && order.status !== 'on_hold' && order.status !== 'cancelled';
+    const shipment_exists = !!order.shipment_id || !!order.awb_code || !!order.tracking_url;
+
+    if (order.status === 'cancelled') {
+        return 'cancelled';
+    } else if (!is_confirmed) {
+        return 'pending';
+    } else if (is_confirmed && !shipment_exists) {
+        return 'ready_to_ship';
+    } else if (shipment_exists) {
+        return 'shipped';
+    }
+    return 'pending';
+}
+
+function FulfillmentBadge({ order }: { order: any }) {
+    const status = getFulfillmentStatus(order);
+    switch (status) {
+        case 'cancelled':
+            return <span className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider text-danger bg-danger/10 border border-danger/20 rounded-full px-2 py-0.5">Cancelled</span>;
+        case 'pending':
+            return <span className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider text-warning bg-warning/10 border border-warning/20 rounded-full px-2 py-0.5">Pending</span>;
+        case 'ready_to_ship':
+            return <span className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider text-info bg-info/10 border border-info/20 rounded-full px-2 py-0.5 whitespace-nowrap">Ready to Ship</span>;
+        case 'shipped':
+            return <span className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider text-success bg-success/10 border border-success/20 rounded-full px-2 py-0.5">Shipped</span>;
+        default:
+            return null;
+    }
+}
 const paymentStatusOptions = ['unpaid', 'paid', 'refunded', 'failed'] as const;
 
 interface OrderDetail {
@@ -59,7 +96,7 @@ interface OrderDetail {
         variant?: { variant_id: string; variant_name?: string; size_label?: string; volume_ml?: number };
         thumbnail_url?: string;
     }[];
-    
+
     // Shipment & Tracking
     awb_code?: string;
     tracking_url?: string;
@@ -67,12 +104,13 @@ interface OrderDetail {
     shipment_status?: string;
     shiprocket_order_id?: string;
     shipment_id?: string;
-    
+
     // Returns
     return_status?: string;
     return_reason?: string;
     return_awb?: string;
     return_tracking_url?: string;
+    has_shipment?: boolean;
 }
 
 // ── Portal-based Filter Popover ──────────────────────────────────────────────
@@ -324,6 +362,7 @@ function FilterPopover({
 export default function OrdersPage() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [selectedOrder, setSelectedOrder] = useState<OrderDetail | null>(null);
+    const [refundOrder, setRefundOrder] = useState<OrderDetail | null>(null);
     const [loadingDetail, setLoadingDetail] = useState(false);
     const [filterStatus, setFilterStatus] = useState<string>('all');
     const [filterPayment, setFilterPayment] = useState<string>('all');
@@ -369,8 +408,8 @@ export default function OrdersPage() {
         const ctx = gsap.context(() => {
             const tl = gsap.timeline();
             tl.fromTo(headerRef.current, { opacity: 0, y: -18 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' })
-              .fromTo(filterBarRef.current, { opacity: 0, y: -10 }, { opacity: 1, y: 0, duration: 0.45, ease: 'power3.out' }, '-=0.3')
-              .fromTo(tableRef.current, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, '-=0.25');
+                .fromTo(filterBarRef.current, { opacity: 0, y: -10 }, { opacity: 1, y: 0, duration: 0.45, ease: 'power3.out' }, '-=0.3')
+                .fromTo(tableRef.current, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, '-=0.25');
         });
         return () => ctx.revert();
     }, []);
@@ -579,11 +618,12 @@ export default function OrdersPage() {
     const statusColor = (status: string) => {
         switch (status?.toLowerCase()) {
             case 'confirmed': return 'bg-success/12 text-success border-success/20';
-            case 'shipped':   return 'bg-info/12 text-info border-info/20';
+            case 'shipped': return 'bg-info/12 text-info border-info/20';
             case 'delivered': return 'bg-gold/12 text-gold border-gold/20';
-            case 'pending':   return 'bg-warning/12 text-warning border-warning/20';
+            case 'pending': return 'bg-warning/12 text-warning border-warning/20';
+            case 'on_hold': return 'bg-orange-500/12 text-orange-500 border-orange-500/20';
             case 'cancelled': return 'bg-danger/12 text-danger border-danger/20';
-            default:          return 'bg-text-muted/12 text-text-muted border-border';
+            default: return 'bg-text-muted/12 text-text-muted border-border';
         }
     };
 
@@ -655,7 +695,7 @@ export default function OrdersPage() {
                             <select value={filterStatus} onChange={e => { setFilterStatus(e.target.value); clearSelection(); }}
                                 className="appearance-none bg-transparent border-none outline-none text-sm font-medium text-text-primary cursor-pointer pr-4">
                                 <option value="all">All</option>
-                                {statusOptions.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+                                {statusOptions.map(s => <option key={s} value={s}>{formatStatus(s)}</option>)}
                             </select>
                             <ChevronDown className="absolute right-0 h-3 w-3 text-text-muted pointer-events-none" />
                         </div>
@@ -754,7 +794,7 @@ export default function OrdersPage() {
                             <select value={bulkStatusValue} onChange={e => setBulkStatusValue(e.target.value)} disabled={bulkProcessing}
                                 className="appearance-none rounded-lg border border-gold/30 bg-card-bg px-3 py-1.5 pr-7 text-sm text-text-primary focus:border-gold/50 focus:outline-none disabled:opacity-50 cursor-pointer">
                                 <option value="">— Select —</option>
-                                {statusOptions.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+                                {statusOptions.map(s => <option key={s} value={s}>{formatStatus(s)}</option>)}
                             </select>
                             <ChevronDown className="pointer-events-none absolute right-2 top-2.5 h-3 w-3 text-gold-muted" />
                         </div>
@@ -809,6 +849,7 @@ export default function OrdersPage() {
                                 <SortableHeader label="Total" sortKey="total" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
                                 <th className="px-4 py-3 text-sm font-semibold text-gold-muted uppercase">Payment Status</th>
                                 <SortableHeader label="Order Status" sortKey="status" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
+                                <th className="px-4 py-3 text-sm font-semibold text-gold-muted uppercase">Fulfillment</th>
                                 <SortableHeader label="Date" sortKey="created_at" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
                                 <th className="px-4 py-3 text-sm font-semibold text-gold-muted uppercase text-right">Actions</th>
                             </tr>
@@ -816,7 +857,7 @@ export default function OrdersPage() {
                         <tbody className="divide-y divide-border/50">
                             {filtered.length === 0 ? (
                                 <tr>
-                                    <td colSpan={9} className="px-4 py-16 text-center">
+                                    <td colSpan={10} className="px-4 py-16 text-center">
                                         <div className="flex flex-col items-center gap-3">
                                             <div className="rounded-full bg-text-muted/10 p-4">
                                                 <ShoppingCart className="h-7 w-7 text-text-muted/40" />
@@ -827,7 +868,7 @@ export default function OrdersPage() {
                                     </td>
                                 </tr>
                             ) : paginatedOrders.length === 0 ? (
-                                <tr><td colSpan={9} className="px-4 py-16 text-center"><p className="text-sm text-text-muted">No orders on this page.</p></td></tr>
+                                <tr><td colSpan={10} className="px-4 py-16 text-center"><p className="text-sm text-text-muted">No orders on this page.</p></td></tr>
                             ) : (
                                 paginatedOrders.map(order => {
                                     const isSelected = selectedIds.has(order.id);
@@ -861,16 +902,56 @@ export default function OrdersPage() {
                                             <td className="px-4 py-3.5">
                                                 <select value={order.status} onChange={e => updateStatus(order.id, e.target.value as Order['status'])}
                                                     className={`rounded-full px-2.5 py-1 text-[11px] font-semibold border cursor-pointer transition-all duration-200 hover:opacity-80 ${statusColor(order.status)}`}>
-                                                    {statusOptions.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+                                                    {(statusOptions.includes(order.status as any) ? statusOptions : [...statusOptions, order.status]).map(s => <option key={s} value={s}>{formatStatus(s)}</option>)}
                                                 </select>
+                                            </td>
+                                            <td className="px-4 py-3.5 text-sm">
+                                                <FulfillmentBadge order={order} />
                                             </td>
                                             <td className="px-4 py-3.5 text-sm text-text-secondary tabular-nums">
                                                 {new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                                             </td>
                                             <td className="px-4 py-3.5 text-right">
-                                                <button onClick={() => openOrderDetail(order)} className="rounded-lg p-2 text-text-muted hover:text-gold hover:bg-gold/10 transition-all duration-200" title="View details">
-                                                    <Eye className="h-4 w-4" />
-                                                </button>
+                                                <div className="flex items-center justify-end gap-1">
+                                                    {order.status === 'confirmed' && (
+                                                        <button
+                                                            disabled={order.has_shipment}
+                                                            onClick={async (e) => {
+                                                                e.stopPropagation();
+                                                                const toastId = toast.loading('Creating shipment...');
+                                                                const res = await createShipment(order.id || order.order_id || '');
+                                                                if (res.success) {
+                                                                    toast.success('Shipment created! Label generation in progress.', { id: toastId });
+                                                                    // Update the local state
+                                                                    setOrders(prev => prev.map(o => o.id === order.id ? { ...o, has_shipment: true } : o));
+                                                                } else {
+                                                                    toast.error(res.message || 'Failed to create shipment', { id: toastId });
+                                                                }
+                                                            }}
+                                                            className={`rounded-lg p-2 transition-all duration-200 ${order.has_shipment ? 'text-emerald-400 bg-emerald-400/10 cursor-default' : 'text-text-muted hover:text-emerald-400 hover:bg-emerald-400/10'}`}
+                                                            title={order.has_shipment ? "Shipment Already Created" : "Create Shipment"}
+                                                        >
+                                                            <Truck className="h-4 w-4" />
+                                                        </button>
+                                                    )}
+                                                    {(order.status === 'cancelled') &&
+                                                        (order.payment_status?.toUpperCase() === 'PAID') && (
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setRefundOrder(order as unknown as OrderDetail);
+                                                                    setShowRefundModal(true);
+                                                                }}
+                                                                className="rounded-lg p-2 text-[#D5A770] hover:text-[#D5A770] hover:bg-[#D5A770]/10 transition-all duration-200"
+                                                                title="Initiate Refund Request"
+                                                            >
+                                                                <Banknote className="h-4 w-4" />
+                                                            </button>
+                                                        )}
+                                                    <button onClick={() => openOrderDetail(order)} className="rounded-lg p-2 text-text-muted hover:text-gold hover:bg-gold/10 transition-all duration-200" title="View details">
+                                                        <Eye className="h-4 w-4" />
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     );
@@ -967,7 +1048,7 @@ export default function OrdersPage() {
                                         <span className="text-xs text-text-secondary">Order Status</span>
                                         <select value={selectedOrder.status} onChange={e => updateStatus(selectedOrder.id, e.target.value as Order['status'])}
                                             className={`rounded-full px-2.5 py-1 text-[11px] font-semibold border cursor-pointer ${statusColor(selectedOrder.status)}`}>
-                                            {statusOptions.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+                                            {(statusOptions.includes(selectedOrder.status as any) ? statusOptions : [...statusOptions, selectedOrder.status]).map(s => <option key={s} value={s}>{formatStatus(s)}</option>)}
                                         </select>
                                     </div>
                                     <div className="flex items-center justify-between">
@@ -1001,11 +1082,11 @@ export default function OrdersPage() {
                                             <span className="text-xs text-text-primary">{selectedOrder.order_notes}</span>
                                         </div>
                                     )}
-                                    {(selectedOrder.payment_status === 'PAID' || paymentInfo?.payment_status === 'PAID') &&
-                                        (selectedOrder.payment_method === 'razorpay' || paymentInfo?.payment_gateway === 'razorpay') && (
-                                            <button onClick={() => { setRefundAmount(''); setRefundReason(''); setShowRefundModal(true); }}
-                                                className="w-full flex items-center justify-center gap-2 rounded-xl border border-warning/30 bg-warning/8 py-2 text-xs font-semibold text-warning hover:bg-warning/15 transition-all">
-                                                <RotateCcw className="h-3.5 w-3.5" /> Initiate Refund
+                                    {(selectedOrder.status === 'cancelled') &&
+                                        (selectedOrder.payment_status?.toUpperCase() === 'PAID' || paymentInfo?.payment_status?.toUpperCase() === 'PAID') && (
+                                            <button onClick={() => { setRefundOrder(selectedOrder); setShowRefundModal(true); }}
+                                                className="w-full flex items-center justify-center gap-2 rounded-xl border border-warning/30 bg-warning/8 py-2 text-xs font-semibold text-warning hover:bg-warning/15 transition-all mt-2">
+                                                <RotateCcw className="h-3.5 w-3.5" /> Initiate Refund Request
                                             </button>
                                         )}
                                     {refunds.length > 0 && (
@@ -1062,7 +1143,7 @@ export default function OrdersPage() {
                                                     onClick={async () => {
                                                         const tid = toast.loading('Approving...');
                                                         const success = await approveReturn(selectedOrder.id);
-                                                        if (success) { toast.success('Return Approved', { id: tid }); const u = await getOrderById(selectedOrder.id); if(u) setSelectedOrder(u as any); }
+                                                        if (success) { toast.success('Return Approved', { id: tid }); const u = await getOrderById(selectedOrder.id); if (u) setSelectedOrder(u as any); }
                                                         else toast.error('Failed to approve', { id: tid });
                                                     }}
                                                     className="flex-1 rounded-xl bg-success/80 py-2.5 text-xs font-semibold hover:bg-success transition-all shadow-lg shadow-success/20">
@@ -1072,7 +1153,7 @@ export default function OrdersPage() {
                                                     onClick={async () => {
                                                         const tid = toast.loading('Rejecting...');
                                                         const success = await rejectReturn(selectedOrder.id);
-                                                        if (success) { toast.success('Return Rejected', { id: tid }); const u = await getOrderById(selectedOrder.id); if(u) setSelectedOrder(u as any); }
+                                                        if (success) { toast.success('Return Rejected', { id: tid }); const u = await getOrderById(selectedOrder.id); if (u) setSelectedOrder(u as any); }
                                                         else toast.error('Failed to reject', { id: tid });
                                                     }}
                                                     className="flex-1 rounded-xl bg-danger/80 py-2.5 text-xs font-semibold hover:bg-danger transition-all shadow-lg shadow-danger/20">
@@ -1123,7 +1204,7 @@ export default function OrdersPage() {
                                                 onClick={async () => {
                                                     const tid = toast.loading('Regenerating Label...');
                                                     const success = await regenerateLabel(selectedOrder.id);
-                                                    if (success) { toast.success('Label generated', { id: tid }); const u = await getOrderById(selectedOrder.id); if(u) setSelectedOrder(u as any); }
+                                                    if (success) { toast.success('Label generated', { id: tid }); const u = await getOrderById(selectedOrder.id); if (u) setSelectedOrder(u as any); }
                                                     else toast.error('Failed to regenerate label', { id: tid });
                                                 }}
                                                 className="flex-1 rounded-xl border border-border bg-page-bg/50 py-2.5 text-[11px] font-bold uppercase tracking-wider text-text-secondary hover:bg-border/30 hover:text-text-primary transition-all shadow-sm">
@@ -1135,7 +1216,7 @@ export default function OrdersPage() {
                                                 if (!confirm('Are you sure you want to cancel the shipment with the courier?')) return;
                                                 const tid = toast.loading('Cancelling Shipment...');
                                                 const success = await cancelShipment(selectedOrder.id);
-                                                if (success) { toast.success('Shipment cancelled', { id: tid }); const u = await getOrderById(selectedOrder.id); if(u) setSelectedOrder(u as any); }
+                                                if (success) { toast.success('Shipment cancelled', { id: tid }); const u = await getOrderById(selectedOrder.id); if (u) setSelectedOrder(u as any); }
                                                 else toast.error('Failed to cancel shipment', { id: tid });
                                             }}
                                             className="flex-1 rounded-xl border border-danger/20 bg-danger/10 py-2.5 text-[11px] font-bold uppercase tracking-wider text-danger hover:bg-danger/20 transition-all shadow-sm">
@@ -1205,49 +1286,46 @@ export default function OrdersPage() {
             <ExportModal open={exportOpen} onClose={() => setExportOpen(false)} />
 
             {/* ── Refund Modal ──────────────────────────────────────── */}
-            {showRefundModal && selectedOrder && (
+            {showRefundModal && refundOrder && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/75 backdrop-blur-sm p-4" onClick={() => setShowRefundModal(false)}>
-                    <div ref={refundModalRef} className="w-full max-w-md rounded-2xl border border-border bg-card-bg-elevated p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
-                        <div className="flex items-start justify-between mb-4">
-                            <div>
-                                <h3 className="font-serif text-lg font-bold text-gold-soft">Initiate Refund</h3>
-                                <p className="text-xs text-text-muted mt-0.5">Order {selectedOrder.id.slice(0, 8)}… · <span className="text-gold font-semibold">{formatINR(selectedOrder.total)}</span></p>
-                            </div>
-                            <button onClick={() => setShowRefundModal(false)} className="rounded-xl p-1.5 text-text-muted hover:text-gold hover:bg-gold/10 transition-all"><X className="h-4 w-4" /></button>
+                    <div ref={refundModalRef} className="relative w-full max-w-sm rounded-[24px] border border-gold/20 bg-card-bg-elevated p-6 shadow-[0_0_40px_rgba(60,94,60,0.15)] text-center z-10" onClick={e => e.stopPropagation()}>
+                        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#3C5E3C]/10 mb-4 border border-[#3C5E3C]/20 relative">
+                            <div className="absolute inset-0 rounded-full border border-gold/20 scale-110"></div>
+                            <Banknote className="h-8 w-8 text-[#3C5E3C]" />
                         </div>
-                        <div className="space-y-3">
-                            <div>
-                                <label className="block text-xs font-semibold text-text-secondary mb-1.5">Amount <span className="text-text-muted font-normal">(blank = full refund)</span></label>
-                                <input type="number" value={refundAmount} onChange={e => setRefundAmount(e.target.value)} placeholder="Full refund"
-                                    className="w-full rounded-xl border border-border bg-page-bg px-3 py-2.5 text-sm text-text-primary placeholder:text-text-muted/50 focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 transition-all" />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-semibold text-text-secondary mb-1.5">Reason <span className="text-text-muted font-normal">(optional)</span></label>
-                                <input type="text" value={refundReason} onChange={e => setRefundReason(e.target.value)} placeholder="Reason for refund"
-                                    className="w-full rounded-xl border border-border bg-page-bg px-3 py-2.5 text-sm text-text-primary placeholder:text-text-muted/50 focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 transition-all" />
-                            </div>
-                        </div>
+                        <h3 className="font-serif text-xl font-bold text-gold mb-2 tracking-wide">Initiate Refund</h3>
+                        <p className="text-sm font-medium text-text-secondary mb-8 leading-relaxed px-4">
+                            Are you sure you want to finalize cancelation and create a refund request?
+                        </p>
                         <div className="flex gap-3 mt-5">
-                            <button onClick={() => setShowRefundModal(false)} className="flex-1 rounded-xl border border-border py-2.5 text-sm font-medium text-text-secondary hover:bg-border/20 hover:text-text-primary transition-all">Cancel</button>
+                            <button onClick={() => setShowRefundModal(false)} className="flex-1 rounded-xl border border-gold/30 py-2.5 text-sm font-semibold text-gold hover:bg-gold/10 hover:text-gold-soft transition-all transition-colors disabled:opacity-50">NO</button>
                             <button
                                 onClick={async () => {
                                     setRefundProcessing(true);
-                                    const amt = refundAmount ? parseFloat(refundAmount) : undefined;
-                                    const res = await initiateRefund(selectedOrder.id, amt, refundReason || undefined);
+                                    const amt = refundOrder.total || 0;
+                                    if (amt <= 0) {
+                                        toast.error("Valid order total required");
+                                        setRefundProcessing(false);
+                                        return;
+                                    }
+                                    const res = await createRefund({
+                                        order_id: refundOrder.id,
+                                        amount: amt,
+                                        reason: `Refund request for cancelled order`
+                                    });
                                     if (res.success) {
-                                        toast.success('Refund initiated successfully');
+                                        toast.success('Refund Request Created! Proceed to the Refunds page.');
                                         setShowRefundModal(false);
-                                        const rf = await getRefunds(selectedOrder.id);
+                                        const rf = await getRefunds(refundOrder.id);
                                         setRefunds(rf.refunds); setTotalRefunded(rf.total_refunded);
-                                        setPaymentInfo(await getPaymentInfo(selectedOrder.id));
-                                    } else toast.error(res.error || 'Failed to initiate refund');
+                                    } else toast.error(res.message || (res as any).error || 'Failed to initiate refund');
                                     setRefundProcessing(false);
                                 }}
                                 disabled={refundProcessing}
-                                className="flex-1 rounded-xl bg-warning/90 py-2.5 text-sm font-semibold text-white hover:bg-warning transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                                className="flex-1 rounded-xl bg-[#3C5E3C] py-2.5 text-sm font-bold text-white shadow-lg shadow-[#3C5E3C]/20 hover:bg-[#2e4a2e] transition-all disabled:opacity-50 flex items-center justify-center gap-2 border border-white/10"
                             >
-                                {refundProcessing ? <RefreshCw className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}
-                                Process Refund
+                                {refundProcessing ? <RefreshCw className="h-4 w-4 animate-spin text-white" /> : null}
+                                YES
                             </button>
                         </div>
                     </div>

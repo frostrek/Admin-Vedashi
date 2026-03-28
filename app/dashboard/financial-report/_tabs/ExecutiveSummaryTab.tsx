@@ -280,24 +280,26 @@ export default function ExecutiveSummaryTab({
           label="Total Revenue"
           value={formatINR(currentRev)}
           delta={revDelta}
-          tooltip="Total gross revenue before refunds."
+          tooltip="Gross revenue generated from all sales before deductions or refunds."
         />
         <KPICard
           label="Total Orders"
           value={currentOrd.toLocaleString('en-IN')}
           delta={ordDelta}
+          tooltip="The total count of orders placed within the selected time range."
         />
         <KPICard
           label="Avg Order Value"
           value={formatINR(currentAov)}
           delta={aovDelta}
+          tooltip="Average amount spent per order, calculated as total revenue divided by order count."
         />
         <KPICard
           label="Cancellation Rate"
           value={`${currentCancel}%`}
           delta={cancelDelta}
           isInvertedDelta
-          tooltip="Lower delta is better."
+          tooltip="The percentage of placed orders that were cancelled. Lower is better."
         />
       </div>
 

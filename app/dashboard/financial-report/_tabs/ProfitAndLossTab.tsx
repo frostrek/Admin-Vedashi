@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   PieChart, Pie, Cell, ResponsiveContainer,
   Tooltip as RechartsTooltip,
@@ -30,13 +31,24 @@ interface ClickDetail {
 }
 
 export default function ProfitAndLossTab({ data }: { data?: FinancialReportData }) {
+  const [cogsPercent, setCogsPercent] = useState(40);
+  const [opexPercent, setOpexPercent] = useState(15);
+  const [tempCogs, setTempCogs] = useState(40);
+  const [tempOpex, setTempOpex] = useState(15);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [detail, setDetail] = useState<ClickDetail | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   if (!data) return null;
 
   const rev         = data.summary.totalRevenue || 0;
-  const cogs        = rev * 0.4;
+  const cogs        = rev * (cogsPercent / 100);
   const grossProfit = rev - cogs;
-  const opex        = rev * 0.15;
+  const opex        = rev * (opexPercent / 100);
   const netProfit   = grossProfit - opex;
   const grossMargin = rev > 0 ? (grossProfit / rev) * 100 : 0;
   const netMargin   = rev > 0 ? (netProfit / rev) * 100 : 0;
@@ -63,17 +75,22 @@ export default function ProfitAndLossTab({ data }: { data?: FinancialReportData 
   };
 
   const handleBarClick = (entry: any) => {
-    // entry from Bar onClick is the data point directly (has .payload for raw data, or is the raw data)
     const pt = entry?.payload || entry;
     if (!pt?.category) return;
+    
+    // Performance context (imagination)
+    const isHighVolume = pt.orders > 20; 
+    const insight = isHighVolume ? 'High Demand' : 'Premium Niche';
+
     setDetail({
-      title: `Category — ${pt.category}`,
-      heroLabel: 'Revenue', heroValue: formatINR(pt.revenue),
+      title: `${pt.category} — Deep Analysis`,
+      heroLabel: 'Total Revenue Generated', heroValue: formatINR(pt.revenue),
       rows: [
-        { label: 'Category',      value: pt.category },
-        { label: 'Orders',        value: pt.orders?.toLocaleString('en-IN') ?? '—' },
-        { label: 'Revenue Share', value: rev > 0 ? `${((pt.revenue / rev) * 100).toFixed(1)}%` : '—' },
-        { label: 'Avg / Order',   value: pt.orders > 0 ? formatINR(pt.revenue / pt.orders) : '—' },
+        { label: 'Category Name',      value: pt.category },
+        { label: 'Orders Fulfilled',   value: pt.orders?.toLocaleString('en-IN') ?? '—' },
+        { label: 'Revenue Share',      value: rev > 0 ? `${((pt.revenue / rev) * 100).toFixed(1)}%` : '—' },
+        { label: 'Avg Order Value',    value: pt.orders > 0 ? formatINR(pt.revenue / pt.orders) : '—' },
+        { label: 'Category Health',     value: insight },
       ],
     });
   };
@@ -110,9 +127,9 @@ export default function ProfitAndLossTab({ data }: { data?: FinancialReportData 
 
   const wfItems = [
     { label: 'Gross Revenue',     value: rev,         pct: 100,         pos: true,  bold: false },
-    { label: 'Est. COGS (−40%)',  value: -cogs,       pct: 40,          pos: false, bold: false },
+    { label: `Est. COGS (−${cogsPercent}%)`,  value: -cogs,       pct: cogsPercent, pos: false, bold: false },
     { label: 'Gross Profit',      value: grossProfit, pct: grossMargin, pos: true,  bold: true  },
-    { label: 'Operating Exp.',    value: -opex,       pct: 15,          pos: false, bold: false },
+    { label: `Operating Exp. (−${opexPercent}%)`,    value: -opex,       pct: opexPercent, pos: false, bold: false },
     { label: 'Net Profit (Est.)', value: netProfit,   pct: netMargin,   pos: true,  bold: true  },
   ];
 
@@ -172,7 +189,7 @@ export default function ProfitAndLossTab({ data }: { data?: FinancialReportData 
         .plv2-row3 { display:grid; grid-template-columns:1.5fr 1fr; gap:20px; }
         @media(max-width:900px){ .plv2-row2,.plv2-row3{ grid-template-columns:1fr; } }
 
-        .plv2-kpi-strip { display:grid; grid-template-columns:repeat(5,1fr); gap:14px; }
+        .plv2-kpi-strip { display:grid; grid-template-columns:repeat(5,1fr); gap:14px; position:relative; z-index:10; overflow:visible; }
         @media(max-width:1100px){ .plv2-kpi-strip{ grid-template-columns:repeat(3,1fr); } }
         @media(max-width:640px) { .plv2-kpi-strip{ grid-template-columns:1fr 1fr; } }
 
@@ -203,6 +220,24 @@ export default function ProfitAndLossTab({ data }: { data?: FinancialReportData 
         .plv2-prod-row:last-child{ border-bottom:none; }
         .plv2-prod-row:hover { background:rgba(255,255,255,0.04); }
         .plv2-rank { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Cormorant Garamond',serif; font-size:13px; font-weight:700; }
+
+        .plv2-config-input { width:60px; background:var(--t-page-bg, #f4f1e8); border:1px solid rgba(168,146,80,0.35); border-radius:12px; padding:4px 8px; font-size:12px; font-weight:600; color:${GOLD}; outline:none; transition:all 0.2s; }
+        .plv2-config-input:focus { border-color:${GOLD}; background:#fff; box-shadow:0 0 0 4px rgba(168,146,80,0.15); }
+        /* Hide number spinners */
+        .plv2-config-input::-webkit-outer-spin-button, .plv2-config-input::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
+        .plv2-config-input { -moz-appearance:textfield; }
+
+        .plv2-settings-btn { display:flex; align-items:center; gap:8px; padding:6px 14px; background:rgba(168,146,80,0.1); border:1px solid rgba(168,146,80,0.22); border-radius:10px; font-size:11px; font-weight:700; color:${GOLD}; cursor:pointer; transition:all 0.2s; text-transform:uppercase; letter-spacing:0.04em; }
+        .plv2-settings-btn:hover { background:${GOLD}; color:#fff; transform:translateY(-1px); box-shadow:0 4px 12px rgba(168,146,80,0.25); }
+
+        .plv2-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; z-index:1000; padding:20px; animation:plv2-fade 0.3s forwards; }
+        @keyframes plv2-fade { from{opacity:0} to{opacity:1} }
+        .plv2-modal-content { background:var(--t-card-bg,#1C2A1C); border:1px solid rgba(168,146,80,0.25); border-radius:24px; width:100%; max-width:440px; padding:32px; box-shadow:0 24px 64px rgba(0,0,0,0.4); animation:plv2-pop 0.35s cubic-bezier(0.22,1,0.36,1); }
+        @keyframes plv2-pop { from{opacity:0;transform:scale(0.9) translateY(10px)} to{opacity:1;transform:none} }
+
+        /* Remove focus outlines from charts */
+        .recharts-wrapper, .recharts-surface { outline: none !important; -webkit-tap-highlight-color: transparent; }
+        *:focus { outline: none !important; }
       `}</style>
 
       <div className="plv2">
@@ -216,13 +251,116 @@ export default function ProfitAndLossTab({ data }: { data?: FinancialReportData 
           />
         )}
 
+        {isSettingsOpen && mounted && createPortal(
+          <div className="plv2-modal-overlay" onClick={() => setIsSettingsOpen(false)}>
+            <div className="plv2-modal-content" onClick={e => e.stopPropagation()}>
+              <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:12 }}>
+                <div style={{ width:4, height:18, background:GOLD, borderRadius:2 }} />
+                <h3 style={{ fontSize:18, fontWeight:700, color:'var(--t-text-primary,#fff)', fontVariantNumeric:'tabular-nums' }}>Calculation Metrics</h3>
+              </div>
+              <p style={{ fontSize:12, color:'var(--t-text-muted,#888)', marginBottom:24, lineHeight:1.5 }}>
+                Define the percentage values used to estimate your COGS and Operating Expenses for real-time profitability tracking.
+              </p>
+
+              <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
+                <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+                  <div className="flex flex-col gap-1">
+                    <label style={{ fontSize:10, fontWeight:700, color:GOLD, textTransform:'uppercase', letterSpacing:'0.06em' }}>Cost of Goods Sold (COGS %)</label>
+                    <p style={{ fontSize:10, color:'var(--t-text-muted,#888)', fontStyle:'italic' }}>The direct costs of producing your products, including materials and manufacturing.</p>
+                  </div>
+                  <div style={{ position:'relative' }}>
+                    <input 
+                      type="number" 
+                      className="plv2-config-input" 
+                      style={{ width:'100%', padding:'12px 16px', fontSize:15 }}
+                      value={tempCogs} 
+                      onChange={(e) => setTempCogs(Number(e.target.value))}
+                    />
+                    <span style={{ position:'absolute', right:16, top:'50%', transform:'translateY(-50%)', fontSize:14, fontWeight:700, color:GOLD }}>%</span>
+                  </div>
+                </div>
+
+                <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+                  <div className="flex flex-col gap-1">
+                    <label style={{ fontSize:10, fontWeight:700, color:GOLD, textTransform:'uppercase', letterSpacing:'0.06em' }}>Operating Expenses (Opex %)</label>
+                    <p style={{ fontSize:10, color:'var(--t-text-muted,#888)', fontStyle:'italic' }}>Day-to-day business costs such as marketing, rent, and administrative utilities.</p>
+                  </div>
+                  <div style={{ position:'relative' }}>
+                    <input 
+                      type="number" 
+                      className="plv2-config-input" 
+                      style={{ width:'100%', padding:'12px 16px', fontSize:15 }}
+                      value={tempOpex} 
+                      onChange={(e) => setTempOpex(Number(e.target.value))}
+                    />
+                    <span style={{ position:'absolute', right:16, top:'50%', transform:'translateY(-50%)', fontSize:14, fontWeight:700, color:GOLD }}>%</span>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display:'flex', gap:12, marginTop:32 }}>
+                <button 
+                  onClick={() => setIsSettingsOpen(false)}
+                  style={{ flex:1, padding:'12px', borderRadius:12, fontSize:13, fontWeight:600, color:'var(--t-text-secondary,#aaa)', background:'rgba(255,255,255,0.05)', border:'1px solid rgba(255,255,255,0.1)' }}
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={() => {
+                    setCogsPercent(tempCogs);
+                    setOpexPercent(tempOpex);
+                    setIsSettingsOpen(false);
+                  }}
+                  style={{ flex:2, padding:'12px', borderRadius:12, fontSize:13, fontWeight:700, color:'#fff', background:GOLD, border:'none', boxShadow:'0 8px 20px rgba(168,146,80,0.3)' }}
+                >
+                  Proceed
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
+
+        <div style={{ display:'flex', justifyContent:'flex-end', marginBottom:4 }}>
+          <button 
+            className="plv2-settings-btn"
+            onClick={() => {
+              setTempCogs(cogsPercent);
+              setTempOpex(opexPercent);
+              setIsSettingsOpen(true);
+            }}
+          >
+            Define Calculations
+          </button>
+        </div>
+
         {/* KPI Strip */}
         <div className="plv2-kpi-strip">
-          <KPICard label="Gross Revenue"     value={formatINR(rev)} />
-          <KPICard label="Est. COGS"         value={formatINR(cogs)}        tooltip="Estimated at 40% of revenue." />
-          <KPICard label="Gross Profit"      value={formatINR(grossProfit)} />
-          <KPICard label="Gross Margin"      value={`${grossMargin.toFixed(1)}%`} tooltip="(Gross Profit / Revenue) × 100" />
-          <KPICard label="Net Profit Margin" value={`${netMargin.toFixed(1)}%`}   tooltip="Estimated — excludes untracked operating expenses." />
+          <KPICard 
+            label="Gross Revenue"   
+            value={formatINR(rev)} 
+            tooltip="Total sales revenue before deducting costs or expenses."
+          />
+          <KPICard 
+            label="Est. COGS"       
+            value={formatINR(cogs)}      
+            tooltip={`Estimated Cost of Goods Sold, currently calculated at ${cogsPercent}% of revenue.`} 
+          />
+          <KPICard 
+            label="Gross Profit"    
+            value={formatINR(grossProfit)} 
+            tooltip="Total revenue minus COGS. Represents profit before operating expenses."
+          />
+          <KPICard 
+            label="Gross Margin"    
+            value={`${grossMargin.toFixed(1)}%`} 
+            tooltip="Percentage of revenue that exceeds COGS: (Gross Profit ÷ Revenue) × 100." 
+          />
+          <KPICard 
+            label="Net Profit Margin" 
+            value={`${netMargin.toFixed(1)}%`}   
+            tooltip="Estimated profitability ratio after accounting for both COGS and operating expenses." 
+          />
         </div>
 
         {/* Row 1: Waterfall + Payment */}
@@ -327,7 +465,13 @@ export default function ProfitAndLossTab({ data }: { data?: FinancialReportData 
                   <XAxis type="number" stroke="var(--t-text-muted,#666)" fontSize={9} tickLine={false} axisLine={false} tickFormatter={(v) => `₹${(v/1000).toFixed(0)}k`} />
                   <YAxis dataKey="category" type="category" stroke="var(--t-text-muted,#666)" fontSize={11} tickLine={false} axisLine={false} width={116} tick={{ fill:'var(--t-text-secondary,#aaa)', fontFamily:"'DM Sans',sans-serif" }} />
                   <RechartsTooltip content={<BarTooltip />} cursor={{ fill:'rgba(168,146,80,0.06)' }} />
-                  <Bar dataKey="revenue" radius={[0,8,8,0]} barSize={22} style={{ cursor:'pointer' }}>
+                   <Bar 
+                    dataKey="revenue" 
+                    radius={[0,8,8,0]} 
+                    barSize={22} 
+                    style={{ cursor:'pointer' }}
+                    onClick={(data: any) => handleBarClick(data)}
+                  >
                     {data.topCategories.map((_, i) => <Cell key={i} fill={i===0 ? 'url(#plv2bg)' : 'url(#plv2gr)'} />)}
                   </Bar>
                 </BarChart>
@@ -365,16 +509,6 @@ export default function ProfitAndLossTab({ data }: { data?: FinancialReportData 
               })}
             </div>
           </div>
-        </div>
-
-        {/* Row 3: Heatmap */}
-        <div className="plv2-card">
-          <div className="plv2-sh">
-            <div className="plv2-sh-left"><div className="plv2-sh-bar" /><span className="plv2-sh-title">Revenue by Hour</span></div>
-            <span className="plv2-sh-badge">Peak hours</span>
-          </div>
-          <div className="plv2-rule" />
-          <HourlyHeatmap data={data.revenueByHour} />
         </div>
 
       </div>

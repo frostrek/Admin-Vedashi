@@ -56,6 +56,7 @@ interface VariantRow {
     length_cm: string;
     width_cm: string;
     height_cm: string;
+    item_weight_kg_input: string;
     images: { preview: string; file: File }[];
     videos: { preview: string; file: File }[];
     defaultImageIndex: number;
@@ -121,7 +122,7 @@ export default function AddProductPage() {
     // ÔöÇÔöÇÔöÇ Step 3: Variants Table State ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
     const [autoGenerate, setAutoGenerate] = useState(false);
     const [variants, setVariants] = useState<VariantRow[]>([
-        { weight: '', volume: '', count: '', strength: '', flavor: '', pack: '', combo: '', variant_name: '', sku: '', price: 0, cost_price: 0, stock: 0, shelf_life: '', length_cm: '', width_cm: '', height_cm: '', images: [], videos: [], defaultImageIndex: 0, sale_price: '', sale_start_date: '', sale_start_time: '', sale_end_date: '', sale_end_time: '', isDefault: true, isActive: true }
+        { weight: '', volume: '', count: '', strength: '', flavor: '', pack: '', combo: '', variant_name: '', sku: '', price: 0, cost_price: 0, stock: 0, shelf_life: '', length_cm: '', width_cm: '', height_cm: '', item_weight_kg_input: '', images: [], videos: [], defaultImageIndex: 0, sale_price: '', sale_start_date: '', sale_start_time: '', sale_end_date: '', sale_end_time: '', isDefault: true, isActive: true }
     ]);
     const [expandedVariantIndex, setExpandedVariantIndex] = useState<number | null>(null);
     const [sharedImages, setSharedImages] = useState(false);
@@ -350,7 +351,7 @@ export default function AddProductPage() {
             const variant: VariantRow = {
                 weight: '', volume: '', count: '', strength: '', flavor: '', pack: '', combo: '',
                 variant_name: '', sku: '', price: 0, cost_price: 0, stock: 0,
-                shelf_life: '', length_cm: '', width_cm: '', height_cm: '',
+                shelf_life: '', length_cm: '', width_cm: '', height_cm: '', item_weight_kg_input: '',
                 images: [], videos: [], defaultImageIndex: 0,
                 sale_price: '', sale_start_date: '', sale_start_time: '', sale_end_date: '', sale_end_time: '',
                 isDefault: false, isActive: true
@@ -379,7 +380,7 @@ export default function AddProductPage() {
             setVariants(combos);
             toast.success(`Generated ${combos.length} variant combinations`);
         } else {
-            setVariants([{ weight: '', volume: '', count: '', strength: '', flavor: '', pack: '', combo: '', variant_name: '', sku: '', price: 0, cost_price: 0, stock: 0, shelf_life: '', length_cm: '', width_cm: '', height_cm: '', images: [], videos: [], defaultImageIndex: 0, sale_price: '', sale_start_date: '', sale_start_time: '', sale_end_date: '', sale_end_time: '', isDefault: false, isActive: true }]);
+            setVariants([{ weight: '', volume: '', count: '', strength: '', flavor: '', pack: '', combo: '', variant_name: '', sku: '', price: 0, cost_price: 0, stock: 0, shelf_life: '', length_cm: '', width_cm: '', height_cm: '', item_weight_kg_input: '', images: [], videos: [], defaultImageIndex: 0, sale_price: '', sale_start_date: '', sale_start_time: '', sale_end_date: '', sale_end_time: '', isDefault: false, isActive: true }]);
         }
     };
 
@@ -396,7 +397,7 @@ export default function AddProductPage() {
         setVariants(prev => [...prev, {
             weight: '', volume: '', count: '', strength: '', flavor: '', pack: '', combo: '',
             variant_name: '', sku: '', price: 0, cost_price: 0, stock: 0,
-            shelf_life: '', length_cm: '', width_cm: '', height_cm: '',
+            shelf_life: '', length_cm: '', width_cm: '', height_cm: '', item_weight_kg_input: '',
             images: [], videos: [], defaultImageIndex: 0,
             sale_price: '', sale_start_date: '', sale_start_time: '', sale_end_date: '', sale_end_time: '',
             isDefault: false,
@@ -746,6 +747,7 @@ export default function AddProductPage() {
                     length_cm: v.length_cm || undefined,
                     width_cm: v.width_cm || undefined,
                     height_cm: v.height_cm || undefined,
+                    item_weight_kg: v.item_weight_kg_input ? (parseFloat(v.item_weight_kg_input) / 1000) : undefined,
                     shelf_life: v.shelf_life || undefined,      // → shelf_life_months by backend
                     // New fields
                     weight_g: weight_g,
@@ -1606,6 +1608,7 @@ export default function AddProductPage() {
                                                                                 <p className="text-xs font-semibold text-text-secondary uppercase ">Dimensions</p>
                                                                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                                                                                     {([
+                                                                                        { label: 'Weight (g)', field: 'item_weight_kg_input' as keyof VariantRow },
                                                                                         { label: 'Length (cm)', field: 'length_cm' as keyof VariantRow },
                                                                                         { label: 'Width (cm)', field: 'width_cm' as keyof VariantRow },
                                                                                         { label: 'Height (cm)', field: 'height_cm' as keyof VariantRow },

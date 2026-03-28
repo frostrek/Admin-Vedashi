@@ -6,7 +6,7 @@ import { useAdminAuth } from '@/context/AdminAuthContext';
 import {
     LayoutDashboard, Package, ShoppingCart, Tag, LogOut, Leaf,
     ChevronLeft, Menu, Truck, Megaphone, BarChart, Settings, Users, X, Shield, Search, Ticket,
-    FileText, MessageSquare, Star, ShieldAlert, LayoutTemplate, Images, HelpCircle, Send, MonitorSmartphone, Activity, Layers, DollarSign, Gift, FileBarChart2
+    FileText, MessageSquare, Star, ShieldAlert, LayoutTemplate, Images, HelpCircle, Send, MonitorSmartphone, Activity, Layers, DollarSign, Gift, FileBarChart2, RotateCcw
 } from 'lucide-react';
 const useState = require('react').useState;
 const useEffect = require('react').useEffect;
@@ -29,9 +29,11 @@ const engagementNav = [
 
 const salesNav = [
     { href: '/dashboard/orders', label: 'Orders', icon: ShoppingCart },
-    { href: '/dashboard/payments/logs', label: 'Payment Stratum', icon: DollarSign },
+    { href: '/dashboard/shipments', label: 'Shipments', icon: Truck },
+    { href: '/dashboard/returns', label: 'Returns', icon: RotateCcw },
+    { href: '/dashboard/refunds', label: 'Refunds', icon: DollarSign },
     { href: '/dashboard/financial-report', label: 'Financial Report', icon: FileBarChart2 },
-    { href: '#', label: 'Delivery', icon: Truck },
+    { href: '/dashboard/payments/logs', label: 'Payment Logs', icon: DollarSign },
 ];
 
 const usersNav = [
@@ -73,8 +75,8 @@ const systemNav = [
 ];
 
 const allNavItems = [
-    ...overviewNav, ...catalogNav, ...engagementNav, ...salesNav, 
-    ...usersNav, ...marketingNav, ...siteContentNav, ...optimizationNav, 
+    ...overviewNav, ...catalogNav, ...engagementNav, ...salesNav,
+    ...usersNav, ...marketingNav, ...siteContentNav, ...optimizationNav,
     ...supportNav, ...systemNav
 ];
 
@@ -109,10 +111,10 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
         } else {
             const isMatch = pathname === item.href || pathname.startsWith(item.href + '/');
             if (isMatch) {
-                const hasLongerMatch = allNavItems.some(other => 
-                    other.href !== item.href && 
-                    other.href !== '#' && 
-                    (pathname === other.href || pathname.startsWith(other.href + '/')) && 
+                const hasLongerMatch = allNavItems.some(other =>
+                    other.href !== item.href &&
+                    other.href !== '#' &&
+                    (pathname === other.href || pathname.startsWith(other.href + '/')) &&
                     other.href.length > item.href.length
                 );
                 isActive = !hasLongerMatch;
@@ -126,14 +128,12 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
             <Link
                 key={item.label}
                 href={item.href}
-                className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 relative before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:w-[3px] before:h-[60%] before:rounded-r-full before:transition-all before:duration-150 ${
-                    isActive
-                        ? "text-white bg-[#4a5238] before:bg-[#9aab6f]"
-                        : isParentWithActiveChild
-                            ? "text-[#c8d0b8] bg-white/[0.04] before:bg-transparent"
-                            : "text-[#7a8070] hover:text-[#d4d9c8] hover:bg-white/5 before:bg-transparent"
-                    } ${isCollapsed ? 'justify-center' : ''} ${
-                        item.isSubItem 
+                className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 relative before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:w-[3px] before:h-[60%] before:rounded-r-full before:transition-all before:duration-150 ${isActive
+                    ? "text-white bg-[#4a5238] before:bg-[#9aab6f]"
+                    : isParentWithActiveChild
+                        ? "text-[#c8d0b8] bg-white/[0.04] before:bg-transparent"
+                        : "text-[#7a8070] hover:text-[#d4d9c8] hover:bg-white/5 before:bg-transparent"
+                    } ${isCollapsed ? 'justify-center' : ''} ${item.isSubItem
                         ? `ml-6 pl-4 text-xs`
                         : ''
                     }`}
