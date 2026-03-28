@@ -5,8 +5,9 @@
  */
 
 import { getToken, setToken, getRefreshToken, setRefreshToken } from '@/lib/auth';
+import { env } from '@/lib/env';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+export const API_URL = env.NEXT_PUBLIC_API_URL;
 
 let cachedCsrfToken: string | null = null;
 
@@ -156,6 +157,8 @@ export async function authFetch(input: RequestInfo | URL, init?: RequestInit): P
         }
     }
 
+
+
     return res;
 }
 
@@ -243,6 +246,7 @@ export interface Product {
     intended_use?: string;
     price?: number;
     quantity?: number; // request-only: sets default variant stock (not returned in responses)
+    is_taxable?: boolean;
 
     stock_quantity?: number;
     country_of_origin?: string;
@@ -262,7 +266,7 @@ export interface Product {
     assets?: any[];
 }
 
-/* ─── Customers ─── */
+/* ─── Customers   ─── */
 
 export interface Customer {
     customer_id: string;
@@ -270,11 +274,10 @@ export interface Customer {
     email: string;
     phone?: string;
     bio?: string;
-    date_of_birth?: string;
+    preferences?: any;
     role: string;
     is_email_verified: boolean;
     is_mobile_verified: boolean;
-    is_age_verified: boolean;
     is_active: boolean;
     is_suspended: boolean;
     is_banned: boolean;
@@ -369,7 +372,8 @@ export async function updateCustomerStatus(id: string, updates: Partial<Pick<Cus
 
 export async function getProducts(status = 'active'): Promise<Product[]> {
     try {
-        const res = await fetch(`${API_URL}/api/products?status=${encodeURIComponent(status)}`, {
+        const t = Date.now();
+        const res = await fetch(`${API_URL}/api/products?status=${encodeURIComponent(status)}&limit=10000000000&t=${t}`, {
             headers: authHeaders(),
             credentials: 'include',
         });
@@ -459,12 +463,15 @@ export async function getProduct(id: string, skipCache: boolean = false): Promis
         const json: ApiResponse<any> = await res.json();
         if (json.success && json.data) {
             const product = json.data;
-            // Compute total stock from variants (source of truth)
-            const variantStock = product.variants?.reduce(
-                (sum: number, v: any) => sum + (v.stock_quantity ?? 0), 0
-            ) ?? 0;
-            const stockQty = variantStock > 0 ? variantStock
-                : (product.stock_quantity != null ? product.stock_quantity : 0);
+            const hasVariants = !!(product.variants && product.variants.length > 0);
+            
+            // Calculate aggregated stock from variants, if any
+            const variantStockCount = hasVariants 
+                ? (product.variants?.reduce((sum: number, v: any) => sum + (v.stock_quantity ?? 0), 0) ?? 0)
+                : 0;
+
+            const stockQty = hasVariants ? variantStockCount : (product.stock_quantity ?? 0);
+            
             // Price lives on variants — prefer default variant, fallback to first active
             const defaultVariant = product.variants?.find((v: any) => v.is_default)
                 ?? product.variants?.find((v: any) => v.is_active !== false)
@@ -474,8 +481,6 @@ export async function getProduct(id: string, skipCache: boolean = false): Promis
             const sale_start = defaultVariant?.sale_start ?? null;
             const sale_end = defaultVariant?.sale_end ?? null;
 
-            // alcohol_percentage lives on the products table only
-            const abv = product.alcohol_percentage ?? null;
             const images = product.assets
                 ?.map((a: any) => a.base64_data || a.asset_url)
                 .filter(Boolean) || [];
@@ -544,6 +549,28 @@ export async function deleteProduct(id: string): Promise<boolean> {
     } catch (error) {
         console.error('[Admin API] Failed to delete product:', error);
         return false;
+    }
+}
+
+export async function bulkDeleteProducts(productIds: string[]): Promise<{ success: boolean; successCount?: number; failedCount?: number; error?: string }> {
+    try {
+        const res = await authFetch(`${API_URL}/api/products/bulk-delete`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ productIds }),
+        });
+        const json = await res.json();
+        if (json.success) {
+            return {
+                success: true,
+                successCount: json.data?.successCount,
+                failedCount: json.data?.failedCount,
+            };
+        }
+        return { success: false, error: json.message || 'Failed to bulk delete products' };
+    } catch (error) {
+        console.error('[Admin API] Failed to bulk delete products:', error);
+        return { success: false, error: 'Network error processing bulk delete' };
     }
 }
 
@@ -1434,6 +1461,7 @@ export interface LoginResult {
     success: boolean;
     error?: string;
     deactivated?: boolean;
+    requireCaptcha?: boolean;
     customer?: { customer_id: string; full_name: string; email: string; role?: string; phone?: string };
     access_token?: string;
     refresh_token?: string;
@@ -1444,7 +1472,7 @@ export interface LoginResult {
  * Returns { deactivated: true } when the account is inactive,
  * so the UI can display the reactivation modal.
  */
-export async function loginUser(email: string, password: string): Promise<LoginResult> {
+export async function loginUser(email: string, password: string, turnstileToken?: string): Promise<LoginResult> {
     try {
         // Use plain fetch (NOT authFetch) because login is a public endpoint.
         // authFetch would intercept 401s (wrong password) and dispatch
@@ -1453,7 +1481,7 @@ export async function loginUser(email: string, password: string): Promise<LoginR
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
-            body: JSON.stringify({ email, password }),
+            body: JSON.stringify({ email, password, turnstile_token: turnstileToken }),
         });
         const json = await res.json();
 
@@ -1469,6 +1497,7 @@ export async function loginUser(email: string, password: string): Promise<LoginR
                 success: false,
                 error: json.message || 'Login failed',
                 deactivated: isDeactivated,
+                requireCaptcha: json.requireCaptcha === true,
             };
         }
 

@@ -17,13 +17,14 @@ interface LoginResponse {
     error?: string;
     /** True when the account exists            but is deactivated */
     deactivated?: boolean;
+    requireCaptcha?: boolean;
 }
 
 interface AdminAuthContextType {
     user: AdminUser | null;
     isAuthenticated: boolean;
     isLoading: boolean;
-    login: (email: string, password: string) => Promise<LoginResponse>;
+    login: (email: string, password: string, turnstileToken?: string) => Promise<LoginResponse>;
     logout: () => void;
     deactivate: (password: string) => Promise<{ success: boolean; error?: string }>;
 }
@@ -35,16 +36,16 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<AdminUser | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    const login = useCallback(async (email: string, password: string): Promise<LoginResponse> => {
+    const login = useCallback(async (email: string, password: string, turnstileToken?: string): Promise<LoginResponse> => {
         setIsLoading(true);
         try {
             // Try real backend login first
-            const result: LoginResult = await apiLogin(email, password);
+            const result: LoginResult = await apiLogin(email, password, turnstileToken);
 
             // If the account is deactivated, bubble that up so the login page can show the reactivation modal
             if (!result.success && result.deactivated) {
                 setIsLoading(false);
-                return { success: false, deactivated: true, error: result.error };
+                return { success: false, deactivated: true, error: result.error, requireCaptcha: result.requireCaptcha };
             }
 
             if (result.success && result.customer) {
@@ -71,12 +72,13 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
                 setIsLoading(false);
                 return {
                     success: false,
-                    error: 'Backend unreachable. Please ensure the server is running on port 5000.'
+                    error: 'Backend unreachable. Please ensure the server is running on port 5000.',
+                    requireCaptcha: result.requireCaptcha,
                 };
             }
 
             setIsLoading(false);
-            return { success: false, error: result.error || 'Invalid credentials' };
+            return { success: false, error: result.error || 'Invalid credentials', requireCaptcha: result.requireCaptcha };
         } catch (err) {
             console.error('[AdminAuth] Login process error:', err);
             setIsLoading(false);
@@ -97,7 +99,8 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         }
 
         // Redirect to storefront login
-        window.location.href = 'http://localhost:3000/in/login';
+        const storefrontUrl = process.env.NEXT_PUBLIC_STOREFRONT_URL || 'http://localhost:3000';
+        window.location.href = `${storefrontUrl}/in/login`;
     }, []);
 
     const deactivate = useCallback(async (password: string) => {

@@ -1,13 +1,12 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { getToken } from '@/lib/auth';
 import { authFetch, authHeaders } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, X, Loader2, Megaphone, Leaf, Save, AlertCircle, Info } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+import { API_URL } from '@/lib/api';
 
 interface PromoBanner {
     id: string;
@@ -41,7 +40,7 @@ export default function PromoBannersPage() {
     const loadBanners = useCallback(async () => {
         setLoading(true);
         try {
-            const res = await authFetch(`${API_URL}/api/admin/promo-banners`, { headers: authHeaders() });
+            const res = await authFetch(`${API_URL}/api/admin/promo-banners`);
             const data = await res.json();
             if (data.success) setBanners(data.data || []);
         } catch { toast.error('Failed to load promo banners'); }
@@ -89,7 +88,7 @@ export default function PromoBannersPage() {
                 : `${API_URL}/api/admin/promo-banners`;
             const method = editing ? 'PUT' : 'POST';
 
-            const res = await authFetch(url, { method, headers: authHeaders({ 'Content-Type': 'application/json' }), body: JSON.stringify(body) });
+            const res = await authFetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
             const data = await res.json();
 
             if (data.success) {
@@ -106,7 +105,7 @@ export default function PromoBannersPage() {
     const handleDelete = async (id: string) => {
         if (!confirm('Delete this promo banner?')) return;
         try {
-            const res = await authFetch(`${API_URL}/api/admin/promo-banners/${id}`, { method: 'DELETE', headers: authHeaders() });
+            const res = await authFetch(`${API_URL}/api/admin/promo-banners/${id}`, { method: 'DELETE' });
             const data = await res.json();
             if (data.success) { toast.success('Banner deleted'); loadBanners(); }
             else toast.error(data.message || 'Failed to delete');
@@ -116,7 +115,7 @@ export default function PromoBannersPage() {
     const toggleActive = async (b: PromoBanner) => {
         try {
             const res = await authFetch(`${API_URL}/api/admin/promo-banners/${b.id}`, {
-                method: 'PUT', headers: authHeaders({ 'Content-Type': 'application/json' }),
+                method: 'PUT', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ...b, is_active: !b.is_active }),
             });
             const data = await res.json();

@@ -1244,7 +1244,7 @@ export default function AdminFeedbackPage() {
                                                         {[
                                                             { label:'Email',         value:c360.profile?.email,       Icon:Mail     },
                                                             { label:'Phone',         value:c360.profile?.phone||'—',  Icon:Phone    },
-                                                            { label:'Date of Birth', value:c360.profile?.date_of_birth ? new Date(c360.profile.date_of_birth).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}) : 'Not set', Icon:Calendar },
+
                                                             { label:'Member Since',  value:new Date(c360.profile?.created_at).toLocaleDateString('en-IN',{month:'long',year:'numeric'}), Icon:Clock },
                                                         ].map(({ label, value, Icon }, i) => (
                                                             <div key={label}

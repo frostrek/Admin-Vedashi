@@ -1,20 +1,20 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAdminAuth } from '@/context/AdminAuthContext';
 import AdminSidebar from '@/components/AdminSidebar';
 import TopNavbar from '@/components/dashboard/TopNavbar';
 import { ReactNode } from 'react';
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
-    const router = useRouter();
+
     const { isAuthenticated, isLoading } = useAdminAuth();
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
     useEffect(() => {
         if (!isLoading && !isAuthenticated) {
-            window.location.href = 'http://localhost:3000/in/login';
+            const storefrontUrl = process.env.NEXT_PUBLIC_STOREFRONT_URL || 'http://localhost:3000';
+            window.location.href = `${storefrontUrl}/in/login`;
         }
     }, [isLoading, isAuthenticated]);
 

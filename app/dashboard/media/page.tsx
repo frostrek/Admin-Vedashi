@@ -2,7 +2,6 @@
 import { authFetch } from '@/lib/api';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { getToken } from '@/lib/auth';
 import toast from 'react-hot-toast';
 import {
     Plus, Minus, Trash2, X, Loader2, Images, Save, ToggleLeft, ToggleRight,
@@ -10,7 +9,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+import { API_URL } from '@/lib/api';
 
 interface TextElement {
     id: string;
@@ -71,24 +70,14 @@ export default function MediaLibraryPage() {
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const headers = useCallback(() => {
-        const h: Record<string, string> = { 'Content-Type': 'application/json' };
-        const token = getToken();
-        if (token) h['Authorization'] = `Bearer ${token}`;
-        // Attach CSRF token from cookie (required by backend CSRF middleware)
-        if (typeof document !== 'undefined') {
-            const match = document.cookie.match(/(?:^|;\s*)_csrf=([^;]*)/);
-            if (match) h['X-CSRF-Token'] = decodeURIComponent(match[1]);
-        }
-        return h;
-    }, []);
+
 
     const load = useCallback(async () => {
         setLoading(true);
         try {
             const [slidesRes, settingsRes] = await Promise.all([
-                fetch(`${API_URL}/api/media/hero`, { headers: headers(), credentials: 'include' }),
-                fetch(`${API_URL}/api/media/hero/settings`, { headers: headers(), credentials: 'include' })
+                authFetch(`${API_URL}/api/media/hero`),
+                authFetch(`${API_URL}/api/media/hero/settings`)
             ]);
 
             const slidesData = await slidesRes.json();
@@ -107,7 +96,7 @@ export default function MediaLibraryPage() {
             if (settingsData.success && settingsData.data) setSettings(settingsData.data);
         } catch { toast.error('Failed to load media library'); }
         finally { setLoading(false); }
-    }, [headers]);
+    }, []);
 
     useEffect(() => { load(); }, [load]);
 
@@ -116,7 +105,7 @@ export default function MediaLibraryPage() {
         try {
             const res = await authFetch(`${API_URL}/api/media/hero/settings`, {
                 method: 'PUT',
-                headers: headers(),
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newSettings)
             });
             const data = await res.json();
@@ -188,7 +177,7 @@ export default function MediaLibraryPage() {
             // Append sort_order for new slides
             const payload = { ...form, sort_order: editing ? editing.sort_order : slides.length };
 
-            const res = await fetch(url, { method, headers: headers(), body: JSON.stringify(payload), credentials: 'include' });
+            const res = await authFetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
             const data = await res.json();
             if (data.success) {
                 toast.success(editing ? 'Slide updated!' : 'Slide created!');
@@ -205,7 +194,7 @@ export default function MediaLibraryPage() {
         if (e) e.stopPropagation();
         if (!confirm('Delete this hero slide?')) return;
         try {
-            const res = await authFetch(`${API_URL}/api/media/hero/${id}`, { method: 'DELETE', headers: headers() });
+            const res = await authFetch(`${API_URL}/api/media/hero/${id}`, { method: 'DELETE' });
             const data = await res.json();
             if (data.success) { toast.success('Slide deleted'); load(); }
             else toast.error(data.message || 'Failed to delete');
@@ -215,7 +204,7 @@ export default function MediaLibraryPage() {
     const handleToggle = async (s: HeroSlide, e?: React.MouseEvent) => {
         if (e) e.stopPropagation();
         try {
-            const res = await authFetch(`${API_URL}/api/media/hero/${s.id}/toggle`, { method: 'PATCH', headers: headers() });
+            const res = await authFetch(`${API_URL}/api/media/hero/${s.id}/toggle`, { method: 'PATCH' });
             const data = await res.json();
             if (data.success) {
                 toast.success(data.data.is_active ? 'Slide activated' : 'Slide deactivated');

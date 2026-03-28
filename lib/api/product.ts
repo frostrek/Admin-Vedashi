@@ -5,8 +5,9 @@
 
 import { getToken } from '@/lib/auth';
 import { authFetch } from '@/lib/api';
+import { env } from '@/lib/env';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API_URL = env.NEXT_PUBLIC_API_URL;
 
 function authHeaders(extra?: Record<string, string>): Record<string, string> {
     const headers: Record<string, string> = { 'Content-Type': 'application/json', ...extra };
@@ -62,7 +63,6 @@ export interface CreateProductPayload {
     sub_category_id?: string;
     description?: string;
     intended_use?: string;
-    alcohol_percentage?: number | null;   // form field "abv"
     vintage_year?: number | null;         // form field "vintage_year"
     sku?: string;                         // taken from default variant
 
@@ -87,7 +87,6 @@ export interface ProductRecord {
     sub_category_id?: string;
     description?: string;
     intended_use?: string;
-    alcohol_percentage?: number;
     vintage_year?: number;
     sku?: string;
     status?: string;

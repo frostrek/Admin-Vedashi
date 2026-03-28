@@ -106,8 +106,11 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
         sub_category_id: '',
         country_of_origin: '',
         form_type: '',
-        specialities: [] as string[],        intended_use: '',
+        specialities: [] as string[],
+        intended_use: '',
         description: '',
+        short_description: '',
+        is_taxable: true,
         available_from_date: '',
         available_from_time: '',
         available_until_date: '',
@@ -204,6 +207,8 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
 
                 intended_use: product.intended_use || '',
                 description: product.description || '',
+                short_description: (product as any).short_description || '',
+                is_taxable: product.is_taxable !== false,
                 available_from_date: (product as any).available_from ? new Date((product as any).available_from).toISOString().split('T')[0] : '',
                 available_from_time: (product as any).available_from ? new Date((product as any).available_from).toISOString().split('T')[1].substring(0, 5) : '',
                 available_until_date: (product as any).available_until ? new Date((product as any).available_until).toISOString().split('T')[0] : '',
@@ -703,6 +708,29 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                 return updated;
             }));
         }
+        if (currentStep === 3) {
+            const negativeField = variants.find(v => 
+                Number(v.stock) < 0 || 
+                Number(v.price) < 0 || 
+                Number(v.cost_price) < 0 || 
+                Number(v.sale_price) < 0 ||
+                Number(v.shelf_life) < 0 ||
+                Number(v.length_cm) < 0 ||
+                Number(v.width_cm) < 0 ||
+                Number(v.height_cm) < 0
+            );
+
+            if (negativeField) {
+                toast.error('Negative values are not allowed for stock, price, cost, or dimensions');
+                return;
+            }
+
+            const invalidVariant = variants.find(v => !v.sku.trim() || !v.price);
+            if (invalidVariant) {
+                toast.error('Please ensure all variants have an SKU and a Price (min 0.01)');
+                return;
+            }
+        }
         if (currentStep < STEPS.length) setCurrentStep(prev => prev + 1);
     };
 
@@ -729,6 +757,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
             intended_use: form.intended_use.trim() || undefined,
             form: form.form_type || undefined,
             specialities: form.specialities,
+            is_taxable: form.is_taxable,
 
             sku: draftSku,
             status: 'draft',
@@ -929,9 +958,11 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
             sub_category_id: form.sub_category_id || undefined,
             country_of_origin: form.country_of_origin || undefined,
             description: form.description.trim() || undefined,
+            short_description: form.short_description.trim() || undefined,
             intended_use: form.intended_use.trim() || undefined,
             form: form.form_type || undefined,
             specialities: form.specialities.length > 0 ? form.specialities : undefined,
+            is_taxable: form.is_taxable,
             status: productStatus === 'draft' ? 'active' : undefined,
             // SKU from the default variant (required by products table unique constraint)
             sku: (variants.find(v => v.isDefault) ?? variants[0]).sku.trim(),
@@ -1187,6 +1218,16 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                                     if (currentStep === 2 && !anyActiveDim && step.id > 2) {
                                                         toast.error('Please select at least one variant dimension');
                                                         return;
+                                                    } else if (currentStep === 3 && step.id > 3) {
+                                                        const invalidVariant = variants.find(v => !v.sku.trim() || !v.price || Number(v.stock) < 0);
+                                                        if (invalidVariant) {
+                                                            if (Number(invalidVariant.stock) < 0) {
+                                                                toast.error('Stock cannot be negative for any variant');
+                                                            } else {
+                                                                toast.error('Please ensure all variants have an SKU and a Price');
+                                                            }
+                                                            return;
+                                                        }
                                                     }
                                                     setCurrentStep(step.id);
                                                 }
@@ -1295,11 +1336,17 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                 <div className="grid gap-5 sm:grid-cols-2">
                                     {/* Product Name - full width */}
                                     <div className="sm:col-span-2">
-                                        <label className="block text-sm font-medium text-text-primary mb-1.5">Product Name *</label>
+                                        <div className="flex justify-between items-end mb-1.5">
+                                            <label className="block text-sm font-medium text-text-primary">Product Name *</label>
+                                            <span className={`text-xs ${form.product_name.length >= 50 ? 'text-red-500' : 'text-text-muted'}`}>
+                                                {form.product_name.length}/50
+                                            </span>
+                                        </div>
                                         <input
                                             type="text"
                                             value={form.product_name}
                                             onChange={e => update('product_name', e.target.value)}
+                                            maxLength={50}
                                             className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 transition-all"
                                             placeholder="e.g. Ashwagandha Prowess"
                                             required
@@ -1418,6 +1465,25 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                                 );
                                             })}
                                         </div>
+                                    </div>
+
+                                    {/* Is Taxable Toggle */}
+                                    <div className="sm:col-span-2">
+                                        <label className="flex items-center gap-3 p-4 border border-border rounded-xl cursor-pointer hover:border-gold/30 hover:bg-gold/[0.02] transition-all group">
+                                            <div className={`relative w-10 h-5 rounded-full transition-colors duration-200 ${form.is_taxable ? 'bg-gold' : 'bg-gray-300'}`}>
+                                                <div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200 ${form.is_taxable ? 'translate-x-5' : 'translate-x-0'}`} />
+                                            </div>
+                                            <input
+                                                type="checkbox"
+                                                className="hidden"
+                                                checked={form.is_taxable}
+                                                onChange={e => update('is_taxable', e.target.checked)}
+                                            />
+                                            <div>
+                                                <span className="text-sm font-semibold text-text-primary block group-hover:text-gold-soft transition-colors">Is This Product Taxable?</span>
+                                                <span className="text-xs text-text-muted">Uncheck for tax-exempt items. If enabled, standard VAT and Excise tax will be calculated.</span>
+                                            </div>
+                                        </label>
                                     </div>                                    {/* Intended Use - full width */}
                                     <div className="sm:col-span-2">
                                         <label className="block text-sm font-medium text-text-primary mb-1.5">Intended Use</label>
@@ -1440,6 +1506,19 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                             className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 resize-none transition-all"
                                             placeholder="Describe the product's health benefits, ingredients, and usage instructions..."
                                         />
+                                    </div>
+
+                                    {/* Short Description - full width */}
+                                    <div className="sm:col-span-2">
+                                        <label className="block text-sm font-medium text-text-primary mb-1.5">Short Description</label>
+                                        <textarea
+                                            value={form.short_description}
+                                            onChange={e => update('short_description', e.target.value)}
+                                            rows={2}
+                                            className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 resize-none transition-all"
+                                            placeholder="A brief one-line summary shown on the product page..."
+                                        />
+                                        <p className="text-xs text-text-muted mt-1">Displayed as the product tagline on the storefront.</p>
                                     </div>
 
                                     {/* Product Availability Scheduling */}
@@ -1821,13 +1900,19 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                                                     />
                                                                 </td>
                                                                 <td className="px-4 py-3 align-top">
-                                                                    <input
-                                                                        type="number"
-                                                                        min="0"
-                                                                        value={variant.stock}
-                                                                        onChange={e => updateVariant(vIdx, 'stock', e.target.value ? parseInt(e.target.value) : 0)}
-                                                                        className="w-24 rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
-                                                                    />
+                                                                    <div className="relative">
+                                                                        <input
+                                                                            type="number"
+                                                                            value={variant.stock}
+                                                                            onChange={e => updateVariant(vIdx, 'stock', e.target.value ? parseInt(e.target.value) : 0)}
+                                                                            className={`w-24 rounded-md border px-3 py-1.5 text-sm focus:outline-none bg-transparent transition-colors ${Number(variant.stock) < 0 ? 'border-danger focus:border-danger text-danger' : 'border-border focus:border-gold/40'}`}
+                                                                        />
+                                                                        {Number(variant.stock) < 0 && (
+                                                                            <p className="absolute left-0 -bottom-4 text-[10px] text-danger whitespace-nowrap animate-in fade-in slide-in-from-top-1">
+                                                                                Stock cannot be negative
+                                                                            </p>
+                                                                        )}
+                                                                    </div>
                                                                 </td>
                                                                 <td className="px-4 py-3 text-center align-top pt-3">
                                                                     <div className="flex items-center justify-center gap-1">

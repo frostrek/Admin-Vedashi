@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { getCategories, createCategory } from '@/lib/api/category';
 import { createProduct } from '@/lib/api/product';
-import { uploadProductImage } from '@/lib/api';
+import { uploadProductImage, API_URL } from '@/lib/api';
 import { Category } from '@/types/category';
 import { ArrowLeft, ArrowRight, Check, X, Plus, Trash2, ChevronDown, ChevronUp, AlertCircle, Info, Package, Layers, Star, ImageIcon, Maximize2, Loader2, Film, Search, Weight, Droplets, Hash, Zap, Utensils } from 'lucide-react';
 import Link from 'next/link';
@@ -87,8 +87,11 @@ export default function AddProductPage() {
         sub_category_id: '',
         country_of_origin: '',
         form_type: '',
-        specialities: [] as string[],        intended_use: '',
+        specialities: [] as string[],
+        intended_use: '',
         description: '',
+        short_description: '',
+        is_taxable: true,
         available_from_date: '',
         available_from_time: '',
         available_until_date: '',
@@ -187,7 +190,7 @@ export default function AddProductPage() {
                 };
                 
                 const token = localStorage.getItem('ksp_admin_token');
-                fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/products`, {
+                fetch(`${API_URL}/api/products`, {
                     method: 'POST',
                     keepalive: true,
                     headers: {
@@ -531,9 +534,25 @@ export default function AddProductPage() {
                 return;
             }
             // Ensure all variants have SKU and Price
-            const invalidVariant = variants.find(v => !v.sku.trim() || !v.price);
-            if (invalidVariant) {
-                toast.error('Please ensure all variants have an SKU and a Price');
+            const negativeField = variants.find(v => 
+                Number(v.stock) < 0 || 
+                Number(v.price) < 0 || 
+                Number(v.cost_price) < 0 || 
+                Number(v.sale_price) < 0 ||
+                Number(v.shelf_life) < 0 ||
+                Number(v.length_cm) < 0 ||
+                Number(v.width_cm) < 0 ||
+                Number(v.height_cm) < 0
+            );
+
+            if (negativeField) {
+                toast.error('Negative values are not allowed for stock, price, cost, or dimensions');
+                return;
+            }
+
+            const missingInfo = variants.find(v => !v.sku.trim() || !v.price);
+            if (missingInfo) {
+                toast.error('Please ensure all variants have an SKU and a Price (min 0.01)');
                 return;
             }
         }
@@ -571,9 +590,11 @@ export default function AddProductPage() {
             sub_category_id: form.sub_category_id || undefined,
             country_of_origin: form.country_of_origin || undefined,
             description: form.description.trim() || undefined,
+            short_description: form.short_description.trim() || undefined,
             intended_use: form.intended_use.trim() || undefined,
             form: form.form_type || undefined,
             specialities: form.specialities,
+            is_taxable: form.is_taxable,
             sku: draftSku,
             status: 'draft',
             specifications: form.country_of_origin ? { country_of_origin: form.country_of_origin } : undefined,
@@ -684,9 +705,11 @@ export default function AddProductPage() {
             sub_category_id: form.sub_category_id || undefined,
             country_of_origin: form.country_of_origin || undefined,
             description: form.description.trim() || undefined,
+            short_description: form.short_description.trim() || undefined,
             intended_use: form.intended_use.trim() || undefined,
             form: form.form_type || undefined,
             specialities: form.specialities.length > 0 ? form.specialities : undefined,
+            is_taxable: form.is_taxable,
             // SKU from the default variant (required by products table unique constraint)
             sku: (variants.find(v => v.isDefault) ?? variants[0]).sku.trim(),
 
@@ -1012,11 +1035,17 @@ export default function AddProductPage() {
                                 <div className="grid gap-5 sm:grid-cols-2">
                                     {/* Product Name - full width */}
                                     <div className="sm:col-span-2">
-                                        <label className="block text-sm font-medium text-text-primary mb-1.5">Product Name *</label>
+                                        <div className="flex justify-between items-end mb-1.5">
+                                            <label className="block text-sm font-medium text-text-primary">Product Name *</label>
+                                            <span className={`text-xs ${form.product_name.length >= 50 ? 'text-red-500' : 'text-text-muted'}`}>
+                                                {form.product_name.length}/50
+                                            </span>
+                                        </div>
                                         <input
                                             type="text"
                                             value={form.product_name}
                                             onChange={e => update('product_name', e.target.value)}
+                                            maxLength={50}
                                             className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 transition-all"
                                             placeholder="e.g. Ashwagandha Prowess"
                                             required
@@ -1135,6 +1164,25 @@ export default function AddProductPage() {
                                             })}
                                         </div>
                                     </div>
+
+                                    {/* Is Taxable Toggle */}
+                                    <div className="sm:col-span-2">
+                                        <label className="flex items-center gap-3 p-4 border border-border rounded-xl cursor-pointer hover:border-gold/30 hover:bg-gold/[0.02] transition-all group">
+                                            <div className={`relative w-10 h-5 rounded-full transition-colors duration-200 ${form.is_taxable ? 'bg-gold' : 'bg-gray-300'}`}>
+                                                <div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200 ${form.is_taxable ? 'translate-x-5' : 'translate-x-0'}`} />
+                                            </div>
+                                            <input
+                                                type="checkbox"
+                                                className="hidden"
+                                                checked={form.is_taxable}
+                                                onChange={e => update('is_taxable', e.target.checked)}
+                                            />
+                                            <div>
+                                                <span className="text-sm font-semibold text-text-primary block group-hover:text-gold-soft transition-colors">Is This Product Taxable?</span>
+                                                <span className="text-xs text-text-muted">Uncheck for tax-exempt items. If enabled, standard VAT and Excise tax will be calculated.</span>
+                                            </div>
+                                        </label>
+                                    </div>
                                     {/* Intended Use - full width */}
                                     <div className="sm:col-span-2">
                                         <label className="block text-sm font-medium text-text-primary mb-1.5">Intended Use</label>
@@ -1157,6 +1205,19 @@ export default function AddProductPage() {
                                             className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 resize-none transition-all"
                                             placeholder="Describe the product's health benefits, ingredients, and usage instructions..."
                                         />
+                                    </div>
+
+                                    {/* Short Description - full width */}
+                                    <div className="sm:col-span-2">
+                                        <label className="block text-sm font-medium text-text-primary mb-1.5">Short Description</label>
+                                        <textarea
+                                            value={form.short_description}
+                                            onChange={e => update('short_description', e.target.value)}
+                                            rows={2}
+                                            className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 resize-none transition-all"
+                                            placeholder="A brief one-line summary shown on the product page..."
+                                        />
+                                        <p className="text-xs text-text-muted mt-1">Displayed as the product tagline on the storefront.</p>
                                     </div>
 
                                     {/* Product Availability Scheduling */}
@@ -1531,23 +1592,36 @@ export default function AddProductPage() {
                                                                             </div>
                                                                         </td>
                                                                         <td className="px-4 py-3 align-top">
-                                                                            <input
-                                                                                type="number"
-                                                                                step="0.01"
-                                                                                value={variant.price}
-                                                                                onChange={e => updateVariant(vIdx, 'price', e.target.value ? parseFloat(e.target.value) : 0)}
-                                                                                placeholder="0"
-                                                                                className="w-24 rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
-                                                                            />
+                                                                            <div className="relative">
+                                                                                <input
+                                                                                    type="number"
+                                                                                    step="0.01"
+                                                                                    value={variant.price}
+                                                                                    onChange={e => updateVariant(vIdx, 'price', e.target.value ? parseFloat(e.target.value) : 0)}
+                                                                                    placeholder="0"
+                                                                                    className={`w-24 rounded-md border px-3 py-1.5 text-sm focus:outline-none bg-transparent transition-colors ${Number(variant.price) < 0 ? 'border-danger focus:border-danger text-danger' : 'border-border focus:border-gold/40'}`}
+                                                                                />
+                                                                                {Number(variant.price) < 0 && (
+                                                                                    <p className="absolute left-0 -bottom-4 text-[10px] text-danger whitespace-nowrap animate-in fade-in slide-in-from-top-1">
+                                                                                        Price cannot be negative
+                                                                                    </p>
+                                                                                )}
+                                                                            </div>
                                                                         </td>
                                                                         <td className="px-4 py-3 align-top">
-                                                                            <input
-                                                                                type="number"
-                                                                                min="0"
-                                                                                value={variant.stock}
-                                                                                onChange={e => updateVariant(vIdx, 'stock', e.target.value ? parseInt(e.target.value) : 0)}
-                                                                                className="w-24 rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
-                                                                            />
+                                                                            <div className="relative">
+                                                                                <input
+                                                                                    type="number"
+                                                                                    value={variant.stock}
+                                                                                    onChange={e => updateVariant(vIdx, 'stock', e.target.value ? parseInt(e.target.value) : 0)}
+                                                                                    className={`w-24 rounded-md border px-3 py-1.5 text-sm focus:outline-none bg-transparent transition-colors ${Number(variant.stock) < 0 ? 'border-danger focus:border-danger text-danger' : 'border-border focus:border-gold/40'}`}
+                                                                                />
+                                                                                {Number(variant.stock) < 0 && (
+                                                                                    <p className="absolute left-0 -bottom-4 text-[10px] text-danger whitespace-nowrap animate-in fade-in slide-in-from-top-1">
+                                                                                        Stock cannot be negative
+                                                                                    </p>
+                                                                                )}
+                                                                            </div>
                                                                         </td>
                                                                         <td className="px-4 py-3 text-center align-top pt-3">
                                                                             <div className="flex items-center justify-center gap-1">
@@ -1581,25 +1655,35 @@ export default function AddProductPage() {
                                                                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                                                                                 <div>
                                                                                     <label className="block text-xs font-medium text-text-secondary mb-1">Cost Price ($)</label>
-                                                                                    <input
-                                                                                        type="number" step="0.01" min="0"
-                                                                                        value={variant.cost_price}
-                                                                                        onChange={e => updateVariant(vIdx, 'cost_price', e.target.value ? parseFloat(e.target.value) : 0)}
-                                                                                        onWheel={e => (e.target as HTMLInputElement).blur()}
-                                                                                        className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
-                                                                                        placeholder="0.00"
-                                                                                    />
+                                                                                    <div className="relative">
+                                                                                        <input
+                                                                                            type="number" step="0.01" min="0"
+                                                                                            value={variant.cost_price}
+                                                                                            onChange={e => updateVariant(vIdx, 'cost_price', e.target.value ? parseFloat(e.target.value) : 0)}
+                                                                                            onWheel={e => (e.target as HTMLInputElement).blur()}
+                                                                                            className={`w-full rounded-md border px-3 py-1.5 text-sm focus:outline-none bg-transparent transition-colors ${Number(variant.cost_price) < 0 ? 'border-danger focus:border-danger text-danger' : 'border-border focus:border-gold/40'}`}
+                                                                                            placeholder="0.00"
+                                                                                        />
+                                                                                        {Number(variant.cost_price) < 0 && (
+                                                                                            <p className="absolute left-0 -bottom-4 text-[10px] text-danger whitespace-nowrap">Cost cannot be negative</p>
+                                                                                        )}
+                                                                                    </div>
                                                                                 </div>
                                                                                 <div>
                                                                                     <label className="block text-xs font-medium text-text-secondary mb-1">Shelf Life (months)</label>
-                                                                                    <input
-                                                                                        type="number" min="0"
-                                                                                        value={variant.shelf_life}
-                                                                                        onChange={e => updateVariant(vIdx, 'shelf_life', e.target.value)}
-                                                                                        onWheel={e => (e.target as HTMLInputElement).blur()}
-                                                                                        className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
-                                                                                        placeholder="e.g. 24"
-                                                                                    />
+                                                                                    <div className="relative">
+                                                                                        <input
+                                                                                            type="number" min="0"
+                                                                                            value={variant.shelf_life}
+                                                                                            onChange={e => updateVariant(vIdx, 'shelf_life', e.target.value)}
+                                                                                            onWheel={e => (e.target as HTMLInputElement).blur()}
+                                                                                            className={`w-full rounded-md border px-3 py-1.5 text-sm focus:outline-none bg-transparent transition-colors ${Number(variant.shelf_life) < 0 ? 'border-danger focus:border-danger text-danger' : 'border-border focus:border-gold/40'}`}
+                                                                                            placeholder="e.g. 24"
+                                                                                        />
+                                                                                        {Number(variant.shelf_life) < 0 && (
+                                                                                            <p className="absolute left-0 -bottom-4 text-[10px] text-danger whitespace-nowrap">Cannot be negative</p>
+                                                                                        )}
+                                                                                    </div>
                                                                                 </div>
                                                                             </div>
 
@@ -1730,14 +1814,19 @@ export default function AddProductPage() {
                                                                                         <div className="space-y-3">
                                                                                             <div>
                                                                                                 <label className="block text-xs font-medium text-text-secondary mb-1">Sale Price ($)</label>
-                                                                                                <input
-                                                                                                    type="number" step="0.01" min="0"
-                                                                                                    value={variant.sale_price}
-                                                                                                    onChange={e => updateVariant(vIdx, 'sale_price', e.target.value)}
-                                                                                                    onWheel={e => (e.target as HTMLInputElement).blur()}
-                                                                                                    placeholder="0.00"
-                                                                                                    className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
-                                                                                                />
+                                                                                                <div className="relative">
+                                                                                                    <input
+                                                                                                        type="number" step="0.01" min="0"
+                                                                                                        value={variant.sale_price}
+                                                                                                        onChange={e => updateVariant(vIdx, 'sale_price', e.target.value)}
+                                                                                                        onWheel={e => (e.target as HTMLInputElement).blur()}
+                                                                                                        placeholder="0.00"
+                                                                                                        className={`w-full rounded-md border px-3 py-1.5 text-sm focus:outline-none bg-transparent transition-colors ${Number(variant.sale_price) < 0 ? 'border-danger focus:border-danger text-danger' : 'border-border focus:border-gold/40'}`}
+                                                                                                    />
+                                                                                                    {Number(variant.sale_price) < 0 && (
+                                                                                                        <p className="absolute left-0 -bottom-4 text-[10px] text-danger whitespace-nowrap">Cannot be negative</p>
+                                                                                                    )}
+                                                                                                </div>
                                                                                             </div>
                                                                                             <div className="grid grid-cols-2 gap-3">
                                                                                                 <div>

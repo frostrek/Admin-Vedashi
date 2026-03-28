@@ -1,4 +1,4 @@
-import { authFetch } from '@/lib/api';
+import { authFetch, API_URL } from '@/lib/api';
 
 import React, { useState, useEffect } from 'react';
 import { X, Percent, Calendar, Tag, Layers, Star, ChevronDown, Loader2, ArrowUpCircle, ArrowDownCircle, DollarSign, Trash2, Check } from 'lucide-react';
@@ -15,7 +15,7 @@ interface BulkDiscountModalProps {
 }
 
 type TargetType = 'category' | 'sub_category' | 'brand' | 'all' | 'selected';
-type BulkActionType = 'discount' | 'pricing' | 'custom';
+type BulkActionType = 'discount' | 'pricing' | 'custom' | 'delete';
 type AdjustmentMode = 'increase' | 'decrease';
 type ValueType = 'percentage' | 'amount';
 
@@ -25,7 +25,7 @@ interface ActiveDiscount {
     variant_count: string | number;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
 
 const CUSTOM_FIELDS = [
     { value: 'category', label: 'Category', type: 'category' },
@@ -95,13 +95,9 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
     const [fetchingDiscounts, setFetchingDiscounts] = useState(false);
 
     const fetchActiveDiscounts = async () => {
-        const token = getToken();
-        if (!token) return;
         setFetchingDiscounts(true);
         try {
-            const res = await authFetch(`${API_URL}/api/products/active-discounts`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            const res = await authFetch(`${API_URL}/api/products/active-discounts`);
             const data = await res.json();
             if (data.success) {
                 setActiveDiscounts(data.summary || []);
@@ -182,19 +178,12 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
             }
         }
 
-        const token = getToken();
-        if (!token) {
-            toast.error('You are not logged in. Please re-login.');
-            return false;
-        }
-
         setLoading(true);
         try {
             const response = await authFetch(`${API_URL}/api/products/bulk-discount`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     targetType: payloadTargetType,
@@ -233,19 +222,12 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
             return false;
         }
 
-        const token = getToken();
-        if (!token) {
-            toast.error('You are not logged in. Please re-login.');
-            return false;
-        }
-
         setLoading(true);
         try {
             const response = await authFetch(`${API_URL}/api/products/bulk-pricing`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     targetType,
@@ -279,19 +261,12 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
     };
 
     const handleCustomSubmit = async () => {
-        const token = getToken();
-        if (!token) {
-            toast.error('You are not logged in. Please re-login.');
-            return false;
-        }
-
         setLoading(true);
         try {
             const response = await authFetch(`${API_URL}/api/products/bulk-update`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     targetType,
@@ -323,6 +298,53 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
         }
     };
 
+    const handleBulkDeleteSubmit = async () => {
+        const confirmText = targetType === 'all' 
+            ? 'DELETE ALL' 
+            : (targetType === 'selected' ? `DELETE ${selectedIds.length} SELECTED` : `DELETE ALL IN ${targetValue.toUpperCase()}`);
+
+        const userConfirm = window.prompt(`DANGER: This will PERMANENTLY delete these products and all their variants. This cannot be undone.\n\nType "${confirmText}" to confirm:`);
+        
+        if (userConfirm !== confirmText) {
+            toast.error('Deletion cancelled. Confirmation text did not match.');
+            return false;
+        }
+
+        setLoading(true);
+        try {
+            const response = await authFetch(`${API_URL}/api/products/bulk-delete-by-criteria`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    targetType,
+                    targetValue: targetType === 'all' 
+                        ? undefined 
+                        : (targetType === 'selected' 
+                            ? { productIds: selectedIds, variantIds: selectedVariantIds } 
+                            : targetValue.trim()),
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                toast.success(data.message || 'Bulk deletion completed successfully!');
+                return true;
+            } else {
+                toast.error(data.message || 'Failed to perform bulk deletion.');
+                return false;
+            }
+        } catch (error) {
+            console.error('Bulk delete error:', error);
+            toast.error('An error occurred while performing bulk deletion.');
+            return false;
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent | undefined, action: 'apply' | 'remove' = 'apply') => {
         if (e) e.preventDefault();
 
@@ -341,6 +363,8 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
             success = await handleDiscountSubmit(action);
         } else if (activeTab === 'pricing') {
             success = await handlePricingSubmit();
+        } else if (activeTab === 'delete') {
+            success = await handleBulkDeleteSubmit();
         } else {
             success = await handleCustomSubmit();
         }
@@ -432,6 +456,18 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
                             }`}
                     >
                         Custom Update
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setActiveTab('delete');
+                        }}
+                        className={`flex-1 pb-3 text-sm font-semibold transition-colors border-b-2 ${activeTab === 'delete'
+                            ? 'text-red-500 border-red-500'
+                            : 'text-text-secondary border-transparent hover:text-red-400'
+                            }`}
+                    >
+                        Bulk Delete
                     </button>
                 </div>
 
@@ -583,7 +619,7 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
                                     </label>
                                     <input
                                         id="bulk-sale-start"
-                                        type="date"
+                                        type="datetime-local"
                                         value={saleStart}
                                         onChange={(e) => setSaleStart(e.target.value)}
                                         className="w-full rounded-lg border border-border bg-page-bg px-3 py-2.5 text-sm text-text-primary focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40 cursor-pointer"
@@ -595,7 +631,7 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
                                     </label>
                                     <input
                                         id="bulk-sale-end"
-                                        type="date"
+                                        type="datetime-local"
                                         value={saleEnd}
                                         onChange={(e) => setSaleEnd(e.target.value)}
                                         min={saleStart || undefined}

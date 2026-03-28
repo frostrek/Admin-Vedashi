@@ -19,6 +19,8 @@ import {
     updateAdminProfileImage,
     getAdminMe
 } from '@/lib/api';
+import { useVibe, AuraType, DoshaType } from '@/context/VibeContext';
+import { Volume2, Zap, Leaf, Wind, Flame, Mountain } from 'lucide-react';
 
 export default function ProfileStratumPage() {
     const { isDark } = useTheme();
@@ -42,9 +44,8 @@ export default function ProfileStratumPage() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [securityLoading, setSecurityLoading] = useState(false);
 
-    // Vibe Matrix state
-    const [aura, setAura] = useState('Balanced');
-    const [volume, setVolume] = useState(60);
+    // Vibe Matrix state from context
+    const { settings, updateSettings, saveSettings, isLoading: vibeLoading } = useVibe();
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -68,13 +69,6 @@ export default function ProfileStratumPage() {
         };
 
         fetchProfile();
-
-        // Load preferences from local storage if they exist
-        const savedAura = localStorage.getItem('admin_aura');
-        const savedVolume = localStorage.getItem('admin_volume');
-
-        if (savedAura) setAura(savedAura);
-        if (savedVolume) setVolume(parseInt(savedVolume));
     }, []);
 
     const handleSaveProfile = async (e: React.FormEvent) => {
@@ -88,6 +82,7 @@ export default function ProfileStratumPage() {
                 full_name: name,
                 phone: phone,
                 bio: bio,
+                preferences: { ...settings, vibe_matrix: settings }
             });
             if (res.success) {
                 localStorage.setItem('admin_phone', phone);
@@ -409,22 +404,19 @@ export default function ProfileStratumPage() {
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    <div className={`p-8 rounded-3xl border ${isDark ? 'bg-white/5 border-white/10' : 'bg-primary/5 border-primary/10'} space-y-4`}>
+                                    {/* Aura Intensity */}
+                                    <div className={`p-8 rounded-3xl border ${isDark ? 'bg-white/5 border-white/10' : 'bg-primary/5 border-primary/10'} space-y-4 shadow-sm`}>
                                         <div className="flex items-center justify-between">
                                             <h4 className={`text-sm font-bold ${isDark ? 'text-gold' : 'text-emerald-950'}`}>Visual Aura</h4>
                                             <Sparkles className="w-5 h-5 text-gold/40" />
                                         </div>
-                                        <p className="text-[10px] text-text-muted uppercase font-bold">Control the luminous intensity of the stratum.</p>
-                                        <div className="flex gap-3 pt-2">
-                                            {['Minimal', 'Balanced', 'Intense'].map(a => (
+                                        <p className="text-[10px] text-text-muted uppercase font-bold">Luminous intensity of the stratum.</p>
+                                        <div className="flex gap-2 pt-2">
+                                            {(['Minimal', 'Balanced', 'Intense'] as AuraType[]).map(a => (
                                                 <button 
                                                     key={a} 
-                                                    onClick={() => {
-                                                        setAura(a);
-                                                        localStorage.setItem('admin_aura', a);
-                                                        toast.success(`Aura shifted to ${a}`);
-                                                    }}
-                                                    className={`px-4 py-2 rounded-xl border transition-all text-[10px] font-black uppercase ${aura === a ? 'bg-primary text-gold border-gold' : 'bg-primary/10 border-gold/10 text-gold/40 hover:bg-primary/20'}`}
+                                                    onClick={() => updateSettings({ aura: a })}
+                                                    className={`flex-1 py-3 rounded-xl border transition-all text-[10px] font-black uppercase ${settings.aura === a ? 'bg-gold text-primary border-gold shadow-lg shadow-gold/20' : 'bg-primary/5 border-white/5 text-gold/40 hover:bg-primary/10'}`}
                                                 >
                                                     {a}
                                                 </button>
@@ -432,32 +424,85 @@ export default function ProfileStratumPage() {
                                         </div>
                                     </div>
 
-                                    <div className={`p-8 rounded-3xl border ${isDark ? 'bg-white/5 border-white/10' : 'bg-primary/5 border-primary/10'} space-y-4`}>
+                                    {/* Dosha Resonance */}
+                                    <div className={`p-8 rounded-3xl border ${isDark ? 'bg-white/5 border-white/10' : 'bg-primary/5 border-primary/10'} space-y-4 shadow-sm`}>
+                                        <div className="flex items-center justify-between">
+                                            <h4 className={`text-sm font-bold ${isDark ? 'text-gold' : 'text-emerald-950'}`}>Dosha Resonance</h4>
+                                            <Leaf className="w-5 h-5 text-gold/40" />
+                                        </div>
+                                        <p className="text-[10px] text-text-muted uppercase font-bold">Harmonize the UI with your spiritual constitution.</p>
+                                        <div className="flex gap-2 pt-2">
+                                            {[
+                                                { id: 'None', icon: Mountain },
+                                                { id: 'Vata', icon: Wind },
+                                                { id: 'Pitta', icon: Flame },
+                                                { id: 'Kapha', icon: Leaf }
+                                            ].map(({ id, icon: Icon }) => (
+                                                <button 
+                                                    key={id} 
+                                                    onClick={() => updateSettings({ dosha: id as DoshaType })}
+                                                    className={`flex-1 py-3 rounded-xl border transition-all text-[10px] font-black uppercase flex flex-col items-center gap-1 ${settings.dosha === id ? 'bg-gold text-primary border-gold shadow-lg shadow-gold/20' : 'bg-primary/5 border-white/5 text-gold/40 hover:bg-primary/10'}`}
+                                                >
+                                                    <Icon className="w-3 h-3" />
+                                                    {id}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Volume Resonance */}
+                                    <div className={`p-8 rounded-3xl border ${isDark ? 'bg-white/5 border-white/10' : 'bg-primary/5 border-primary/10'} space-y-4 shadow-sm`}>
                                         <div className="flex items-center justify-between">
                                             <h4 className={`text-sm font-bold ${isDark ? 'text-gold' : 'text-emerald-950'}`}>Sound Resonance</h4>
-                                            <Bell className="w-5 h-5 text-gold/40" />
+                                            <Volume2 className="w-5 h-5 text-gold/40" />
                                         </div>
-                                        <p className="text-[10px] text-text-muted uppercase font-bold">Harmonize with interface notification vibrations.</p>
-                                        <div className="flex items-center gap-4 pt-2">
+                                        <p className="text-[10px] text-text-muted uppercase font-bold">Interaction vibration amplitude.</p>
+                                        <div className="flex items-center gap-4 pt-4">
                                             <input 
                                                 type="range" 
                                                 min="0" 
                                                 max="100" 
-                                                value={volume}
-                                                onChange={(e) => {
-                                                    const v = parseInt(e.target.value);
-                                                    setVolume(v);
-                                                    localStorage.setItem('admin_volume', v.toString());
-                                                }}
-                                                className="flex-1 h-1.5 bg-black/20 rounded-full appearance-none cursor-pointer accent-gold"
+                                                value={settings.volume}
+                                                onChange={(e) => updateSettings({ volume: parseInt(e.target.value) })}
+                                                className="flex-1 h-1 bg-gold/20 rounded-full appearance-none cursor-pointer accent-gold"
                                             />
-                                            <span className="text-[10px] font-black text-gold w-8">{volume}%</span>
+                                            <span className="text-[10px] font-black text-gold w-8 text-right">{settings.volume}%</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Pulse Speed */}
+                                    <div className={`p-8 rounded-3xl border ${isDark ? 'bg-white/5 border-white/10' : 'bg-primary/5 border-primary/10'} space-y-4 shadow-sm`}>
+                                        <div className="flex items-center justify-between">
+                                            <h4 className={`text-sm font-bold ${isDark ? 'text-gold' : 'text-emerald-950'}`}>Administrative Pulse</h4>
+                                            <Zap className="w-5 h-5 text-gold/40" />
+                                        </div>
+                                        <p className="text-[10px] text-text-muted uppercase font-bold">Temporal frequency of interface breath.</p>
+                                        <div className="flex items-center gap-4 pt-4">
+                                            <input 
+                                                type="range" 
+                                                min="1" 
+                                                max="100" 
+                                                value={settings.pulse}
+                                                onChange={(e) => updateSettings({ pulse: parseInt(e.target.value) })}
+                                                className="flex-1 h-1 bg-gold/20 rounded-full appearance-none cursor-pointer accent-gold"
+                                            />
+                                            <span className="text-[10px] font-black text-gold w-8 text-right">{settings.pulse}%</span>
                                         </div>
                                     </div>
                                 </div>
                                 
-                                <div className="text-center pt-8 border-t border-white/5">
-                                    <p className="text-[10px] text-gold/30 uppercase font-black italic">Advanced frequencies currently under spectral refinement</p>
+                                <div className="text-center pt-8 border-t border-white/5 space-y-6">
+                                    <p className="text-[10px] text-gold/30 uppercase font-black italic">Settings persist locally but require harmony sync for universal permanence</p>
+                                    <div className="flex justify-center">
+                                        <button 
+                                            onClick={saveSettings}
+                                            disabled={vibeLoading}
+                                            className="px-12 py-5 bg-gold hover:bg-gold-muted text-primary text-[10px] font-bold uppercase rounded-2xl transition-all shadow-2xl shadow-gold/30 flex items-center gap-4 active:scale-95 disabled:opacity-50"
+                                        >
+                                            {vibeLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                                            Commit Vibe Matrix to Cosmic Vault (Save)
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         )}

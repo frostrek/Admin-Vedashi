@@ -2,7 +2,6 @@
 import { authFetch } from '@/lib/api';
 
 import { useState, useEffect, useCallback } from 'react';
-import { getToken } from '@/lib/auth';
 import toast from 'react-hot-toast';
 import {
     Plus, Trash2, X, Loader2, ChevronDown, ChevronUp,
@@ -10,7 +9,7 @@ import {
     GripVertical, AlignLeft, MonitorSmartphone, Zap, Info
 } from 'lucide-react';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+import { API_URL } from '@/lib/api';
 
 // ─── Types ────────────────────────────────────────────────────────
 
@@ -155,31 +154,18 @@ export default function HeaderManagementPage() {
     const [activeSection, setActiveSection] = useState<string | null>(null);
     const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
-    const getCsrfToken = useCallback((): string | null => {
-        if (typeof document === 'undefined') return null;
-        const match = document.cookie.match(/(?:^|;\s*)_csrf=([^;]*)/);
-        return match ? decodeURIComponent(match[1]) : null;
-    }, []);
 
-    const authHeaders = useCallback(() => {
-        const h: Record<string, string> = { 'Content-Type': 'application/json' };
-        const token = getToken();
-        if (token) h['Authorization'] = `Bearer ${token}`;
-        const csrf = getCsrfToken();
-        if (csrf) h['X-CSRF-Token'] = csrf;
-        return h;
-    }, [getCsrfToken]);
 
     const load = useCallback(async () => {
         setLoading(true);
         try {
-            const res = await fetch(`${API_URL}/api/header/admin`, { headers: authHeaders(), credentials: 'include' });
+            const res = await authFetch(`${API_URL}/api/header/admin`);
             const data = await res.json();
             if (data.success) setHeader(data.data);
             else toast.error('Failed to load header config');
         } catch { toast.error('Network error loading header'); }
         finally { setLoading(false); }
-    }, [authHeaders]);
+    }, []);
 
     useEffect(() => { load(); }, [load]);
 
@@ -190,8 +176,7 @@ export default function HeaderManagementPage() {
         try {
             const res = await authFetch(`${API_URL}/api/header/admin/${section}`, {
                 method: 'PUT',
-                headers: authHeaders(),
-                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ value: header[section] }),
             });
             const data = await res.json();
@@ -208,8 +193,7 @@ export default function HeaderManagementPage() {
         try {
             const res = await authFetch(`${API_URL}/api/header/admin`, {
                 method: 'PUT',
-                headers: authHeaders(),
-                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(header),
             });
             const data = await res.json();
