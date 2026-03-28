@@ -273,7 +273,7 @@ export interface Product {
     assets?: any[];
 }
 
-/* ─── Customers ─── */
+/* ─── Customers   ─── */
 
 export interface Customer {
     customer_id: string;
