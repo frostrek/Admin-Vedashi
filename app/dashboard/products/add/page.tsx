@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { getCategories, createCategory } from '@/lib/api/category';
 import { createProduct } from '@/lib/api/product';
-import { uploadProductImage } from '@/lib/api';
+import { uploadProductImage, API_URL } from '@/lib/api';
 import { Category } from '@/types/category';
 import { ArrowLeft, ArrowRight, Check, X, Plus, Trash2, ChevronDown, ChevronUp, AlertCircle, Info, Package, Layers, Star, ImageIcon, Maximize2, Loader2, Film, Search, Weight, Droplets, Hash, Zap, Utensils } from 'lucide-react';
 import Link from 'next/link';
@@ -189,7 +189,7 @@ export default function AddProductPage() {
                 };
                 
                 const token = localStorage.getItem('ksp_admin_token');
-                fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/products`, {
+                fetch(`${API_URL}/api/products`, {
                     method: 'POST',
                     keepalive: true,
                     headers: {

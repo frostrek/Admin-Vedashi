@@ -1,5 +1,5 @@
 'use client';
-import { authFetch } from '@/lib/api';
+import { authFetch, API_URL } from '@/lib/api';
 
 import React, { useState, useRef, useEffect } from 'react';
 import { X, UploadCloud, FileType, CheckCircle2, AlertCircle, Loader2, Download } from 'lucide-react';
@@ -45,7 +45,6 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
     } | null>(null);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
     if (!isOpen) return null;
 

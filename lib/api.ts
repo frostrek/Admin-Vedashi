@@ -7,7 +7,7 @@
 import { getToken, setToken, getRefreshToken, setRefreshToken } from '@/lib/auth';
 import { env } from '@/lib/env';
 
-const API_URL = env.NEXT_PUBLIC_API_URL;
+export const API_URL = env.NEXT_PUBLIC_API_URL;
 
 let cachedCsrfToken: string | null = null;
 

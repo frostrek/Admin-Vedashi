@@ -1,4 +1,4 @@
-import { authFetch } from '@/lib/api';
+import { authFetch, API_URL } from '@/lib/api';
 
 import React, { useState, useEffect } from 'react';
 import { X, Percent, Calendar, Tag, Layers, Star, ChevronDown, Loader2, ArrowUpCircle, ArrowDownCircle, DollarSign, Trash2, Check } from 'lucide-react';
@@ -25,7 +25,7 @@ interface ActiveDiscount {
     variant_count: string | number;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
 
 const CUSTOM_FIELDS = [
     { value: 'category', label: 'Category', type: 'category' },
@@ -95,13 +95,9 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
     const [fetchingDiscounts, setFetchingDiscounts] = useState(false);
 
     const fetchActiveDiscounts = async () => {
-        const token = getToken();
-        if (!token) return;
         setFetchingDiscounts(true);
         try {
-            const res = await authFetch(`${API_URL}/api/products/active-discounts`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            const res = await authFetch(`${API_URL}/api/products/active-discounts`);
             const data = await res.json();
             if (data.success) {
                 setActiveDiscounts(data.summary || []);
@@ -182,19 +178,12 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
             }
         }
 
-        const token = getToken();
-        if (!token) {
-            toast.error('You are not logged in. Please re-login.');
-            return false;
-        }
-
         setLoading(true);
         try {
             const response = await authFetch(`${API_URL}/api/products/bulk-discount`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     targetType: payloadTargetType,
@@ -233,19 +222,12 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
             return false;
         }
 
-        const token = getToken();
-        if (!token) {
-            toast.error('You are not logged in. Please re-login.');
-            return false;
-        }
-
         setLoading(true);
         try {
             const response = await authFetch(`${API_URL}/api/products/bulk-pricing`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     targetType,
@@ -279,19 +261,12 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
     };
 
     const handleCustomSubmit = async () => {
-        const token = getToken();
-        if (!token) {
-            toast.error('You are not logged in. Please re-login.');
-            return false;
-        }
-
         setLoading(true);
         try {
             const response = await authFetch(`${API_URL}/api/products/bulk-update`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     targetType,
@@ -324,12 +299,6 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
     };
 
     const handleBulkDeleteSubmit = async () => {
-        const token = getToken();
-        if (!token) {
-            toast.error('You are not logged in. Please re-login.');
-            return false;
-        }
-
         const confirmText = targetType === 'all' 
             ? 'DELETE ALL' 
             : (targetType === 'selected' ? `DELETE ${selectedIds.length} SELECTED` : `DELETE ALL IN ${targetValue.toUpperCase()}`);
@@ -346,8 +315,7 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
             const response = await authFetch(`${API_URL}/api/products/bulk-delete-by-criteria`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     targetType,

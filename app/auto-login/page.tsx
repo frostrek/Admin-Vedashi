@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Leaf } from 'lucide-react';
+import { API_URL } from '@/lib/api';
 
 /**
  * Auto-Login Page
@@ -35,7 +36,7 @@ function AutoLoginContent() {
         // Validate the session via HttpOnly cookie (set by storefront login)
         (async () => {
             try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/auth/me`, {
+                const res = await fetch(`${API_URL}/api/auth/me`, {
                     credentials: 'include',
                 });
                 const json = await res.json();
