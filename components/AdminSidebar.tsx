@@ -134,13 +134,13 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
                             ? "text-[#c8d0b8] bg-white/[0.04] before:bg-transparent"
                             : "text-[#7a8070] hover:text-[#d4d9c8] hover:bg-white/5 before:bg-transparent"
                     } ${isCollapsed ? 'justify-center' : ''} ${
-                        item.isSubItem 
+                        item.isSubItem && !isCollapsed
                         ? `ml-6 pl-4 text-xs`
                         : ''
                     }`}
                 title={isCollapsed ? item.label : undefined}
             >
-                <Icon className={`${item.isSubItem ? 'h-3.5 w-3.5' : 'h-[18px] w-[18px]'} flex-shrink-0 ${(isActive || isParentWithActiveChild) ? 'text-white' : ''}`} />
+                <Icon className={`${item.isSubItem && !isCollapsed ? 'h-3.5 w-3.5' : 'h-[18px] w-[18px]'} flex-shrink-0 ${(isActive || isParentWithActiveChild) ? 'text-white' : ''}`} />
                 {!isCollapsed && <span>{item.label}</span>}
             </Link>
         );

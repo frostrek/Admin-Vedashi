@@ -619,7 +619,7 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
                                     </label>
                                     <input
                                         id="bulk-sale-start"
-                                        type="date"
+                                        type="datetime-local"
                                         value={saleStart}
                                         onChange={(e) => setSaleStart(e.target.value)}
                                         className="w-full rounded-lg border border-border bg-page-bg px-3 py-2.5 text-sm text-text-primary focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40 cursor-pointer"
@@ -631,7 +631,7 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
                                     </label>
                                     <input
                                         id="bulk-sale-end"
-                                        type="date"
+                                        type="datetime-local"
                                         value={saleEnd}
                                         onChange={(e) => setSaleEnd(e.target.value)}
                                         min={saleStart || undefined}
