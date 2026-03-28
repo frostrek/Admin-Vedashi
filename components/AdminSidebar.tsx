@@ -6,7 +6,7 @@ import { useAdminAuth } from '@/context/AdminAuthContext';
 import {
     LayoutDashboard, Package, ShoppingCart, Tag, LogOut, Leaf,
     ChevronLeft, Menu, Truck, Megaphone, BarChart, Settings, Users, X, Shield, Search, Ticket,
-    FileText, MessageSquare, Star, ShieldAlert, LayoutTemplate, Images, HelpCircle, Send, MonitorSmartphone, Activity, Layers, DollarSign, Gift, FileBarChart2
+    FileText, MessageSquare, Star, ShieldAlert, LayoutTemplate, Images, HelpCircle, Send, MonitorSmartphone, Activity, Layers, DollarSign, Gift, FileBarChart2, SlidersHorizontal
 } from 'lucide-react';
 const useState = require('react').useState;
 const useEffect = require('react').useEffect;
@@ -50,6 +50,7 @@ const siteContentNav = [
     { href: '/dashboard/media', label: 'Visual Repository', icon: Images },
     { href: '/dashboard/header', label: 'Header Canvas', icon: MonitorSmartphone },
     { href: '/dashboard/footer', label: 'Footer Stratum', icon: LayoutTemplate },
+    { href: '/dashboard/shop-filters', label: 'Shop Filters', icon: SlidersHorizontal },
     { href: '/dashboard/legal', label: 'Legal Chronicles', icon: Shield },
 ];
 
