@@ -29,11 +29,6 @@ const LIABILITIES = [
     description: 'Outstanding amounts owed to suppliers and vendors for goods or services received.',
   },
   {
-    icon: BadgePercent,
-    label: 'Taxes Payable',
-    description: 'Sales tax collected from customers that must be remitted to the government.',
-  },
-  {
     icon: CreditCard,
     label: 'Short-Term Loans',
     description: 'Active lines of credit or working capital loans due within the fiscal year.',

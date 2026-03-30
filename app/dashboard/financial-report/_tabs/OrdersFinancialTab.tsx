@@ -50,7 +50,6 @@ export default function OrdersFinancialTab({ data, isLoading, page, search, onPa
         { label: 'Subtotal', value: formatINR(o.subtotal) },
         { label: 'Discounts', value: o.discounts > 0 ? `-${formatINR(o.discounts)}` : '₹0' },
         { label: 'Shipping', value: formatINR(o.shipping) },
-        { label: 'Tax', value: formatINR(o.tax) },
         { label: 'Final Total', value: formatINR(o.finalTotal) },
         { label: 'Payment Method', value: o.paymentMethod },
         { label: 'Payment Status', value: o.paymentStatus },
@@ -93,7 +92,6 @@ export default function OrdersFinancialTab({ data, isLoading, page, search, onPa
                 <th className="px-4 py-3 text-right font-semibold text-text-muted">Subtotal</th>
                 <th className="px-4 py-3 text-right font-semibold text-text-muted">Discount</th>
                 <th className="px-4 py-3 text-right font-semibold text-text-muted">Ship</th>
-                <th className="px-4 py-3 text-right font-semibold text-text-muted">Tax</th>
                 <th className="px-4 py-3 text-right font-semibold text-text-muted">Total</th>
                 <th className="px-4 py-3 font-semibold text-text-muted">Payment</th>
                 <th className="px-4 py-3 font-semibold text-text-muted">Status</th>
@@ -121,7 +119,6 @@ export default function OrdersFinancialTab({ data, isLoading, page, search, onPa
                       {o.discounts > 0 ? `-${formatINR(o.discounts)}` : '—'}
                     </td>
                     <td className="px-4 py-3 text-right font-mono text-text-secondary">{formatINR(o.shipping)}</td>
-                    <td className="px-4 py-3 text-right font-mono text-text-secondary">{formatINR(o.tax)}</td>
                     <td className="px-4 py-3 text-right font-mono font-semibold text-gold">{formatINR(o.finalTotal)}</td>
                     <td className="px-4 py-3 text-text-secondary capitalize">{o.paymentMethod}</td>
                     <td className="px-4 py-3">
