@@ -246,7 +246,6 @@ export interface Product {
     intended_use?: string;
     price?: number;
     quantity?: number; // request-only: sets default variant stock (not returned in responses)
-    is_taxable?: boolean;
 
     stock_quantity?: number;
     country_of_origin?: string;
@@ -734,7 +733,6 @@ export async function getOrderById(id: string): Promise<Order | null> {
                 payment_status: row.payment_status,
                 created_at: row.created_at ?? new Date().toISOString(),
                 // Extra fields the detail modal needs
-                ...(row.total_tax != null ? { total_tax: parseFloat(row.total_tax) } : {}),
                 ...(row.grand_total != null ? { grand_total: parseFloat(row.grand_total) } : {}),
                 ...(row.order_notes ? { order_notes: row.order_notes } : {}),
                 ...(row.shipping_address ? { shipping_address: row.shipping_address } : {}),

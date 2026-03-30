@@ -119,7 +119,7 @@ export default function CashFlowTab({ data }: { data?: FinancialReportData }) {
               </li>
               <li className="flex gap-3 text-text-secondary">
                 <CheckCircle2 className="w-5 h-5 text-success shrink-0" />
-                <span><strong className="text-text-primary">Separate Accounts:</strong> Maintain dedicated operating and tax reserve accounts.</span>
+                <span><strong className="text-text-primary">Separate Accounts:</strong> Maintain dedicated operating and reserve accounts.</span>
               </li>
             </ul>
           </div>

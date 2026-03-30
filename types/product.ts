@@ -14,7 +14,6 @@ export interface Product {
     intended_use?: string;
     price: number;
     quantity?: number;
-    is_taxable?: boolean;
 
     specifications?: ProductSpecifications;
     packaging?: ProductPackaging;
@@ -69,7 +68,6 @@ export interface ProductVariant {
     is_active?: boolean;
     is_default?: boolean;
     currency?: string;
-    tax_percentage?: number;
     sale_price?: number;
     sale_start?: string;
     sale_end?: string;

@@ -73,7 +73,6 @@ interface OrderDetail {
     payment_status?: string;
     payment_method?: string;
     created_at: string;
-    total_tax?: number;
     grand_total?: number;
     order_notes?: string;
     shipping_address?: {
@@ -88,7 +87,6 @@ interface OrderDetail {
         order_item_id?: string;
         quantity: number;
         unit_price: number;
-        tax_amount?: number;
         line_total?: number;
         price?: number;
         product_name?: string;
@@ -1270,9 +1268,7 @@ export default function OrdersPage() {
                             </div>
                             <div className="rounded-xl border border-border bg-card-bg p-4 space-y-2">
                                 <div className="flex justify-between text-sm"><span className="text-text-secondary">Subtotal</span><span className="text-text-primary tabular-nums">{formatINR(selectedOrder.subtotal ?? selectedOrder.total)}</span></div>
-                                {(selectedOrder as OrderDetail).total_tax != null && (
-                                    <div className="flex justify-between text-sm"><span className="text-text-secondary">Tax</span><span className="text-text-primary tabular-nums">{formatINR((selectedOrder as OrderDetail).total_tax ?? 0)}</span></div>
-                                )}
+
                                 <div className="flex justify-between pt-2.5 border-t border-border">
                                     <span className="font-serif text-base font-bold text-gold">Grand Total</span>
                                     <span className="font-serif text-base font-bold text-gold tabular-nums">{formatINR((selectedOrder as OrderDetail).grand_total ?? selectedOrder.total)}</span>

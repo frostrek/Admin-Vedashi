@@ -78,9 +78,9 @@ export function exportToCSV(
   csvContent += "\n";
 
   if (ordersData && ordersData.orders.length > 0) {
-    csvContent += "RECENT TRANSACTIONS\nOrder ID,Customer,Date,Subtotal,Shipping,Tax,Total,Status\n";
+    csvContent += "RECENT TRANSACTIONS\nOrder ID,Customer,Date,Subtotal,Shipping,Total,Status\n";
     ordersData.orders.forEach(o => {
-        csvContent += `${o.orderId},"${o.customer}",${o.date},${o.subtotal},${o.shipping},${o.tax},${o.finalTotal},${o.orderStatus}\n`;
+        csvContent += `${o.orderId},"${o.customer}",${o.date},${o.subtotal},${o.shipping},${o.finalTotal},${o.orderStatus}\n`;
     });
   }
 
@@ -156,7 +156,6 @@ export function exportToExcel(
         "Subtotal": o.subtotal,
         "Discounts": o.discounts,
         "Shipping": o.shipping,
-        "Tax": o.tax,
         "Final Total": o.finalTotal,
         "Payment": o.paymentMethod,
         "Status": o.orderStatus

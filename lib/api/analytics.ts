@@ -262,7 +262,6 @@ export async function getPaymentBreakdown(): Promise<PaymentBreakdown | null> {
 export interface ExpenseTrendPoint {
     period: string;
     shipping: number;
-    tax: number;
     discounts: number;
     gatewayFees: number;
 }
@@ -270,7 +269,6 @@ export interface ExpenseTrendPoint {
 export interface ExpenseBreakdown {
     totals: {
         shipping: number;
-        tax: number;
         discounts: number;
         gatewayFees: number;
         revenue: number;
@@ -322,7 +320,6 @@ export interface OrderFinancialRow {
     subtotal: number;
     discounts: number;
     shipping: number;
-    tax: number;
     finalTotal: number;
     paymentMethod: string;
     paymentStatus: string;

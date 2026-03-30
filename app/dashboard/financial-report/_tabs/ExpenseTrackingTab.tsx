@@ -51,13 +51,12 @@ export default function ExpenseTrackingTab({ data }: { data?: ExpenseBreakdown }
   );
 
   const t = data.totals;
-  const computedTotalExpenses = Number(t.shipping || 0) + Number(t.tax || 0) + Number(t.discounts || 0) + Number(t.gatewayFees || 0);
+  const computedTotalExpenses = Number(t.shipping || 0) + Number(t.discounts || 0) + Number(t.gatewayFees || 0);
   const computedGrossProfit = Number(t.revenue || 0) - computedTotalExpenses;
   const computedGrossMargin = t.revenue > 0 ? (computedGrossProfit / t.revenue) * 100 : 0;
 
   const pieData = [
     { name: 'Shipping', value: t.shipping },
-    { name: 'Tax', value: t.tax },
     { name: 'Discounts', value: t.discounts },
     { name: 'Gateway Fees', value: t.gatewayFees },
   ].filter(d => d.value > 0);
@@ -67,7 +66,7 @@ export default function ExpenseTrackingTab({ data }: { data?: ExpenseBreakdown }
   const handleBarClick = (payload: any) => {
     const pt = payload;
     if (!pt || !pt.period) return;
-    const total = Number(pt.shipping || 0) + Number(pt.tax || 0) + Number(pt.discounts || 0) + Number(pt.gatewayFees || 0);
+    const total = Number(pt.shipping || 0) + Number(pt.discounts || 0) + Number(pt.gatewayFees || 0);
     setDetail({
       title: `Expenses — ${formatDate(String(pt.period))}`,
       heroLabel: 'Total Expenses',
@@ -75,7 +74,6 @@ export default function ExpenseTrackingTab({ data }: { data?: ExpenseBreakdown }
       rows: [
         { label: 'Period', value: formatDate(String(pt.period)) },
         { label: 'Shipping', value: formatINR(Number(pt.shipping || 0)) },
-        { label: 'Tax', value: formatINR(Number(pt.tax || 0)) },
         { label: 'Discounts', value: formatINR(Number(pt.discounts || 0)) },
         { label: 'Gateway Fees', value: formatINR(Number(pt.gatewayFees || 0)) },
         { label: 'Total', value: formatINR(total) },
@@ -219,11 +217,6 @@ export default function ExpenseTrackingTab({ data }: { data?: ExpenseBreakdown }
             tooltip="Total shipping charges paid by customers or incurred for delivery." 
           />
           <KPICard 
-            label="Tax Collected" 
-            value={formatINR(t.tax)} 
-            tooltip="Total GST and other applicable taxes collected on orders." 
-          />
-          <KPICard 
             label="Discounts Given" 
             value={formatINR(t.discounts)} 
             tooltip="Total value of sale discounts, coupon codes, and loyalty redemptions." 
@@ -236,7 +229,7 @@ export default function ExpenseTrackingTab({ data }: { data?: ExpenseBreakdown }
           <KPICard 
             label="Gross Profit" 
             value={formatINR(computedGrossProfit)} 
-            tooltip="Calculated profit after deducting all tracked expenses (Shipping, Tax, Discounts, Fees) from Total Revenue." 
+            tooltip="Calculated profit after deducting all tracked expenses (Shipping, Discounts, Fees) from Total Revenue." 
             delta={computedGrossMargin} 
           />
         </div>
@@ -263,7 +256,6 @@ export default function ExpenseTrackingTab({ data }: { data?: ExpenseBreakdown }
                   <YAxis stroke="var(--t-text-muted,#666)" fontSize={10} tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`} tickLine={false} axisLine={false} />
                   <RechartsTooltip content={<BarTooltipContent />} cursor={{ fill: 'rgba(168,146,80,0.06)' }} />
                   <Bar dataKey="shipping" name="Shipping" stackId="a" fill={PRIMARY} radius={[0, 0, 0, 0]} style={{ cursor: 'pointer' }} />
-                  <Bar dataKey="tax" name="Tax" stackId="a" fill={GOLD} style={{ cursor: 'pointer' }} />
                   <Bar dataKey="discounts" name="Discounts" stackId="a" fill={PRIMARY_LIGHT} style={{ cursor: 'pointer' }} />
                   <Bar dataKey="gatewayFees" name="Gateway" stackId="a" fill={GOLD_LIGHT} radius={[4, 4, 0, 0]} style={{ cursor: 'pointer' }} />
                 </BarChart>
