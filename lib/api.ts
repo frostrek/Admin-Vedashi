@@ -637,6 +637,7 @@ export async function getOrders(params?: { dateFrom?: string; dateTo?: string })
     try {
         let url = `${API_URL}/api/orders`;
         const queryParams = [];
+        queryParams.push(`limit=1000000000`); // Ensure we fetch all orders
         if (params?.dateFrom) queryParams.push(`date_from=${encodeURIComponent(params.dateFrom)}`);
         if (params?.dateTo) queryParams.push(`date_to=${encodeURIComponent(params.dateTo)}`);
         if (queryParams.length > 0) url += `?${queryParams.join('&')}`;
