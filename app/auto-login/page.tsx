@@ -70,7 +70,7 @@ function AutoLoginContent() {
 
                 // Hard redirect to avoid Turbopack re-render loops
                 setTimeout(() => {
-                    window.location.href = '/dashboard';
+                    window.location.href = 'https://admin.vedashi.com/dashboard';
                 }, 800);
             } catch (err) {
                 console.error('Auto-login failed:', err);
