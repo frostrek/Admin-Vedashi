@@ -1,13 +1,13 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import { loginUser as apiLogin, deactivateAccount as apiDeactivate, logoutUser as apiLogout, LoginResult } from '@/lib/api';
+import { loginUser as apiLogin, deactivateAccount as apiDeactivate, logoutUser as apiLogout, getAdminMe, LoginResult } from '@/lib/api';
 import { setToken, getToken, setStoredUser, clearAuth, setRefreshToken } from '@/lib/auth';
 
 interface AdminUser {
     email: string;
     name: string;
-    role: 'admin' | 'owner';
+    role: 'admin' | 'owner' | 'Super Admin';
     customer_id?: string;
     phone?: string;
 }
@@ -49,11 +49,18 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
             }
 
             if (result.success && result.customer) {
+                // Ensure only admin roles can access this dashboard
+                const role = result.customer.role || 'customer';
+                if (!['admin', 'Super Admin', 'owner'].includes(role)) {
+                    setIsLoading(false);
+                    return { success: false, error: 'Access denied. You do not have administrative privileges.' };
+                }
+
                 // Real backend login succeeded
                 const adminUser: AdminUser = {
                     email: result.customer.email,
                     name: result.customer.full_name || email.split('@')[0],
-                    role: 'admin',
+                    role: role as any,
                     customer_id: result.customer.customer_id,
                     phone: result.customer.phone,
                 };
@@ -121,6 +128,37 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
             if (stored) {
                 setUser(JSON.parse(stored));
             }
+
+            // ── SESSION RECOVERY CHECK ──────────────────────────
+            // Always validate with backend (/me) if cookies exist
+            getAdminMe().then(res => {
+                if (res.success && res.data) {
+                    const role = res.data.role || 'customer';
+                    
+                    // Reject non-admin sessions immediately
+                    if (!['admin', 'Super Admin', 'owner'].includes(role)) {
+                        setUser(null);
+                        localStorage.removeItem(ADMIN_KEY);
+                        return;
+                    }
+
+                    const adminUser: AdminUser = {
+                        email: res.data.email,
+                        name: res.data.full_name || res.data.email.split('@')[0],
+                        role: role as any,
+                        customer_id: (res.data as any).customer_id || (res.data as any).id,
+                        phone: res.data.phone,
+                    };
+                    setUser(adminUser);
+                    localStorage.setItem(ADMIN_KEY, JSON.stringify(adminUser));
+                } else if (stored) {
+                    // Cookie invalid/expired but we have stale storage
+                    setUser(null);
+                    localStorage.removeItem(ADMIN_KEY);
+                }
+            }).catch(() => {
+                // Fallback to stored user on network error
+            });
         }
         setIsLoading(false);
 

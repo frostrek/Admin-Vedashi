@@ -48,12 +48,21 @@ function AutoLoginContent() {
                 }
 
                 const customer = json.data;
+                const role = customer.role || 'customer';
+
+                // ── SECURITY ROLE CHECK ──────────────────────────
+                // Ensure the session belongs to an administrative role
+                if (!['admin', 'Super Admin', 'owner'].includes(role)) {
+                    setStatus('Access denied. Administrative privileges required.');
+                    setTimeout(() => { window.location.href = '/'; }, 2000);
+                    return;
+                }
 
                 // Set up AdminAuthContext localStorage (key: ksp_admin_user)
                 const adminUser = {
                     email: customer.email || email,
                     name: customer.full_name || name || email.split('@')[0],
-                    role: 'admin' as const,
+                    role: role as any,
                     customer_id: customer.customer_id || id || '',
                     phone: customer.phone || '',
                 };
@@ -70,7 +79,7 @@ function AutoLoginContent() {
 
                 // Hard redirect to avoid Turbopack re-render loops
                 setTimeout(() => {
-                    window.location.href = 'https://admin.vedashi.com/dashboard';
+                    window.location.href = '/dashboard';
                 }, 800);
             } catch (err) {
                 console.error('Auto-login failed:', err);
