@@ -79,7 +79,7 @@ function AutoLoginContent() {
 
                 // Hard redirect to avoid Turbopack re-render loops
                 setTimeout(() => {
-                    window.location.href = '/dashboard';
+                    window.location.href = `${window.location.origin}/dashboard`;
                 }, 800);
             } catch (err) {
                 console.error('Auto-login failed:', err);
