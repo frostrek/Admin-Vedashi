@@ -109,7 +109,7 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
         }
     };
 
-    // Fetch distinct values when modal opens
+    // Fetch distinct values  when modal opens
     useEffect(() => {
         if (!isOpen) return;
         setOptionsLoading(true);
@@ -158,10 +158,10 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
 
     const handleDiscountSubmit = async (action: 'apply' | 'remove', overrideTargetType?: TargetType, overrideTargetValue?: string) => {
         const payloadTargetType = overrideTargetType || targetType;
-        const payloadTargetValue = overrideTargetType 
-            ? overrideTargetValue 
-            : (targetType === 'selected' 
-                ? { productIds: selectedIds, variantIds: selectedVariantIds } 
+        const payloadTargetValue = overrideTargetType
+            ? overrideTargetValue
+            : (targetType === 'selected'
+                ? { productIds: selectedIds, variantIds: selectedVariantIds }
                 : targetValue);
 
         let pct: number | undefined;
@@ -187,8 +187,8 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
                 },
                 body: JSON.stringify({
                     targetType: payloadTargetType,
-                    targetValue: payloadTargetType === 'all' 
-                        ? undefined 
+                    targetValue: payloadTargetType === 'all'
+                        ? undefined
                         : (typeof payloadTargetValue === 'string' ? payloadTargetValue.trim() : payloadTargetValue),
                     discountPercentage: pct,
                     saleStart: saleStart ? new Date(saleStart).toISOString() : undefined,
@@ -231,10 +231,10 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
                 },
                 body: JSON.stringify({
                     targetType,
-                    targetValue: targetType === 'all' 
-                        ? undefined 
-                        : (targetType === 'selected' 
-                            ? { productIds: selectedIds, variantIds: selectedVariantIds } 
+                    targetValue: targetType === 'all'
+                        ? undefined
+                        : (targetType === 'selected'
+                            ? { productIds: selectedIds, variantIds: selectedVariantIds }
                             : targetValue.trim()),
                     adjustmentMode,
                     valueType,
@@ -270,10 +270,10 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
                 },
                 body: JSON.stringify({
                     targetType,
-                    targetValue: targetType === 'all' 
-                        ? undefined 
-                        : (targetType === 'selected' 
-                            ? { productIds: selectedIds, variantIds: selectedVariantIds } 
+                    targetValue: targetType === 'all'
+                        ? undefined
+                        : (targetType === 'selected'
+                            ? { productIds: selectedIds, variantIds: selectedVariantIds }
                             : targetValue.trim()),
                     field: customField,
                     value: customValue,
@@ -299,12 +299,12 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
     };
 
     const handleBulkDeleteSubmit = async () => {
-        const confirmText = targetType === 'all' 
-            ? 'DELETE ALL' 
+        const confirmText = targetType === 'all'
+            ? 'DELETE ALL'
             : (targetType === 'selected' ? `DELETE ${selectedIds.length} SELECTED` : `DELETE ALL IN ${targetValue.toUpperCase()}`);
 
         const userConfirm = window.prompt(`DANGER: This will PERMANENTLY delete these products and all their variants. This cannot be undone.\n\nType "${confirmText}" to confirm:`);
-        
+
         if (userConfirm !== confirmText) {
             toast.error('Deletion cancelled. Confirmation text did not match.');
             return false;
@@ -319,10 +319,10 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
                 },
                 body: JSON.stringify({
                     targetType,
-                    targetValue: targetType === 'all' 
-                        ? undefined 
-                        : (targetType === 'selected' 
-                            ? { productIds: selectedIds, variantIds: selectedVariantIds } 
+                    targetValue: targetType === 'all'
+                        ? undefined
+                        : (targetType === 'selected'
+                            ? { productIds: selectedIds, variantIds: selectedVariantIds }
                             : targetValue.trim()),
                 })
             });
@@ -484,34 +484,34 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
                                 { value: 'category', label: 'Category', icon: Layers },
                                 { value: 'sub_category', label: 'Subcategory', icon: Layers },
                                 { value: 'brand', label: 'Brand', icon: Star },
-                                ...(selectedIds.length > 0 || selectedVariantIds.length > 0 ? [{ 
-                                    value: 'selected' as const, 
-                                    label: `Selected (${selectedIds.length}P / ${selectedVariantIds.length}V)`, 
-                                    icon: Check 
+                                ...(selectedIds.length > 0 || selectedVariantIds.length > 0 ? [{
+                                    value: 'selected' as const,
+                                    label: `Selected (${selectedIds.length}P / ${selectedVariantIds.length}V)`,
+                                    icon: Check
                                 }] : []),
                                 { value: 'all', label: 'All Products', icon: Tag },
                             ] as const)
                                 .filter(t => activeTab !== 'custom' || (t.value !== 'category' && t.value !== 'sub_category'))
                                 .map(({ value, label, icon: Icon }) => (
-                                <label
-                                    key={value}
-                                    className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-all duration-200 ${targetType === value
-                                        ? 'border-gold bg-gold/10 text-gold'
-                                        : 'border-border bg-page-bg text-text-secondary hover:border-gold/50'
-                                        }`}
-                                >
-                                    <input
-                                        type="radio"
-                                        name="targetType"
-                                        value={value}
-                                        checked={targetType === value}
-                                        onChange={() => setTargetType(value)}
-                                        className="hidden"
-                                    />
-                                    <Icon className="w-4 h-4" />
-                                    <span className="text-sm font-medium">{label}</span>
-                                </label>
-                            ))}
+                                    <label
+                                        key={value}
+                                        className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-all duration-200 ${targetType === value
+                                            ? 'border-gold bg-gold/10 text-gold'
+                                            : 'border-border bg-page-bg text-text-secondary hover:border-gold/50'
+                                            }`}
+                                    >
+                                        <input
+                                            type="radio"
+                                            name="targetType"
+                                            value={value}
+                                            checked={targetType === value}
+                                            onChange={() => setTargetType(value)}
+                                            className="hidden"
+                                        />
+                                        <Icon className="w-4 h-4" />
+                                        <span className="text-sm font-medium">{label}</span>
+                                    </label>
+                                ))}
                         </div>
                     </div>
 
