@@ -13,8 +13,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         if (!isLoading && !isAuthenticated) {
-            const storefrontUrl = process.env.NEXT_PUBLIC_STOREFRONT_URL || 'http://localhost:3000';
-            window.location.href = `${storefrontUrl}/in/login`;
+            window.location.href = '/';
         }
     }, [isLoading, isAuthenticated]);
 

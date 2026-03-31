@@ -58,14 +58,15 @@ export function authHeaders(extra?: Record<string, string>): Record<string, stri
  */
 export async function logoutUser(): Promise<boolean> {
     try {
-        const res = await authFetch(`${API_URL}/api/auth/logout`, {
+        const res = await fetch(`${API_URL}/api/auth/logout`, {
             method: 'POST',
-            headers: authHeaders(),
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            credentials: 'include',
         });
         const json = await res.json();
         // Reset CSRF cache so next login gets a fresh token
         resetCsrfCache();
-        return json.success;
+        return json?.success || false;
     } catch (error) {
         console.error('[Admin API] Failed to logout:', error);
         resetCsrfCache();
@@ -1480,7 +1481,7 @@ export async function loginUser(email: string, password: string, turnstileToken?
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
-            body: JSON.stringify({ email, password, turnstile_token: turnstileToken }),
+            body: JSON.stringify({ email, password, turnstile_token: turnstileToken, source: 'admin' }),
         });
         const json = await res.json();
 
