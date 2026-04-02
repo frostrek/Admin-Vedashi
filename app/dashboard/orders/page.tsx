@@ -8,7 +8,7 @@ import {
     bulkUpdateOrderPaymentStatus, Order, downloadInvoiceAdmin, formatINR,
     getPaymentInfo, createRefund, getRefunds, PaymentInfo, RefundRecord,
     cancelShipment, regenerateLabel, approveReturn, rejectReturn,
-    createShipment
+    createShipment, getAutomationSettings, AutomationSettings
 } from '@/lib/api';
 import {
     ShoppingCart, Eye, X, Package, User, CreditCard, MapPin,
@@ -448,14 +448,102 @@ export default function OrdersPage() {
     }, [currentPage, filterStatus, filterPayment, filterDate, searchQuery, sortKey, sortDir]);
 
     // ── Data fetch ────────────────────────────────────────────
+    const lastOrdersRef = useRef<Order[]>([]);
+
+    // ── Data fetch & Polling ──────────────────────────────────
     useEffect(() => {
-        const fetchOrders = async () => {
+        let isMounted = true;
+        let intervalId: NodeJS.Timeout | null = null;
+
+        const compareAndNotify = (newData: Order[], oldData: Order[]) => {
+            if (oldData.length === 0) return; // Ignore first load
+
+            newData.forEach(newOrder => {
+                const oldOrder = oldData.find(o => o.id === newOrder.id);
+                
+                if (!oldOrder) {
+                    // New order detected
+                    toast.success(`New Order Received! #${newOrder.id.substring(0, 8)}`, {
+                        icon: '🛍️',
+                        duration: 5000,
+                        position: 'top-right'
+                    });
+                } else {
+                    // Check for changes in existing order
+                    const changes = [];
+                    if (oldOrder.status !== newOrder.status) {
+                        changes.push(`Status: ${oldOrder.status} → ${newOrder.status}`);
+                    }
+                    if (oldOrder.payment_status !== newOrder.payment_status) {
+                        changes.push(`Payment: ${newOrder.payment_status}`);
+                    }
+                    if (!oldOrder.has_shipment && newOrder.has_shipment) {
+                        changes.push(`Shipment Created`);
+                    }
+
+                    if (changes.length > 0) {
+                        toast(
+                            <div className="flex flex-col gap-0.5">
+                                <span className="font-bold text-xs uppercase tracking-wider text-gold">Order Update: #{newOrder.id.substring(0, 8)}</span>
+                                <span className="text-[11px] opacity-90">{changes.join(' | ')}</span>
+                            </div>,
+                            { 
+                                duration: 4000, 
+                                position: 'top-right',
+                                icon: '🔔',
+                                style: {
+                                    background: '#1A1A1A',
+                                    color: '#E8D8B9',
+                                    border: '1px solid rgba(213, 167, 112, 0.2)'
+                                }
+                            }
+                        );
+                    }
+                }
+            });
+        };
+
+        const fetchOrdersUpdate = async (params: any, silent = false) => {
+            const data = await getOrders(params);
+            if (!isMounted) return;
+
+            if (silent) {
+                compareAndNotify(data, lastOrdersRef.current);
+            }
+            
+            setOrders(data);
+            lastOrdersRef.current = data;
+        };
+        
+        const initPolling = async () => {
             const params: any = {};
             if (filterDateFrom) params.dateFrom = filterDateFrom;
             if (filterDateTo) params.dateTo = filterDateTo;
-            setOrders(await getOrders(params));
+
+            // Initial fetch
+            await fetchOrdersUpdate(params);
+            
+            // Get settings for dynamic interval
+            const settings = await getAutomationSettings();
+            if (!isMounted) return;
+
+            if (settings?.enable_realtime_polling) {
+                const seconds = settings.admin_refresh_interval_seconds || 30;
+                console.log(`[Dashboard] Polling enabled (Interval: ${seconds}s)`);
+                
+                intervalId = setInterval(() => {
+                    console.log('[Dashboard] Auto-refreshing orders...');
+                    fetchOrdersUpdate(params, true);
+                }, seconds * 1000);
+            }
         };
-        fetchOrders();
+
+        initPolling();
+
+        return () => { 
+            isMounted = false;
+            if (intervalId) clearInterval(intervalId); 
+        };
     }, [filterDateFrom, filterDateTo]);
 
     useEffect(() => {
@@ -569,25 +657,40 @@ export default function OrdersPage() {
         finally { setLoadingDetail(false); }
     }, []);
 
-    const updateStatus = (orderId: string, newStatus: Order['status']) => {
-        setOrders(prev => prev.map(o => {
-            if (o.id !== orderId) return o;
-            let nextPaymentStatus = o.payment_status;
-            if (newStatus === 'delivered') nextPaymentStatus = 'PAID';
-            else if (o.payment_method === 'cod') nextPaymentStatus = 'UNPAID';
-            return { ...o, status: newStatus, payment_status: nextPaymentStatus };
-        }));
-        if (selectedOrder?.id === orderId) {
-            setSelectedOrder(prev => {
-                if (!prev) return prev;
-                let nextPaymentStatus = prev.payment_status;
-                if (newStatus === 'delivered') nextPaymentStatus = 'PAID';
-                else if (prev.payment_method === 'cod') nextPaymentStatus = 'UNPAID';
-                return { ...prev, status: newStatus, payment_status: nextPaymentStatus };
-            });
+    const updateStatus = async (orderId: string, newStatus: string) => {
+        const loadingToast = toast.loading(`Updating status to ${newStatus}...`);
+        try {
+            console.log(`[OrderAction] Updating ${orderId} to status: ${newStatus}`);
+            const success = await apiUpdateStatus(orderId, newStatus);
+            console.log(`[OrderAction] API success:`, success);
+            
+            if (!success) throw new Error('API returned false');
+
+            const lowercaseStatus = newStatus.toLowerCase() as Order['status'];
+
+            setOrders(prev => prev.map(o => {
+                if (o.id !== orderId) return o;
+                let nextPaymentStatus = o.payment_status;
+                if (lowercaseStatus === 'delivered') nextPaymentStatus = 'PAID';
+                else if (o.payment_method === 'cod') nextPaymentStatus = 'UNPAID';
+                return { ...o, status: lowercaseStatus, payment_status: nextPaymentStatus };
+            }));
+            
+            if (selectedOrder?.id === orderId) {
+                setSelectedOrder(prev => {
+                    if (!prev) return prev;
+                    let nextPaymentStatus = prev.payment_status;
+                    if (lowercaseStatus === 'delivered') nextPaymentStatus = 'PAID';
+                    else if (prev.payment_method === 'cod') nextPaymentStatus = 'UNPAID';
+                    return { ...prev, status: lowercaseStatus, payment_status: nextPaymentStatus };
+                });
+            }
+            
+            toast.success(`Status → ${newStatus}`, { id: loadingToast });
+        } catch (error) {
+            console.error(`[OrderAction] Failed to update status:`, error);
+            toast.error(`Failed to update status to ${newStatus}`, { id: loadingToast });
         }
-        apiUpdateStatus(orderId, newStatus);
-        toast.success(`Status → ${newStatus}`);
     };
 
     const updatePayment = async (orderId: string, newStatus: string) => {

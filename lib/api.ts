@@ -3402,3 +3402,63 @@ export async function devSimulateRtoStep(opts: { step: number; order_id?: string
         return await res.json();
     } catch { return { success: false, message: 'Network error' }; }
 }
+
+/* ─── Automation Settings ─── */
+export interface AutomationSettings {
+    setting_id: number;
+    auto_pending_to_confirmed: boolean;
+    auto_confirm_stock_threshold: number;
+    auto_create_shipment: boolean;
+    enable_cron_watcher: boolean;
+    enable_realtime_polling: boolean;
+    cron_interval_minutes: number;
+    admin_refresh_interval_seconds: number;
+    auto_assign_courier: boolean;
+    courier_selection_logic: string;
+    enable_shipment_cron_watcher: boolean;
+    shipment_cron_interval_minutes: number;
+    enable_shipment_realtime_polling: boolean;
+    shipment_refresh_interval_seconds: number;
+    auto_schedule_pickup: boolean;
+    auto_pickup_offset_days: number;
+    updated_at: string;
+}
+
+export async function getAutomationSettings(): Promise<AutomationSettings | null> {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/automation-settings`, {
+            headers: authHeaders(),
+            credentials: 'include',
+        });
+        const json = await res.json();
+        return json.success ? json.data : null;
+    } catch { return null; }
+}
+
+export async function updateAutomationSettings(data: {
+    auto_pending_to_confirmed: boolean;
+    auto_confirm_stock_threshold: number;
+    auto_create_shipment: boolean;
+    enable_cron_watcher: boolean;
+    enable_realtime_polling: boolean;
+    cron_interval_minutes: number;
+    admin_refresh_interval_seconds: number;
+    auto_assign_courier: boolean;
+    courier_selection_logic: string;
+    enable_shipment_cron_watcher: boolean;
+    shipment_cron_interval_minutes: number;
+    enable_shipment_realtime_polling: boolean;
+    shipment_refresh_interval_seconds: number;
+    auto_schedule_pickup: boolean;
+    auto_pickup_offset_days: number;
+}): Promise<{ success: boolean; data?: AutomationSettings; message?: string }> {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/automation-settings`, {
+            method: 'PUT',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify(data),
+        });
+        const json = await res.json();
+        return { success: json.success, data: json.data, message: json.message };
+    } catch { return { success: false, message: 'Network error' }; }
+}
