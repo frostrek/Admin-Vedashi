@@ -181,10 +181,10 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
             // ── Step 1: General Info ──
             const productCatId = product.category_id || '';
             const catObj = cats.find(c => c.category_id === productCatId);
-            
+
             let finalCatId = '';
             let finalSubCatId = '';
-            
+
             if (catObj) {
                 if (catObj.parent_id) {
                     finalCatId = catObj.parent_id;
@@ -227,6 +227,27 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                     pack: { active: false, values: [] as string[] },
                     combo: { active: false, values: [] as string[] },
                 };
+                // Determine if this product relies entirely on shared images
+                const allAssets: any[] = (product as any).assets || [];
+                const currentVariantIds = new Set(product.variants.map((v: any) => (v.variant_id || '').toLowerCase()));
+                
+                const distinctImageIds = new Set(
+                    allAssets
+                        .filter(a => !(a.media_type || a.mime_type || '').toLowerCase().startsWith('video'))
+                        .map(a => (a.variant_id || '').toLowerCase())
+                        .filter(vid => vid && currentVariantIds.has(vid))
+                );
+                const distinctVideoIds = new Set(
+                    allAssets
+                        .filter(a => (a.media_type || a.mime_type || '').toLowerCase().startsWith('video'))
+                        .map(a => (a.variant_id || '').toLowerCase())
+                        .filter(vid => vid && currentVariantIds.has(vid))
+                );
+
+                const isSharedImages = allAssets.length > 0 && distinctImageIds.size <= 1;
+                const isSharedVideos = allAssets.length > 0 && distinctVideoIds.size <= 1;
+
+                const normalizeId = (id: any) => String(id || '').toLowerCase();
 
                 const mappedVariants: VariantRow[] = product.variants.map((v: any, index: number) => {
                     // Legacy field mapping
@@ -258,7 +279,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
 
                     // Metadata mapping for all dimensions
                     const dims: (keyof typeof newDimConfigs)[] = ['weight', 'volume', 'count', 'strength', 'flavor', 'pack', 'combo'];
-                    
+
                     // Specific mapping for new database fields
                     let weightStr = v.weight || '';
                     if (!weightStr && v.weight_g) {
@@ -299,21 +320,48 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                     const vName = v.variant_name || '';
 
                     // Assets
-                    const allAssets: any[] = (product as any).assets || [];
                     const existingImages = allAssets
                         .filter((a: any) => {
                             const mt = (a.media_type || a.mime_type || '').toLowerCase();
-                            return !mt.startsWith('video') && (a.variant_id === v.variant_id || (!a.variant_id && index === 0));
+                            if (mt.startsWith('video')) return false;
+                            
+                            const aid = normalizeId(a.variant_id);
+                            const vid = normalizeId(v.variant_id);
+                            
+                            if (isSharedImages && index === 0) return true;
+                            if (isSharedImages && index > 0) return false;
+                            
+                            return (aid === vid || (!a.variant_id && index === 0));
                         })
-                        .map((a: any) => ({ preview: a.base64_data || a.asset_url, asset_id: a.asset_id, alt_text: a.alt_text || '' }))
+                        .map((a: any) => {
+                            let preview = a.cdn_url || a.base64_data || a.asset_url;
+                            if (preview && a.cdn_url && !preview.startsWith('http') && !preview.startsWith('data:')) {
+                                preview = `https://${preview}`;
+                            }
+                            return { preview, asset_id: a.asset_id, alt_text: a.alt_text || '' };
+                        })
                         .filter(img => img.preview);
 
                     const existingVideos = allAssets
                         .filter((a: any) => {
                             const mt = (a.media_type || a.mime_type || '').toLowerCase();
-                            return mt.startsWith('video') && (a.variant_id === v.variant_id || (!a.variant_id && index === 0));
+                            if (!mt.startsWith('video')) return false;
+                            
+                            const aid = normalizeId(a.variant_id);
+                            const vid = normalizeId(v.variant_id);
+                            
+                            if (isSharedVideos && index === 0) return true;
+                            if (isSharedVideos && index > 0) return false;
+                            
+                            return (aid === vid || (!a.variant_id && index === 0));
                         })
-                        .map((a: any) => ({ preview: a.base64_data || a.asset_url, asset_id: a.asset_id }))
+                        .map((a: any) => {
+                            let preview = a.cdn_url || a.base64_data || a.asset_url;
+                            if (preview && a.cdn_url && !preview.startsWith('http') && !preview.startsWith('data:')) {
+                                preview = `https://${preview}`;
+                            }
+                            return { preview, asset_id: a.asset_id };
+                        })
                         .filter(vid => vid.preview);
 
                     return {
@@ -350,6 +398,14 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
 
                 setVariants(mappedVariants);
                 setDimConfigs(newDimConfigs);
+
+                if (mappedVariants.length > 1) {
+                    const firstHasAssets = mappedVariants[0].images.length > 0 || mappedVariants[0].videos.length > 0;
+                    const othersHaveAssets = mappedVariants.slice(1).some((mv: any) => mv.images.length > 0 || mv.videos.length > 0);
+                    if (firstHasAssets && !othersHaveAssets) {
+                        setSharedImages(true);
+                    }
+                }
             }
 
             setLoading(false);
@@ -429,7 +485,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
         setDimConfigs(prev => {
             const isActivating = !prev[dim].active;
             const next = { ...prev };
-            
+
             if (isActivating) {
                 if (dim === 'weight') {
                     next.volume = { ...next.volume, active: false };
@@ -437,7 +493,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                     next.weight = { ...next.weight, active: false };
                 }
             }
-            
+
             next[dim] = { ...next[dim], active: isActivating };
             return next;
         });
@@ -446,7 +502,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
     const addDimensionValue = (dim: keyof typeof dimConfigs) => {
         const val = dimInputs[dim].trim();
         if (!val && dim !== 'combo') return;
-        
+
         let finalVal = val;
         if (dim === 'weight') finalVal = `${val} ${weightUnit}`;
         else if (dim === 'volume') finalVal = `${val} ${volUnit}`;
@@ -707,10 +763,10 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
             }));
         }
         if (currentStep === 3) {
-            const negativeField = variants.find(v => 
-                Number(v.stock) < 0 || 
-                Number(v.price) < 0 || 
-                Number(v.cost_price) < 0 || 
+            const negativeField = variants.find(v =>
+                Number(v.stock) < 0 ||
+                Number(v.price) < 0 ||
+                Number(v.cost_price) < 0 ||
                 Number(v.sale_price) < 0 ||
                 Number(v.shelf_life) < 0 ||
                 Number(v.length_cm) < 0 ||
@@ -969,69 +1025,69 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
             },
 
             // Full variants array ÔÇö backend maps these to product_variants rows
-                    variants: variants.map(v => {
-                        const activeDimensions = Object.entries(dimConfigs)
-                            .filter(([_, config]) => config.active)
-                            .map(([id]) => (v as any)[id])
-                            .filter(Boolean);
-                        const combinedName = v.variant_name || activeDimensions.join(' ');
+            variants: variants.map(v => {
+                const activeDimensions = Object.entries(dimConfigs)
+                    .filter(([_, config]) => config.active)
+                    .map(([id]) => (v as any)[id])
+                    .filter(Boolean);
+                const combinedName = v.variant_name || activeDimensions.join(' ');
 
-                        // Parse formatted strings for DB fields
-                        let weight_g = null;
-                        if (v.weight) {
-                            const [val, unit] = v.weight.split(' ');
-                            weight_g = unit === 'kg' ? parseFloat(val) * 1000 : parseFloat(val);
-                        }
+                // Parse formatted strings for DB fields
+                let weight_g = null;
+                if (v.weight) {
+                    const [val, unit] = v.weight.split(' ');
+                    weight_g = unit === 'kg' ? parseFloat(val) * 1000 : parseFloat(val);
+                }
 
-                        let units_count = null;
-                        let form_factor = null;
-                        if (v.count) {
-                            const parts = v.count.split(' ');
-                            units_count = parseInt(parts[0]);
-                            form_factor = parts.slice(1).join(' ');
-                        }
+                let units_count = null;
+                let form_factor = null;
+                if (v.count) {
+                    const parts = v.count.split(' ');
+                    units_count = parseInt(parts[0]);
+                    form_factor = parts.slice(1).join(' ');
+                }
 
-                        let strength = undefined;
-                        let strength_unit = undefined;
-                        if (v.strength) {
-                            const parts = v.strength.split(' ');
-                            strength = parts[0];
-                            strength_unit = parts.slice(1).join(' ');
-                        }
+                let strength = undefined;
+                let strength_unit = undefined;
+                if (v.strength) {
+                    const parts = v.strength.split(' ');
+                    strength = parts[0];
+                    strength_unit = parts.slice(1).join(' ');
+                }
 
-                        return {
-                            variant_id: v.variant_id || undefined,
-                            sku: v.sku.trim(),
-                            variant_name: combinedName.trim(),
-                            price: Number(v.price) || 0,
-                            stock: Number(v.stock) || 0,
-                            cost_price: v.cost_price ? Number(v.cost_price) : undefined,
-                            volume: v.volume || undefined,
-                            pack: v.pack || undefined,
-                            isDefault: v.isDefault,
-                            isActive: v.isActive,
-                            // Sale Management
-                            sale_price: v.sale_price || undefined,
-                            sale_start_date: v.sale_start_date || undefined,
-                            sale_start_time: v.sale_start_time || undefined,
-                            sale_end_date: v.sale_end_date || undefined,
-                            sale_end_time: v.sale_end_time || undefined,
-                            // Dimensions + shelf life
-                            length_cm: v.length_cm || undefined,
-                            width_cm: v.width_cm || undefined,
-                            height_cm: v.height_cm || undefined,
-                            item_weight_kg: v.item_weight_kg_input ? (parseFloat(v.item_weight_kg_input) / 1000) : undefined,
-                            shelf_life: v.shelf_life || undefined,
-                            // New fields
-                            weight_g: weight_g,
-                            units_count: units_count,
-                            form_factor: form_factor,
-                            strength: strength,
-                            strength_unit: strength_unit,
-                            flavor: v.flavor || undefined,
-                            is_combo: v.combo === 'Yes',
-                        };
-                    }),
+                return {
+                    variant_id: v.variant_id || undefined,
+                    sku: v.sku.trim(),
+                    variant_name: combinedName.trim(),
+                    price: Number(v.price) || 0,
+                    stock: Number(v.stock) || 0,
+                    cost_price: v.cost_price ? Number(v.cost_price) : undefined,
+                    volume: v.volume || undefined,
+                    pack: v.pack || undefined,
+                    isDefault: v.isDefault,
+                    isActive: v.isActive,
+                    // Sale Management
+                    sale_price: v.sale_price || undefined,
+                    sale_start_date: v.sale_start_date || undefined,
+                    sale_start_time: v.sale_start_time || undefined,
+                    sale_end_date: v.sale_end_date || undefined,
+                    sale_end_time: v.sale_end_time || undefined,
+                    // Dimensions + shelf life
+                    length_cm: v.length_cm || undefined,
+                    width_cm: v.width_cm || undefined,
+                    height_cm: v.height_cm || undefined,
+                    item_weight_kg: v.item_weight_kg_input ? (parseFloat(v.item_weight_kg_input) / 1000) : undefined,
+                    shelf_life: v.shelf_life || undefined,
+                    // New fields
+                    weight_g: weight_g,
+                    units_count: units_count,
+                    form_factor: form_factor,
+                    strength: strength,
+                    strength_unit: strength_unit,
+                    flavor: v.flavor || undefined,
+                    is_combo: v.combo === 'Yes',
+                };
+            }),
             available_from: form.available_from_date ? new Date(`${form.available_from_date}T${form.available_from_time || '00:00'}`).toISOString() : undefined,
             available_until: form.available_until_date ? new Date(`${form.available_until_date}T${form.available_until_time || '23:59'}`).toISOString() : undefined,
 
@@ -1915,10 +1971,10 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                                                 </td>
                                                             </tr>
 
-                                                                    {isExpanded && (
-                                                                        <tr className="bg-white/[0.01] border-b border-border">
-                                                                            <td colSpan={activeDims.length + 6} className="p-5">
-                                                                                <div className="animate-fade-in-up space-y-6">
+                                                            {isExpanded && (
+                                                                <tr className="bg-white/[0.01] border-b border-border">
+                                                                    <td colSpan={activeDims.length + 6} className="p-5">
+                                                                        <div className="animate-fade-in-up space-y-6">
 
                                                                             {/* ÔöÇÔöÇ Extra fields row ÔöÇÔöÇ */}
                                                                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

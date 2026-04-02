@@ -58,7 +58,7 @@ function AutoLoginContent() {
                     return;
                 }
 
-                // Set up AdminAuthContext localStorage (key: ksp_admin_user)
+                // Set up AdminAuthContext localStorage (key: ved_admin_user)
                 const adminUser = {
                     email: customer.email || email,
                     name: customer.full_name || name || email.split('@')[0],
@@ -66,7 +66,7 @@ function AutoLoginContent() {
                     customer_id: customer.customer_id || id || '',
                     phone: customer.phone || '',
                 };
-                localStorage.setItem('ksp_admin_user', JSON.stringify(adminUser));
+                localStorage.setItem('ved_admin_user', JSON.stringify(adminUser));
 
                 // Set up lib/auth.ts localStorage (key: admin_user)
                 localStorage.setItem('admin_user', JSON.stringify({

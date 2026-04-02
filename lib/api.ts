@@ -482,7 +482,7 @@ export async function getProduct(id: string, skipCache: boolean = false): Promis
             const sale_end = defaultVariant?.sale_end ?? null;
 
             const images = product.assets
-                ?.map((a: any) => a.base64_data || a.asset_url)
+                ?.map((a: any) => a.cdn_url || a.base64_data || a.asset_url)
                 .filter(Boolean) || [];
             return {
                 ...product,

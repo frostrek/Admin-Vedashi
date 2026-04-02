@@ -30,7 +30,7 @@ interface AdminAuthContextType {
 }
 
 const AdminAuthContext = createContext<AdminAuthContextType | undefined>(undefined);
-const ADMIN_KEY = 'ksp_admin_user';
+const ADMIN_KEY = 'ved_admin_user';
 
 export function AdminAuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<AdminUser | null>(null);

@@ -65,7 +65,7 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
         formData.append('file', file);
 
         try {
-            const token = localStorage.getItem('ksp_admin_token');
+            const token = localStorage.getItem('ved_admin_token');
 
             // Fetch CSRF token first (required by backend CSRF middleware)
             let csrfToken = '';
