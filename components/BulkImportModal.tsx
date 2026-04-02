@@ -198,6 +198,8 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
                 'image_1_4': "",
                 'image_1_5': "",
                 'video_1': "",
+                'russia_markup_1': "20",
+                'korea_markup_1': "25",
 
                 // ── Variant 2 ───────────────────────────────
                 'Variant_name 2': "120 Capsules Twin Pack",
@@ -225,6 +227,8 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
                 'image_2_4': "",
                 'image_2_5': "",
                 'video_2': "",
+                'russia_markup_2': "",
+                'korea_markup_2': "",
 
                 // ── Variant 3 ───────────────────────────────
                 'Variant_name 3': "",
@@ -251,7 +255,9 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
                 'image_3_3': "",
                 'image_3_4': "",
                 'image_3_5': "",
-                'video_3': ""
+                'video_3': "",
+                'russia_markup_3': "",
+                'korea_markup_3': "",
             }
         ];
 
@@ -351,6 +357,7 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
                                     <li><strong>Short Description</strong> is optional — great for SEO and product cards.</li>
                                     <li>Supports media URLs in columns like <strong>product_image_1</strong> and <strong>image_1_1</strong>.</li>
                                     <li>Large files (&gt;100 rows) are processed in the background.</li>
+                                    <li><strong>russia_markup_1/2/3</strong> and <strong>korea_markup_1/2/3</strong> are optional — set a % markup for country-specific pricing per variant.</li>
                                 </ul>
                                 <div className="mt-5 flex items-center gap-3">
                                     <button
