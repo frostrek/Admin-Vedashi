@@ -570,6 +570,20 @@ function DetailDrawer({ returnData, loading, onClose, onApprove, onGenerateAWB, 
     actionLoadingId: string | null;
 }) {
     const r = returnData;
+    const [isClosing, setIsClosing] = useState(false);
+
+    // Disable background scroll when drawer is open
+    useEffect(() => {
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, []);
+
+    const handleClose = () => {
+        setIsClosing(true);
+        setTimeout(onClose, 300);
+    };
 
     // Timeline steps — different for RTO vs Customer Return
     const customerTimelineSteps = ['REQUESTED', 'APPROVED', 'PICKUP_SCHEDULED', 'PICKED_UP', 'IN_TRANSIT', 'RECEIVED', 'COMPLETED'];
@@ -580,208 +594,250 @@ function DetailDrawer({ returnData, loading, onClose, onApprove, onGenerateAWB, 
 
     return (
         <div className="fixed inset-0 z-50 flex justify-end">
-            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-            <div className="relative w-full max-w-lg bg-card-bg border-l border-border overflow-y-auto" style={{ animation: 'slideInRight 0.3s ease-out' }}>
-                {/* Header */}
-                <div className="sticky top-0 bg-card-bg/95 backdrop-blur-sm z-10 flex items-center justify-between p-4 border-b border-border">
-                    <h2 className="text-lg font-bold text-text-primary flex items-center gap-2">
-                        <RotateCcw className="h-5 w-5 text-gold" /> Return Details
-                    </h2>
-                    <button onClick={onClose} className={iconBtnClass}><X className="h-4 w-4" /></button>
+            <div
+                className={`absolute inset-0 bg-black/40 backdrop-blur-[2px] transition-opacity duration-300 ${isClosing ? 'opacity-0' : 'opacity-100 animate-fadeIn'}`}
+                onClick={handleClose}
+            />
+
+            {/* Drawer Container — Whitish/Clean Background */}
+            <div
+                className={`relative w-full max-w-[40%] bg-white border-l border-border h-full flex flex-col shadow-2xl transition-transform duration-300 font-sans ${isClosing ? 'animate-slideOutRight' : 'animate-slideInRight'}`}
+            >
+                {/* Header — Herbal Admin Redesign */}
+                <div className="sticky top-0 bg-white/95 backdrop-blur-md z-20 flex items-center justify-between p-5 border-b border-border/80">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2.5 rounded-lg bg-primary/5 border border-primary/10">
+                            <RotateCcw className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                            <h4 className="text-lg font-serif font-bold !text-primary tracking-tight leading-none mb-1">Return Details</h4>
+                            <div className="text-[11px] text-primary/60 font-bold tracking-widest uppercase">Admin Logistics Portal</div>
+                        </div>
+                    </div>
+                    <button
+                        onClick={handleClose}
+                        className="p-2 rounded-full hover:bg-border/40 transition-colors text-text-muted hover:text-text-primary"
+                    >
+                        <X className="h-4 w-4" />
+                    </button>
                 </div>
 
-                {loading ? (
-                    <div className="flex items-center justify-center p-12">
-                        <Loader2 className="h-6 w-6 animate-spin text-gold" />
-                    </div>
-                ) : r ? (
-                    <div className="p-4 space-y-5">
-                        {/* Status + Type */}
-                        <div className="flex items-center gap-3">
-                            <StatusBadge status={r.status} />
-                            <TypeBadge type={r.type} />
+                {/* Scrollable Content Container */}
+                <div className="flex-1 overflow-y-auto">
+                    {loading ? (
+                        <div className="flex items-center justify-center p-12 min-h-[400px]">
+                            <div className="flex flex-col items-center gap-3">
+                                <Loader2 className="h-8 w-8 animate-spin text-primary/60" />
+                                <span className="text-[10px] font-bold text-primary/40 uppercase tracking-widest">Fetching Record...</span>
+                            </div>
                         </div>
+                    ) : r ? (
+                        <div className="p-6 space-y-7 pb-24">
+                            {/* Status + Type Overhead */}
+                            <div className="flex items-center gap-3 bg-page-bg/50 p-4 rounded-2xl border border-border/40 mb-2">
+                                <StatusBadge status={r.status} />
+                                <TypeBadge type={r.type} />
+                                <div className="ml-auto flex flex-col items-end">
+                                    <span className="text-[10px] text-text-muted/60 font-bold uppercase tracking-tighter">Last Sync</span>
+                                    <span className="text-xs font-mono font-bold text-primary/80">{new Date(r.updated_at || r.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                </div>
+                            </div>
 
-                        {/* Timeline */}
-                        {r.status !== 'REJECTED' && r.status !== 'CANCELLED' && (
-                            <Section title="Timeline">
-                                <div className="flex items-center gap-0 overflow-x-auto pb-1">
-                                    {timelineSteps.map((step, i) => {
-                                        const isActive = i <= currentStepIdx;
-                                        const isCurrent = i === currentStepIdx;
-                                        return (
-                                            <div key={step} className="flex items-center">
-                                                <div className="flex flex-col items-center min-w-[60px]">
-                                                    <div className={`h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold border-2 ${isCurrent ? 'bg-gold border-gold text-[#1a1a1a]' :
-                                                        isActive ? 'bg-emerald-500/20 border-emerald-500/60 text-emerald-400' :
-                                                            'bg-white/5 border-border text-text-muted/40'
-                                                        }`}>
-                                                        {isActive ? <Check className="h-3 w-3" /> : (i + 1)}
+                            {/* Modernized Timeline */}
+                            {r.status !== 'REJECTED' && r.status !== 'CANCELLED' && (
+                                <Section title="Lifecycle Status">
+                                    <div className="flex items-center gap-0 overflow-x-auto pb-4 scrollbar-hide py-2">
+                                        {timelineSteps.map((step, i) => {
+                                            const isActive = i <= currentStepIdx;
+                                            const isCurrent = i === currentStepIdx;
+                                            return (
+                                                <div key={step} className="flex items-center">
+                                                    <div className="flex flex-col items-center min-w-[75px] group">
+                                                        <div className={`h-8 w-8 rounded-full flex items-center justify-center text-[10px] font-bold border-2 transition-all duration-300 ${isCurrent ? 'bg-primary border-primary text-white scale-110 shadow-lg shadow-primary/20' :
+                                                            isActive ? 'bg-primary/20 border-primary/40 text-primary' :
+                                                                'bg-page-bg border-border text-text-muted/30'
+                                                            }`}>
+                                                            {isActive ? <Check className="h-4 w-4" /> : (i + 1)}
+                                                        </div>
+                                                        <span className={`text-[9px] mt-2 text-center leading-tight font-bold tracking-tight px-1 transition-colors ${isCurrent ? '!text-primary opacity-100' : isActive ? 'text-primary/70' : 'text-text-muted/30'}`}>
+                                                            {(STATUS_CONFIG[step]?.label || step).split(' ').map((w: string) => w[0] + w.slice(1).toLowerCase()).join(' ')}
+                                                        </span>
                                                     </div>
-                                                    <span className={`text-[8px] mt-1 text-center leading-tight ${isCurrent ? 'text-gold font-bold' : isActive ? 'text-emerald-400' : 'text-text-muted/40'}`}>
-                                                        {STATUS_CONFIG[step]?.label || step}
-                                                    </span>
+                                                    {i < timelineSteps.length - 1 && (
+                                                        <div className={`h-[2px] w-6 -mt-5 transition-all duration-500 rounded-full ${isActive && i < currentStepIdx ? 'bg-primary/40' : 'bg-border/40'}`} />
+                                                    )}
                                                 </div>
-                                                {i < timelineSteps.length - 1 && (
-                                                    <div className={`h-0.5 w-4 ${isActive && i < currentStepIdx ? 'bg-emerald-500/40' : 'bg-border'}`} />
-                                                )}
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </Section>
-                        )}
-
-                        <Section title="Return Info">
-                            <InfoRow label="Return ID" value={r.return_id} mono />
-                            <InfoRow label="Type" value={r.type === 'RTO' ? 'RTO' : 'Customer Return'} />
-                            <InfoRow label="Status" value={STATUS_CONFIG[r.status]?.label || r.status} />
-                            <InfoRow label="Created" value={new Date(r.created_at).toLocaleString('en-IN')} />
-                            {r.reason && <InfoRow label="Reason" value={r.reason} />}
-                        </Section>
-
-                        <Section title="Reverse Shipment">
-                            <InfoRow label="Reverse AWB" value={r.reverse_awb || '—'} mono />
-                            {r.reverse_tracking_url && (
-                                <div className="flex items-center justify-between text-sm">
-                                    <span className="text-text-muted">Tracking</span>
-                                    <a href={r.reverse_tracking_url} target="_blank" rel="noopener noreferrer"
-                                        className="text-gold hover:text-gold-soft flex items-center gap-1 text-xs">
-                                        Track <ExternalLink className="h-3 w-3" />
-                                    </a>
-                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </Section>
                             )}
-                            <InfoRow label="SR Order ID" value={r.shiprocket_return_order_id || '—'} mono />
-                        </Section>
 
-                        <Section title="Order Info">
-                            <InfoRow label="Order #" value={r.order_id} mono />
-                            <InfoRow label="Order Status" value={(r.order_status || '').toUpperCase()} />
-                            <InfoRow label="Payment" value={(r.payment_status || '').toUpperCase()} />
-                            <InfoRow label="Amount" value={formatINR(r.final_total || r.subtotal || 0)} />
-                        </Section>
-
-                        <Section title="Customer">
-                            <InfoRow label="Name" value={r.customer_name || '—'} />
-                            <InfoRow label="Email" value={r.customer_email || '—'} />
-                            <InfoRow label="Phone" value={r.customer_phone || '—'} />
-                        </Section>
-
-                        {r.shipping_address && (
-                            <Section title="Pickup Address">
-                                <p className="text-sm text-text-primary leading-relaxed">
-                                    {r.shipping_address.address_line1}
-                                    {r.shipping_address.address_line2 && <><br />{r.shipping_address.address_line2}</>}
-                                    <br />{r.shipping_address.city}, {r.shipping_address.state} {r.shipping_address.pincode}
-                                    <br />{r.shipping_address.country}
-                                </p>
-                            </Section>
-                        )}
-
-                        {r.items?.length > 0 && (
-                            <Section title="Returned Items">
-                                <div className="space-y-2">
-                                    {r.items.map((item: any, i: number) => (
-                                        <div key={i} className="flex items-center justify-between py-1.5 border-b border-border/40 last:border-0">
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-sm text-text-primary truncate">{item.product_name || 'Product'}</p>
-                                                <p className="text-[11px] text-text-muted">
-                                                    {item.variant_name && <span>{item.variant_name} · </span>}
-                                                    Qty: {item.quantity}
-                                                </p>
-                                            </div>
+                            <div className="grid grid-cols-1 gap-6">
+                                <Section title="Return Metadata">
+                                    <InfoRow label="Return ID" value={r.return_id} mono isPrimary />
+                                    <InfoRow label="Protocol" value={r.type === 'RTO' ? 'RTO (Refused)' : 'Customer Initiated'} />
+                                    <InfoRow label="Current Status" value={STATUS_CONFIG[r.status]?.label || r.status} />
+                                    <InfoRow label="Submission Date" value={new Date(r.created_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })} />
+                                    {r.reason && (
+                                        <div className="mt-3 pt-3 border-t border-border/40 flex flex-col gap-1.5">
+                                            <span className="text-[10px] text-primary/50 font-bold uppercase tracking-widest">Return Motive</span>
+                                            <p className="text-xs text-text-primary leading-relaxed italic bg-page-bg/40 p-2.5 rounded-lg border border-border/20">"{r.reason}"</p>
                                         </div>
-                                    ))}
-                                </div>
-                            </Section>
-                        )}
+                                    )}
+                                </Section>
 
-                        {/* Forward Shipment Info */}
-                        {(r.forward_awb || r.forward_courier) && (
-                            <Section title="Forward Shipment">
-                                <InfoRow label="AWB" value={r.forward_awb || '—'} mono />
-                                <InfoRow label="Courier" value={r.forward_courier || '—'} />
-                                <InfoRow label="Shipment Status" value={r.shipment_status || '—'} />
-                            </Section>
-                        )}
+                                <Section title="Logistics Data">
+                                    <InfoRow label="Waybill Number" value={r.reverse_awb || 'Not Generated'} mono />
+                                    {r.reverse_tracking_url && (
+                                        <div className="flex items-center justify-between text-sm py-1.5">
+                                            <span className="text-[11px] text-primary/50 font-bold">Active Tracking</span>
+                                            <a href={r.reverse_tracking_url} target="_blank" rel="noopener noreferrer"
+                                                className="text-primary hover:underline flex items-center gap-1.5 text-xs font-bold leading-none">
+                                                Track Gateway <ExternalLink className="h-3 w-3" />
+                                            </a>
+                                        </div>
+                                    )}
+                                    <InfoRow label="Courier Platform ID" value={r.shiprocket_return_order_id || 'Pending Sync'} mono />
+                                </Section>
 
-                        {/* Actions */}
-                        <div className="flex flex-col gap-2 pt-4 border-t border-border">
+                                <Section title="Linked Order Details">
+                                    <InfoRow label="Base Order" value={`#${r.order_id}`} mono isPrimary />
+                                    <InfoRow label="Fulfilment Status" value={(r.order_status || 'Unknown').split('_').map((w: string) => w[0] + w.slice(1).toLowerCase()).join(' ')} />
+                                    <InfoRow label="Payment Gateway" value={(r.payment_status || 'N/A').charAt(0).toUpperCase() + (r.payment_status || '').slice(1).toLowerCase()} />
+                                    <InfoRow label="Value (Recoverable)" value={<><span className="font-sans mr-0.5 text-[0.85em]">₹</span>{(r.final_total || r.subtotal || 0).toLocaleString('en-IN')}</>} />
+                                </Section>
+
+                                <Section title="Client Representative">
+                                    <InfoRow label="Full Name" value={r.customer_name || 'Anonymous User'} />
+                                    <InfoRow label="Email Address" value={r.customer_email || 'No Email Record'} />
+                                    <InfoRow label="Contact Number" value={r.customer_phone || 'No Phone Record'} />
+                                </Section>
+
+                                {r.shipping_address && (
+                                    <Section title="Reverse Pickup Node">
+                                        <div className="text-[12px] text-text-primary leading-relaxed bg-page-bg/30 p-2.5 rounded-xl border border-border/20 font-sans">
+                                            <div className="font-bold text-primary/80 mb-1">{r.shipping_address.name || r.customer_name}</div>
+                                            {r.shipping_address.address_line1}
+                                            {r.shipping_address.address_line2 && <><br />{r.shipping_address.address_line2}</>}
+                                            <br />{r.shipping_address.city}, {r.shipping_address.state} {r.shipping_address.pincode}
+                                            <br />{r.shipping_address.country}
+                                        </div>
+                                    </Section>
+                                )}
+
+                                {r.items?.length > 0 && (
+                                    <Section title="Item Inventory Inspection">
+                                        <div className="space-y-3">
+                                            {r.items.map((item: any, i: number) => (
+                                                <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-page-bg/40 border border-border/20 group hover:border-primary/30 transition-colors">
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-sm font-bold text-text-primary truncate transition-colors group-hover:text-primary">{item.product_name || 'Inventory Item'}</p>
+                                                        <p className="text-[10px] text-text-muted/70 font-mono mt-0.5">
+                                                            {item.variant_name && <span className="text-primary/60">{item.variant_name} · </span>}
+                                                            Qty: {item.quantity} units
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </Section>
+                                )}
+
+                                {(r.forward_awb || r.forward_courier) && (
+                                    <Section title="Original Forward Shipment">
+                                        <InfoRow label="Forward Waybill" value={r.forward_awb || '—'} mono />
+                                        <InfoRow label="Carrier Name" value={r.forward_courier || '—'} />
+                                        <InfoRow label="Original Arrival Status" value={r.shipment_status || '—'} />
+                                    </Section>
+                                )}
+                            </div>
+                        </div>
+                    ) : null}
+                </div>
+
+                {/* Fixed Action Footer — Whitish Aesthetics */}
+                {r && !loading && (
+                    <div className="sticky bottom-0 bg-white/95 backdrop-blur-md p-5 border-t border-border/80 z-20 shadow-[0_-10px_40px_rgba(0,0,0,0.04)]">
+                        <div className="flex flex-col gap-3">
                             {r.reverse_awb && ['IN_TRANSIT', 'PICKED_UP', 'PICKUP_SCHEDULED', 'RECEIVED', 'COMPLETED', 'RTO_INITIATED', 'RTO_IN_TRANSIT'].includes(r.status) && (
                                 <a
                                     href={r.reverse_tracking_url || `https://shiprocket.co/tracking/${r.reverse_awb}`}
                                     target="_blank" rel="noopener noreferrer"
-                                    className={`${primaryBtnClass} text-xs justify-center`}
+                                    className={`${primaryBtnClass} w-full justify-center !h-12 text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all`}
                                 >
-                                    <Truck className="h-3.5 w-3.5" /> Track Shipment
+                                    <Truck className="h-4 w-4" /> Track Reverse Shipment
                                 </a>
                             )}
 
-                            {/* Customer Return actions only — no actions for RTO */}
+                            {/* Action Buttons — Specific to Return State */}
                             {r.type !== 'RTO' && r.status === 'REQUESTED' && (
-                                <div className="flex gap-2">
+                                <div className="grid grid-cols-2 gap-4">
                                     <button onClick={() => onApprove(r.return_id)} disabled={actionLoadingId === r.return_id}
-                                        className={`${primaryBtnClass} text-xs flex-1 justify-center`}>
-                                        {actionLoadingId === r.return_id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
-                                        Approve
+                                        className={`${primaryBtnClass} !h-12 justify-center shadow-lg shadow-primary/10 hover:scale-[1.02] active:scale-95 transition-all text-xs font-bold`}>
+                                        {actionLoadingId === r.return_id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                                        Approve Intake
                                     </button>
                                     <button onClick={() => onReject(r.return_id)} disabled={actionLoadingId === r.return_id}
-                                        className={`${dangerBtnClass} text-xs flex-1 justify-center`}>
-                                        <XCircle className="h-3.5 w-3.5" /> Reject
+                                        className={`${dangerBtnClass} !h-12 justify-center hover:scale-[1.02] active:scale-95 transition-all text-xs font-bold`}>
+                                        <XCircle className="h-4 w-4" /> Decline Request
                                     </button>
                                 </div>
                             )}
 
                             {r.type !== 'RTO' && r.status === 'PICKUP_SCHEDULED' && (
-                                <>
+                                <div className="grid grid-cols-1 gap-3">
                                     <button onClick={() => onCancelShipment(r.return_id)} disabled={actionLoadingId === r.return_id}
-                                        className={`${dangerBtnClass} text-xs justify-center`}>
-                                        {actionLoadingId === r.return_id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <XCircle className="h-3.5 w-3.5" />}
-                                        Cancel Return Shipment
+                                        className={`${dangerBtnClass} !h-11 justify-center font-bold text-xs`}>
+                                        {actionLoadingId === r.return_id ? <Loader2 className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4" />}
+                                        Void Reverse Shipment
                                     </button>
                                     <button onClick={() => onCancelOrder(r.return_id)} disabled={actionLoadingId === r.return_id}
-                                        className={`${dangerBtnClass} text-xs justify-center opacity-80 hover:opacity-100`}>
-                                        {actionLoadingId === r.return_id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <XCircle className="h-3.5 w-3.5" />}
-                                        Cancel Return Order
+                                        className="h-11 rounded-xl bg-rose-500/5 text-rose-500 border border-rose-500/20 text-xs font-bold flex items-center justify-center gap-2 hover:bg-rose-500/10 transition-colors">
+                                        <XCircle className="h-4 w-4" /> Terminate Return Order
                                     </button>
-                                </>
+                                </div>
                             )}
 
                             {r.type !== 'RTO' && r.status === 'APPROVED' && (
-                                <div className="flex flex-col gap-2">
+                                <div className="flex flex-col gap-3">
                                     <button onClick={() => onGenerateAWB(r.return_id)} disabled={actionLoadingId === r.return_id}
-                                        className={`${primaryBtnClass} text-xs !from-violet-500 !to-violet-400 text-white border-0 justify-center`}>
-                                        {actionLoadingId === r.return_id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Package className="h-3.5 w-3.5" />}
-                                        Generate AWB & Schedule Pickup
+                                        className={`${primaryBtnClass} !h-12 !from-botanical-green !to-emerald-500 shadow-xl shadow-emerald-500/20 text-white border-0 justify-center font-bold tracking-tight`}>
+                                        {actionLoadingId === r.return_id ? <Loader2 className="h-4 w-4 animate-spin text-white" /> : <Package className="h-4 w-4 text-white" />}
+                                        Assign Waybill & Schedule Pickup
                                     </button>
                                     <button onClick={() => onCancelOrder(r.return_id)} disabled={actionLoadingId === r.return_id}
-                                        className={`${dangerBtnClass} text-xs justify-center`}>
-                                        {actionLoadingId === r.return_id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <XCircle className="h-3.5 w-3.5" />}
-                                        Cancel Return Order
+                                        className={`${dangerBtnClass} !h-11 justify-center opacity-80 hover:opacity-100 font-bold text-xs transition-all`}>
+                                        <XCircle className="h-4 w-4" /> Terminate Order
                                     </button>
                                 </div>
                             )}
 
                             {r.type !== 'RTO' && r.status === 'RECEIVED' && (
-                                <div className="flex gap-2">
-                                    <button onClick={() => onComplete(r.return_id)} disabled={actionLoadingId === r.return_id}
-                                        className={`${primaryBtnClass} text-xs flex-1 justify-center`}>
-                                        {actionLoadingId === r.return_id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
-                                        Mark Completed
-                                    </button>
-                                </div>
+                                <button onClick={() => onComplete(r.return_id)} disabled={actionLoadingId === r.return_id}
+                                    className={`${primaryBtnClass} !h-12 w-full justify-center shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all font-bold`}>
+                                    {actionLoadingId === r.return_id ? <Loader2 className="h-4 w-4 animate-spin text-white" /> : <Check className="h-4 w-4 text-white" />}
+                                    Finalize Completion
+                                </button>
                             )}
 
-                            {/* RTO info banner */}
+                            {/* RTO specialized disclaimer */}
                             {r.type === 'RTO' && (
-                                <div className="rounded-xl bg-rose-500/10 border border-rose-500/25 p-3 text-xs text-rose-300">
-                                    <p className="font-semibold mb-1">⚠️ RTO — Handled by Courier</p>
-                                    <p className="text-rose-300/80">This return is automatically managed by the shipping courier. No manual actions are required. Status updates are synced automatically.</p>
+                                <div className="rounded-2xl bg-primary/5 border-2 border-dashed border-primary/20 p-4 text-xs">
+                                    <div className="flex items-start gap-3">
+                                        <div className="p-1.5 rounded-full bg-primary/10 mt-0.5">
+                                            <RotateCcw className="h-3 w-3 text-primary" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="font-bold text-primary leading-none">Automated RTO Sequence</p>
+                                            <p className="text-primary/60 leading-relaxed font-sans font-medium">This record represents a courier-initiated return (RTO). Management is synchronized via shipping APIs. Manual administrative overrides are disabled for data integrity.</p>
+                                        </div>
+                                    </div>
                                 </div>
                             )}
                         </div>
                     </div>
-                ) : null}
+                )}
             </div>
         </div>
     );
@@ -886,18 +942,25 @@ function CreateReturnModal({ onClose, onSuccess }: { onClose: () => void; onSucc
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
     return (
-        <div className="space-y-2">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-text-muted/70">{title}</h3>
-            <div className="bg-white/[0.02] rounded-xl p-3 border border-border/50 space-y-1.5">{children}</div>
+        <div className="space-y-3 font-sans">
+            <div className="flex items-center gap-3 font-serif">
+                <h4 className="text-xs font-bold !text-primary/90 whitespace-nowrap">{title}</h4>
+                <div className="h-px bg-gradient-to-r from-primary/30 via-primary/5 to-transparent flex-1" />
+            </div>
+            <div className="bg-white rounded-2xl p-4 border border-border/40 space-y-2.5 transition-all duration-300 hover:border-primary/20 hover:shadow-sm">
+                {children}
+            </div>
         </div>
     );
 }
 
-function InfoRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+function InfoRow({ label, value, mono, isPrimary }: { label: string; value: React.ReactNode; mono?: boolean; isPrimary?: boolean }) {
     return (
-        <div className="flex items-center justify-between text-sm">
-            <span className="text-text-muted">{label}</span>
-            <span className={`text-text-primary ${mono ? 'font-mono text-xs' : ''}`}>{value}</span>
+        <div className="flex items-center justify-between text-sm py-0.5 group">
+            <span className="text-[11px] text-primary/50 font-bold group-hover:text-text-secondary transition-colors">{label}</span>
+            <span className={`text-text-primary font-bold text-right ${mono ? 'font-mono text-[11px] bg-page-bg px-1.5 py-0.5 rounded border border-border/20' : 'text-[12px]'} ${isPrimary ? 'text-primary' : ''}`}>
+                {value}
+            </span>
         </div>
     );
 }
