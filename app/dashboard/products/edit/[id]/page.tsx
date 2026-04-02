@@ -11,6 +11,7 @@ import Link from 'next/link';
 import toast from 'react-hot-toast';
 import CountryPicker from '@/components/CountryPicker';
 import SeoEditor from '@/components/SeoEditor';
+import CountryPricingEditor from '@/components/CountryPricingEditor';
 import type { SeoData } from '@/lib/api/seo';
 
 // ÔöÇÔöÇÔöÇ Constants ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
@@ -1625,6 +1626,11 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                                 </div>
                                             </div>
                                         </div>
+                                    </div>
+                                    
+                                    {/* Country Pricing Editor */}
+                                    <div className="mt-8 border-t border-border pt-8">
+                                        <CountryPricingEditor productId={id} defaultPriceInr={variants.length > 0 ? variants[0].price : 0} />
                                     </div>
                                 </div>
                             </div>
