@@ -148,136 +148,78 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
         }, 2000);
     };
 
+    // ── Template column headers (row-per-variant format) ──
+    const TEMPLATE_HEADERS = [
+        'Product ID', 'Product Name', 'Brand', 'Category', 'Subcategory',
+        'Country of Origin', 'Form', 'Speciality', 'Speciality_2', 'Speciality_3',
+        'Intended Use', 'Description', 'Short Description', 'Is_Default',
+        'Variant Name', 'SKU', 'Price', 'Stock', 'Weight', 'Weight_unit',
+        'Volume', 'Volume_unit', 'Count', 'Count_unit', 'Strength', 'Strength_unit',
+        'Flavor', 'Pack_quantity', 'Cost_price', 'Shelf_life', 'Length', 'Width', 'Height',
+        'Variant_image_1', 'Variant_image_2', 'Variant_image_3', 'Variant_image_4',
+        'Variant_image_5', 'Variant_video', 'Russia_markup', 'Korea_markup',
+    ];
+
+    // Example rows demonstrating row-per-variant grouping
+    const TEMPLATE_ROWS = [
+        // ROW 1 — Product P001, Variant 1 (default)
+        [
+            'P001', 'Vitamin C', 'BrandX', 'Supplements', 'Vitamins', 'India', 'Tablet',
+            'Vegan', 'Gluten Free', '', 'Daily immunity support', 'Full description here',
+            'Short desc here', 'TRUE', '500mg 60 Tabs', 'SKU-001', '10.99', '100',
+            '200', 'g', '', '', '60', 'Tablets', '500', 'mg', '', '1', '5.00', '24',
+            '10', '8', '5', 'https://image1.jpg', '', '', '', '', '', '', '',
+        ],
+        // ROW 2 — Product P001, Variant 2 (not default)
+        [
+            'P001', 'Vitamin C', 'BrandX', 'Supplements', 'Vitamins', 'India', 'Tablet',
+            'Vegan', 'Gluten Free', '', 'Daily immunity support', 'Full description here',
+            'Short desc here', 'FALSE', '1000mg 30 Tabs', 'SKU-002', '14.99', '50',
+            '300', 'g', '', '', '30', 'Tablets', '1000', 'mg', '', '1', '7.00', '24',
+            '10', '8', '5', '', '', '', '', '', '', '10', '5',
+        ],
+    ];
+
     const handleDownloadTemplate = (format: 'csv' | 'xlsx') => {
-        // Template columns match the new 3-variant wide format exactly
-        const data = [
-            {
-                // ── General / Product-level ─────────────────────
-                'Product Name': "Ashwagandha Prowess",
-                'Brand': "Vedashi",
-                'Category': "Wellness",
-                'Subcategory': "Capsules",
-                'Country of Origin': "India",
-                'Form': "Capsules",
-                'Speciality': "Ayurvedic",
-                'Speciality_2': "Organic",
-                'Speciality_3': "",
-                'Intended Use': "Daily wellness",
-                'Description': "A premium ayurvedic supplement for vitality and stress relief.",
-                'Short Description': "Premium Ashwagandha capsules for daily wellness & stress relief.",
-                'product_image_1': "https://example.com/product-main.jpg",
-                'product_image_2': "",
-                'product_image_3': "",
-                'product_image_4': "",
-                'product_image_5': "",
-                'product_video': "",
-
-                // ── Variant 1 ───────────────────────────────
-                'Variant_name1': "60 Capsules Single",
-                'SKU1': "VED-001",
-                'Price 1': "450",
-                'Stock 1': "50",
-                'weight 1': "150",
-                'weight_unit 1': "g",
-                'volume 1': "",
-                'volume_unit 1': "",
-                'Count 1': "60",
-                'Count_unit 1': "Capsules",
-                'Strength 1': "500",
-                'Strength_unit 1': "mg",
-                'Flavor 1': "",
-                'Pack_quantity 1': "1",
-                'Cost_price($) 1': "300",
-                'Shelf_life(months) 1': "24",
-                'Length 1': "10",
-                'width 1': "5",
-                'height 1': "5",
-                'image_1_1': "https://example.com/variant-1.jpg",
-                'image_1_2': "",
-                'image_1_3': "",
-                'image_1_4': "",
-                'image_1_5': "",
-                'video_1': "",
-                'russia_markup_1': "20",
-                'korea_markup_1': "25",
-
-                // ── Variant 2 ───────────────────────────────
-                'Variant_name 2': "120 Capsules Twin Pack",
-                'SKU 2': "VED-002",
-                'Price 2': "800",
-                'Stock 2': "30",
-                'weight 2': "300",
-                'weight_unit 2': "g",
-                'volume 2': "",
-                'volume_unit 2': "",
-                'Count 2': "120",
-                'Count_unit 2': "Capsules",
-                'Strength 2': "500",
-                'Strength_unit 2': "mg",
-                'Flavor 2': "",
-                'Pack_quantity 2': "2",
-                'Cost_price($) 2': "550",
-                'Shelf_life(months) 2': "24",
-                'Length 2': "10",
-                'width 2': "10",
-                'height 2': "5",
-                'image_2_1': "",
-                'image_2_2': "",
-                'image_2_3': "",
-                'image_2_4': "",
-                'image_2_5': "",
-                'video_2': "",
-                'russia_markup_2': "",
-                'korea_markup_2': "",
-
-                // ── Variant 3 ───────────────────────────────
-                'Variant_name 3': "",
-                'SKU 3': "",
-                'Price 3': "",
-                'Stock 3': "",
-                'weight 3': "",
-                'weight_unit 3': "",
-                'volume 3': "",
-                'volume_unit 3': "",
-                'Count 3': "",
-                'Count_unit 3': "",
-                'Strength 3': "",
-                'Strength_unit 3': "",
-                'Flavor 3': "",
-                'Pack_quantity 3': "",
-                'Cost_price($) 3': "",
-                'Shelf_life(months) 3': "",
-                'Length 3': "",
-                'width 3': "",
-                'height 3': "",
-                'image_3_1': "",
-                'image_3_2': "",
-                'image_3_3': "",
-                'image_3_4': "",
-                'image_3_5': "",
-                'video_3': "",
-                'russia_markup_3': "",
-                'korea_markup_3': "",
-            }
-        ];
-
-        const worksheet = xlsx.utils.json_to_sheet(data);
-
         if (format === 'csv') {
-            const csvContent = xlsx.utils.sheet_to_csv(worksheet);
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            // ── Pure CSV: plain text, comma-separated, UTF-8 with BOM ──
+            const escapeCsvField = (val: string) => {
+                if (val.includes(',') || val.includes('"') || val.includes('\n')) {
+                    return '"' + val.replace(/"/g, '""') + '"';
+                }
+                return val;
+            };
+
+            const lines: string[] = [];
+            lines.push(TEMPLATE_HEADERS.map(escapeCsvField).join(','));
+            for (const row of TEMPLATE_ROWS) {
+                // Pad row to match header length if needed
+                const padded = [...row];
+                while (padded.length < TEMPLATE_HEADERS.length) padded.push('');
+                lines.push(padded.map(escapeCsvField).join(','));
+            }
+
+            const csvString = '\uFEFF' + lines.join('\r\n');
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
+            const link = document.createElement('a');
             link.href = url;
-            link.setAttribute("download", "product_import_template.csv");
+            link.setAttribute('download', 'product_import_template.csv');
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
         } else {
+            // ── Excel .xlsx via xlsx library ──
+            const data = TEMPLATE_ROWS.map(row => {
+                const obj: Record<string, string> = {};
+                TEMPLATE_HEADERS.forEach((h, i) => { obj[h] = row[i] ?? ''; });
+                return obj;
+            });
+            const worksheet = xlsx.utils.json_to_sheet(data);
             const workbook = xlsx.utils.book_new();
-            xlsx.utils.book_append_sheet(workbook, worksheet, "Template");
-            xlsx.writeFile(workbook, "product_import_template.xlsx");
+            xlsx.utils.book_append_sheet(workbook, worksheet, 'Template');
+            xlsx.writeFile(workbook, 'product_import_template.xlsx');
         }
     };
 
@@ -351,13 +293,16 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
                                 <h3 className="font-serif text-sm font-semibold text-amber-800 mb-2">Important Instructions</h3>
                                 <ul className="text-sm text-amber-900/80 space-y-1.5 list-disc pl-4">
                                     <li>The file must be a valid <strong>.csv, .xlsx, or .xls</strong> file.</li>
-                                    <li><strong>SKU 1</strong>, <strong>Product Name</strong>, and <strong>Price 1</strong> are required for new products.</li>
+                                    <li>Each <strong>ROW</strong> represents one variant. One product = one or more rows.</li>
+                                    <li>Required for new products: <strong>Product ID</strong>, <strong>SKU</strong>, <strong>Product Name</strong>, and <strong>Price</strong>.</li>
+                                    <li>Group multiple variants under the same product using the same <strong>Product ID</strong>.</li>
+                                    <li>Mark one variant per product as <strong>Is_Default = TRUE</strong> — its images will be used as fallback for variants with no images.</li>
+                                    <li>If <strong>Is_Default</strong> is not set, the first variant row is used as default.</li>
                                     <li>If the SKU exists, the product will be <strong>updated</strong>. If not, a new product will be <strong>created</strong>.</li>
-                                    <li>You can add up to <strong>3 variants</strong> per row (e.g., using SKU 1, SKU 2, SKU 3).</li>
                                     <li><strong>Short Description</strong> is optional — great for SEO and product cards.</li>
-                                    <li>Supports media URLs in columns like <strong>product_image_1</strong> and <strong>image_1_1</strong>.</li>
+                                    <li>Supports media URLs in <strong>Variant_image_1</strong> to <strong>Variant_image_5</strong> and <strong>Variant_video</strong> columns.</li>
+                                    <li><strong>Russia_markup</strong> and <strong>Korea_markup</strong> are optional — set a % markup for country-specific pricing per variant.</li>
                                     <li>Large files (&gt;100 rows) are processed in the background.</li>
-                                    <li><strong>russia_markup_1/2/3</strong> and <strong>korea_markup_1/2/3</strong> are optional — set a % markup for country-specific pricing per variant.</li>
                                 </ul>
                                 <div className="mt-5 flex items-center gap-3">
                                     <button
