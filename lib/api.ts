@@ -58,14 +58,15 @@ export function authHeaders(extra?: Record<string, string>): Record<string, stri
  */
 export async function logoutUser(): Promise<boolean> {
     try {
-        const res = await authFetch(`${API_URL}/api/auth/logout`, {
+        const res = await fetch(`${API_URL}/api/auth/logout`, {
             method: 'POST',
-            headers: authHeaders(),
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            credentials: 'include',
         });
         const json = await res.json();
         // Reset CSRF cache so next login gets a fresh token
         resetCsrfCache();
-        return json.success;
+        return json?.success || false;
     } catch (error) {
         console.error('[Admin API] Failed to logout:', error);
         resetCsrfCache();
@@ -481,7 +482,7 @@ export async function getProduct(id: string, skipCache: boolean = false): Promis
             const sale_end = defaultVariant?.sale_end ?? null;
 
             const images = product.assets
-                ?.map((a: any) => a.base64_data || a.asset_url)
+                ?.map((a: any) => a.cdn_url || a.base64_data || a.asset_url)
                 .filter(Boolean) || [];
             return {
                 ...product,
@@ -1480,7 +1481,7 @@ export async function loginUser(email: string, password: string, turnstileToken?
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
-            body: JSON.stringify({ email, password, turnstile_token: turnstileToken }),
+            body: JSON.stringify({ email, password, turnstile_token: turnstileToken, source: 'admin' }),
         });
         const json = await res.json();
 
@@ -3402,6 +3403,7 @@ export async function devSimulateRtoStep(opts: { step: number; order_id?: string
     } catch { return { success: false, message: 'Network error' }; }
 }
 
+
 /* ─── Automation Settings ─── */
 export interface AutomationSettings {
     setting_id: number;
@@ -3462,4 +3464,117 @@ export async function updateAutomationSettings(data: {
         const json = await res.json();
         return { success: json.success, data: json.data, message: json.message };
     } catch { return { success: false, message: 'Network error' }; }
+}
+/* ─── Currency Config (Country-Based Pricing) ─── */
+
+export interface CurrencyConfigEntry {
+    country_code: string;
+    country_name: string;
+    currency_code: string;
+    currency_symbol: string;
+    exchange_rate: number;
+    updated_at?: string;
+}
+
+export async function getCurrencyConfig(): Promise<CurrencyConfigEntry[]> {
+    try {
+        const res = await authFetch(`${API_URL}/api/currency-config`, {
+            headers: authHeaders(),
+        });
+        const json: ApiResponse<any> = await res.json();
+        if (json.success && Array.isArray(json.data)) {
+            return json.data;
+        }
+        return [];
+    } catch (error) {
+        console.error('[Admin API] Failed to fetch currency config:', error);
+        return [];
+    }
+}
+
+export async function upsertCurrencyConfig(entry: Omit<CurrencyConfigEntry, 'updated_at'>): Promise<ApiResponse<CurrencyConfigEntry>> {
+    try {
+        const res = await authFetch(`${API_URL}/api/currency-config`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify(entry),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to upsert currency config:', error);
+        return { success: false, message: 'Network error' };
+    }
+}
+
+export async function deleteCurrencyConfig(countryCode: string): Promise<boolean> {
+    try {
+        const res = await authFetch(`${API_URL}/api/currency-config/${countryCode}`, {
+            method: 'DELETE',
+            headers: authHeaders(),
+        });
+        const json: ApiResponse = await res.json();
+        return json.success;
+    } catch (error) {
+        console.error('[Admin API] Failed to delete currency config:', error);
+        return false;
+    }
+}
+
+/* ─── Product Country Pricing ─── */
+
+export interface CountryPrice {
+    id?: number;
+    product_id?: string;
+    country_code: string;
+    variant_id?: string;
+    price_inr: number;
+    country_name?: string;
+    currency_code?: string;
+    currency_symbol?: string;
+    exchange_rate?: number;
+}
+
+export async function getProductCountryPrices(productId: string): Promise<CountryPrice[]> {
+    try {
+        const res = await authFetch(`${API_URL}/api/products/${productId}/country-prices`, {
+            headers: authHeaders(),
+        });
+        const json: ApiResponse<any> = await res.json();
+        if (json.success && Array.isArray(json.data)) {
+            return json.data;
+        }
+        return [];
+    } catch (error) {
+        console.error('[Admin API] Failed to fetch product country prices:', error);
+        return [];
+    }
+}
+
+export async function setProductCountryPrices(productId: string, prices: { variant_id: string; country_code: string; price_inr: number }[]): Promise<ApiResponse<any>> {
+    try {
+        const res = await authFetch(`${API_URL}/api/products/${productId}/country-prices`, {
+            method: 'PUT',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ prices }),
+        });
+        return await res.json();
+    } catch (error) {
+        console.error('[Admin API] Failed to set product country prices:', error);
+        return { success: false, message: 'Network error' };
+    }
+}
+
+export async function deleteProductCountryPrice(productId: string, countryCode: string): Promise<boolean> {
+    try {
+        const res = await authFetch(`${API_URL}/api/products/${productId}/country-prices/${countryCode}`, {
+            method: 'DELETE',
+            headers: authHeaders(),
+        });
+        const json: ApiResponse = await res.json();
+        return json.success;
+    } catch (error) {
+        console.error('[Admin API] Failed to delete product country price:', error);
+        return false;
+    }
+
 }

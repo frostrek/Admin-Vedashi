@@ -30,7 +30,7 @@ interface AdminAuthContextType {
 }
 
 const AdminAuthContext = createContext<AdminAuthContextType | undefined>(undefined);
-const ADMIN_KEY = 'ksp_admin_user';
+const ADMIN_KEY = 'ved_admin_user';
 
 export function AdminAuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<AdminUser | null>(null);
@@ -105,9 +105,10 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
             console.error('Logout API failed:', error);
         }
 
-        // Redirect to storefront login
-        const storefrontUrl = process.env.NEXT_PUBLIC_STOREFRONT_URL || 'http://localhost:3000';
-        window.location.href = `${storefrontUrl}/in/login`;
+        // Redirect to admin panel login, but prevent infinite reload loop if already there
+        if (window.location.pathname !== '/') {
+            window.location.href = '/';
+        }
     }, []);
 
     const deactivate = useCallback(async (password: string) => {
@@ -130,7 +131,6 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
             }
 
             // ── SESSION RECOVERY CHECK ──────────────────────────
-            // Always validate with backend (/me) if cookies exist
             getAdminMe().then(res => {
                 if (res.success && res.data) {
                     const role = res.data.role || 'customer';
@@ -139,6 +139,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
                     if (!['admin', 'Super Admin', 'owner'].includes(role)) {
                         setUser(null);
                         localStorage.removeItem(ADMIN_KEY);
+                        setIsLoading(false);
                         return;
                     }
 
@@ -151,16 +152,19 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
                     };
                     setUser(adminUser);
                     localStorage.setItem(ADMIN_KEY, JSON.stringify(adminUser));
-                } else if (stored) {
-                    // Cookie invalid/expired but we have stale storage
+                } else {
+                    // Cookie invalid/expired
                     setUser(null);
                     localStorage.removeItem(ADMIN_KEY);
                 }
+                setIsLoading(false);
             }).catch(() => {
-                // Fallback to stored user on network error
+                // Fallback to stored user on network error if it exists, otherwise stop loading
+                setIsLoading(false);
             });
+        } else {
+            setIsLoading(false);
         }
-        setIsLoading(false);
 
         // Listen for global auth failures (e.g., failed refresh token)
         const handleAuthFailure = () => {

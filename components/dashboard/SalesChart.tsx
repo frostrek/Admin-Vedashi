@@ -68,7 +68,7 @@ export default function SalesChart({
         <div className="rounded-2xl border border-border bg-gradient-to-br from-card-bg to-card-bg-elevated p-5 sm:p-6 shadow-xl backdrop-blur-sm transition-all duration-300">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
                 <div>
-                    <h3 className="font-serif text-base font-bold text-gold tracking-wide uppercase">{title}</h3>
+                    <h3 className="font-serif text-base font-bold text-gold">{title}</h3>
                     <p className="text-[11px] font-bold text-text-muted uppercase tracking-widest mt-0.5">Monthly yield vs established wellness targets</p>
                 </div>
                 <div className="flex items-center gap-1 rounded-xl bg-primary/20 p-1 border border-border">
