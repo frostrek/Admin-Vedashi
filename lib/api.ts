@@ -3462,3 +3462,59 @@ export async function updateAutomationSettings(data: {
         return { success: json.success, data: json.data, message: json.message };
     } catch { return { success: false, message: 'Network error' }; }
 }
+/* ─── Site Configuration (Merchant Settings, etc.) ─── */
+
+export interface MerchantShippingConfig {
+    is_free: boolean;
+    handling_time_days_min: number;
+    handling_time_days_max: number;
+    transit_time_days_min: number;
+    transit_time_days_max: number;
+    currency: string;
+    flat_rate: number;
+    description: string;
+}
+
+export interface MerchantReturnConfig {
+    policy_days: number;
+    return_fees: string;
+    policy_url: string;
+    description: string;
+}
+
+export async function getSiteConfig(key: string): Promise<ApiResponse<any>> {
+    try {
+        const res = await authFetch(`${API_URL}/api/site-config/${key}`, {
+            headers: authHeaders(),
+            credentials: 'include',
+        });
+        return await res.json();
+    } catch {
+        return { success: false, message: 'Network error' };
+    }
+}
+
+export async function getBatchSiteConfigs(keys: string[]): Promise<ApiResponse<Record<string, any>>> {
+    try {
+        const res = await authFetch(`${API_URL}/api/site-config/batch?keys=${encodeURIComponent(keys.join(','))}`, {
+            headers: authHeaders(),
+            credentials: 'include',
+        });
+        return await res.json();
+    } catch {
+        return { success: false, message: 'Network error' };
+    }
+}
+
+export async function updateSiteConfig(key: string, value: any): Promise<ApiResponse<any>> {
+    try {
+        const res = await authFetch(`${API_URL}/api/site-config/${key}`, {
+            method: 'PUT',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ value }),
+        });
+        return await res.json();
+    } catch {
+        return { success: false, message: 'Network error' };
+    }
+}
