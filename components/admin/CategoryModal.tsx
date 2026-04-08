@@ -1,20 +1,22 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Loader2 } from 'lucide-react';
+import { X, Loader2, UploadCloud, ImageIcon, Tag } from 'lucide-react';
 import { Category, CreateCategoryPayload, UpdateCategoryPayload } from '@/types/category';
 
 interface CategoryModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (payload: CreateCategoryPayload | UpdateCategoryPayload) => Promise<void>;
+    onSubmit: (payload: CreateCategoryPayload | UpdateCategoryPayload, imageFile: File | null) => Promise<void>;
     /** Pass null for "create" mode, pass a Category objects for "edit" mode */
     editCategory: Category | null;
+    /** Initial parent ID when creating a subcategory from the tree */
+    initialParentId?: string | null;
     /** All categories (used to populate the parent dropdown) */
     categories: Category[];
 }
 
-export default function CategoryModal({ isOpen, onClose, onSubmit, editCategory, categories }: CategoryModalProps) {
+export default function CategoryModal({ isOpen, onClose, onSubmit, editCategory, initialParentId, categories }: CategoryModalProps) {
     const [name, setName] = useState('');
     const [slug, setSlug] = useState('');
     const [description, setDescription] = useState('');
@@ -22,6 +24,18 @@ export default function CategoryModal({ isOpen, onClose, onSubmit, editCategory,
     const [isActive, setIsActive] = useState(true);
     const [saving, setSaving] = useState(false);
     const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+    const slugify = (text: string) => {
+        return text
+            .toLowerCase()
+            .trim()
+            .replace(/\s+/g, '-')
+            .replace(/&/g, '-and-')
+            .replace(/[^a-z0-9-]/g, '')
+            .replace(/-+/g, '-');
+    };
 
     const isEdit = !!editCategory;
 
@@ -45,27 +59,29 @@ export default function CategoryModal({ isOpen, onClose, onSubmit, editCategory,
             setDescription(editCategory.description || '');
             setParentId(editCategory.parent_id || '');
             setIsActive(editCategory.is_active ?? true);
-            setSlugManuallyEdited(true);
+            // If the existing slug already matches the auto-generated slug of the current name,
+            // we treat it as "not manually edited" so it can continue to follow name changes.
+            const autoSlug = slugify(editCategory.name);
+            setSlugManuallyEdited(editCategory.slug !== autoSlug);
+            setImagePreview(editCategory.image_url || null);
+            setImageFile(null);
         } else {
             setName('');
             setSlug('');
             setDescription('');
-            setParentId('');
+            setParentId(initialParentId || '');
             setIsActive(true);
             setSlugManuallyEdited(false);
+            setImagePreview(null);
+            setImageFile(null);
         }
-    }, [editCategory, isOpen]);
+    }, [editCategory, initialParentId, isOpen]);
 
     // Auto-generate slug from name (unless manually edited)
     const handleNameChange = (value: string) => {
         setName(value);
         if (!slugManuallyEdited) {
-            setSlug(
-                value
-                    .toLowerCase()
-                    .replace(/\s+/g, '-')
-                    .replace(/[^a-z0-9-]/g, '')
-            );
+            setSlug(slugify(value));
         }
     };
 
@@ -74,10 +90,45 @@ export default function CategoryModal({ isOpen, onClose, onSubmit, editCategory,
         setSlugManuallyEdited(true);
     };
 
-    // Only show categories that can be parents (exclude the category being edited and its children)
-    const parentOptions = categories.filter(
-        (cat) => !cat.parent_id && cat.category_id !== editCategory?.category_id
+    const getDescendantIds = (catId: string, allCats: Category[]): string[] => {
+        let ids: string[] = [];
+        const children = allCats.filter(c => c.parent_id === catId);
+        children.forEach(child => {
+            ids.push(child.category_id);
+            ids = [...ids, ...getDescendantIds(child.category_id, allCats)];
+        });
+        return ids;
+    };
+
+    // Flatten tree for dropdown with indentation
+    const getFlattenedOptions = (nodes: Category[], level: number = 0): { id: string, name: string, level: number }[] => {
+        let options: { id: string, name: string, level: number }[] = [];
+        nodes.forEach(node => {
+            options.push({ id: node.category_id, name: node.name, level });
+            if (node.children) {
+                options = [...options, ...getFlattenedOptions(node.children, level + 1)];
+            }
+        });
+        return options;
+    };
+
+    const descendantIds = editCategory ? getDescendantIds(editCategory.category_id, categories) : [];
+    const flattenedOptions = getFlattenedOptions(categories.filter(c => !c.parent_id));
+
+    // Filter out self and descendants to prevent circular references
+    const validParentOptions = flattenedOptions.filter(
+        opt => opt.id !== editCategory?.category_id && !descendantIds.includes(opt.id)
     );
+
+    // Get current path for breadcrumbs
+    const getCategoryPath = (catId: string | null, allCats: Category[]): string[] => {
+        if (!catId) return [];
+        const cat = allCats.find(c => c.category_id === catId);
+        if (!cat) return [];
+        return [...getCategoryPath(cat.parent_id, allCats), cat.name];
+    };
+
+    const currentPath = getCategoryPath(parentId, categories);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -87,12 +138,12 @@ export default function CategoryModal({ isOpen, onClose, onSubmit, editCategory,
         try {
             const payload = {
                 name: name.trim(),
-                slug: slug.trim() || name.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+                slug: slug.trim() || slugify(name),
                 description: description.trim(),
                 parent_id: parentId || null,
                 is_active: isActive,
             };
-            await onSubmit(payload);
+            await onSubmit(payload, imageFile);
         } finally {
             setSaving(false);
         }
@@ -111,10 +162,23 @@ export default function CategoryModal({ isOpen, onClose, onSubmit, editCategory,
             {/* Modal */}
             <div className="relative w-full max-w-lg rounded-2xl border border-border bg-card-bg p-6 shadow-xl mx-4 animate-in fade-in zoom-in-95 duration-200">
                 {/* Header */}
-                <div className="flex items-center justify-between mb-5">
-                    <h4 className="font-serif text-lg font-bold text-text-primary">
-                        {isEdit ? 'Edit Category' : 'Create New Category'}
-                    </h4>
+                <div className="flex items-center justify-between mb-4">
+                    <div className="flex flex-col">
+                        <h4 className="font-serif text-lg font-bold text-text-primary">
+                            {isEdit ? 'Edit Category' : 'Create New Category'}
+                        </h4>
+                        {currentPath.length > 0 && (
+                            <div className="flex items-center gap-1.5 mt-1 text-[11px] font-medium text-text-muted">
+                                <Tag className="h-3 w-3" />
+                                {currentPath.map((name, i) => (
+                                    <span key={i} className="flex items-center gap-1.5">
+                                        {name}
+                                        {i < currentPath.length - 1 && <X className="h-2 w-2 rotate-45 opacity-40" />}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                     <button
                         onClick={onClose}
                         className="rounded-lg p-1.5 text-text-muted hover:text-text-primary hover:bg-page-bg transition-colors"
@@ -125,6 +189,47 @@ export default function CategoryModal({ isOpen, onClose, onSubmit, editCategory,
 
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="space-y-4">
+                    {/* Image Upload (Parent Categories Only) */}
+                    {!parentId && (
+                        <div>
+                            <label className="block text-sm font-medium text-text-primary mb-1">
+                                Category Image (Optional)
+                            </label>
+                            <div className="mt-1 flex items-center gap-4">
+                                <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl border border-border bg-page-bg flex items-center justify-center">
+                                    {(imagePreview || imageFile) ? (
+                                        <img
+                                            src={imageFile ? URL.createObjectURL(imageFile) : (imagePreview || '')}
+                                            alt="Category preview"
+                                            className="h-full w-full object-cover"
+                                        />
+                                    ) : (
+                                        <ImageIcon className="h-8 w-8 text-text-muted opacity-50" />
+                                    )}
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                    <label className="cursor-pointer inline-flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-1.5 text-sm font-medium text-text-primary shadow-sm hover:bg-page-bg transition-colors">
+                                        <UploadCloud className="h-4 w-4 text-text-muted" />
+                                        <span>{imageFile ? 'Change File' : 'Upload Image'}</span>
+                                        <input
+                                            type="file"
+                                            className="hidden"
+                                            accept="image/png, image/jpeg, image/webp"
+                                            onChange={(e) => {
+                                                if (e.target.files && e.target.files[0]) {
+                                                    setImageFile(e.target.files[0]);
+                                                }
+                                            }}
+                                        />
+                                    </label>
+                                    <span className="text-[11px] text-text-muted">
+                                        PNG, JPG or WEBP (max 5MB)
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Name */}
                     <div>
                         <label className="block text-sm font-medium text-text-primary mb-1">
@@ -177,12 +282,14 @@ export default function CategoryModal({ isOpen, onClose, onSubmit, editCategory,
                         <select
                             value={parentId}
                             onChange={(e) => setParentId(e.target.value)}
-                            className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-primary focus:outline-none bg-white"
+                            className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-primary focus:outline-none bg-white font-medium"
                         >
                             <option value="">None (Top-level category)</option>
-                            {parentOptions.map((cat) => (
-                                <option key={cat.category_id} value={cat.category_id}>
-                                    {cat.name}
+                            {validParentOptions.map((opt) => (
+                                <option key={opt.id} value={opt.id}>
+                                    {'\u00A0'.repeat(opt.level * 3)}
+                                    {opt.level > 0 ? '↳ ' : ''}
+                                    {opt.name}
                                 </option>
                             ))}
                         </select>

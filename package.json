@@ -12,6 +12,7 @@
     "@marsidev/react-turnstile": "^1.5.0",
     "@tailwindcss/typography": "^0.5.19",
     "@tanstack/react-query": "^5.91.2",
+    "framer-motion": "^12.38.0",
     "gsap": "^3.14.2",
     "jspdf": "^4.2.0",
     "jspdf-autotable": "^5.0.7",

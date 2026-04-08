@@ -3422,6 +3422,7 @@ export interface AutomationSettings {
     shipment_refresh_interval_seconds: number;
     auto_schedule_pickup: boolean;
     auto_pickup_offset_days: number;
+    new_arrival_window_days: number;
     updated_at: string;
 }
 
@@ -3452,6 +3453,7 @@ export async function updateAutomationSettings(data: {
     shipment_refresh_interval_seconds: number;
     auto_schedule_pickup: boolean;
     auto_pickup_offset_days: number;
+    new_arrival_window_days: number;
 }): Promise<{ success: boolean; data?: AutomationSettings; message?: string }> {
     try {
         const res = await authFetch(`${API_URL}/api/admin/automation-settings`, {

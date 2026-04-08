@@ -1,10 +1,4 @@
 import { authFetch } from '@/lib/api';
-/**
- * Category API Client
- * Dedicated module for all category CRUD operations.
- * No mock fallback — everything comes from the backend.
- */
-
 import { Category, CreateCategoryPayload, UpdateCategoryPayload } from '@/types/category';
 import { getToken } from '@/lib/auth';
 import { env } from '@/lib/env';
@@ -27,22 +21,27 @@ interface ApiResponse<T = unknown> {
 
 /* ─── GET all categories ─── */
 
-export async function getCategories(): Promise<Category[]> {
+export async function getCategories(tree: boolean = false): Promise<Category[]> {
     try {
-        const res = await fetch(`${API_URL}/api/categories?include_inactive=true`, { credentials: 'include' });
+        const res = await fetch(`${API_URL}/api/categories?include_inactive=true${tree ? '&tree=true' : ''}`, { credentials: 'include' });
         const json: ApiResponse<Category[]> = await res.json();
+        
+        const mapCategory = (cat: any): Category => ({
+            category_id: cat.category_id ?? '',
+            name: cat.name ?? '',
+            slug: cat.slug ?? '',
+            description: cat.description ?? '',
+            parent_id: cat.parent_id ?? null,
+            image_url: cat.image_url ?? null,
+            sort_order: cat.sort_order ?? 0,
+            is_active: cat.is_active ?? true,
+            product_count: cat.product_count ?? 0,
+            needs_action: cat.needs_action ?? false,
+            children: Array.isArray(cat.children) ? cat.children.map(mapCategory) : [],
+        });
+
         if (json.success && Array.isArray(json.data)) {
-            return json.data.map((cat) => ({
-                category_id: cat.category_id ?? '',
-                name: cat.name ?? '',
-                slug: cat.slug ?? '',
-                description: cat.description ?? '',
-                parent_id: cat.parent_id ?? null,
-                image_url: cat.image_url ?? null,
-                sort_order: cat.sort_order ?? 0,
-                is_active: cat.is_active ?? true,
-                product_count: cat.product_count ?? 0,
-            }));
+            return json.data.map(mapCategory);
         }
         return [];
     } catch (error) {
@@ -111,6 +110,80 @@ export async function deleteCategory(id: string): Promise<{ success: boolean; er
         return { success: false, error: json.message || 'Failed to delete category' };
     } catch (error) {
         console.error('[Category API] Failed to delete category:', error);
+        return { success: false, error: 'Network error' };
+    }
+}
+
+/* ─── BULK DELETE categories ─── */
+
+export async function bulkDeleteCategories(ids: string[]): Promise<{ success: boolean; error?: string }> {
+    try {
+        const res = await authFetch(`${API_URL}/api/categories/bulk-delete`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ ids }),
+        });
+        const json: ApiResponse = await res.json();
+        if (json.success) {
+            return { success: true };
+        }
+        return { success: false, error: json.message || 'Failed to delete categories' };
+    } catch (error) {
+        console.error('[Category API] Failed to bulk delete categories:', error);
+        return { success: false, error: 'Network error' };
+    }
+}
+
+/* ─── BULK UPDATE categories ─── */
+
+export async function bulkUpdateCategories(
+    ids: string[],
+    data: Partial<UpdateCategoryPayload>
+): Promise<{ success: boolean; error?: string }> {
+    try {
+        const res = await authFetch(`${API_URL}/api/categories/bulk-update`, {
+            method: 'PATCH',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ ids, data }),
+        });
+        const json: ApiResponse = await res.json();
+        if (json.success) {
+            return { success: true };
+        }
+        return { success: false, error: json.message || 'Failed to update categories' };
+    } catch (error) {
+        console.error('[Category API] Failed to bulk update categories:', error);
+        return { success: false, error: 'Network error' };
+    }
+}
+
+/* ─── UPLOAD Category Image ─── */
+
+export async function uploadCategoryImage(
+    categoryId: string,
+    file: File
+): Promise<{ success: boolean; url?: string; error?: string }> {
+    try {
+        const formData = new FormData();
+        formData.append('image', file);
+
+        const headers = authHeaders();
+        // Do NOT set Content-Type for FormData; browser sets it with correct boundary.
+        delete headers['Content-Type'];
+
+        const res = await authFetch(`${API_URL}/api/categories/${categoryId}/image`, {
+            method: 'POST',
+            headers,
+            body: formData,
+        });
+        
+        const json: ApiResponse<Category> = await res.json();
+        if (json.success && json.data) {
+            return { success: true, url: json.data.image_url ?? undefined };
+        }
+        return { success: false, error: json.message || 'Failed to upload image' };
+    } catch (error) {
+        console.error('[Category API] Failed to upload category image:', error);
         return { success: false, error: 'Network error' };
     }
 }
