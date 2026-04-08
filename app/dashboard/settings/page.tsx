@@ -44,6 +44,7 @@ export default function SettingsPage() {
         shipment_refresh_interval_seconds: 30,
         auto_schedule_pickup: false,
         auto_pickup_offset_days: 0,
+        new_arrival_window_days: 7,
         updated_at: ''
     });
     const [autoLoading, setAutoLoading] = useState(true);
@@ -109,6 +110,7 @@ export default function SettingsPage() {
             shipment_refresh_interval_seconds: autoSettings.shipment_refresh_interval_seconds,
             auto_schedule_pickup: autoSettings.auto_schedule_pickup,
             auto_pickup_offset_days: autoSettings.auto_pickup_offset_days,
+            new_arrival_window_days: autoSettings.new_arrival_window_days,
         });
         setAutoSaving(false);
         if (res.success && res.data) {
@@ -530,7 +532,40 @@ export default function SettingsPage() {
                                 </div>
                             </div>
                         </div>
-                        <div className="pt-4 flex justify-end">
+
+                        {/* ====== STORE SETTINGS ====== */}
+                        <div className="mt-12">
+                            <h3 className="text-md font-bold text-gold uppercase tracking-wider mb-4 border-b border-border pb-2">Store Display Settings</h3>
+                            
+                            {/* New Arrivals Days */}
+                            <div className="flex items-start justify-between">
+                                <div>
+                                    <h5 className="font-serif text-[15px] font-semibold text-text-primary mb-1">New Arrivals Window</h5>
+                                    <p className="text-sm text-text-secondary">Products added within this many days will automatically appear in the New Arrivals filter.</p>
+                                </div>
+                            </div>
+                            
+                            <div className="p-4 rounded-xl bg-black/20 border border-border mt-3">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <label className="block text-sm font-medium text-text-primary mb-1">Timeframe Setting</label>
+                                        <p className="text-xs text-text-secondary">Default is 7 days. Changes update the storefront instantly.</p>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            max="365"
+                                            value={autoSettings.new_arrival_window_days}
+                                            onChange={(e) => setAutoSettings({ ...autoSettings, new_arrival_window_days: parseInt(e.target.value) || 7 })}
+                                            className="w-20 rounded-lg border border-border bg-card-bg px-3 py-1.5 text-sm text-text-primary text-center focus:border-gold/50 focus:outline-none"
+                                        />
+                                        <span className="text-xs text-text-secondary font-medium">Days</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="pt-8 flex justify-end">
                             <button
                                 onClick={handleSaveAutomations}
                                 disabled={autoSaving}

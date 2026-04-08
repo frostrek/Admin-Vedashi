@@ -96,7 +96,7 @@ export default function PromoBannersPage() {
                 background_color: form.background_color,
                 text_color: form.text_color,
                 total_count: Number(form.total_count),
-                country_code: form.country_code || null,
+                country_code: form.country_code,
             };
 
             const url = editing
@@ -219,6 +219,9 @@ export default function PromoBannersPage() {
                                                 <span className={`text-[10px] ${isDark ? 'text-text-muted' : 'text-emerald-950/70'} uppercase font-bold flex items-center gap-2`}>
                                                     <div className={`w-1.5 h-1.5 rounded-full ${b.flow === 'blink' ? (isDark ? 'bg-gold animate-pulse shadow-[0_0_5px_rgba(197,164,109,0.8)]' : 'bg-primary animate-pulse shadow-[0_0_5px_rgba(59,93,59,0.3)]') : 'bg-border'}`} />
                                                     {b.flow.replace('-', ' ')} oscillation
+                                                </span>
+                                                <span className={`text-[10px] ${isDark ? 'text-gold-soft/50' : 'text-emerald-950/50'} font-bold uppercase`}>
+                                                    Scope: {b.country_code || 'Global'}
                                                 </span>
                                             </div>
                                         </td>
@@ -431,6 +434,30 @@ export default function PromoBannersPage() {
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+
+                            <div className="space-y-3">
+                                <label className="flex items-center gap-1.5 text-[10px] font-bold text-text-muted uppercase px-1 pb-1">
+                                    Country Scope
+                                    <span className="group relative cursor-pointer flex items-center">
+                                        <Info className="w-3.5 h-3.5 text-text-muted/60 hover:text-gold transition-colors" />
+                                        <span className="absolute bottom-full mb-2 left-0 opacity-0 group-hover:opacity-100 transition-all pointer-events-none w-max max-w-[200px] bg-black text-white text-[9px] normal-case tracking-normal px-3 py-2 rounded-lg shadow-xl z-[99999]">
+                                            Target this banner to a specific country or leave as Global.
+                                        </span>
+                                    </span>
+                                </label>
+                                <select
+                                    value={form.country_code || ''}
+                                    onChange={e => setForm({ ...form, country_code: e.target.value || null })}
+                                    className={inputCls}
+                                >
+                                    <option value="">Global (All Countries)</option>
+                                    <option value="IN">India (IN)</option>
+                                    <option value="RU">Russia (RU)</option>
+                                    <option value="US">United States (US)</option>
+                                    <option value="GB">United Kingdom (GB)</option>
+                                    <option value="VN">Vietnam (VN)</option>
+                                </select>
                             </div>
 
                             <div className="flex justify-end gap-3 pt-8 border-t border-border mt-10">

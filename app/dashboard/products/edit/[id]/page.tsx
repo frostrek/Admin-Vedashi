@@ -11,6 +11,7 @@ import Link from 'next/link';
 import toast from 'react-hot-toast';
 import CountryPicker from '@/components/CountryPicker';
 import SeoEditor from '@/components/SeoEditor';
+import CountryPricingEditor from '@/components/CountryPricingEditor';
 import type { SeoData } from '@/lib/api/seo';
 
 // ÔöÇÔöÇÔöÇ Constants ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
@@ -1390,15 +1391,15 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                     <div className="sm:col-span-2">
                                         <div className="flex justify-between items-end mb-1.5">
                                             <label className="block text-sm font-medium text-text-primary">Product Name *</label>
-                                            <span className={`text-xs ${form.product_name.length >= 50 ? 'text-red-500' : 'text-text-muted'}`}>
-                                                {form.product_name.length}/50
+                                            <span className={`text-xs ${form.product_name.length >= 100 ? 'text-red-500' : 'text-text-muted'}`}>
+                                                {form.product_name.length}/100
                                             </span>
                                         </div>
                                         <input
                                             type="text"
                                             value={form.product_name}
                                             onChange={e => update('product_name', e.target.value)}
-                                            maxLength={50}
+                                            maxLength={100}
                                             className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 transition-all"
                                             placeholder="e.g. Ashwagandha Prowess"
                                             required
@@ -1625,6 +1626,11 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                                 </div>
                                             </div>
                                         </div>
+                                    </div>
+                                    
+                                    {/* Country Pricing Editor */}
+                                    <div className="mt-8 border-t border-border pt-8">
+                                        <CountryPricingEditor productId={id} defaultPriceInr={variants.length > 0 ? variants[0].price : 0} />
                                     </div>
                                 </div>
                             </div>
