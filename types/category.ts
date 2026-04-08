@@ -9,7 +9,9 @@ export interface Category {
     image_url: string | null;
     sort_order: number;
     is_active: boolean;
+    needs_action?: boolean;
     product_count?: number;
+    children?: Category[];
 }
 
 export interface CreateCategoryPayload {
