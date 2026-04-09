@@ -25,6 +25,7 @@ jobs:
     needs: check-commit
     if: needs.check-commit.outputs.should-deploy == 'true' || contains(github.event.head_commit.message, 'Merge')
     runs-on: ubuntu-latest
+    timeout-minutes: 20   # ✅ added
 
     steps:
       - name: Deploy via SSH
@@ -33,6 +34,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
+          command_timeout: 15m   # ✅ added
           script: |
             cd ~/vedashi
-            bash deploy.sh
+            bash deploy.sh admin   # ✅ updated
