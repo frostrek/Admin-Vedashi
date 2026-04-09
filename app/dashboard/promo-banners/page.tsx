@@ -1,13 +1,12 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { getToken } from '@/lib/auth';
 import { authFetch, authHeaders } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, X, Loader2, Megaphone, Leaf, Save, AlertCircle, Info } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+import { API_URL } from '@/lib/api';
 
 interface PromoBanner {
     id: string;
@@ -17,8 +16,21 @@ interface PromoBanner {
     background_color: string;
     text_color: string;
     total_count: number;
+    country_code: string | null;
     created_at: string;
 }
+
+const COUNTRY_OPTIONS = [
+    { value: '', label: '🌍 Global (All Regions)' },
+    { value: 'IN', label: '🇮🇳 India' },
+    { value: 'US', label: '🇺🇸 United States' },
+    { value: 'GB', label: '🇬🇧 United Kingdom' },
+    { value: 'AE', label: '🇦🇪 UAE' },
+    { value: 'CA', label: '🇨🇦 Canada' },
+    { value: 'AU', label: '🇦🇺 Australia' },
+    { value: 'RU', label: '🇷🇺 Russia' },
+    { value: 'KR', label: '🇰🇷 South Korea' },
+];
 
 const emptyBanner: Omit<PromoBanner, 'id' | 'created_at'> = {
     message: '',
@@ -27,6 +39,7 @@ const emptyBanner: Omit<PromoBanner, 'id' | 'created_at'> = {
     background_color: '#000000',
     text_color: '#FFFFFF',
     total_count: 0,
+    country_code: null,
 };
 
 export default function PromoBannersPage() {
@@ -41,7 +54,7 @@ export default function PromoBannersPage() {
     const loadBanners = useCallback(async () => {
         setLoading(true);
         try {
-            const res = await authFetch(`${API_URL}/api/admin/promo-banners`, { headers: authHeaders() });
+            const res = await authFetch(`${API_URL}/api/admin/promo-banners`);
             const data = await res.json();
             if (data.success) setBanners(data.data || []);
         } catch { toast.error('Failed to load promo banners'); }
@@ -65,6 +78,7 @@ export default function PromoBannersPage() {
             background_color: b.background_color || '#000000',
             text_color: b.text_color || '#FFFFFF',
             total_count: b.total_count || 0,
+            country_code: b.country_code || null,
         });
         setModalOpen(true);
     };
@@ -82,6 +96,7 @@ export default function PromoBannersPage() {
                 background_color: form.background_color,
                 text_color: form.text_color,
                 total_count: Number(form.total_count),
+                country_code: form.country_code,
             };
 
             const url = editing
@@ -89,7 +104,7 @@ export default function PromoBannersPage() {
                 : `${API_URL}/api/admin/promo-banners`;
             const method = editing ? 'PUT' : 'POST';
 
-            const res = await authFetch(url, { method, headers: authHeaders({ 'Content-Type': 'application/json' }), body: JSON.stringify(body) });
+            const res = await authFetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
             const data = await res.json();
 
             if (data.success) {
@@ -106,7 +121,7 @@ export default function PromoBannersPage() {
     const handleDelete = async (id: string) => {
         if (!confirm('Delete this promo banner?')) return;
         try {
-            const res = await authFetch(`${API_URL}/api/admin/promo-banners/${id}`, { method: 'DELETE', headers: authHeaders() });
+            const res = await authFetch(`${API_URL}/api/admin/promo-banners/${id}`, { method: 'DELETE' });
             const data = await res.json();
             if (data.success) { toast.success('Banner deleted'); loadBanners(); }
             else toast.error(data.message || 'Failed to delete');
@@ -116,7 +131,7 @@ export default function PromoBannersPage() {
     const toggleActive = async (b: PromoBanner) => {
         try {
             const res = await authFetch(`${API_URL}/api/admin/promo-banners/${b.id}`, {
-                method: 'PUT', headers: authHeaders({ 'Content-Type': 'application/json' }),
+                method: 'PUT', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ...b, is_active: !b.is_active }),
             });
             const data = await res.json();
@@ -176,6 +191,7 @@ export default function PromoBannersPage() {
                             <thead>
                                 <tr className={`border-b border-border ${isDark ? 'bg-black/40' : 'bg-primary/10'} text-sm font-semibold text-gold-muted uppercase`}>
                                     <th className="px-8 py-6">Message</th>
+                                    <th className="px-8 py-6">Region</th>
                                     <th className="px-8 py-6">Effect</th>
                                     <th className="px-8 py-6">Colours</th>
                                     <th className="px-8 py-6">Date</th>
@@ -191,6 +207,11 @@ export default function PromoBannersPage() {
                                             </p>
                                         </td>
                                         <td className="px-8 py-10">
+                                            <span className={`inline-flex px-4 py-1.5 rounded-full text-[10px] font-bold uppercase border ${b.country_code ? (isDark ? 'bg-gold/5 text-gold border-gold/20' : 'bg-primary/5 text-primary border-primary/20') : (isDark ? 'bg-white/5 text-text-muted border-border' : 'bg-gray-100 text-gray-600 border-gray-200')}`}>
+                                                {b.country_code ? (COUNTRY_OPTIONS.find(c => c.value === b.country_code)?.label || b.country_code) : '🌍 Global'}
+                                            </span>
+                                        </td>
+                                        <td className="px-8 py-10">
                                             <div className="flex flex-col gap-2.5 items-start">
                                                 <span className={`inline-flex px-4 py-1 rounded-full text-[10px] font-bold uppercase shadow-lg border ${b.is_active ? (isDark ? 'bg-gold/10 text-gold border-gold/30' : 'bg-primary/10 text-primary border-primary/30') : (isDark ? 'bg-black/40 text-text-muted/60 border-border/40' : 'bg-white text-text-muted border-border')}`}>
                                                     {b.is_active ? 'Manifested' : 'Latent'}
@@ -198,6 +219,9 @@ export default function PromoBannersPage() {
                                                 <span className={`text-[10px] ${isDark ? 'text-text-muted' : 'text-emerald-950/70'} uppercase font-bold flex items-center gap-2`}>
                                                     <div className={`w-1.5 h-1.5 rounded-full ${b.flow === 'blink' ? (isDark ? 'bg-gold animate-pulse shadow-[0_0_5px_rgba(197,164,109,0.8)]' : 'bg-primary animate-pulse shadow-[0_0_5px_rgba(59,93,59,0.3)]') : 'bg-border'}`} />
                                                     {b.flow.replace('-', ' ')} oscillation
+                                                </span>
+                                                <span className={`text-[10px] ${isDark ? 'text-gold-soft/50' : 'text-emerald-950/50'} font-bold uppercase`}>
+                                                    Scope: {b.country_code || 'Global'}
                                                 </span>
                                             </div>
                                         </td>
@@ -283,6 +307,27 @@ export default function PromoBannersPage() {
                                     <AlertCircle className="w-3.5 h-3.5" />
                                     <span>Use special characters to enhance the spiritual resonance of the message.</span>
                                 </div>
+                            </div>
+
+                            <div className="space-y-3">
+                                <label className="flex items-center gap-1.5 text-[10px] font-bold text-text-muted uppercase px-1 pb-1">
+                                    Target Region
+                                    <span className="group relative cursor-pointer flex items-center">
+                                        <Info className="w-3.5 h-3.5 text-text-muted/60 hover:text-gold transition-colors" />
+                                        <span className="absolute bottom-full mb-2 left-0 opacity-0 group-hover:opacity-100 transition-all pointer-events-none w-max max-w-[220px] bg-black text-white text-[9px] normal-case tracking-normal px-3 py-2 rounded-lg shadow-xl z-[99999]">
+                                            Choose a specific region or leave as Global for all markets.
+                                        </span>
+                                    </span>
+                                </label>
+                                <select
+                                    value={form.country_code || ''}
+                                    onChange={e => setForm({ ...form, country_code: e.target.value || null })}
+                                    className={inputCls}
+                                >
+                                    {COUNTRY_OPTIONS.map(opt => (
+                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                    ))}
+                                </select>
                             </div>
 
                             <div className="grid grid-cols-2 gap-6">
@@ -389,6 +434,30 @@ export default function PromoBannersPage() {
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+
+                            <div className="space-y-3">
+                                <label className="flex items-center gap-1.5 text-[10px] font-bold text-text-muted uppercase px-1 pb-1">
+                                    Country Scope
+                                    <span className="group relative cursor-pointer flex items-center">
+                                        <Info className="w-3.5 h-3.5 text-text-muted/60 hover:text-gold transition-colors" />
+                                        <span className="absolute bottom-full mb-2 left-0 opacity-0 group-hover:opacity-100 transition-all pointer-events-none w-max max-w-[200px] bg-black text-white text-[9px] normal-case tracking-normal px-3 py-2 rounded-lg shadow-xl z-[99999]">
+                                            Target this banner to a specific country or leave as Global.
+                                        </span>
+                                    </span>
+                                </label>
+                                <select
+                                    value={form.country_code || ''}
+                                    onChange={e => setForm({ ...form, country_code: e.target.value || null })}
+                                    className={inputCls}
+                                >
+                                    <option value="">Global (All Countries)</option>
+                                    <option value="IN">India (IN)</option>
+                                    <option value="RU">Russia (RU)</option>
+                                    <option value="US">United States (US)</option>
+                                    <option value="GB">United Kingdom (GB)</option>
+                                    <option value="VN">Vietnam (VN)</option>
+                                </select>
                             </div>
 
                             <div className="flex justify-end gap-3 pt-8 border-t border-border mt-10">

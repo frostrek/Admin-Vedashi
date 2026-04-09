@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { getToken } from '../auth';
+import { env } from '../env';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API_URL = env.NEXT_PUBLIC_API_URL;
 
 export interface FinancialReportParams {
     startDate: string; // ISO format (YYYY-MM-DD)
@@ -261,7 +262,6 @@ export async function getPaymentBreakdown(): Promise<PaymentBreakdown | null> {
 export interface ExpenseTrendPoint {
     period: string;
     shipping: number;
-    tax: number;
     discounts: number;
     gatewayFees: number;
 }
@@ -269,7 +269,6 @@ export interface ExpenseTrendPoint {
 export interface ExpenseBreakdown {
     totals: {
         shipping: number;
-        tax: number;
         discounts: number;
         gatewayFees: number;
         revenue: number;
@@ -321,7 +320,6 @@ export interface OrderFinancialRow {
     subtotal: number;
     discounts: number;
     shipping: number;
-    tax: number;
     finalTotal: number;
     paymentMethod: string;
     paymentStatus: string;

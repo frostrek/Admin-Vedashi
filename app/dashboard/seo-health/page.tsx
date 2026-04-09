@@ -3,9 +3,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { ShieldAlert, CheckCircle2, AlertTriangle, ExternalLink, ArrowRight } from 'lucide-react';
+import { authFetch, API_URL } from '@/lib/api';
 import { getToken } from '@/lib/auth';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
 
 interface SeoWarning {
     id: string;
@@ -41,16 +42,7 @@ export default function SeoHealthCheck() {
     const loadHealthData = async () => {
         try {
             setLoading(true);
-            const token = getToken();
-            if (!token) {
-                setError('Session expired (Prasada lost)');
-                return;
-            }
-            
-            const res = await fetch(`${API_URL}/api/seo/health-check`, { 
-                headers: { 'Authorization': `Bearer ${token}` }, 
-                credentials: 'include' 
-            });
+            const res = await authFetch(`${API_URL}/api/seo/health-check`);
             
             if (!res.ok) throw new Error(`Status ${res.status}`);
             const data = await res.json();

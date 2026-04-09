@@ -3,14 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 4000",
+    "dev": "cross-env NODE_OPTIONS='--max-old-space-size=8192' next dev -p 4000",
     "build": "next build",
     "start": "next start -p 4000",
     "lint": "eslint"
   },
   "dependencies": {
+    "@marsidev/react-turnstile": "^1.5.0",
     "@tailwindcss/typography": "^0.5.19",
     "@tanstack/react-query": "^5.91.2",
+    "framer-motion": "^12.38.0",
     "gsap": "^3.14.2",
     "jspdf": "^4.2.0",
     "jspdf-autotable": "^5.0.7",
@@ -27,6 +29,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "cross-env": "^10.1.0",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",

@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Leaf } from 'lucide-react';
+import { API_URL } from '@/lib/api';
 
 /**
  * Auto-Login Page
@@ -22,46 +23,70 @@ function AutoLoginContent() {
         if (hasRun.current) return;
         hasRun.current = true;
 
-        const token = searchParams.get('token');
         const email = searchParams.get('email');
         const name = searchParams.get('name');
         const id = searchParams.get('id');
 
-        if (!token || !email) {
+        if (!email) {
             setStatus('Invalid login link. Redirecting...');
             setTimeout(() => { window.location.href = '/'; }, 2000);
             return;
         }
 
-        try {
-            // Set up AdminAuthContext localStorage (key: ksp_admin_user)
-            const adminUser = {
-                email,
-                name: name || email.split('@')[0],
-                role: 'admin' as const,
-                customer_id: id || '',
-            };
-            localStorage.setItem('ksp_admin_user', JSON.stringify(adminUser));
+        // Validate the session via HttpOnly cookie (set by storefront login)
+        (async () => {
+            try {
+                const res = await fetch(`${API_URL}/api/auth/me`, {
+                    credentials: 'include',
+                });
+                const json = await res.json();
 
-            // Set up lib/auth.ts localStorage (key: admin_auth_token, admin_user)
-            localStorage.setItem('admin_auth_token', token);
-            localStorage.setItem('admin_user', JSON.stringify({
-                customer_id: id,
-                full_name: name || email.split('@')[0],
-                email,
-            }));
+                if (!res.ok || !json.success) {
+                    setStatus('Session expired. Redirecting to login...');
+                    setTimeout(() => { window.location.href = '/'; }, 2000);
+                    return;
+                }
 
-            setStatus('Welcome, Admin! Redirecting to dashboard...');
+                const customer = json.data;
+                const role = customer.role || 'customer';
 
-            // Hard redirect to avoid Turbopack re-render loops
-            setTimeout(() => {
-                window.location.href = '/dashboard';
-            }, 800);
-        } catch (err) {
-            console.error('Auto-login failed:', err);
-            setStatus('Authentication failed. Redirecting...');
-            setTimeout(() => { window.location.href = '/'; }, 2000);
-        }
+                // ── SECURITY ROLE CHECK ──────────────────────────
+                // Ensure the session belongs to an administrative role
+                if (!['admin', 'Super Admin', 'owner'].includes(role)) {
+                    setStatus('Access denied. Administrative privileges required.');
+                    setTimeout(() => { window.location.href = '/'; }, 2000);
+                    return;
+                }
+
+                // Set up AdminAuthContext localStorage (key: ved_admin_user)
+                const adminUser = {
+                    email: customer.email || email,
+                    name: customer.full_name || name || email.split('@')[0],
+                    role: role as any,
+                    customer_id: customer.customer_id || id || '',
+                    phone: customer.phone || '',
+                };
+                localStorage.setItem('ved_admin_user', JSON.stringify(adminUser));
+
+                // Set up lib/auth.ts localStorage (key: admin_user)
+                localStorage.setItem('admin_user', JSON.stringify({
+                    customer_id: customer.customer_id || id,
+                    full_name: customer.full_name || name || email.split('@')[0],
+                    email: customer.email || email,
+                }));
+
+                setStatus('Welcome, Admin! Redirecting to dashboard...');
+
+                // Hard redirect to avoid Turbopack re-render loops
+                setTimeout(() => {
+                    window.location.href = `${window.location.origin}/dashboard`;
+                }, 800);
+            } catch (err) {
+                console.error('Auto-login failed:', err);
+                setStatus('Authentication failed. Redirecting...');
+                setTimeout(() => { window.location.href = '/'; }, 2000);
+            }
+        })();
     }, [searchParams]);
 
     return (

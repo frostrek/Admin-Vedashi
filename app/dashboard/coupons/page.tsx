@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import SortableHeader, { SortDir, compare } from '@/components/SortableHeader';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+import { API_URL } from '@/lib/api';
 
 interface Coupon {
     coupon_id: string;
@@ -78,26 +78,15 @@ export default function CouponsPage() {
         };
     }, [modalOpen]);
 
-    const headers = useCallback(() => {
-        const h: Record<string, string> = { 'Content-Type': 'application/json' };
-        const token = getToken();
-        if (token) h['Authorization'] = `Bearer ${token}`;
-        if (typeof document !== 'undefined') {
-            const match = document.cookie.match(/(?:^|;\s*)_csrf=([^;]*)/);
-            if (match) h['X-CSRF-Token'] = decodeURIComponent(match[1]);
-        }
-        return h;
-    }, []);
-
     const loadCoupons = useCallback(async () => {
         setLoading(true);
         try {
-            const res = await fetch(`${API_URL}/api/coupons`, { headers: headers() });
+            const res = await authFetch(`${API_URL}/api/coupons`);
             const data = await res.json();
             if (data.success) setCoupons(data.data || []);
         } catch { toast.error('Failed to load coupons'); }
         finally { setLoading(false); }
-    }, [headers]);
+    }, []);
 
     useEffect(() => { loadCoupons(); }, [loadCoupons]);
 
@@ -165,7 +154,7 @@ export default function CouponsPage() {
                 : `${API_URL}/api/coupons`;
             const method = editing ? 'PATCH' : 'POST';
 
-            const res = await fetch(url, { method, headers: headers(), body: JSON.stringify(body) });
+            const res = await authFetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
             const data = await res.json();
 
             if (data.success) {
@@ -182,7 +171,7 @@ export default function CouponsPage() {
     const handleDelete = async (id: string) => {
         if (!confirm('Delete this coupon?')) return;
         try {
-            const res = await authFetch(`${API_URL}/api/coupons/${id}`, { method: 'DELETE', headers: headers() });
+            const res = await authFetch(`${API_URL}/api/coupons/${id}`, { method: 'DELETE' });
             const data = await res.json();
             if (data.success) { toast.success('Coupon deleted'); loadCoupons(); }
             else toast.error(data.message || 'Failed to delete');
@@ -192,7 +181,7 @@ export default function CouponsPage() {
     const toggleActive = async (c: Coupon) => {
         try {
             const res = await authFetch(`${API_URL}/api/coupons/${c.coupon_id}`, {
-                method: 'PATCH', headers: headers(),
+                method: 'PATCH', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ is_active: !c.is_active }),
             });
             const data = await res.json();

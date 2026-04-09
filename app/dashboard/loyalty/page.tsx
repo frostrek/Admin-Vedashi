@@ -316,7 +316,7 @@ export default function LoyaltyAdminPage() {
                                         <p className="text-sm text-text-secondary font-bold">Live Promotions</p>
                                         <div className="p-2 bg-gold/10 rounded-lg"><Percent className="h-4 w-4 text-gold" /></div>
                                     </div>
-                                    <h4 className="font-serif text-2xl font-bold text-text-primary mb-1 font-mono">{stats.active_promotions}</h4>
+                                    <h4 className="font-serif text-2xl font-bold text-text-primary mb-1 font-mono">{formatNumber(stats.active_promotions)}</h4>
                                     <p className="text-xs text-text-secondary font-medium">Currently active campaigns</p>
                                 </div>
                             </div>

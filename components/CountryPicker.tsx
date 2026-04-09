@@ -38,9 +38,17 @@ export default function CountryPicker({ value, onChange, placeholder = 'Select c
 
     const filtered = search
         ? COUNTRIES.filter(c => c.name.toLowerCase().includes(search.toLowerCase()))
+            .sort((a, b) => {
+                const s = search.toLowerCase();
+                const aStarts = a.name.toLowerCase().startsWith(s);
+                const bStarts = b.name.toLowerCase().startsWith(s);
+                if (aStarts && !bStarts) return -1;
+                if (!aStarts && bStarts) return 1;
+                return a.name.localeCompare(b.name);
+            })
         : COUNTRIES;
 
-    const selected = COUNTRIES.find(c => c.name === value);
+    const selected = COUNTRIES.find(c => c.name.toLowerCase() === value?.toLowerCase());
 
     return (
         <div ref={containerRef} className={`relative ${className}`}>

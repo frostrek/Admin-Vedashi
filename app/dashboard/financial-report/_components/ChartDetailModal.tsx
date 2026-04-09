@@ -141,6 +141,9 @@ export default function ChartDetailModal({
           to { opacity: 1; transform: translateX(0); }
         }
 
+        .cdm-val-bar-bg { width: 44px; height: 4px; background: rgba(168,146,80,0.12); border-radius: 999px; overflow: hidden; margin-left:8px; }
+        .cdm-val-bar-fill { height: 100%; background: ${GOLD}; border-radius: 999px; transition: width 1.2s cubic-bezier(0.22,1,0.36,1); }
+
         .cdm-shimmer {
           position: absolute; inset: 0;
           background: linear-gradient(
@@ -330,18 +333,28 @@ export default function ChartDetailModal({
                   >
                     {label}
                   </span>
-                  <span
-                    style={{
-                      fontFamily: "'DM Sans', sans-serif",
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: 'var(--t-text-primary, #1a1a1a)',
-                      letterSpacing: '-0.01em',
-                      fontVariantNumeric: 'tabular-nums',
-                    }}
-                  >
-                    {value}
-                  </span>
+                  <div style={{ display:'flex', alignItems:'center' }}>
+                    <span
+                      style={{
+                        fontFamily: "'DM Sans', sans-serif",
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: 'var(--t-text-primary, #1a1a1a)',
+                        letterSpacing: '-0.01em',
+                        fontVariantNumeric: 'tabular-nums',
+                      }}
+                    >
+                      {value}
+                    </span>
+                    {typeof value === 'string' && value.includes('%') && (
+                      <div className="cdm-val-bar-bg">
+                        <div 
+                          className="cdm-val-bar-fill" 
+                          style={{ width: `${Math.min(100, parseFloat(value) || 0)}%` }} 
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

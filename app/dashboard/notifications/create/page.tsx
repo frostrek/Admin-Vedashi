@@ -4,14 +4,13 @@ import { authFetch } from '@/lib/api';
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { getToken } from '@/lib/auth';
 import toast from 'react-hot-toast';
 import {
     ArrowLeft, Send, Clock, Users, Loader2, Eye, EyeOff,
     Leaf, ChevronDown, X as XIcon,
 } from 'lucide-react';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+import { API_URL } from '@/lib/api';
 type Audience = 'all' | 'subscribed_only' | 'repeat_buyers' | 'category_buyers';
 
 interface Category {
@@ -46,34 +45,25 @@ function CreateCampaignForm() {
     const [categories, setCategories] = useState<Category[]>([]);
     const [catPickerOpen, setCatPickerOpen] = useState(false);
 
-    const headers = useCallback((): Record<string, string> => {
-        const h: Record<string, string> = { 'Content-Type': 'application/json' };
-        const token = getToken();
-        if (token) h['Authorization'] = `Bearer ${token}`;
-        if (typeof document !== 'undefined') {
-            const match = document.cookie.match(/(?:^|;\s*)_csrf=([^;]*)/);
-            if (match) h['X-CSRF-Token'] = decodeURIComponent(match[1]);
-        }
-        return h;
-    }, []);
+
 
     // Load categories once
     useEffect(() => {
         (async () => {
             try {
-                const res = await fetch(`${API_URL}/api/admin/campaigns/categories`, { headers: headers(), credentials: 'include' });
+                const res = await authFetch(`${API_URL}/api/admin/campaigns/categories`);
                 const data = await res.json();
                 if (data.success) setCategories(data.data || []);
             } catch { /* silent */ }
         })();
-    }, [headers]);
+    }, []);
 
     // Load existing campaign for editing
     useEffect(() => {
         if (!editId) return;
         (async () => {
             try {
-                const res = await fetch(`${API_URL}/api/admin/campaigns/${editId}`, { headers: headers(), credentials: 'include' });
+                const res = await authFetch(`${API_URL}/api/admin/campaigns/${editId}`);
                 const data = await res.json();
                 if (data.success && data.data) {
                     const c = data.data;
@@ -86,7 +76,7 @@ function CreateCampaignForm() {
                 }
             } catch { toast.error('Failed to load campaign'); }
         })();
-    }, [editId, headers]);
+    }, [editId]);
 
     // Fetch recipient count when audience / category selection changes
     useEffect(() => {
@@ -108,7 +98,7 @@ function CreateCampaignForm() {
                     if (form.target_audience === 'category_buyers' && selectedCategoryIds.length > 0) {
                         url += `&category_ids=${selectedCategoryIds.join(',')}`;
                     }
-                    const res = await fetch(url, { headers: headers(), credentials: 'include' });
+                    const res = await authFetch(url);
                     const data = await res.json();
                     if (!cancelled && data.success) {
                         setRecipientCount(data.data?.count ?? null);
@@ -123,7 +113,7 @@ function CreateCampaignForm() {
         };
         fetchCount();
         return () => { cancelled = true; };
-    }, [form.target_audience, selectedCategoryIds, headers]);
+    }, [form.target_audience, selectedCategoryIds]);
 
 
     const toggleCategory = (id: string) => {
@@ -150,7 +140,7 @@ function CreateCampaignForm() {
                 : `${API_URL}/api/admin/campaigns`;
             const method = editId ? 'PATCH' : 'POST';
 
-            const res = await fetch(url, { method, headers: headers(), body: JSON.stringify(buildPayload()), credentials: 'include' });
+            const res = await authFetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(buildPayload()) });
             const data = await res.json();
             if (data.success) {
                 toast.success(editId ? 'Campaign updated!' : 'Campaign saved as draft!');
@@ -168,7 +158,7 @@ function CreateCampaignForm() {
             return;
         }
         if (form.target_audience === 'category_buyers' && selectedCategoryIds.length === 0) {
-            toast.error('Please select at least one alcohol type');
+            toast.error('Please select at least one category');
             return;
         }
 
@@ -177,13 +167,13 @@ function CreateCampaignForm() {
             let campaignId = editId;
             if (campaignId) {
                 const res = await authFetch(`${API_URL}/api/admin/campaigns/${campaignId}`, {
-                    method: 'PATCH', headers: headers(), body: JSON.stringify(buildPayload()),
+                    method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(buildPayload()),
                 });
                 const data = await res.json();
                 if (!data.success) { toast.error(data.message || 'Failed to update campaign'); return; }
             } else {
                 const res = await authFetch(`${API_URL}/api/admin/campaigns`, {
-                    method: 'POST', headers: headers(), body: JSON.stringify(buildPayload()),
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(buildPayload()),
                 });
                 const data = await res.json();
                 if (!data.success) { toast.error(data.message || 'Failed to create campaign'); return; }
@@ -193,7 +183,7 @@ function CreateCampaignForm() {
             if (scheduleMode === 'later') {
                 if (!scheduledAt) { toast.error('Please pick a future date/time'); return; }
                 const res = await authFetch(`${API_URL}/api/admin/campaigns/${campaignId}/schedule`, {
-                    method: 'PATCH', headers: headers(),
+                    method: 'PATCH',
                     body: JSON.stringify({ scheduled_at: new Date(scheduledAt).toISOString() }),
                 });
                 const data = await res.json();
@@ -206,7 +196,7 @@ function CreateCampaignForm() {
             } else {
                 if (!confirm(`Send this campaign now to ~${recipientCount ?? '?'} recipient(s)? This cannot be undone.`)) return;
                 const res = await authFetch(`${API_URL}/api/admin/campaigns/${campaignId}/send`, {
-                    method: 'POST', headers: headers(),
+                    method: 'POST',
                 });
                 const data = await res.json();
                 if (data.success) {
@@ -331,7 +321,7 @@ function CreateCampaignForm() {
                     {form.target_audience === 'category_buyers' && (
                         <div className="mt-1 space-y-2">
                             <label className="block text-sm font-medium text-text-secondary">
-                                Select Alcohol Types <span className="text-red-400">*</span>
+                                Select Categories <span className="text-red-400">*</span>
                             </label>
 
                             {/* Selected tags */}

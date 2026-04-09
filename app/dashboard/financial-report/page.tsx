@@ -4,16 +4,15 @@ import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import {
   useFinancialReport, usePreviousPeriodReport,
-  useExpenseBreakdown, useOrdersFinancial, useRefundSummary,
+  useOrdersFinancial, useRefundSummary,
 } from '@/lib/api/analytics';
 import type { FinancialReportParams } from '@/lib/api/analytics';
-import { Calendar, RefreshCcw, TrendingUp, BarChart2, ShoppingCart, ReceiptText, AlertCircle } from 'lucide-react';
+import { Calendar, RefreshCcw, TrendingUp, BarChart2, ShoppingCart, AlertCircle } from 'lucide-react';
 
 import ExportButton from './_components/ExportButton';
 import SkeletonCard from './_components/SkeletonCard';
 import ExecutiveSummaryTab from './_tabs/ExecutiveSummaryTab';
 import ProfitAndLossTab from './_tabs/ProfitAndLossTab';
-import ExpenseTrackingTab from './_tabs/ExpenseTrackingTab';
 import OrdersFinancialTab from './_tabs/OrdersFinancialTab';
 import RefundsCancellationsTab from './_tabs/RefundsCancellationsTab';
 
@@ -40,7 +39,6 @@ const PERIOD_OPTS = [
 const TABS = [
   { id: 'summary',  label: 'Executive Summary', icon: TrendingUp },
   { id: 'pl',       label: 'Profit & Loss',      icon: BarChart2 },
-  { id: 'expenses', label: 'Expenses',           icon: ReceiptText },
   { id: 'orders',   label: 'Orders',             icon: ShoppingCart },
   { id: 'refunds',  label: 'Refunds',            icon: AlertCircle },
 ];
@@ -101,7 +99,6 @@ export default function FinancialReportPage() {
 
   const { data: reportData, isLoading, isError, error, refetch } = useFinancialReport(queryParams, hasDates);
   const { data: prevReportData } = usePreviousPeriodReport(queryParams, hasDates);
-  const { data: expenseData, isLoading: expensesLoading } = useExpenseBreakdown(queryParams, hasDates && tab === 'expenses');
   const { data: ordersData,  isLoading: ordersLoading }   = useOrdersFinancial(
     { ...queryParams, page: ordersPage, limit: 20, search: ordersSearch },
     hasDates && tab === 'orders',
@@ -109,10 +106,9 @@ export default function FinancialReportPage() {
   const { data: refundData, isLoading: refundsLoading } = useRefundSummary(queryParams, hasDates && tab === 'refunds');
 
   const isTabLoading =
-    (tab === 'expenses' && expensesLoading) ||
     (tab === 'orders'   && ordersLoading)   ||
     (tab === 'refunds'  && refundsLoading)  ||
-    (!['expenses', 'orders', 'refunds'].includes(tab) && isLoading);
+    (!['orders', 'refunds'].includes(tab) && isLoading);
 
   useEffect(() => { setOrdersPage(1); }, [ordersSearch, effectiveStart, effectiveEnd]);
 
@@ -400,7 +396,6 @@ export default function FinancialReportPage() {
               startDate={effectiveStart} 
               endDate={effectiveEnd} 
               data={reportData} 
-              expenseData={expenseData}
               refundData={refundData}
               ordersData={ordersData}
             />
@@ -484,7 +479,7 @@ export default function FinancialReportPage() {
         </nav>
 
         {/* ── CONTENT ──────────────────────────────────────────── */}
-        {isError && !['expenses', 'orders', 'refunds'].includes(tab) ? (
+        {isError && !['orders', 'refunds'].includes(tab) ? (
           <div className="frp-error">
             <AlertCircle size={32} color="#c0392b" />
             <p className="frp-error-title">Failed to load report</p>
@@ -492,7 +487,7 @@ export default function FinancialReportPage() {
             <button className="frp-retry-btn" onClick={() => refetch()}>Try Again</button>
           </div>
 
-        ) : (isTabLoading || (!reportData && !['expenses', 'orders', 'refunds'].includes(tab))) ? (
+        ) : (isTabLoading || (!reportData && !['orders', 'refunds'].includes(tab))) ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
             <SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard />
           </div>
@@ -502,7 +497,6 @@ export default function FinancialReportPage() {
             <div className="frp-content">
               {tab === 'summary'  && <ExecutiveSummaryTab data={reportData} prevData={prevReportData} />}
               {tab === 'pl'       && <ProfitAndLossTab data={reportData} />}
-              {tab === 'expenses' && <ExpenseTrackingTab data={expenseData} />}
               {tab === 'orders'   && (
                 <OrdersFinancialTab
                   data={ordersData}

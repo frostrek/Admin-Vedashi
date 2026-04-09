@@ -1,21 +1,19 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAdminAuth } from '@/context/AdminAuthContext';
 import AdminSidebar from '@/components/AdminSidebar';
 import TopNavbar from '@/components/dashboard/TopNavbar';
 import { ReactNode } from 'react';
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
-    const router = useRouter();
+
     const { isAuthenticated, isLoading } = useAdminAuth();
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
     useEffect(() => {
         if (!isLoading && !isAuthenticated) {
-            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-            window.location.href = isLocal ? 'http://localhost:3000/in/login' : 'https://vedashi.com/in/login';
+            window.location.href = '/';
         }
     }, [isLoading, isAuthenticated]);
 

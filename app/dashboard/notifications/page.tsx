@@ -3,7 +3,6 @@ import { authFetch } from '@/lib/api';
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { getToken } from '@/lib/auth';
 import toast from 'react-hot-toast';
 import {
     Plus, Megaphone, Send, Trash2, Loader2, Users,
@@ -11,7 +10,7 @@ import {
     Pencil, XCircle,
 } from 'lucide-react';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+import { API_URL } from '@/lib/api';
 
 type CampaignStatus = 'draft' | 'scheduled' | 'sending' | 'sent' | 'failed' | 'cancelled';
 type CampaignAudience = 'all' | 'subscribed_only' | 'repeat_buyers';
@@ -49,21 +48,12 @@ export default function NotificationsPage() {
     const [sendingId, setSendingId] = useState<string | null>(null);
     const [cancellingId, setCancellingId] = useState<string | null>(null);
 
-    const headers = useCallback((): Record<string, string> => {
-        const h: Record<string, string> = { 'Content-Type': 'application/json' };
-        const token = getToken();
-        if (token) h['Authorization'] = `Bearer ${token}`;
-        if (typeof document !== 'undefined') {
-            const match = document.cookie.match(/(?:^|;\s*)_csrf=([^;]*)/);
-            if (match) h['X-CSRF-Token'] = decodeURIComponent(match[1]);
-        }
-        return h;
-    }, []);
+
 
     const loadCampaigns = useCallback(async () => {
         setLoading(true);
         try {
-            const res = await fetch(`${API_URL}/api/admin/campaigns`, { headers: headers(), credentials: 'include' });
+            const res = await authFetch(`${API_URL}/api/admin/campaigns`);
             const data = await res.json();
             if (data.success) setCampaigns(data.data?.campaigns || []);
             else toast.error(data.message || 'Failed to load campaigns');
@@ -72,7 +62,7 @@ export default function NotificationsPage() {
         } finally {
             setLoading(false);
         }
-    }, [headers]);
+    }, []);
 
     useEffect(() => { loadCampaigns(); }, [loadCampaigns]);
 
@@ -81,7 +71,7 @@ export default function NotificationsPage() {
         setSendingId(id);
         try {
             const res = await authFetch(`${API_URL}/api/admin/campaigns/${id}/send`, {
-                method: 'POST', headers: headers(),
+                method: 'POST',
             });
             const data = await res.json();
             if (data.success) {
@@ -103,7 +93,7 @@ export default function NotificationsPage() {
         setCancellingId(id);
         try {
             const res = await authFetch(`${API_URL}/api/admin/campaigns/${id}/cancel`, {
-                method: 'POST', headers: headers(),
+                method: 'POST',
             });
             const data = await res.json();
             if (data.success) {
@@ -123,7 +113,7 @@ export default function NotificationsPage() {
         if (!confirm('Delete this draft? This cannot be undone.')) return;
         try {
             const res = await authFetch(`${API_URL}/api/admin/campaigns/${id}`, {
-                method: 'DELETE', headers: headers(),
+                method: 'DELETE',
             });
             const data = await res.json();
             if (data.success) { toast.success('Campaign deleted'); loadCampaigns(); }

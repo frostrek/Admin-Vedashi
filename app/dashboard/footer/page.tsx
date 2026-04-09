@@ -2,7 +2,6 @@
 import { authFetch } from '@/lib/api';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { getToken } from '@/lib/auth';
 import toast from 'react-hot-toast';
 import {
     Plus, Trash2, X, Loader2, ChevronDown, ChevronUp,
@@ -12,7 +11,7 @@ import {
     Newspaper, Shield, AlignLeft, GripVertical, Info
 } from 'lucide-react';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+import { API_URL } from '@/lib/api';
 
 // ─── Types ────────────────────────────────────────────────────────
 
@@ -115,27 +114,16 @@ export default function FooterManagementPage() {
     const [saving, setSaving] = useState(false);
     const [activeSection, setActiveSection] = useState<string | null>(null);
 
-    const headers = useCallback(() => {
-        const h: Record<string, string> = { 'Content-Type': 'application/json' };
-        const token = getToken();
-        if (token) h['Authorization'] = `Bearer ${token}`;
-        if (typeof document !== 'undefined') {
-            const match = document.cookie.match(/(?:^|;\s*)_csrf=([^;]*)/);
-            if (match) h['X-CSRF-Token'] = decodeURIComponent(match[1]);
-        }
-        return h;
-    }, []);
-
     const load = useCallback(async () => {
         setLoading(true);
         try {
-            const res = await fetch(`${API_URL}/api/footer/admin`, { headers: headers(), credentials: 'include' });
+            const res = await authFetch(`${API_URL}/api/footer/admin`);
             const data = await res.json();
             if (data.success) setFooter(data.data);
             else toast.error('Failed to load footer content');
         } catch { toast.error('Network error loading footer'); }
         finally { setLoading(false); }
-    }, [headers]);
+    }, []);
 
     useEffect(() => { load(); }, [load]);
 
@@ -146,7 +134,7 @@ export default function FooterManagementPage() {
         try {
             const res = await authFetch(`${API_URL}/api/footer/admin/${section}`, {
                 method: 'PUT',
-                headers: headers(),
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ value: footer[section] }),
             });
             const data = await res.json();
@@ -163,7 +151,7 @@ export default function FooterManagementPage() {
         try {
             const res = await authFetch(`${API_URL}/api/footer/admin`, {
                 method: 'PUT',
-                headers: headers(),
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(footer),
             });
             const data = await res.json();

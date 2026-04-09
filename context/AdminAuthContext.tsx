@@ -1,13 +1,13 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import { loginUser as apiLogin, deactivateAccount as apiDeactivate, logoutUser as apiLogout, LoginResult } from '@/lib/api';
+import { loginUser as apiLogin, deactivateAccount as apiDeactivate, logoutUser as apiLogout, getAdminMe, LoginResult } from '@/lib/api';
 import { setToken, getToken, setStoredUser, clearAuth, setRefreshToken } from '@/lib/auth';
 
 interface AdminUser {
     email: string;
     name: string;
-    role: 'admin' | 'owner';
+    role: 'admin' | 'owner' | 'Super Admin';
     customer_id?: string;
     phone?: string;
 }
@@ -17,42 +17,50 @@ interface LoginResponse {
     error?: string;
     /** True when the account exists            but is deactivated */
     deactivated?: boolean;
+    requireCaptcha?: boolean;
 }
 
 interface AdminAuthContextType {
     user: AdminUser | null;
     isAuthenticated: boolean;
     isLoading: boolean;
-    login: (email: string, password: string) => Promise<LoginResponse>;
+    login: (email: string, password: string, turnstileToken?: string) => Promise<LoginResponse>;
     logout: () => void;
     deactivate: (password: string) => Promise<{ success: boolean; error?: string }>;
 }
 
 const AdminAuthContext = createContext<AdminAuthContextType | undefined>(undefined);
-const ADMIN_KEY = 'ksp_admin_user';
+const ADMIN_KEY = 'ved_admin_user';
 
 export function AdminAuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<AdminUser | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    const login = useCallback(async (email: string, password: string): Promise<LoginResponse> => {
+    const login = useCallback(async (email: string, password: string, turnstileToken?: string): Promise<LoginResponse> => {
         setIsLoading(true);
         try {
             // Try real backend login first
-            const result: LoginResult = await apiLogin(email, password);
+            const result: LoginResult = await apiLogin(email, password, turnstileToken);
 
             // If the account is deactivated, bubble that up so the login page can show the reactivation modal
             if (!result.success && result.deactivated) {
                 setIsLoading(false);
-                return { success: false, deactivated: true, error: result.error };
+                return { success: false, deactivated: true, error: result.error, requireCaptcha: result.requireCaptcha };
             }
 
             if (result.success && result.customer) {
+                // Ensure only admin roles can access this dashboard
+                const role = result.customer.role || 'customer';
+                if (!['admin', 'Super Admin', 'owner'].includes(role)) {
+                    setIsLoading(false);
+                    return { success: false, error: 'Access denied. You do not have administrative privileges.' };
+                }
+
                 // Real backend login succeeded
                 const adminUser: AdminUser = {
                     email: result.customer.email,
                     name: result.customer.full_name || email.split('@')[0],
-                    role: 'admin',
+                    role: role as any,
                     customer_id: result.customer.customer_id,
                     phone: result.customer.phone,
                 };
@@ -71,12 +79,13 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
                 setIsLoading(false);
                 return {
                     success: false,
-                    error: 'Backend unreachable. Please ensure the server is running on port 5000.'
+                    error: 'Backend unreachable. Please ensure the server is running on port 5000.',
+                    requireCaptcha: result.requireCaptcha,
                 };
             }
 
             setIsLoading(false);
-            return { success: false, error: result.error || 'Invalid credentials' };
+            return { success: false, error: result.error || 'Invalid credentials', requireCaptcha: result.requireCaptcha };
         } catch (err) {
             console.error('[AdminAuth] Login process error:', err);
             setIsLoading(false);
@@ -95,10 +104,10 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         } catch (error) {
             console.error('Logout API failed:', error);
         }
-        
-        // Redirect to storefront login
-        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        window.location.href = isLocal ? 'http://localhost:3000/in/login' : 'https://vedashi.com/in/login';
+        // Redirect to admin panel login, but prevent infinite reload loop if already there
+        if (window.location.pathname !== '/') {
+            window.location.href = '/';
+        }
     }, []);
 
     const deactivate = useCallback(async (password: string) => {
@@ -119,8 +128,42 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
             if (stored) {
                 setUser(JSON.parse(stored));
             }
+
+            // ── SESSION RECOVERY CHECK ──────────────────────────
+            getAdminMe().then(res => {
+                if (res.success && res.data) {
+                    const role = res.data.role || 'customer';
+                    
+                    // Reject non-admin sessions immediately
+                    if (!['admin', 'Super Admin', 'owner'].includes(role)) {
+                        setUser(null);
+                        localStorage.removeItem(ADMIN_KEY);
+                        setIsLoading(false);
+                        return;
+                    }
+
+                    const adminUser: AdminUser = {
+                        email: res.data.email,
+                        name: res.data.full_name || res.data.email.split('@')[0],
+                        role: role as any,
+                        customer_id: (res.data as any).customer_id || (res.data as any).id,
+                        phone: res.data.phone,
+                    };
+                    setUser(adminUser);
+                    localStorage.setItem(ADMIN_KEY, JSON.stringify(adminUser));
+                } else {
+                    // Cookie invalid/expired
+                    setUser(null);
+                    localStorage.removeItem(ADMIN_KEY);
+                }
+                setIsLoading(false);
+            }).catch(() => {
+                // Fallback to stored user on network error if it exists, otherwise stop loading
+                setIsLoading(false);
+            });
+        } else {
+            setIsLoading(false);
         }
-        setIsLoading(false);
 
         // Listen for global auth failures (e.g., failed refresh token)
         const handleAuthFailure = () => {

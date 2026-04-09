@@ -100,15 +100,41 @@ export default function RefundsCancellationsTab({ data }: { data?: RefundSummary
 
         {/* KPI Cards */}
         <div className="ref-kpi">
-          <KPICard label="Refund Count" value={data.refundCount} tooltip="Orders marked as refunded or returned" />
-          <KPICard label="Total Refunded" value={formatINR(data.refundTotal)} tooltip="Total amount refunded" />
-          <KPICard label="Avg Refund" value={formatINR(data.avgRefund)} />
-          <KPICard label="Refund Rate" value={`${data.refundRate}%`} isInvertedDelta tooltip={`Out of ${data.totalOrders} total orders`} />
+          <KPICard 
+            label="Refund Count" 
+            value={data.refundCount} 
+            tooltip="Total number of items or orders that were returned and refunded." 
+          />
+          <KPICard 
+            label="Total Refunded" 
+            value={formatINR(data.refundTotal)} 
+            tooltip="Sum total of the monetary value returned to customers." 
+          />
+          <KPICard 
+            label="Avg Refund" 
+            value={formatINR(data.avgRefund)} 
+            tooltip="The average amount refunded per transaction (Total Refunded ÷ Refund Count)."
+          />
+          <KPICard 
+            label="Refund Rate" 
+            value={`${data.refundRate}%`} 
+            isInvertedDelta 
+            tooltip={`The percentage of orders that resulted in a refund (Out of ${data.totalOrders} total orders).`} 
+          />
         </div>
 
         <div className="ref-kpi2">
-          <KPICard label="Cancellations" value={data.cancelCount} tooltip="Orders cancelled before fulfillment" />
-          <KPICard label="Lost Revenue" value={formatINR(data.cancelLostRevenue)} tooltip="Revenue lost from cancellations" isInvertedDelta />
+          <KPICard 
+            label="Cancellations" 
+            value={data.cancelCount} 
+            tooltip="Total number of orders cancelled by customers or the store before they were fulfilled." 
+          />
+          <KPICard 
+            label="Lost Revenue" 
+            value={formatINR(data.cancelLostRevenue)} 
+            tooltip="Total potential revenue lost due to order cancellations." 
+            isInvertedDelta 
+          />
         </div>
 
         <div className="ref-row">

@@ -6,7 +6,7 @@ import { useAdminAuth } from '@/context/AdminAuthContext';
 import {
     LayoutDashboard, Package, ShoppingCart, Tag, LogOut, Leaf,
     ChevronLeft, Menu, Truck, Megaphone, BarChart, Settings, Users, X, Shield, Search, Ticket,
-    FileText, MessageSquare, Star, ShieldAlert, LayoutTemplate, Images, HelpCircle, Send, MonitorSmartphone, Activity, Layers, DollarSign, Gift, FileBarChart2
+    FileText, MessageSquare, Star, ShieldAlert, LayoutTemplate, Images, HelpCircle, Send, MonitorSmartphone, Activity, Layers, DollarSign, Gift, FileBarChart2, RotateCcw, SlidersHorizontal
 } from 'lucide-react';
 const useState = require('react').useState;
 const useEffect = require('react').useEffect;
@@ -29,9 +29,11 @@ const engagementNav = [
 
 const salesNav = [
     { href: '/dashboard/orders', label: 'Orders', icon: ShoppingCart },
-    { href: '/dashboard/payments/logs', label: 'Payment Stratum', icon: DollarSign },
+    { href: '/dashboard/shipments', label: 'Shipments', icon: Truck },
+    { href: '/dashboard/returns', label: 'Returns', icon: RotateCcw },
+    { href: '/dashboard/refunds', label: 'Refunds', icon: DollarSign },
     { href: '/dashboard/financial-report', label: 'Financial Report', icon: FileBarChart2 },
-    { href: '#', label: 'Delivery', icon: Truck },
+    { href: '/dashboard/payments/logs', label: 'Payment Logs', icon: DollarSign },
 ];
 
 const usersNav = [
@@ -50,6 +52,7 @@ const siteContentNav = [
     { href: '/dashboard/media', label: 'Visual Repository', icon: Images },
     { href: '/dashboard/header', label: 'Header Canvas', icon: MonitorSmartphone },
     { href: '/dashboard/footer', label: 'Footer Stratum', icon: LayoutTemplate },
+    { href: '/dashboard/shop-filters', label: 'Shop Filters', icon: SlidersHorizontal },
     { href: '/dashboard/legal', label: 'Legal Chronicles', icon: Shield },
 ];
 
@@ -73,8 +76,8 @@ const systemNav = [
 ];
 
 const allNavItems = [
-    ...overviewNav, ...catalogNav, ...engagementNav, ...salesNav, 
-    ...usersNav, ...marketingNav, ...siteContentNav, ...optimizationNav, 
+    ...overviewNav, ...catalogNav, ...engagementNav, ...salesNav,
+    ...usersNav, ...marketingNav, ...siteContentNav, ...optimizationNav,
     ...supportNav, ...systemNav
 ];
 
@@ -109,10 +112,10 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
         } else {
             const isMatch = pathname === item.href || pathname.startsWith(item.href + '/');
             if (isMatch) {
-                const hasLongerMatch = allNavItems.some(other => 
-                    other.href !== item.href && 
-                    other.href !== '#' && 
-                    (pathname === other.href || pathname.startsWith(other.href + '/')) && 
+                const hasLongerMatch = allNavItems.some(other =>
+                    other.href !== item.href &&
+                    other.href !== '#' &&
+                    (pathname === other.href || pathname.startsWith(other.href + '/')) &&
                     other.href.length > item.href.length
                 );
                 isActive = !hasLongerMatch;
@@ -126,20 +129,18 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
             <Link
                 key={item.label}
                 href={item.href}
-                className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 relative before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:w-[3px] before:h-[60%] before:rounded-r-full before:transition-all before:duration-150 ${
-                    isActive
-                        ? "text-white bg-[#4a5238] before:bg-[#9aab6f]"
-                        : isParentWithActiveChild
-                            ? "text-[#c8d0b8] bg-white/[0.04] before:bg-transparent"
-                            : "text-[#7a8070] hover:text-[#d4d9c8] hover:bg-white/5 before:bg-transparent"
-                    } ${isCollapsed ? 'justify-center' : ''} ${
-                        item.isSubItem 
+                className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 relative before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:w-[3px] before:h-[60%] before:rounded-r-full before:transition-all before:duration-150 ${isActive
+                    ? "text-white bg-[#4a5238] before:bg-[#9aab6f]"
+                    : isParentWithActiveChild
+                        ? "text-[#c8d0b8] bg-white/[0.04] before:bg-transparent"
+                        : "text-[#7a8070] hover:text-[#d4d9c8] hover:bg-white/5 before:bg-transparent"
+                    } ${isCollapsed ? 'justify-center' : ''} ${item.isSubItem && !isCollapsed
                         ? `ml-6 pl-4 text-xs`
                         : ''
                     }`}
                 title={isCollapsed ? item.label : undefined}
             >
-                <Icon className={`${item.isSubItem ? 'h-3.5 w-3.5' : 'h-[18px] w-[18px]'} flex-shrink-0 ${(isActive || isParentWithActiveChild) ? 'text-white' : ''}`} />
+                <Icon className={`${item.isSubItem && !isCollapsed ? 'h-3.5 w-3.5' : 'h-[18px] w-[18px]'} flex-shrink-0 ${(isActive || isParentWithActiveChild) ? 'text-white' : ''}`} />
                 {!isCollapsed && <span>{item.label}</span>}
             </Link>
         );
@@ -148,18 +149,24 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
     const sidebarContent = (isCollapsed: boolean) => (
         <>
             {/* Logo */}
-            <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} px-4 py-2 border-b border-border-subtle`}>
+            <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} px-4 pt-2 pb-0 border-b border-border-subtle`}>
                 {!isCollapsed && (
                     <Link href="/dashboard" className="flex items-center gap-2.5">
-                        <div>
-                            <span className="text-xl font-bold text-gold-soft">VEDASHI</span>
-                        </div>
+                        <img
+                            src="/vedashi-logo.png"
+                            alt="Vedashi"
+                            className="h-16 w-auto object-contain filter drop-shadow-md brightness-0 sepia saturate-[16] hue-rotate-[5deg] brightness-[2.5] contrast-[1.2] transition-all duration-300"
+                        />
                     </Link>
                 )}
                 {isCollapsed && (
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/20 border border-primary/15">
-                        <span className="text-gold font-bold text-lg">V</span>
-                    </div>
+                    <Link href="/dashboard" className="flex h-12 w-12 items-center justify-center transition-colors overflow-hidden">
+                        <img
+                            src="/Small-Logo.png"
+                            alt="Vedashi"
+                            className="h-10 w-10 object-contain filter brightness-0 sepia saturate-[10] hue-rotate-[5deg] brightness-[1.8] contrast-[1.2]"
+                        />
+                    </Link>
                 )}
             </div>
 

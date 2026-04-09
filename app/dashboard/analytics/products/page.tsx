@@ -16,7 +16,8 @@ import {
     X,
     Calendar,
     Target,
-    Pencil
+    Pencil,
+    Info
 } from 'lucide-react';
 import {
     LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area, ComposedChart
@@ -35,6 +36,9 @@ export default function ProductAnalyticsDashboard() {
     const [revenueData, setRevenueData] = useState<any[]>([]);
     const [conversionData, setConversionData] = useState<any[]>([]);
     const [inventoryData, setInventoryData] = useState<any[]>([]);
+    const [viewAllType, setViewAllType] = useState<'top' | 'low' | null>(null);
+    const [viewAllData, setViewAllData] = useState<any[]>([]);
+    const [isViewAllLoading, setIsViewAllLoading] = useState(false);
 
     // Modal State
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -50,7 +54,7 @@ export default function ProductAnalyticsDashboard() {
 
     // Prevent background scrolling when modal is open
     useEffect(() => {
-        if (selectedDate) {
+        if (selectedDate || viewAllType) {
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = 'unset';
@@ -58,7 +62,7 @@ export default function ProductAnalyticsDashboard() {
         return () => {
             document.body.style.overflow = 'unset';
         };
-    }, [selectedDate]);
+    }, [selectedDate, viewAllType]);
 
     const fetchDashboardData = async () => {
         setIsLoading(true);
@@ -112,6 +116,32 @@ export default function ProductAnalyticsDashboard() {
 
     const formatNumber = (value: number) => {
         return new Intl.NumberFormat('en-IN').format(value);
+    };
+
+    const handleViewAll = async (type: 'top' | 'low') => {
+        setViewAllType(type);
+        setIsViewAllLoading(true);
+        setViewAllData([]);
+        
+        try {
+            const now = new Date();
+            const fromDate = new Date();
+            fromDate.setDate(now.getDate() - parseInt(dateRange));
+            const queryTime = `?date_from=${fromDate.toISOString().split('T')[0]}&date_to=${now.toISOString().split('T')[0]}&limit=200`;
+
+            const res = type === 'top' 
+                ? await productAnalyticsApi.getTopSelling(queryTime)
+                : await productAnalyticsApi.getLowPerforming(queryTime);
+                
+            if (res.success) {
+                setViewAllData(res.data);
+            }
+        } catch (error) {
+            console.error('Error fetching full analytics list:', error);
+            toast.error('Failed to load full list');
+        } finally {
+            setIsViewAllLoading(false);
+        }
     };
 
     const handleChartClick = async (data: any, type: 'revenue' | 'conversion') => {
@@ -357,6 +387,12 @@ export default function ProductAnalyticsDashboard() {
                 <div className="bg-card-bg rounded-2xl border border-border-subtle overflow-hidden flex flex-col">
                     <div className="px-5 py-4 border-b border-border-subtle flex justify-between items-center bg-page-bg/50">
                         <h4 className="font-serif text-sm font-semibold text-text-primary uppercase">Top Selling Products</h4>
+                        <button 
+                            onClick={() => handleViewAll('top')}
+                            className="text-xs font-semibold text-gold hover:text-gold-soft transition-colors"
+                        >
+                            View All
+                        </button>
                     </div>
                     <div className="p-0 overflow-x-auto flex-1">
                         <table className="w-full text-sm text-left">
@@ -410,6 +446,12 @@ export default function ProductAnalyticsDashboard() {
                         <h4 className="font-serif text-sm font-semibold text-text-primary uppercase flex items-center gap-2">
                             <AlertCircle className="h-4 w-4 text-danger" /> Needs Attention
                         </h4>
+                        <button 
+                            onClick={() => handleViewAll('low')}
+                            className="text-xs font-semibold text-gold hover:text-gold-soft transition-colors"
+                        >
+                            View All
+                        </button>
                     </div>
                     <div className="p-0 overflow-x-auto flex-1">
                         <table className="w-full text-sm text-left">
@@ -587,6 +629,115 @@ export default function ProductAnalyticsDashboard() {
                                     </div>
                                 )}
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* View All Modal */}
+            {viewAllType && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-card-bg w-full max-w-4xl rounded-3xl shadow-2xl border border-border-subtle overflow-hidden flex flex-col max-h-[90vh]">
+                        {/* Modal Header */}
+                        <div className="px-6 py-5 border-b border-border-subtle flex justify-between items-center bg-gradient-to-br from-page-bg to-card-bg">
+                            <div className="flex items-center gap-3">
+                                <div className={`h-10 w-10 rounded-xl flex items-center justify-center border ${viewAllType === 'top' ? 'bg-gold/10 border-gold/20' : 'bg-danger/10 border-danger/20'}`}>
+                                    {viewAllType === 'top' ? <TrendingUp className="h-5 w-5 text-gold" /> : <AlertCircle className="h-5 w-5 text-danger" />}
+                                </div>
+                                <h4 className="font-serif text-lg font-bold text-text-primary">
+                                    {viewAllType === 'top' ? 'All Top Selling Products' : 'All Products Needing Attention'}
+                                </h4>
+                            </div>
+                            <button
+                                onClick={() => setViewAllType(null)}
+                                className="h-10 w-10 rounded-xl hover:bg-page-bg flex items-center justify-center text-text-muted hover:text-text-primary transition-colors border border-transparent hover:border-border-subtle"
+                            >
+                                <X className="h-5 w-5" />
+                            </button>
+                        </div>
+
+                        {/* Modal Body */}
+                        <div className="p-0 overflow-y-auto custom-scrollbar flex-1">
+                            {isViewAllLoading ? (
+                                <div className="flex flex-col items-center justify-center p-20 gap-4 text-gold">
+                                    <div className="w-8 h-8 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                                    <span className="text-sm font-medium">Crunching the numbers...</span>
+                                </div>
+                            ) : (
+                                <table className="w-full text-sm text-left">
+                                    <thead className="text-sm text-gold-muted font-semibold uppercase bg-card-bg/50 sticky top-0 backdrop-blur-md border-b border-border-subtle z-10">
+                                        {viewAllType === 'top' ? (
+                                            <tr>
+                                                <th className="px-6 py-4 font-semibold">Product</th>
+                                                <th className="px-6 py-4 font-semibold text-right">Units Sold</th>
+                                                <th className="px-6 py-4 font-semibold text-right">Revenue</th>
+                                                <th className="px-6 py-4 w-20"></th>
+                                            </tr>
+                                        ) : (
+                                            <tr>
+                                                <th className="px-6 py-4 font-semibold">Product</th>
+                                                <th className="px-6 py-4 font-semibold text-center">Health Score</th>
+                                                <th className="px-6 py-4 font-semibold text-right">Conv. Score</th>
+                                                <th className="px-6 py-4 w-20"></th>
+                                            </tr>
+                                        )}
+                                    </thead>
+                                    <tbody className="divide-y divide-border-subtle/50">
+                                        {viewAllData.length > 0 ? viewAllData.map((product) => (
+                                            <tr key={product.product_id} className="hover:bg-page-bg/50 transition-colors">
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="w-10 h-10 rounded-lg bg-page-bg flex-shrink-0 overflow-hidden border border-border-subtle">
+                                                            {product.thumbnail ? (
+                                                                <img src={product.thumbnail.startsWith('data:') ? product.thumbnail : `${process.env.NEXT_PUBLIC_API_URL}${product.thumbnail}`} alt="" className="w-full h-full object-cover" />
+                                                            ) : (
+                                                                <div className="w-full h-full flex items-center justify-center text-text-muted"><Package className="h-4 w-4" /></div>
+                                                            )}
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <p className="font-semibold text-text-primary truncate max-w-[280px]">{product.product_name}</p>
+                                                            <p className="text-xs text-text-muted">{product.brand}</p>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                {viewAllType === 'top' ? (
+                                                    <>
+                                                        <td className="px-6 py-4 text-right font-medium text-text-primary">{formatNumber(product.units_sold)}</td>
+                                                        <td className="px-6 py-4 text-right text-gold-soft font-bold">{formatCurrency(product.revenue)}</td>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <td className="px-6 py-4 text-center">
+                                                            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-danger/10 text-danger border border-danger/20">
+                                                                {parseFloat(product.health_score).toFixed(1)}
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-4 text-right text-text-muted font-medium">{parseFloat(product.conversion_score).toFixed(1)}</td>
+                                                    </>
+                                                )}
+                                                <td className="px-6 py-4 text-right">
+                                                    <Link href={`/dashboard/products/edit/${product.product_id}`} className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-page-bg hover:bg-gold/10 text-text-muted hover:text-gold transition-all border border-border-subtle shadow-sm" title="Edit Product">
+                                                        <Pencil className="w-4 h-4" />
+                                                    </Link>
+                                                </td>
+                                            </tr>
+                                        )) : (
+                                            <tr>
+                                                <td colSpan={4} className="px-6 py-16 text-center text-text-muted">
+                                                    <div className="flex flex-col items-center gap-2">
+                                                        <Info className="h-6 w-6 opacity-30" />
+                                                        <p>No products found in this category.</p>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            )}
+                        </div>
+                        {/* Modal Footer */}
+                        <div className="px-6 py-4 border-t border-border-subtle bg-page-bg/30 text-[11px] text-text-muted text-center uppercase tracking-widest font-bold">
+                            Total Items: {viewAllData.length}
                         </div>
                     </div>
                 </div>

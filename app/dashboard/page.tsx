@@ -120,7 +120,6 @@ export default function DashboardPage() {
                 <DashboardHeader 
                     title="Command Center"
                     subtitle="Synthesizing ancient wisdom for 5+ active patient protocols."
-                    buttonLabel="Export Ledger"
                     icon={Sparkles}
                 />
             </div>
@@ -169,7 +168,7 @@ export default function DashboardPage() {
                 <div className="rounded-2xl border border-border bg-gradient-to-br from-card-bg to-card-bg-elevated animate-fadeInUp shadow-xl transition-all duration-500" style={{ animationDelay: '560ms' }}>
                     <div className="flex items-center justify-between border-b border-border px-6 py-5">
                         <div>
-                            <h4 className="font-serif text-base font-bold text-gold uppercase">Recent Fulfillment</h4>
+                            <h4 className="font-serif text-base font-bold text-gold">Recent Fulfillment</h4>
                             <p className="text-[12px] text-text-muted font-bold uppercase mt-1">Real-time protocol logistics and dispatch</p>
                         </div>
                         <div className="flex items-center gap-3">

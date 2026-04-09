@@ -11,6 +11,7 @@ import Link from 'next/link';
 import toast from 'react-hot-toast';
 import CountryPicker from '@/components/CountryPicker';
 import SeoEditor from '@/components/SeoEditor';
+import CountryPricingEditor from '@/components/CountryPricingEditor';
 import type { SeoData } from '@/lib/api/seo';
 
 // ÔöÇÔöÇÔöÇ Constants ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
@@ -56,6 +57,7 @@ interface VariantRow {
     length_cm: string;
     width_cm: string;
     height_cm: string;
+    item_weight_kg_input: string;
     images: { preview: string; file?: File; asset_id?: string; alt_text?: string }[];
     videos: { preview: string; file?: File; asset_id?: string; alt_text?: string }[];
     defaultImageIndex: number;
@@ -105,8 +107,10 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
         sub_category_id: '',
         country_of_origin: '',
         form_type: '',
-        specialities: [] as string[],        intended_use: '',
+        specialities: [] as string[],
+        intended_use: '',
         description: '',
+        short_description: '',
         available_from_date: '',
         available_from_time: '',
         available_until_date: '',
@@ -134,7 +138,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
     // ÔöÇÔöÇÔöÇ Step 3: Variants Table State ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
     const [autoGenerate, setAutoGenerate] = useState(false);
     const [variants, setVariants] = useState<VariantRow[]>([
-        { pack: '', volume: '', variant_name: '', sku: '', price: 0, cost_price: 0, stock: 0, shelf_life: '', length_cm: '', width_cm: '', height_cm: '', images: [], videos: [], defaultImageIndex: 0, sale_price: '', sale_start_date: '', sale_start_time: '', sale_end_date: '', sale_end_time: '', isDefault: false, isActive: true }
+        { pack: '', volume: '', variant_name: '', sku: '', price: 0, cost_price: 0, stock: 0, shelf_life: '', length_cm: '', width_cm: '', height_cm: '', item_weight_kg_input: '', images: [], videos: [], defaultImageIndex: 0, sale_price: '', sale_start_date: '', sale_start_time: '', sale_end_date: '', sale_end_time: '', isDefault: false, isActive: true }
     ]);
     const [expandedVariantIndex, setExpandedVariantIndex] = useState<number | null>(null);
     const [sharedImages, setSharedImages] = useState(false);
@@ -178,10 +182,10 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
             // ── Step 1: General Info ──
             const productCatId = product.category_id || '';
             const catObj = cats.find(c => c.category_id === productCatId);
-            
+
             let finalCatId = '';
             let finalSubCatId = '';
-            
+
             if (catObj) {
                 if (catObj.parent_id) {
                     finalCatId = catObj.parent_id;
@@ -203,6 +207,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
 
                 intended_use: product.intended_use || '',
                 description: product.description || '',
+                short_description: (product as any).short_description || '',
                 available_from_date: (product as any).available_from ? new Date((product as any).available_from).toISOString().split('T')[0] : '',
                 available_from_time: (product as any).available_from ? new Date((product as any).available_from).toISOString().split('T')[1].substring(0, 5) : '',
                 available_until_date: (product as any).available_until ? new Date((product as any).available_until).toISOString().split('T')[0] : '',
@@ -223,6 +228,27 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                     pack: { active: false, values: [] as string[] },
                     combo: { active: false, values: [] as string[] },
                 };
+                // Determine if this product relies entirely on shared images
+                const allAssets: any[] = (product as any).assets || [];
+                const currentVariantIds = new Set(product.variants.map((v: any) => (v.variant_id || '').toLowerCase()));
+                
+                const distinctImageIds = new Set(
+                    allAssets
+                        .filter(a => !(a.media_type || a.mime_type || '').toLowerCase().startsWith('video'))
+                        .map(a => (a.variant_id || '').toLowerCase())
+                        .filter(vid => vid && currentVariantIds.has(vid))
+                );
+                const distinctVideoIds = new Set(
+                    allAssets
+                        .filter(a => (a.media_type || a.mime_type || '').toLowerCase().startsWith('video'))
+                        .map(a => (a.variant_id || '').toLowerCase())
+                        .filter(vid => vid && currentVariantIds.has(vid))
+                );
+
+                const isSharedImages = allAssets.length > 0 && distinctImageIds.size <= 1;
+                const isSharedVideos = allAssets.length > 0 && distinctVideoIds.size <= 1;
+
+                const normalizeId = (id: any) => String(id || '').toLowerCase();
 
                 const mappedVariants: VariantRow[] = product.variants.map((v: any, index: number) => {
                     // Legacy field mapping
@@ -254,7 +280,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
 
                     // Metadata mapping for all dimensions
                     const dims: (keyof typeof newDimConfigs)[] = ['weight', 'volume', 'count', 'strength', 'flavor', 'pack', 'combo'];
-                    
+
                     // Specific mapping for new database fields
                     let weightStr = v.weight || '';
                     if (!weightStr && v.weight_g) {
@@ -295,21 +321,48 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                     const vName = v.variant_name || '';
 
                     // Assets
-                    const allAssets: any[] = (product as any).assets || [];
                     const existingImages = allAssets
                         .filter((a: any) => {
                             const mt = (a.media_type || a.mime_type || '').toLowerCase();
-                            return !mt.startsWith('video') && (a.variant_id === v.variant_id || (!a.variant_id && index === 0));
+                            if (mt.startsWith('video')) return false;
+                            
+                            const aid = normalizeId(a.variant_id);
+                            const vid = normalizeId(v.variant_id);
+                            
+                            if (isSharedImages && index === 0) return true;
+                            if (isSharedImages && index > 0) return false;
+                            
+                            return (aid === vid || (!a.variant_id && index === 0));
                         })
-                        .map((a: any) => ({ preview: a.base64_data || a.asset_url, asset_id: a.asset_id, alt_text: a.alt_text || '' }))
+                        .map((a: any) => {
+                            let preview = a.cdn_url || a.base64_data || a.asset_url;
+                            if (preview && a.cdn_url && !preview.startsWith('http') && !preview.startsWith('data:')) {
+                                preview = `https://${preview}`;
+                            }
+                            return { preview, asset_id: a.asset_id, alt_text: a.alt_text || '' };
+                        })
                         .filter(img => img.preview);
 
                     const existingVideos = allAssets
                         .filter((a: any) => {
                             const mt = (a.media_type || a.mime_type || '').toLowerCase();
-                            return mt.startsWith('video') && (a.variant_id === v.variant_id || (!a.variant_id && index === 0));
+                            if (!mt.startsWith('video')) return false;
+                            
+                            const aid = normalizeId(a.variant_id);
+                            const vid = normalizeId(v.variant_id);
+                            
+                            if (isSharedVideos && index === 0) return true;
+                            if (isSharedVideos && index > 0) return false;
+                            
+                            return (aid === vid || (!a.variant_id && index === 0));
                         })
-                        .map((a: any) => ({ preview: a.base64_data || a.asset_url, asset_id: a.asset_id }))
+                        .map((a: any) => {
+                            let preview = a.cdn_url || a.base64_data || a.asset_url;
+                            if (preview && a.cdn_url && !preview.startsWith('http') && !preview.startsWith('data:')) {
+                                preview = `https://${preview}`;
+                            }
+                            return { preview, asset_id: a.asset_id };
+                        })
                         .filter(vid => vid.preview);
 
                     return {
@@ -330,6 +383,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                         length_cm: v.length_cm != null ? String(v.length_cm) : '',
                         width_cm: v.width_cm != null ? String(v.width_cm) : '',
                         height_cm: v.height_cm != null ? String(v.height_cm) : '',
+                        item_weight_kg_input: v.item_weight_kg != null ? String(v.item_weight_kg * 1000) : '',
                         images: existingImages,
                         videos: existingVideos,
                         defaultImageIndex: 0,
@@ -345,6 +399,14 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
 
                 setVariants(mappedVariants);
                 setDimConfigs(newDimConfigs);
+
+                if (mappedVariants.length > 1) {
+                    const firstHasAssets = mappedVariants[0].images.length > 0 || mappedVariants[0].videos.length > 0;
+                    const othersHaveAssets = mappedVariants.slice(1).some((mv: any) => mv.images.length > 0 || mv.videos.length > 0);
+                    if (firstHasAssets && !othersHaveAssets) {
+                        setSharedImages(true);
+                    }
+                }
             }
 
             setLoading(false);
@@ -424,7 +486,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
         setDimConfigs(prev => {
             const isActivating = !prev[dim].active;
             const next = { ...prev };
-            
+
             if (isActivating) {
                 if (dim === 'weight') {
                     next.volume = { ...next.volume, active: false };
@@ -432,7 +494,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                     next.weight = { ...next.weight, active: false };
                 }
             }
-            
+
             next[dim] = { ...next[dim], active: isActivating };
             return next;
         });
@@ -441,12 +503,13 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
     const addDimensionValue = (dim: keyof typeof dimConfigs) => {
         const val = dimInputs[dim].trim();
         if (!val && dim !== 'combo') return;
-        
+
         let finalVal = val;
         if (dim === 'weight') finalVal = `${val} ${weightUnit}`;
         else if (dim === 'volume') finalVal = `${val} ${volUnit}`;
         else if (dim === 'count') finalVal = `${val} ${countUnit}`;
         else if (dim === 'strength') finalVal = `${val} ${strengthUnit}`;
+        else if (dim === 'pack') finalVal = val;
         else if (dim === 'combo') finalVal = val.toLowerCase() === 'yes' || val === 'true' ? 'Yes' : 'No';
 
         if (!dimConfigs[dim].values.includes(finalVal)) {
@@ -519,7 +582,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
         const anyActiveDim = Object.values(dimConfigs).some(d => d.active);
         const newVariant: any = {
             variant_name: '', sku: '', price: 0, cost_price: 0, stock: 0,
-            shelf_life: '', length_cm: '', width_cm: '', height_cm: '', weight_kg: '',
+            shelf_life: '', length_cm: '', width_cm: '', height_cm: '', item_weight_kg_input: '',
             images: [], videos: [], defaultImageIndex: 0,
             sale_price: '', sale_start_date: '', sale_start_time: '', sale_end_date: '', sale_end_time: '',
             isDefault: false,
@@ -700,6 +763,29 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                 return updated;
             }));
         }
+        if (currentStep === 3) {
+            const negativeField = variants.find(v =>
+                Number(v.stock) < 0 ||
+                Number(v.price) < 0 ||
+                Number(v.cost_price) < 0 ||
+                Number(v.sale_price) < 0 ||
+                Number(v.shelf_life) < 0 ||
+                Number(v.length_cm) < 0 ||
+                Number(v.width_cm) < 0 ||
+                Number(v.height_cm) < 0
+            );
+
+            if (negativeField) {
+                toast.error('Negative values are not allowed for stock, price, cost, or dimensions');
+                return;
+            }
+
+            const invalidVariant = variants.find(v => !v.sku.trim() || !v.price);
+            if (invalidVariant) {
+                toast.error('Please ensure all variants have an SKU and a Price (min 0.01)');
+                return;
+            }
+        }
         if (currentStep < STEPS.length) setCurrentStep(prev => prev + 1);
     };
 
@@ -785,6 +871,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                         length_cm: v.length_cm || undefined,
                         width_cm: v.width_cm || undefined,
                         height_cm: v.height_cm || undefined,
+                        item_weight_kg: v.item_weight_kg_input ? (parseFloat(v.item_weight_kg_input) / 1000) : undefined,
                         shelf_life: v.shelf_life || undefined,
                         // New fields
                         weight_g,
@@ -925,6 +1012,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
             sub_category_id: form.sub_category_id || undefined,
             country_of_origin: form.country_of_origin || undefined,
             description: form.description.trim() || undefined,
+            short_description: form.short_description.trim() || undefined,
             intended_use: form.intended_use.trim() || undefined,
             form: form.form_type || undefined,
             specialities: form.specialities.length > 0 ? form.specialities : undefined,
@@ -938,68 +1026,69 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
             },
 
             // Full variants array ÔÇö backend maps these to product_variants rows
-                    variants: variants.map(v => {
-                        const activeDimensions = Object.entries(dimConfigs)
-                            .filter(([_, config]) => config.active)
-                            .map(([id]) => (v as any)[id])
-                            .filter(Boolean);
-                        const combinedName = v.variant_name || activeDimensions.join(' ');
+            variants: variants.map(v => {
+                const activeDimensions = Object.entries(dimConfigs)
+                    .filter(([_, config]) => config.active)
+                    .map(([id]) => (v as any)[id])
+                    .filter(Boolean);
+                const combinedName = v.variant_name || activeDimensions.join(' ');
 
-                        // Parse formatted strings for DB fields
-                        let weight_g = null;
-                        if (v.weight) {
-                            const [val, unit] = v.weight.split(' ');
-                            weight_g = unit === 'kg' ? parseFloat(val) * 1000 : parseFloat(val);
-                        }
+                // Parse formatted strings for DB fields
+                let weight_g = null;
+                if (v.weight) {
+                    const [val, unit] = v.weight.split(' ');
+                    weight_g = unit === 'kg' ? parseFloat(val) * 1000 : parseFloat(val);
+                }
 
-                        let units_count = null;
-                        let form_factor = null;
-                        if (v.count) {
-                            const parts = v.count.split(' ');
-                            units_count = parseInt(parts[0]);
-                            form_factor = parts.slice(1).join(' ');
-                        }
+                let units_count = null;
+                let form_factor = null;
+                if (v.count) {
+                    const parts = v.count.split(' ');
+                    units_count = parseInt(parts[0]);
+                    form_factor = parts.slice(1).join(' ');
+                }
 
-                        let strength = undefined;
-                        let strength_unit = undefined;
-                        if (v.strength) {
-                            const parts = v.strength.split(' ');
-                            strength = parts[0];
-                            strength_unit = parts.slice(1).join(' ');
-                        }
+                let strength = undefined;
+                let strength_unit = undefined;
+                if (v.strength) {
+                    const parts = v.strength.split(' ');
+                    strength = parts[0];
+                    strength_unit = parts.slice(1).join(' ');
+                }
 
-                        return {
-                            variant_id: v.variant_id || undefined,
-                            sku: v.sku.trim(),
-                            variant_name: combinedName.trim(),
-                            price: Number(v.price) || 0,
-                            stock: Number(v.stock) || 0,
-                            cost_price: v.cost_price ? Number(v.cost_price) : undefined,
-                            volume: v.volume || undefined,
-                            pack: v.pack || undefined,
-                            isDefault: v.isDefault,
-                            isActive: v.isActive,
-                            // Sale Management
-                            sale_price: v.sale_price || undefined,
-                            sale_start_date: v.sale_start_date || undefined,
-                            sale_start_time: v.sale_start_time || undefined,
-                            sale_end_date: v.sale_end_date || undefined,
-                            sale_end_time: v.sale_end_time || undefined,
-                            // Dimensions + shelf life
-                            length_cm: v.length_cm || undefined,
-                            width_cm: v.width_cm || undefined,
-                            height_cm: v.height_cm || undefined,
-                            shelf_life: v.shelf_life || undefined,
-                            // New fields
-                            weight_g: weight_g,
-                            units_count: units_count,
-                            form_factor: form_factor,
-                            strength: strength,
-                            strength_unit: strength_unit,
-                            flavor: v.flavor || undefined,
-                            is_combo: v.combo === 'Yes',
-                        };
-                    }),
+                return {
+                    variant_id: v.variant_id || undefined,
+                    sku: v.sku.trim(),
+                    variant_name: combinedName.trim(),
+                    price: Number(v.price) || 0,
+                    stock: Number(v.stock) || 0,
+                    cost_price: v.cost_price ? Number(v.cost_price) : undefined,
+                    volume: v.volume || undefined,
+                    pack: v.pack || undefined,
+                    isDefault: v.isDefault,
+                    isActive: v.isActive,
+                    // Sale Management
+                    sale_price: v.sale_price || undefined,
+                    sale_start_date: v.sale_start_date || undefined,
+                    sale_start_time: v.sale_start_time || undefined,
+                    sale_end_date: v.sale_end_date || undefined,
+                    sale_end_time: v.sale_end_time || undefined,
+                    // Dimensions + shelf life
+                    length_cm: v.length_cm || undefined,
+                    width_cm: v.width_cm || undefined,
+                    height_cm: v.height_cm || undefined,
+                    item_weight_kg: v.item_weight_kg_input ? (parseFloat(v.item_weight_kg_input) / 1000) : undefined,
+                    shelf_life: v.shelf_life || undefined,
+                    // New fields
+                    weight_g: weight_g,
+                    units_count: units_count,
+                    form_factor: form_factor,
+                    strength: strength,
+                    strength_unit: strength_unit,
+                    flavor: v.flavor || undefined,
+                    is_combo: v.combo === 'Yes',
+                };
+            }),
             available_from: form.available_from_date ? new Date(`${form.available_from_date}T${form.available_from_time || '00:00'}`).toISOString() : undefined,
             available_until: form.available_until_date ? new Date(`${form.available_until_date}T${form.available_until_time || '23:59'}`).toISOString() : undefined,
 
@@ -1182,6 +1271,16 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                                     if (currentStep === 2 && !anyActiveDim && step.id > 2) {
                                                         toast.error('Please select at least one variant dimension');
                                                         return;
+                                                    } else if (currentStep === 3 && step.id > 3) {
+                                                        const invalidVariant = variants.find(v => !v.sku.trim() || !v.price || Number(v.stock) < 0);
+                                                        if (invalidVariant) {
+                                                            if (Number(invalidVariant.stock) < 0) {
+                                                                toast.error('Stock cannot be negative for any variant');
+                                                            } else {
+                                                                toast.error('Please ensure all variants have an SKU and a Price');
+                                                            }
+                                                            return;
+                                                        }
                                                     }
                                                     setCurrentStep(step.id);
                                                 }
@@ -1290,11 +1389,17 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                 <div className="grid gap-5 sm:grid-cols-2">
                                     {/* Product Name - full width */}
                                     <div className="sm:col-span-2">
-                                        <label className="block text-sm font-medium text-text-primary mb-1.5">Product Name *</label>
+                                        <div className="flex justify-between items-end mb-1.5">
+                                            <label className="block text-sm font-medium text-text-primary">Product Name *</label>
+                                            <span className={`text-xs ${form.product_name.length >= 100 ? 'text-red-500' : 'text-text-muted'}`}>
+                                                {form.product_name.length}/100
+                                            </span>
+                                        </div>
                                         <input
                                             type="text"
                                             value={form.product_name}
                                             onChange={e => update('product_name', e.target.value)}
+                                            maxLength={100}
                                             className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 transition-all"
                                             placeholder="e.g. Ashwagandha Prowess"
                                             required
@@ -1413,7 +1518,9 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                                 );
                                             })}
                                         </div>
-                                    </div>                                    {/* Intended Use - full width */}
+                                    </div>
+
+                                    {/* Intended Use - full width */}
                                     <div className="sm:col-span-2">
                                         <label className="block text-sm font-medium text-text-primary mb-1.5">Intended Use</label>
                                         <input
@@ -1435,6 +1542,19 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                             className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 resize-none transition-all"
                                             placeholder="Describe the product's health benefits, ingredients, and usage instructions..."
                                         />
+                                    </div>
+
+                                    {/* Short Description - full width */}
+                                    <div className="sm:col-span-2">
+                                        <label className="block text-sm font-medium text-text-primary mb-1.5">Short Description</label>
+                                        <textarea
+                                            value={form.short_description}
+                                            onChange={e => update('short_description', e.target.value)}
+                                            rows={2}
+                                            className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 resize-none transition-all"
+                                            placeholder="A brief one-line summary shown on the product page..."
+                                        />
+                                        <p className="text-xs text-text-muted mt-1">Displayed as the product tagline on the storefront.</p>
                                     </div>
 
                                     {/* Product Availability Scheduling */}
@@ -1506,6 +1626,11 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                                 </div>
                                             </div>
                                         </div>
+                                    </div>
+                                    
+                                    {/* Country Pricing Editor */}
+                                    <div className="mt-8 border-t border-border pt-8">
+                                        <CountryPricingEditor productId={id} defaultPriceInr={variants.length > 0 ? variants[0].price : 0} />
                                     </div>
                                 </div>
                             </div>
@@ -1816,13 +1941,19 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                                                     />
                                                                 </td>
                                                                 <td className="px-4 py-3 align-top">
-                                                                    <input
-                                                                        type="number"
-                                                                        min="0"
-                                                                        value={variant.stock}
-                                                                        onChange={e => updateVariant(vIdx, 'stock', e.target.value ? parseInt(e.target.value) : 0)}
-                                                                        className="w-24 rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
-                                                                    />
+                                                                    <div className="relative">
+                                                                        <input
+                                                                            type="number"
+                                                                            value={variant.stock}
+                                                                            onChange={e => updateVariant(vIdx, 'stock', e.target.value ? parseInt(e.target.value) : 0)}
+                                                                            className={`w-24 rounded-md border px-3 py-1.5 text-sm focus:outline-none bg-transparent transition-colors ${Number(variant.stock) < 0 ? 'border-danger focus:border-danger text-danger' : 'border-border focus:border-gold/40'}`}
+                                                                        />
+                                                                        {Number(variant.stock) < 0 && (
+                                                                            <p className="absolute left-0 -bottom-4 text-[10px] text-danger whitespace-nowrap animate-in fade-in slide-in-from-top-1">
+                                                                                Stock cannot be negative
+                                                                            </p>
+                                                                        )}
+                                                                    </div>
                                                                 </td>
                                                                 <td className="px-4 py-3 text-center align-top pt-3">
                                                                     <div className="flex items-center justify-center gap-1">
@@ -1846,10 +1977,10 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                                                 </td>
                                                             </tr>
 
-                                                                    {isExpanded && (
-                                                                        <tr className="bg-white/[0.01] border-b border-border">
-                                                                            <td colSpan={activeDims.length + 6} className="p-5">
-                                                                                <div className="animate-fade-in-up space-y-6">
+                                                            {isExpanded && (
+                                                                <tr className="bg-white/[0.01] border-b border-border">
+                                                                    <td colSpan={activeDims.length + 6} className="p-5">
+                                                                        <div className="animate-fade-in-up space-y-6">
 
                                                                             {/* ÔöÇÔöÇ Extra fields row ÔöÇÔöÇ */}
                                                                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -1882,6 +2013,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                                                                 <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3">Dimensions</p>
                                                                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                                                                                     {([
+                                                                                        { label: 'Weight (g)', field: 'item_weight_kg_input' as keyof VariantRow },
                                                                                         { label: 'Length (cm)', field: 'length_cm' as keyof VariantRow },
                                                                                         { label: 'Width (cm)', field: 'width_cm' as keyof VariantRow },
                                                                                         { label: 'Height (cm)', field: 'height_cm' as keyof VariantRow },

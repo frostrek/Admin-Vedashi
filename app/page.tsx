@@ -7,10 +7,11 @@ import { reactivateAccount } from '@/lib/api';
 import { Leaf, RefreshCw, Eye, EyeOff } from 'lucide-react';
 import ConfirmModal from '@/components/ConfirmModal';
 import toast from 'react-hot-toast';
+import { Turnstile } from '@marsidev/react-turnstile';
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const { login, isAuthenticated } = useAdminAuth();
+  const { login, isAuthenticated, isLoading } = useAdminAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -22,21 +23,35 @@ export default function AdminLoginPage() {
   const [deactivatedEmail, setDeactivatedEmail] = useState('');
   const [deactivatedPassword, setDeactivatedPassword] = useState('');
 
+  // CAPTCHA state
+  const [requireCaptcha, setRequireCaptcha] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !isLoading) {
       router.push('/dashboard');
     }
+  }, [isAuthenticated, isLoading, router]);
 
-  }, [isAuthenticated, router]);
-
-  if (isAuthenticated) {
-    return null;
+  if (isLoading || isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-[#0d1f0d] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <Leaf className="w-10 h-10 text-[#8dbf8d] animate-pulse" />
+          <div className="h-0.5 w-24 bg-gradient-to-r from-transparent via-[#8dbf8d] to-transparent animate-shimmer" />
+        </div>
+      </div>
+    );
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (requireCaptcha && !turnstileToken) {
+      toast.error('Please complete the CAPTCHA correctly.');
+      return;
+    }
     setLoading(true);
-    const result = await login(email, password);
+    const result = await login(email, password, turnstileToken || undefined);
     setLoading(false);
 
     if (result.success) {
@@ -48,6 +63,9 @@ export default function AdminLoginPage() {
       setDeactivatedPassword(password);
       setShowReactivateModal(true);
     } else {
+      if (result.requireCaptcha) {
+          setRequireCaptcha(true);
+      }
       toast.error(result.error || 'Login failed');
     }
   };
@@ -78,70 +96,110 @@ export default function AdminLoginPage() {
     setDeactivatedPassword('');
     toast('Your account remains deactivated.', { icon: '🔒' });
   };
-
   return (
-    <div className="min-h-screen bg-page-bg flex items-center justify-center px-4 relative overflow-hidden">
-      {/* Radial vignette background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary-dark/30 via-transparent to-plum/20 pointer-events-none" />
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-primary/5 blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-gold/3 blur-3xl pointer-events-none" />
+    <div 
+      className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden bg-[#0d1f0d]"
+      style={{
+        backgroundImage: `url('https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&w=1920&q=80')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+    >
+      {/* Dark herbal overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#0a1a0a]/90 via-[#0d2010]/80 to-[#0a1a0a]/90 backdrop-blur-[2px]" />
 
-      <div className="w-full max-w-sm relative z-10">
-        <div className="text-center mb-8">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary-light shadow-2xl shadow-primary/30 border border-gold/15">
-            <span className="text-2xl font-bold text-gold">V</span>
+      <div className="w-full max-w-md relative z-10 transition-all duration-500">
+        
+        {/* Glassmorphic Card */}
+        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 sm:p-10 shadow-2xl shadow-black/50">
+          
+          {/* Header & Logo */}
+          <div className="text-center mb-8">
+            <div className="flex justify-center mb-6">
+              <img 
+                src="/vedashi-logo.png" 
+                alt="Vedashi logo" 
+                className="h-20 sm:h-24 w-auto object-contain filter drop-shadow-md brightness-0 sepia saturate-[16] hue-rotate-[5deg] brightness-[2.5] contrast-[1.2]" 
+              />
+            </div>
+            <h2 className="font-serif text-xl font-bold text-[#e8f0e8] tracking-widest uppercase mb-1">Admin Portal</h2>
+            <div className="w-12 h-0.5 bg-gradient-to-r from-transparent via-[#8dbf8d] to-transparent mx-auto mt-3 mb-2" />
+            <p className="text-sm font-medium text-[#8dbf8d]/80 uppercase tracking-widest mt-3">Sacred Management</p>
           </div>
-          <h1 className="font-serif text-2xl font-bold text-[#A89250] tracking-wide uppercase">Vedashi Admin</h1>
-          <p className="mt-1 text-sm text-[#A89250]/60">Sign in to manage your store</p>
-        </div>
 
-        <form onSubmit={handleSubmit} className="rounded-2xl border border-border bg-gradient-to-br from-card-bg to-card-bg-elevated p-6 shadow-2xl shadow-black/30">
-          {/* Ornamental line */}
-          <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-gold/25 to-transparent mb-6" />
-
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-text-primary mb-1">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/15 transition-all duration-300"
-              placeholder="admin@vedashi.com"
-              required
-            />
-          </div>
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-text-primary mb-1">Password</label>
-            <div className="relative">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-1">
+              <label className="block text-xs font-semibold text-[#8dbf8d] uppercase tracking-wider pl-1">Administrator Email</label>
               <input
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                className="w-full rounded-lg border border-border px-4 py-2.5 pr-10 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/15 transition-all duration-300"
-                placeholder="••••••••"
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                className="w-full rounded-xl border border-white/20 bg-black/20 px-4 py-3 text-sm text-white placeholder-white/40 focus:border-[#8dbf8d] focus:bg-black/40 focus:outline-none focus:ring-1 focus:ring-[#8dbf8d] transition-all duration-300"
+                placeholder="admin@vedashi.com"
                 required
               />
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-xs font-semibold text-[#8dbf8d] uppercase tracking-wider pl-1">Security Key</label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  className="w-full rounded-xl border border-white/20 bg-black/20 px-4 py-3 pr-10 text-sm text-white placeholder-white/40 focus:border-[#8dbf8d] focus:bg-black/40 focus:outline-none focus:ring-1 focus:ring-[#8dbf8d] transition-all duration-300"
+                  placeholder="••••••••"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8dbf8d]/60 hover:text-[#8dbf8d] transition-colors"
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+
+            {requireCaptcha && (
+              <div className="mt-6 flex justify-center w-full overflow-hidden rounded-xl bg-white/5 p-2 border border-white/10">
+                <Turnstile
+                  siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'}
+                  onSuccess={(token) => {
+                    setTurnstileToken(token);
+                    if (turnstileToken === null) {
+                      toast.success('Security verified');
+                    }
+                  }}
+                  onError={() => {
+                    setTurnstileToken('');
+                    toast.error('Verification failed');
+                  }}
+                  onExpire={() => setTurnstileToken('')}
+                  options={{ theme: 'dark', size: 'normal' }}
+                />
+              </div>
+            )}
+
+            <div className="pt-2">
               <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A89250]/50 hover:text-[#A89250] transition-colors"
-                tabIndex={-1}
+                type="submit"
+                disabled={loading || (requireCaptcha && !turnstileToken)}
+                className="w-full group rounded-xl bg-[#2d5a2d] hover:bg-[#3d6b3d] py-3.5 text-sm font-bold tracking-wider uppercase text-white border border-[#4a7c4a]/50 transition-all duration-300 disabled:opacity-50 hover:shadow-[0_0_20px_rgba(74,124,74,0.4)] disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {loading ? (
+                  <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Authenticating...</>
+                ) : 'Enter Portal'}
               </button>
             </div>
+          </form>
+          
+          <div className="mt-8 flex justify-center opacity-60 flex-col items-center">
+             <Leaf className="w-5 h-5 text-[#8dbf8d] mb-2" />
+             <p className="text-[10px] text-white/50 uppercase tracking-widest text-center">Protected by Vedashi Security</p>
           </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-lg bg-primary py-3 text-sm font-semibold text-[#E8D8B9] hover:bg-primary-light border border-gold/10 transition-all duration-300 disabled:opacity-50 hover:shadow-lg hover:shadow-primary/20"
-          >
-            {loading ? 'Signing in...' : 'Sign In'}
-          </button>
-
-          {/* Bottom ornamental line */}
-          <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-gold/15 to-transparent mt-6" />
-        </form>
+        </div>
       </div>
 
       {/* ── Reactivation Modal ─────────────────────────────────────── */}
