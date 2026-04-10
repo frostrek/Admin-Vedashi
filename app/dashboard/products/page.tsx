@@ -1284,7 +1284,7 @@ export default function ProductsListPage() {
                                                             )}
                                                         </div>
                                                         <div>
-                                                            <p className="text-sm font-medium text-text-primary">{product.product_name}</p>
+                                                            <p className="text-sm font-medium text-text-primary truncate max-w-[200px]" title={product.product_name}>{product.product_name}</p>
                                                             {product.brand && <p className="text-xs text-text-muted">{product.brand}</p>}
                                                         </div>
                                                     </div>

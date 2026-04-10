@@ -9,6 +9,7 @@ export interface Category {
     image_url: string | null;
     sort_order: number;
     is_active: boolean;
+    has_children?: boolean;
     needs_action?: boolean;
     product_count?: number;
     children?: Category[];

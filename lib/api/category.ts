@@ -35,6 +35,7 @@ export async function getCategories(tree: boolean = false): Promise<Category[]> 
             image_url: cat.image_url ?? null,
             sort_order: cat.sort_order ?? 0,
             is_active: cat.is_active ?? true,
+            has_children: cat.has_children ?? false,
             product_count: cat.product_count ?? 0,
             needs_action: cat.needs_action ?? false,
             children: Array.isArray(cat.children) ? cat.children.map(mapCategory) : [],
@@ -46,6 +47,64 @@ export async function getCategories(tree: boolean = false): Promise<Category[]> 
         return [];
     } catch (error) {
         console.error('[Category API] Failed to fetch categories:', error);
+        return [];
+    }
+}
+
+/* ─── GET category subtree (all descendants) ─── */
+
+export async function getCategorySubtree(categoryId: string): Promise<Category[]> {
+    try {
+        const res = await fetch(`${API_URL}/api/categories/${categoryId}/subtree`, { credentials: 'include' });
+        if (!res.ok) throw new Error('Failed to fetch subtree');
+        const json: ApiResponse<{ subtree: any[] }> = await res.json();
+        if (json.success && json.data?.subtree && Array.isArray(json.data.subtree)) {
+            return json.data.subtree.map((cat: any): Category => ({
+                category_id: cat.category_id ?? '',
+                name: cat.name ?? '',
+                slug: cat.slug ?? '',
+                description: cat.description ?? '',
+                parent_id: cat.parent_id ?? null,
+                image_url: cat.image_url ?? null,
+                sort_order: cat.sort_order ?? 0,
+                is_active: cat.is_active ?? true,
+                has_children: cat.has_children ?? false,
+                product_count: cat.product_count ?? 0,
+                needs_action: cat.needs_action ?? false,
+            }));
+        }
+        return [];
+    } catch (error) {
+        console.error('[Category API] Failed to fetch subtree:', error);
+        throw error;
+    }
+}
+
+/* ─── GET category breadcrumb (ancestor path root→leaf) ─── */
+
+export async function getCategoryBreadcrumb(categoryId: string): Promise<Category[]> {
+    try {
+        const res = await fetch(`${API_URL}/api/categories/${categoryId}/breadcrumb`, { credentials: 'include' });
+        if (!res.ok) return [];
+        const json: ApiResponse<{ breadcrumb: any[] }> = await res.json();
+        if (json.success && json.data?.breadcrumb && Array.isArray(json.data.breadcrumb)) {
+            return json.data.breadcrumb.map((cat: any): Category => ({
+                category_id: cat.category_id ?? '',
+                name: cat.name ?? '',
+                slug: cat.slug ?? '',
+                description: cat.description ?? '',
+                parent_id: cat.parent_id ?? null,
+                image_url: cat.image_url ?? null,
+                sort_order: cat.sort_order ?? 0,
+                is_active: cat.is_active ?? true,
+                has_children: cat.has_children ?? false,
+                product_count: cat.product_count ?? 0,
+                needs_action: cat.needs_action ?? false,
+            }));
+        }
+        return [];
+    } catch (error) {
+        console.error('[Category API] Failed to fetch breadcrumb:', error);
         return [];
     }
 }

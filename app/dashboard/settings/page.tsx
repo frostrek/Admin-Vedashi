@@ -3,8 +3,16 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAdminAuth } from '@/context/AdminAuthContext';
-import { Shield, AlertTriangle, Eye, EyeOff, Leaf, Zap, Loader2, Save } from 'lucide-react';
-import { getAutomationSettings, updateAutomationSettings, AutomationSettings } from '@/lib/api';
+import { Shield, AlertTriangle, Eye, EyeOff, Leaf, Zap, Loader2, Save, Truck, RotateCcw, Globe } from 'lucide-react';
+import { 
+    getAutomationSettings, 
+    updateAutomationSettings, 
+    AutomationSettings, 
+    getBatchSiteConfigs, 
+    updateSiteConfig,
+    MerchantShippingConfig,
+    MerchantReturnConfig
+} from '@/lib/api';
 import ConfirmModal from '@/components/ConfirmModal';
 import toast from 'react-hot-toast';
 
@@ -42,14 +50,44 @@ export default function SettingsPage() {
     const [autoLoading, setAutoLoading] = useState(true);
     const [autoSaving, setAutoSaving] = useState(false);
 
+    // Merchant settings state
+    const [merchantLoading, setMerchantLoading] = useState(true);
+    const [merchantSaving, setMerchantSaving] = useState(false);
+    const [shippingConfig, setShippingConfig] = useState<MerchantShippingConfig>({
+        is_free: true,
+        handling_time_days_min: 1,
+        handling_time_days_max: 2,
+        transit_time_days_min: 3,
+        transit_time_days_max: 5,
+        currency: 'INR',
+        flat_rate: 0,
+        description: 'Free standard shipping on all orders.'
+    });
+    const [returnConfig, setReturnConfig] = useState<MerchantReturnConfig>({
+        policy_days: 30,
+        return_fees: 'free',
+        policy_url: 'https://vedashi.com/returns',
+        description: '30-day hassle-free returns.'
+    });
+
     // Initial load
     useEffect(() => {
         const fetchSettings = async () => {
-            const data = await getAutomationSettings();
-            if (data) {
-                setAutoSettings(data);
+            const [autoData, merchantData] = await Promise.all([
+                getAutomationSettings(),
+                getBatchSiteConfigs(['merchant_shipping', 'merchant_returns'])
+            ]);
+
+            if (autoData) {
+                setAutoSettings(autoData);
             }
             setAutoLoading(false);
+
+            if (merchantData.success && merchantData.data) {
+                if (merchantData.data.merchant_shipping) setShippingConfig(merchantData.data.merchant_shipping);
+                if (merchantData.data.merchant_returns) setReturnConfig(merchantData.data.merchant_returns);
+            }
+            setMerchantLoading(false);
         };
         fetchSettings();
     }, []);
@@ -80,6 +118,26 @@ export default function SettingsPage() {
             toast.success('Automation settings saved successfully');
         } else {
             toast.error(res.message || 'Failed to save automation settings');
+        }
+    };
+
+    const handleSaveMerchantSettings = async () => {
+        setMerchantSaving(true);
+        try {
+            const [shipRes, retRes] = await Promise.all([
+                updateSiteConfig('merchant_shipping', shippingConfig),
+                updateSiteConfig('merchant_returns', returnConfig)
+            ]);
+
+            if (shipRes.success && retRes.success) {
+                toast.success('Merchant settings saved successfully');
+            } else {
+                toast.error('Failed to save some merchant settings');
+            }
+        } catch (err) {
+            toast.error('Error saving merchant settings');
+        } finally {
+            setMerchantSaving(false);
         }
     };
 
@@ -515,6 +573,180 @@ export default function SettingsPage() {
                             >
                                 {autoSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                                 Save Automation Settings
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* Merchant & SEO Settings Card */}
+            <div className="rounded-2xl border border-border bg-gradient-to-br from-card-bg to-card-bg-elevated p-6 shadow-lg shadow-black/10">
+                <div className="flex items-center gap-4 mb-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-light shadow-lg shadow-primary/20 border border-gold/10">
+                        <Globe className="h-6 w-6 text-[#E8D8B9]" />
+                    </div>
+                    <div>
+                        <h4 className="font-serif font-semibold text-text-primary">Merchant & SEO Settings</h4>
+                        <p className="text-sm text-text-secondary">Configure shipping and return policies for Google Merchant Center</p>
+                    </div>
+                </div>
+                <div className="h-[1px] bg-gradient-to-r from-transparent via-gold/15 to-transparent mb-6" />
+
+                {merchantLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                        <Loader2 className="h-6 w-6 animate-spin text-gold" />
+                    </div>
+                ) : (
+                    <div className="space-y-8">
+                        {/* Shipping Policy Section */}
+                        <div>
+                            <div className="flex items-center gap-2 mb-4">
+                                <Truck className="h-5 w-5 text-gold" />
+                                <h3 className="text-md font-bold text-gold uppercase tracking-wider border-b border-border pb-1 flex-1">Shipping Policy (JSON-LD)</h3>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-text-primary mb-1.5">Free Shipping</label>
+                                    <label className="relative inline-flex cursor-pointer items-center">
+                                        <input
+                                            type="checkbox"
+                                            className="peer sr-only"
+                                            checked={shippingConfig.is_free}
+                                            onChange={(e) => setShippingConfig({ ...shippingConfig, is_free: e.target.checked })}
+                                        />
+                                        <div className="peer h-6 w-11 rounded-full bg-border/50 transition-colors peer-checked:bg-gold peer-focus:outline-none after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-border after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
+                                    </label>
+                                </div>
+                                {!shippingConfig.is_free && (
+                                    <div>
+                                        <label className="block text-sm font-medium text-text-primary mb-1.5">Flat Rate (INR)</label>
+                                        <input
+                                            type="number"
+                                            value={shippingConfig.flat_rate}
+                                            onChange={(e) => setShippingConfig({ ...shippingConfig, flat_rate: parseFloat(e.target.value) || 0 })}
+                                            className="w-full rounded-lg border border-border bg-card-bg px-4 py-2 text-sm text-text-primary focus:border-gold/50 focus:outline-none"
+                                        />
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-text-primary mb-1.5">Min Handling Time (Days)</label>
+                                    <input
+                                        type="number"
+                                        value={shippingConfig.handling_time_days_min}
+                                        onChange={(e) => setShippingConfig({ ...shippingConfig, handling_time_days_min: parseInt(e.target.value) || 0 })}
+                                        className="w-full rounded-lg border border-border bg-card-bg px-4 py-2 text-sm text-text-primary focus:border-gold/50 focus:outline-none"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-text-primary mb-1.5">Max Handling Time (Days)</label>
+                                    <input
+                                        type="number"
+                                        value={shippingConfig.handling_time_days_max}
+                                        onChange={(e) => setShippingConfig({ ...shippingConfig, handling_time_days_max: parseInt(e.target.value) || 0 })}
+                                        className="w-full rounded-lg border border-border bg-card-bg px-4 py-2 text-sm text-text-primary focus:border-gold/50 focus:outline-none"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-text-primary mb-1.5">Min Transit Time (Days)</label>
+                                    <input
+                                        type="number"
+                                        value={shippingConfig.transit_time_days_min}
+                                        onChange={(e) => setShippingConfig({ ...shippingConfig, transit_time_days_min: parseInt(e.target.value) || 0 })}
+                                        className="w-full rounded-lg border border-border bg-card-bg px-4 py-2 text-sm text-text-primary focus:border-gold/50 focus:outline-none"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-text-primary mb-1.5">Max Transit Time (Days)</label>
+                                    <input
+                                        type="number"
+                                        value={shippingConfig.transit_time_days_max}
+                                        onChange={(e) => setShippingConfig({ ...shippingConfig, transit_time_days_max: parseInt(e.target.value) || 0 })}
+                                        className="w-full rounded-lg border border-border bg-card-bg px-4 py-2 text-sm text-text-primary focus:border-gold/50 focus:outline-none"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-text-primary mb-1.5">Shipping Description</label>
+                                <textarea
+                                    value={shippingConfig.description}
+                                    onChange={(e) => setShippingConfig({ ...shippingConfig, description: e.target.value })}
+                                    rows={2}
+                                    className="w-full rounded-lg border border-border bg-card-bg px-4 py-2 text-sm text-text-primary focus:border-gold/50 focus:outline-none"
+                                    placeholder="e.g. Free standard shipping on all orders."
+                                />
+                            </div>
+                        </div>
+
+                        {/* Return Policy Section */}
+                        <div>
+                            <div className="flex items-center gap-2 mb-4">
+                                <RotateCcw className="h-5 w-5 text-gold" />
+                                <h3 className="text-md font-bold text-gold uppercase tracking-wider border-b border-border pb-1 flex-1">Return Policy (JSON-LD)</h3>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-text-primary mb-1.5">Return Window (Days)</label>
+                                    <input
+                                        type="number"
+                                        value={returnConfig.policy_days}
+                                        onChange={(e) => setReturnConfig({ ...returnConfig, policy_days: parseInt(e.target.value) || 0 })}
+                                        className="w-full rounded-lg border border-border bg-card-bg px-4 py-2 text-sm text-text-primary focus:border-gold/50 focus:outline-none"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-text-primary mb-1.5">Return Fees</label>
+                                    <select
+                                        value={returnConfig.return_fees}
+                                        onChange={(e) => setReturnConfig({ ...returnConfig, return_fees: e.target.value })}
+                                        className="w-full rounded-lg border border-border bg-card-bg px-4 py-2 text-sm text-text-primary focus:border-gold/50 focus:outline-none"
+                                    >
+                                        <option value="free">Free Returns</option>
+                                        <option value="customer_pays">Customer Pays Shipping</option>
+                                        <option value="restocking_fee">Restocking Fee Applies</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-text-primary mb-1.5">Policy URL</label>
+                                <input
+                                    type="url"
+                                    value={returnConfig.policy_url}
+                                    onChange={(e) => setReturnConfig({ ...returnConfig, policy_url: e.target.value })}
+                                    className="w-full rounded-lg border border-border bg-card-bg px-4 py-2 text-sm text-text-primary focus:border-gold/50 focus:outline-none"
+                                    placeholder="https://vedashi.com/returns"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-text-primary mb-1.5">Return Policy Description</label>
+                                <textarea
+                                    value={returnConfig.description}
+                                    onChange={(e) => setReturnConfig({ ...returnConfig, description: e.target.value })}
+                                    rows={2}
+                                    className="w-full rounded-lg border border-border bg-card-bg px-4 py-2 text-sm text-text-primary focus:border-gold/50 focus:outline-none"
+                                    placeholder="e.g. 30-day hassle-free returns."
+                                />
+                            </div>
+                        </div>
+
+                        <div className="pt-4 flex justify-end">
+                            <button
+                                onClick={handleSaveMerchantSettings}
+                                disabled={merchantSaving}
+                                className="flex items-center justify-center rounded-lg bg-gradient-to-r from-primary to-primary-light px-6 py-2.5 text-sm font-semibold text-[#E8D8B9] border border-gold/20 hover:border-gold/40 hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {merchantSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                                Save Merchant Settings
                             </button>
                         </div>
                     </div>

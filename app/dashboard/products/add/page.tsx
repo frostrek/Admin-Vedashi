@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { getCategories, createCategory } from '@/lib/api/category';
 import { createProduct } from '@/lib/api/product';
+import CategoryMillerColumns from '@/components/admin/CategoryMillerColumns';
 import { uploadProductImage, API_URL } from '@/lib/api';
 import { Category } from '@/types/category';
 import { ArrowLeft, ArrowRight, Check, X, Plus, Trash2, ChevronDown, ChevronUp, AlertCircle, Info, Package, Layers, Star, ImageIcon, Maximize2, Loader2, Film, Search, Weight, Droplets, Hash, Zap, Utensils } from 'lucide-react';
@@ -79,13 +80,13 @@ export default function AddProductPage() {
     const [loading, setLoading] = useState(false);
     const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
     const [categories, setCategories] = useState<Category[]>([]);
+    const [isCategoryLoading, setIsCategoryLoading] = useState(false);
 
     // ÔöÇÔöÇÔöÇ Step 1: General Info State ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
     const [form, setForm] = useState({
         product_name: '',
         brand: '',
         category_id: '',
-        sub_category_id: '',
         country_of_origin: '',
         form_type: '',
         specialities: [] as string[],
@@ -133,13 +134,6 @@ export default function AddProductPage() {
     // ─── Step 4: SEO State ──────────────────────────────────────────────
     const [seoData, setSeoData] = useState<SeoData>({});
 
-    // ─── Category / Subcategory creation overlay state ─────
-    const [showCategoryModal, setShowCategoryModal] = useState(false);
-    const [showSubcategoryModal, setShowSubcategoryModal] = useState(false);
-    const [newCatForm, setNewCatForm] = useState({ name: '', slug: '', description: '' });
-    const [newSubCatForm, setNewSubCatForm] = useState({ name: '', slug: '', description: '', parent_id: '' });
-    const [catCreating, setCatCreating] = useState(false);
-    const [subCatCreating, setSubCatCreating] = useState(false);
 
     const latestForm = useRef<any>(null);
     const latestVariants = useRef<any[]>([]);
@@ -222,68 +216,12 @@ export default function AddProductPage() {
     }, []);
 
     const parentCategories = categories.filter(c => !c.parent_id);
-    const selectedParent = categories.find(c => !c.parent_id && c.category_id === form.category_id);
-    const subCategories = selectedParent
-        ? categories.filter(c => c.parent_id === selectedParent.category_id)
-        : [];
 
     // ÔöÇÔöÇÔöÇ Form helpers ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
     const update = (field: string, value: any) => setForm(prev => ({ ...prev, [field]: value }));
 
-    const handleCategoryChange = (value: string) => {
-        update('category_id', value);
-        update('sub_category_id', '');
-    };
-
-    const autoSlug = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-
-    // ─── Create Category handler ─────────────────────────
-    const handleCreateCategory = async () => {
-        if (!newCatForm.name.trim()) { toast.error('Category name is required'); return; }
-        setCatCreating(true);
-        try {
-            const slug = newCatForm.slug.trim() || autoSlug(newCatForm.name);
-            const res = await createCategory({
-                name: newCatForm.name.trim(),
-                slug,
-                description: newCatForm.description.trim() || undefined,
-            });
-            if (res.success) {
-                toast.success(`Category "${newCatForm.name}" created!`);
-                const cats = await refreshCategories();
-                update('category_id', res.category?.category_id || '');
-                update('sub_category_id', '');
-                setNewCatForm({ name: '', slug: '', description: '' });
-                setShowCategoryModal(false);
-            } else {
-                toast.error(res.error || 'Failed to create category');
-            }
-        } catch { toast.error('Network error'); } finally { setCatCreating(false); }
-    };
-
-    // ─── Create Subcategory handler ───────────────────────
-    const handleCreateSubcategory = async () => {
-        if (!newSubCatForm.name.trim()) { toast.error('Subcategory name is required'); return; }
-        if (!newSubCatForm.parent_id) { toast.error('Please select a parent category'); return; }
-        setSubCatCreating(true);
-        try {
-            const slug = newSubCatForm.slug.trim() || autoSlug(newSubCatForm.name);
-            const res = await createCategory({
-                name: newSubCatForm.name.trim(),
-                slug,
-                description: newSubCatForm.description.trim() || undefined,
-                parent_id: newSubCatForm.parent_id,
-            });
-            if (res.success) {
-                toast.success(`Subcategory "${newSubCatForm.name}" created!`);
-                await refreshCategories();
-                update('sub_category_id', res.category?.category_id || '');
-                setNewSubCatForm({ name: '', slug: '', description: '', parent_id: '' });
-                setShowSubcategoryModal(false);
-            } else {
-                toast.error(res.error || 'Failed to create subcategory');
-            }
-        } catch { toast.error('Network error'); } finally { setSubCatCreating(false); }
+    const handleCategoryChange = (leafId: string, fullPath: Category[]) => {
+        update('category_id', leafId);
     };
 
     // ÔöÇÔöÇÔöÇ Step 2: Dimension helpers
@@ -587,7 +525,6 @@ export default function AddProductPage() {
             product_name: currentName,
             brand: form.brand.trim() || undefined,
             category_id: form.category_id || undefined,
-            sub_category_id: form.sub_category_id || undefined,
             country_of_origin: form.country_of_origin || undefined,
             description: form.description.trim() || undefined,
             short_description: form.short_description.trim() || undefined,
@@ -701,7 +638,6 @@ export default function AddProductPage() {
             product_name: form.product_name.trim(),
             brand: form.brand.trim() || undefined,
             category_id: form.category_id || undefined,
-            sub_category_id: form.sub_category_id || undefined,
             country_of_origin: form.country_of_origin || undefined,
             description: form.description.trim() || undefined,
             short_description: form.short_description.trim() || undefined,
@@ -1035,15 +971,15 @@ export default function AddProductPage() {
                                     <div className="sm:col-span-2">
                                         <div className="flex justify-between items-end mb-1.5">
                                             <label className="block text-sm font-medium text-text-primary">Product Name *</label>
-                                            <span className={`text-xs ${form.product_name.length >= 50 ? 'text-red-500' : 'text-text-muted'}`}>
-                                                {form.product_name.length}/50
+                                            <span className={`text-xs ${form.product_name.length >= 100 ? 'text-red-500' : 'text-text-muted'}`}>
+                                                {form.product_name.length}/100
                                             </span>
                                         </div>
                                         <input
                                             type="text"
                                             value={form.product_name}
                                             onChange={e => update('product_name', e.target.value)}
-                                            maxLength={50}
+                                            maxLength={100}
                                             className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 transition-all"
                                             placeholder="e.g. Ashwagandha Prowess"
                                             required
@@ -1063,56 +999,17 @@ export default function AddProductPage() {
                                     </div>
 
                                     {/* Category */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-text-primary mb-1.5">Category</label>
-                                        <select
+                                    <div className="sm:col-span-2">
+                                        <label className="block text-sm font-medium text-text-primary mb-1.5">
+                                            Category <span className="text-gold">*</span>
+                                        </label>
+                                        <CategoryMillerColumns
+                                            rootCategories={parentCategories}
+                                            allCategories={categories}
                                             value={form.category_id}
-                                            onChange={e => handleCategoryChange(e.target.value)}
-                                            className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 bg-white text-gray-900 transition-all"
-                                        >
-                                            <option value="">Select category</option>
-                                            {parentCategories.map(cat => (
-                                                <option key={cat.category_id} value={cat.category_id}>{cat.name}</option>
-                                            ))}
-                                        </select>
-                                        <button
-                                            type="button"
-                                            onClick={() => { setNewCatForm({ name: '', slug: '', description: '' }); setShowCategoryModal(true); }}
-                                            className="mt-1.5 flex items-center gap-1 text-xs font-medium text-gold hover:text-gold-soft transition-colors"
-                                        >
-                                            <Plus className="h-3 w-3" /> Add New Category
-                                        </button>
-                                    </div>
-
-                                    {/* Subcategory */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-text-primary mb-1.5">Subcategory</label>
-                                        <select
-                                            value={form.sub_category_id}
-                                            onChange={e => update('sub_category_id', e.target.value)}
-                                            className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 bg-white text-gray-900 transition-all"
-                                            disabled={!form.category_id || subCategories.length === 0}
-                                        >
-                                            <option value="">
-                                                {!form.category_id ? 'Select a category first' : subCategories.length === 0 ? 'No subcategories' : 'Select subcategory'}
-                                            </option>
-                                            {subCategories.map(cat => (
-                                                <option key={cat.category_id} value={cat.category_id}>{cat.name}</option>
-                                            ))}
-                                        </select>
-                                        {form.category_id && (
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    const parentId = selectedParent?.category_id || '';
-                                                    setNewSubCatForm({ name: '', slug: '', description: '', parent_id: parentId });
-                                                    setShowSubcategoryModal(true);
-                                                }}
-                                                className="mt-1.5 flex items-center gap-1 text-xs font-medium text-gold hover:text-gold-soft transition-colors"
-                                            >
-                                                <Plus className="h-3 w-3" /> Add New Subcategory
-                                            </button>
-                                        )}
+                                            onChange={handleCategoryChange}
+                                            onLoadingChange={setIsCategoryLoading}
+                                        />
                                     </div>
 
                                     {/* Country of Origin */}
@@ -1939,153 +1836,6 @@ export default function AddProductPage() {
                 </div>
             )}
 
-            {showCategoryModal && (
-                <div className="fixed inset-0 z-[998] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={() => setShowCategoryModal(false)}>
-                    <div className="bg-card-bg rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-border" onClick={e => e.stopPropagation()}>
-                        <div className="h-1 bg-gradient-to-r from-primary to-gold" />
-                        <div className="p-6">
-                            <div className="flex items-center justify-between mb-5">
-                                <h3 className="font-serif font-bold text-text-primary text-lg">Create New Category</h3>
-                                <button onClick={() => setShowCategoryModal(false)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors">
-                                    <X className="h-4 w-4" />
-                                </button>
-                            </div>
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-text-secondary mb-1">Name *</label>
-                                    <input
-                                        type="text"
-                                        value={newCatForm.name}
-                                        onChange={e => setNewCatForm({ ...newCatForm, name: e.target.value, slug: autoSlug(e.target.value) })}
-                                        className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 text-text-primary bg-transparent"
-                                        placeholder="e.g. Wellness"
-                                        autoFocus
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-text-secondary mb-1">Slug</label>
-                                    <input
-                                        type="text"
-                                        value={newCatForm.slug}
-                                        onChange={e => setNewCatForm({ ...newCatForm, slug: e.target.value })}
-                                        className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 text-text-muted bg-transparent"
-                                        placeholder="auto-generated-from-name"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                                    <textarea
-                                        value={newCatForm.description}
-                                        onChange={e => setNewCatForm({ ...newCatForm, description: e.target.value })}
-                                        rows={3}
-                                        className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm focus:border-[#D4A847]/40 focus:outline-none focus:ring-1 focus:ring-[#D4A847]/20 resize-none text-gray-900"
-                                        placeholder="Brief description of this category"
-                                    />
-                                </div>
-                            </div>
-                            <div className="flex gap-3 mt-6">
-                                <button
-                                    type="button"
-                                    onClick={() => setShowCategoryModal(false)}
-                                    className="flex-1 rounded-lg border border-gray-200 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={handleCreateCategory}
-                                    disabled={catCreating}
-                                    className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-primary py-2.5 text-sm font-semibold text-white hover:bg-primary-dark transition-colors disabled:opacity-60"
-                                >
-                                    {catCreating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-                                    Create Category
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {showSubcategoryModal && (
-                <div className="fixed inset-0 z-[998] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={() => setShowSubcategoryModal(false)}>
-                    <div className="bg-card-bg rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-border" onClick={e => e.stopPropagation()}>
-                        <div className="h-1 bg-gradient-to-r from-gold to-primary" />
-                        <div className="p-6">
-                            <div className="flex items-center justify-between mb-5">
-                                <h3 className="font-serif font-bold text-text-primary text-lg">Create New Subcategory</h3>
-                                <button onClick={() => setShowSubcategoryModal(false)} className="p-1.5 rounded-lg hover:bg-white/5 text-text-muted hover:text-text-primary transition-colors">
-                                    <X className="h-4 w-4" />
-                                </button>
-                            </div>
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-text-secondary mb-1">Name *</label>
-                                    <input
-                                        type="text"
-                                        value={newSubCatForm.name}
-                                        onChange={e => setNewSubCatForm({ ...newSubCatForm, name: e.target.value, slug: autoSlug(e.target.value) })}
-                                        className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 text-text-primary bg-transparent"
-                                        placeholder="e.g. Cabernet Sauvignon"
-                                        autoFocus
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-text-secondary mb-1">Slug</label>
-                                    <input
-                                        type="text"
-                                        value={newSubCatForm.slug}
-                                        onChange={e => setNewSubCatForm({ ...newSubCatForm, slug: e.target.value })}
-                                        className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 text-text-muted bg-transparent"
-                                        placeholder="auto-generated-from-name"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-text-secondary mb-1">Description</label>
-                                    <textarea
-                                        value={newSubCatForm.description}
-                                        onChange={e => setNewSubCatForm({ ...newSubCatForm, description: e.target.value })}
-                                        rows={3}
-                                        className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 resize-none text-text-primary bg-transparent"
-                                        placeholder="Brief description of this subcategory"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-text-secondary mb-1">Parent Category *</label>
-                                    <select
-                                        value={newSubCatForm.parent_id}
-                                        onChange={e => setNewSubCatForm({ ...newSubCatForm, parent_id: e.target.value })}
-                                        className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 bg-card-bg text-text-primary"
-                                    >
-                                        <option value="">Select parent category</option>
-                                        {parentCategories.map(cat => (
-                                            <option key={cat.category_id} value={cat.category_id}>{cat.name}</option>
-                                        ))}
-                                    </select>
-                                    <p className="text-xs text-text-muted mt-1">The subcategory will be nested under this parent.</p>
-                                </div>
-                            </div>
-                            <div className="flex gap-3 mt-6">
-                                <button
-                                    type="button"
-                                    onClick={() => setShowSubcategoryModal(false)}
-                                    className="flex-1 rounded-lg border border-border py-2.5 text-sm font-semibold text-text-secondary hover:bg-white/5 transition-colors"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={handleCreateSubcategory}
-                                    disabled={subCatCreating}
-                                    className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-primary py-2.5 text-sm font-semibold text-white hover:bg-primary-dark transition-colors disabled:opacity-60"
-                                >
-                                    {subCatCreating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-                                    Create Subcategory
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
         </>
     );
 }

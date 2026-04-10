@@ -20,6 +20,18 @@ interface PromoBanner {
     created_at: string;
 }
 
+const COUNTRY_OPTIONS = [
+    { value: '', label: '🌍 Global (All Regions)' },
+    { value: 'IN', label: '🇮🇳 India' },
+    { value: 'US', label: '🇺🇸 United States' },
+    { value: 'GB', label: '🇬🇧 United Kingdom' },
+    { value: 'AE', label: '🇦🇪 UAE' },
+    { value: 'CA', label: '🇨🇦 Canada' },
+    { value: 'AU', label: '🇦🇺 Australia' },
+    { value: 'RU', label: '🇷🇺 Russia' },
+    { value: 'KR', label: '🇰🇷 South Korea' },
+];
+
 const emptyBanner: Omit<PromoBanner, 'id' | 'created_at'> = {
     message: '',
     flow: 'static',
@@ -179,6 +191,7 @@ export default function PromoBannersPage() {
                             <thead>
                                 <tr className={`border-b border-border ${isDark ? 'bg-black/40' : 'bg-primary/10'} text-sm font-semibold text-gold-muted uppercase`}>
                                     <th className="px-8 py-6">Message</th>
+                                    <th className="px-8 py-6">Region</th>
                                     <th className="px-8 py-6">Effect</th>
                                     <th className="px-8 py-6">Colours</th>
                                     <th className="px-8 py-6">Date</th>
@@ -192,6 +205,11 @@ export default function PromoBannersPage() {
                                             <p className={`${isDark ? 'text-gold-soft' : 'text-emerald-950'} text-lg leading-relaxed max-w-md line-clamp-2 italic drop-shadow-md group-hover:text-gold transition-colors`}>
                                                 "{b.message}"
                                             </p>
+                                        </td>
+                                        <td className="px-8 py-10">
+                                            <span className={`inline-flex px-4 py-1.5 rounded-full text-[10px] font-bold uppercase border ${b.country_code ? (isDark ? 'bg-gold/5 text-gold border-gold/20' : 'bg-primary/5 text-primary border-primary/20') : (isDark ? 'bg-white/5 text-text-muted border-border' : 'bg-gray-100 text-gray-600 border-gray-200')}`}>
+                                                {b.country_code ? (COUNTRY_OPTIONS.find(c => c.value === b.country_code)?.label || b.country_code) : '🌍 Global'}
+                                            </span>
                                         </td>
                                         <td className="px-8 py-10">
                                             <div className="flex flex-col gap-2.5 items-start">
@@ -289,6 +307,27 @@ export default function PromoBannersPage() {
                                     <AlertCircle className="w-3.5 h-3.5" />
                                     <span>Use special characters to enhance the spiritual resonance of the message.</span>
                                 </div>
+                            </div>
+
+                            <div className="space-y-3">
+                                <label className="flex items-center gap-1.5 text-[10px] font-bold text-text-muted uppercase px-1 pb-1">
+                                    Target Region
+                                    <span className="group relative cursor-pointer flex items-center">
+                                        <Info className="w-3.5 h-3.5 text-text-muted/60 hover:text-gold transition-colors" />
+                                        <span className="absolute bottom-full mb-2 left-0 opacity-0 group-hover:opacity-100 transition-all pointer-events-none w-max max-w-[220px] bg-black text-white text-[9px] normal-case tracking-normal px-3 py-2 rounded-lg shadow-xl z-[99999]">
+                                            Choose a specific region or leave as Global for all markets.
+                                        </span>
+                                    </span>
+                                </label>
+                                <select
+                                    value={form.country_code || ''}
+                                    onChange={e => setForm({ ...form, country_code: e.target.value || null })}
+                                    className={inputCls}
+                                >
+                                    {COUNTRY_OPTIONS.map(opt => (
+                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                    ))}
+                                </select>
                             </div>
 
                             <div className="grid grid-cols-2 gap-6">
