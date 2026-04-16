@@ -4,7 +4,7 @@ import { authFetch, API_URL } from '@/lib/api';
 import React, { useState, useRef, useEffect } from 'react';
 import { X, UploadCloud, FileType, CheckCircle2, AlertCircle, Loader2, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
-import * as xlsx from 'xlsx';
+import * as xlsx from 'xlsx-js-style';
 
 interface BulkImportModalProps {
     isOpen: boolean;
@@ -150,33 +150,34 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
 
     // ── Template column headers (row-per-variant format) ──
     const TEMPLATE_HEADERS = [
-        'Product ID', 'Product Name', 'Brand', 'Category', 'Subcategory',
-        'Country of Origin', 'Form', 'Speciality', 'Speciality_2', 'Speciality_3',
-        'Intended Use', 'Description', 'Short Description', 'Is_Default',
-        'Variant Name', 'SKU', 'Price', 'Stock', 'Weight', 'Weight_unit',
-        'Volume', 'Volume_unit', 'Count', 'Count_unit', 'Strength', 'Strength_unit',
-        'Flavor', 'Pack_quantity', 'Cost_price', 'Shelf_life', 'Length', 'Width', 'Height',
-        'Variant_image_1', 'Variant_image_2', 'Variant_image_3', 'Variant_image_4',
-        'Variant_image_5', 'Variant_video', 'Russia_markup', 'Korea_markup',
+        'Product_ID', 'Brand', 'Manufacturer', 'Category', 'Subcategory', 
+        'Country_of_Origin', 'Form', 'Speciality', 'Speciality_2', 'Speciality_3', 
+        'Description', 'Short_Description', 'Lead_Time', 'Search_Keywords', 
+        'Barcode', 'Adult_Only', 'Taxable', 'Parallel_Import', 'Overseas_Purchase', 
+        'Shelf_Life', 'Product_Name', 'Option_Type', 'Option_Value', 'SKU', 
+        'Model_Number', 'Selling_Price', 'MRP', 'Stock', 'Weight', 
+        'Volume', 'Length', 'Width', 'Height', 'Russia_Markup', 'Korea_Markup', 
+        'Image_1', 'Image_2', 'Image_3', 'Image_4', 'Image_5', 'Variant_Video'
     ];
 
     // Example rows demonstrating row-per-variant grouping
     const TEMPLATE_ROWS = [
         // ROW 1 — Product P001, Variant 1 (default)
         [
-            'P001', 'Vitamin C', 'BrandX', 'Supplements', 'Vitamins', 'India', 'Tablet',
-            'Vegan', 'Gluten Free', '', 'Daily immunity support', 'Full description here',
-            'Short desc here', 'TRUE', '500mg 60 Tabs', 'SKU-001', '10.99', '100',
-            '200', 'g', '', '', '60', 'Tablets', '500', 'mg', '', '1', '5.00', '24',
-            '10', '8', '5', 'https://image1.jpg', '', '', '', '', '', '', '',
+            'P001', 'Himalaya', 'Himalaya Drug Company', 'Wellness', 'Ayurveda', 'India', 'Capsule',
+            'Ayurvedic', 'Drug Free', '', 'Ashwagandha helps reduce stress and improve vitality.',
+            'Stress relief supplement', '3-5 business days', 'ashwagandha, stress relief, ayurvedic',
+            '', 'FALSE', 'TRUE', 'FALSE', 'FALSE', '24',
+            'Ashwagandha 60 Capsules', 'Size', '60 Capsules', 'HIM-ASHW-60', '',
+            '499', '599', '100', '', '', '', '', '', '20', '15',
+            'https://example.com/ashwagandha-60.jpg', '', '', '', '', '',
         ],
-        // ROW 2 — Product P001, Variant 2 (not default)
+        // ROW 2 — Product P001, Variant 2 of same product
         [
-            'P001', 'Vitamin C', 'BrandX', 'Supplements', 'Vitamins', 'India', 'Tablet',
-            'Vegan', 'Gluten Free', '', 'Daily immunity support', 'Full description here',
-            'Short desc here', 'FALSE', '1000mg 30 Tabs', 'SKU-002', '14.99', '50',
-            '300', 'g', '', '', '30', 'Tablets', '1000', 'mg', '', '1', '7.00', '24',
-            '10', '8', '5', '', '', '', '', '', '', '10', '5',
+            'P001', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
+            'Ashwagandha 120 Capsules', 'Size', '120 Capsules', 'HIM-ASHW-120', '',
+            '849', '999', '80', '', '', '', '', '', '20', '15',
+            'https://example.com/ashwagandha-120.jpg', '', '', '', '', '',
         ],
     ];
 
@@ -210,15 +211,50 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
         } else {
-            // ── Excel .xlsx via xlsx library ──
-            const data = TEMPLATE_ROWS.map(row => {
-                const obj: Record<string, string> = {};
-                TEMPLATE_HEADERS.forEach((h, i) => { obj[h] = row[i] ?? ''; });
-                return obj;
-            });
-            const worksheet = xlsx.utils.json_to_sheet(data);
+            // ── Excel .xlsx via xlsx-js-style library (supports cell styling) ──
+            const ws = xlsx.utils.aoa_to_sheet([TEMPLATE_HEADERS, ...TEMPLATE_ROWS]);
+
+            // Styling constants
+            const headerStyle = {
+                fill: { fgColor: { rgb: "3B5D3B" } }, // Dark Green
+                font: { color: { rgb: "FFFFFF" }, bold: true },
+                alignment: { horizontal: "center", vertical: "center" }
+            };
+            const productColStyle = { fill: { fgColor: { rgb: "FFF9C4" } } }; // Light Yellow
+            const variantColStyle = { fill: { fgColor: { rgb: "E3F2FD" } } }; // Light Blue
+
+            // Range of columns
+            const productColCount = 20; // 1-20
+            const variantColCount = 21; // 21-41
+            const totalCols = productColCount + variantColCount;
+            const totalRowsIncludingHeader = TEMPLATE_ROWS.length + 1;
+
+            // Apply styles to every cell
+            for (let r = 0; r < totalRowsIncludingHeader; r++) {
+                for (let c = 0; c < totalCols; c++) {
+                    const cellRef = xlsx.utils.encode_cell({ r, c });
+                    if (!ws[cellRef]) ws[cellRef] = { v: '', t: 's' };
+
+                    // 1. Header Row
+                    if (r === 0) {
+                        ws[cellRef].s = headerStyle;
+                    } 
+                    // 2. Data Rows
+                    else {
+                        if (c < productColCount) {
+                            ws[cellRef].s = productColStyle;
+                        } else {
+                            ws[cellRef].s = variantColStyle;
+                        }
+                    }
+                }
+            }
+
+            // Set column widths for better visibility
+            ws['!cols'] = Array(totalCols).fill({ wch: 18 });
+
             const workbook = xlsx.utils.book_new();
-            xlsx.utils.book_append_sheet(workbook, worksheet, 'Template');
+            xlsx.utils.book_append_sheet(workbook, ws, 'Template');
             xlsx.writeFile(workbook, 'product_import_template.xlsx');
         }
     };
@@ -293,15 +329,16 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
                                 <h3 className="font-serif text-sm font-semibold text-amber-800 mb-2">Important Instructions</h3>
                                 <ul className="text-sm text-amber-900/80 space-y-1.5 list-disc pl-4">
                                     <li>The file must be a valid <strong>.csv, .xlsx, or .xls</strong> file.</li>
-                                    <li>Each <strong>ROW</strong> represents one variant. One product = one or more rows.</li>
-                                    <li>Required for new products: <strong>Product ID</strong>, <strong>SKU</strong>, <strong>Product Name</strong>, and <strong>Price</strong>.</li>
-                                    <li>Group multiple variants under the same product using the same <strong>Product ID</strong>.</li>
-                                    <li>Mark one variant per product as <strong>Is_Default = TRUE</strong> — its images will be used as fallback for variants with no images.</li>
-                                    <li>If <strong>Is_Default</strong> is not set, the first variant row is used as default.</li>
-                                    <li>If the SKU exists, the product will be <strong>updated</strong>. If not, a new product will be <strong>created</strong>.</li>
-                                    <li><strong>Short Description</strong> is optional — great for SEO and product cards.</li>
-                                    <li>Supports media URLs in <strong>Variant_image_1</strong> to <strong>Variant_image_5</strong> and <strong>Variant_video</strong> columns.</li>
-                                    <li><strong>Russia_markup</strong> and <strong>Korea_markup</strong> are optional — set a % markup for country-specific pricing per variant.</li>
+                                    <li>Each <strong>ROW</strong> represents one variant. One product = one or more rows grouped by the same Product_ID.</li>
+                                    <li>Required for every row: <strong>Product_Name</strong>, <strong>SKU</strong>, <strong>Selling_Price</strong>.</li>
+                                    <li>Product-level fields (Brand, Category, Description etc.) are read from the <strong>FIRST ROW</strong> of each Product_ID group only.</li>
+                                    <li>The first row of each Product_ID group is automatically the <strong>default variant</strong> — no Is_Default column needed.</li>
+                                    <li>Use <strong>Option_Type</strong> and <strong>Option_Value</strong> to define what makes each variant different — e.g. Option_Type: Size, Option_Value: 500g.</li>
+                                    <li><strong>Weight</strong> and <strong>Volume</strong> are single fields — enter as combined value e.g. 500g, 1kg, 250ml, 1L.</li>
+                                    <li>Set <strong>MRP</strong> higher than Selling_Price to show a strikethrough MRP and discount badge on the storefront.</li>
+                                    <li>The first variant's <strong>Image_1</strong> is used as the product thumbnail. No separate main image column needed.</li>
+                                    <li>If the SKU exists the product will be <strong>updated</strong>. If not a new product will be <strong>created</strong>.</li>
+                                    <li><strong>Russia_Markup</strong> and <strong>Korea_Markup</strong> are optional — set a % markup for country-specific pricing per variant.</li>
                                     <li>Large files (&gt;100 rows) are processed in the background.</li>
                                 </ul>
                                 <div className="mt-5 flex items-center gap-3">

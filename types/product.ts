@@ -21,6 +21,9 @@ export interface Product {
     additional_info?: ProductAdditionalInfo;
     digital_assets?: ProductDigitalAssets;
 
+    manufacturer?: string;
+    lead_time?: string;
+
     created_at?: string;
     updated_at?: string;
 }

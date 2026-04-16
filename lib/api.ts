@@ -249,6 +249,8 @@ export interface Product {
     quantity?: number; // request-only: sets default variant stock (not returned in responses)
 
     stock_quantity?: number;
+    manufacturer?: string;
+    lead_time?: string;
     country_of_origin?: string;
     images?: string[];
     specifications?: any;

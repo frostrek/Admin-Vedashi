@@ -7,7 +7,7 @@ import { createProduct } from '@/lib/api/product';
 import CategoryMillerColumns from '@/components/admin/CategoryMillerColumns';
 import { uploadProductImage, API_URL } from '@/lib/api';
 import { Category } from '@/types/category';
-import { ArrowLeft, ArrowRight, Check, X, Plus, Trash2, ChevronDown, ChevronUp, AlertCircle, Info, Package, Layers, Star, ImageIcon, Maximize2, Loader2, Film, Search, Weight, Droplets, Hash, Zap, Utensils } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, X, Plus, Trash2, ChevronDown, ChevronUp, AlertCircle, Info, Package, Layers, Star, ImageIcon, Maximize2, Loader2, Film, Search, Weight, Droplets, Hash, Zap, Utensils, Tag } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import CountryPicker from '@/components/CountryPicker';
@@ -42,6 +42,11 @@ const STEPS = [
 
 // ÔöÇÔöÇÔöÇ Types ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 interface VariantRow {
+    product_name: string;
+    discount_base_price: number | null;
+    model_number: string;
+    weight_input: string;
+    volume_input: string;
     weight: string;
     volume: string;
     count: string;
@@ -52,7 +57,6 @@ interface VariantRow {
     variant_name: string;
     sku: string;
     price: number;
-    cost_price: number;
     stock: number;
     shelf_life: string;
     length_cm: string;
@@ -90,7 +94,8 @@ export default function AddProductPage() {
         country_of_origin: '',
         form_type: '',
         specialities: [] as string[],
-        intended_use: '',
+        manufacturer: '',
+        lead_time: '',
         description: '',
         short_description: '',
         available_from_date: '',
@@ -99,17 +104,18 @@ export default function AddProductPage() {
         available_until_time: '',
     });
 
-    // ÔöÇÔöÇÔöÇ Step 2: Define Variants State ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
-    const [dimConfigs, setDimConfigs] = useState({
-        weight: { active: false, values: [] as string[] },
-        volume: { active: false, values: [] as string[] },
-        count: { active: false, values: [] as string[] },
-        strength: { active: false, values: [] as string[] },
-        flavor: { active: false, values: [] as string[] },
-        pack: { active: false, values: [] as string[] },
-        combo: { active: false, values: [] as string[] },
+    // ─── Step 2: Define Variants State ───────────────────────────────────────
+    const HARDCODED_DIMS = ['weight', 'volume', 'count', 'strength', 'flavor', 'pack', 'combo'] as const;
+    const [dimConfigs, setDimConfigs] = useState<Record<string, { active: boolean; values: string[] }>>({
+        weight: { active: false, values: [] },
+        volume: { active: false, values: [] },
+        count: { active: false, values: [] },
+        strength: { active: false, values: [] },
+        flavor: { active: false, values: [] },
+        pack: { active: false, values: [] },
+        combo: { active: false, values: [] },
     });
-    const [dimInputs, setDimInputs] = useState({
+    const [dimInputs, setDimInputs] = useState<Record<string, string>>({
         weight: '',
         volume: '',
         count: '',
@@ -118,6 +124,9 @@ export default function AddProductPage() {
         pack: '',
         combo: '',
     });
+    // Custom dimension types added by the user (e.g. "Color", "Material")
+    const [customDimTypes, setCustomDimTypes] = useState<string[]>([]);
+    const [customDimInput, setCustomDimInput] = useState('');
     const [volUnit, setVolUnit] = useState('ml');
     const [weightUnit, setWeightUnit] = useState('g');
     const [countUnit, setCountUnit] = useState('Tablets');
@@ -126,7 +135,7 @@ export default function AddProductPage() {
     // ÔöÇÔöÇÔöÇ Step 3: Variants Table State ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
     const [autoGenerate, setAutoGenerate] = useState(false);
     const [variants, setVariants] = useState<VariantRow[]>([
-        { weight: '', volume: '', count: '', strength: '', flavor: '', pack: '', combo: '', variant_name: '', sku: '', price: 0, cost_price: 0, stock: 0, shelf_life: '', length_cm: '', width_cm: '', height_cm: '', item_weight_kg_input: '', images: [], videos: [], defaultImageIndex: 0, sale_price: '', sale_start_date: '', sale_start_time: '', sale_end_date: '', sale_end_time: '', isDefault: true, isActive: true }
+        { product_name: '', discount_base_price: null, model_number: '', weight_input: '', volume_input: '', weight: '', volume: '', count: '', strength: '', flavor: '', pack: '', combo: '', variant_name: '', sku: '', price: 0, stock: 0, shelf_life: '', length_cm: '', width_cm: '', height_cm: '', item_weight_kg_input: '', images: [], videos: [], defaultImageIndex: 0, sale_price: '', sale_start_date: '', sale_start_time: '', sale_end_date: '', sale_end_time: '', isDefault: true, isActive: true }
     ]);
     const [expandedVariantIndex, setExpandedVariantIndex] = useState<number | null>(null);
     const [sharedImages, setSharedImages] = useState(false);
@@ -224,9 +233,9 @@ export default function AddProductPage() {
         update('category_id', leafId);
     };
 
-    // ÔöÇÔöÇÔöÇ Step 2: Dimension helpers
-    const addDimensionValue = (dim: keyof typeof dimConfigs) => {
-        const val = dimInputs[dim].trim();
+    // ─── Step 2: Dimension helpers ────────────────────────────────────────────
+    const addDimensionValue = (dim: string) => {
+        const val = (dimInputs[dim] || '').trim();
         if (!val && dim !== 'combo') return;
 
         let finalVal = val;
@@ -234,30 +243,31 @@ export default function AddProductPage() {
         else if (dim === 'volume') finalVal = `${val} ${volUnit}`;
         else if (dim === 'count') finalVal = `${val} ${countUnit}`;
         else if (dim === 'strength') finalVal = `${val} ${strengthUnit}`;
+        else if (dim === 'pack') finalVal = val;
         else if (dim === 'combo') finalVal = val.toLowerCase() === 'yes' || val === 'true' ? 'Yes' : 'No';
 
-        if (dimConfigs[dim].values.includes(finalVal)) {
-            toast.error(`This ${dim} already exists`);
+        if (dimConfigs[dim]?.values.includes(finalVal)) {
+            toast.error(`This ${dim} value already exists`);
             return;
         }
 
         setDimConfigs(prev => ({
             ...prev,
-            [dim]: { ...prev[dim], values: [...prev[dim].values, finalVal] }
+            [dim]: { ...prev[dim], values: [...(prev[dim]?.values || []), finalVal] }
         }));
         setDimInputs(prev => ({ ...prev, [dim]: '' }));
     };
 
-    const removeDimensionValue = (dim: keyof typeof dimConfigs, index: number) => {
+    const removeDimensionValue = (dim: string, index: number) => {
         setDimConfigs(prev => ({
             ...prev,
             [dim]: { ...prev[dim], values: prev[dim].values.filter((_, i) => i !== index) }
         }));
     };
 
-    const toggleDimensionActive = (dim: keyof typeof dimConfigs) => {
+    const toggleDimensionActive = (dim: string) => {
         setDimConfigs(prev => {
-            const isActivating = !prev[dim].active;
+            const isActivating = !prev[dim]?.active;
             const next = { ...prev };
 
             if (isActivating) {
@@ -268,7 +278,42 @@ export default function AddProductPage() {
                 }
             }
 
-            next[dim] = { ...next[dim], active: isActivating };
+            next[dim] = { ...(next[dim] || { values: [] }), active: isActivating };
+            return next;
+        });
+    };
+
+    // Add a new custom dimension type (e.g. "Color", "Material")
+    const addCustomDimType = () => {
+        const raw = customDimInput.trim();
+        if (!raw) return;
+        if (raw.length > 20) { toast.error('Type name must be 20 characters or fewer'); return; }
+        // Capitalize first letter
+        const normalized = raw.charAt(0).toUpperCase() + raw.slice(1);
+        const key = normalized.toLowerCase();
+        // Duplicate check against hardcoded and existing custom types
+        if (HARDCODED_DIMS.includes(key as any) || customDimTypes.map(t => t.toLowerCase()).includes(key)) {
+            toast.error(`"${normalized}" already exists as a variant type`);
+            return;
+        }
+        setCustomDimTypes(prev => [...prev, normalized]);
+        setDimConfigs(prev => ({ ...prev, [key]: { active: true, values: [] } }));
+        setDimInputs(prev => ({ ...prev, [key]: '' }));
+        setCustomDimInput('');
+    };
+
+    // Remove a custom dimension type
+    const removeCustomDimType = (typeName: string) => {
+        const key = typeName.toLowerCase();
+        setCustomDimTypes(prev => prev.filter(t => t.toLowerCase() !== key));
+        setDimConfigs(prev => {
+            const next = { ...prev };
+            delete next[key];
+            return next;
+        });
+        setDimInputs(prev => {
+            const next = { ...prev };
+            delete next[key];
             return next;
         });
     };
@@ -290,8 +335,9 @@ export default function AddProductPage() {
 
         return products.map(product => {
             const variant: VariantRow = {
+                product_name: '', discount_base_price: null, model_number: '', weight_input: '', volume_input: '',
                 weight: '', volume: '', count: '', strength: '', flavor: '', pack: '', combo: '',
-                variant_name: '', sku: '', price: 0, cost_price: 0, stock: 0,
+                variant_name: '', sku: '', price: 0, stock: 0,
                 shelf_life: '', length_cm: '', width_cm: '', height_cm: '', item_weight_kg_input: '',
                 images: [], videos: [], defaultImageIndex: 0,
                 sale_price: '', sale_start_date: '', sale_start_time: '', sale_end_date: '', sale_end_time: '',
@@ -299,8 +345,16 @@ export default function AddProductPage() {
             };
 
             product.forEach((val, i) => {
-                const dimName = activeDimensions[i].dim as keyof VariantRow;
-                (variant as any)[dimName] = val;
+                const dimName = activeDimensions[i].dim;
+                if (dimName === 'weight') {
+                    variant.weight_input = val;
+                    variant.weight = val;
+                } else if (dimName === 'volume') {
+                    variant.volume_input = val;
+                    variant.volume = val;
+                } else {
+                    (variant as any)[dimName] = val;
+                }
             });
 
             variant.variant_name = product.join(' ');
@@ -321,7 +375,7 @@ export default function AddProductPage() {
             setVariants(combos);
             toast.success(`Generated ${combos.length} variant combinations`);
         } else {
-            setVariants([{ weight: '', volume: '', count: '', strength: '', flavor: '', pack: '', combo: '', variant_name: '', sku: '', price: 0, cost_price: 0, stock: 0, shelf_life: '', length_cm: '', width_cm: '', height_cm: '', item_weight_kg_input: '', images: [], videos: [], defaultImageIndex: 0, sale_price: '', sale_start_date: '', sale_start_time: '', sale_end_date: '', sale_end_time: '', isDefault: false, isActive: true }]);
+            setVariants([{ product_name: '', discount_base_price: null, model_number: '', weight_input: '', volume_input: '', weight: '', volume: '', count: '', strength: '', flavor: '', pack: '', combo: '', variant_name: '', sku: '', price: 0, stock: 0, shelf_life: '', length_cm: '', width_cm: '', height_cm: '', item_weight_kg_input: '', images: [], videos: [], defaultImageIndex: 0, sale_price: '', sale_start_date: '', sale_start_time: '', sale_end_date: '', sale_end_time: '', isDefault: true, isActive: true }]);
         }
     };
 
@@ -336,8 +390,8 @@ export default function AddProductPage() {
 
     const addVariantRow = () => {
         setVariants(prev => [...prev, {
-            weight: '', volume: '', count: '', strength: '', flavor: '', pack: '', combo: '',
-            variant_name: '', sku: '', price: 0, cost_price: 0, stock: 0,
+            product_name: '', discount_base_price: null, model_number: '', weight_input: '', volume_input: '', weight: '', volume: '', count: '', strength: '', flavor: '', pack: '', combo: '',
+            variant_name: '', sku: '', price: 0, stock: 0,
             shelf_life: '', length_cm: '', width_cm: '', height_cm: '', item_weight_kg_input: '',
             images: [], videos: [], defaultImageIndex: 0,
             sale_price: '', sale_start_date: '', sale_start_time: '', sale_end_date: '', sale_end_time: '',
@@ -474,8 +528,7 @@ export default function AddProductPage() {
             // Ensure all variants have SKU and Price
             const negativeField = variants.find(v =>
                 Number(v.stock) < 0 ||
-                Number(v.price) < 0 ||
-                Number(v.cost_price) < 0 ||
+                Number(v.discount_base_price) < 0 ||
                 Number(v.sale_price) < 0 ||
                 Number(v.shelf_life) < 0 ||
                 Number(v.length_cm) < 0 ||
@@ -484,13 +537,13 @@ export default function AddProductPage() {
             );
 
             if (negativeField) {
-                toast.error('Negative values are not allowed for stock, price, cost, or dimensions');
+                toast.error('Negative values are not allowed for stock, price, sale price, or dimensions');
                 return;
             }
 
-            const missingInfo = variants.find(v => !v.sku.trim() || !v.price);
+            const missingInfo = variants.find(v => !v.product_name.trim() || !v.sku.trim() || !v.discount_base_price);
             if (missingInfo) {
-                toast.error('Please ensure all variants have an SKU and a Price (min 0.01)');
+                toast.error('Please ensure all variants have a Product Name, SKU, and Selling Price');
                 return;
             }
         }
@@ -528,7 +581,8 @@ export default function AddProductPage() {
             country_of_origin: form.country_of_origin || undefined,
             description: form.description.trim() || undefined,
             short_description: form.short_description.trim() || undefined,
-            intended_use: form.intended_use.trim() || undefined,
+            manufacturer: form.manufacturer.trim() || undefined,
+            lead_time: form.lead_time.trim() || undefined,
             form: form.form_type || undefined,
             specialities: form.specialities,
             sku: draftSku,
@@ -536,54 +590,39 @@ export default function AddProductPage() {
             specifications: form.country_of_origin ? { country_of_origin: form.country_of_origin } : undefined,
             variants: variants
                 .filter(v => v.sku.trim() || v.variant_name.trim() || isAutoSave)
-                .map(v => {
-                    const activeDimensions = Object.entries(dimConfigs)
-                        .filter(([_, config]) => config.active)
-                        .map(([id]) => (v as any)[id])
-                        .filter(Boolean);
-                    const combinedName = v.variant_name || activeDimensions.join(' ');
-
-                    // Parse formatted strings for DB fields
-                    let weight_g = undefined;
-                    if (v.weight) {
-                        const [val, unit] = v.weight.split(' ');
-                        weight_g = unit === 'kg' ? parseFloat(val) * 1000 : parseFloat(val);
-                    }
-
-                    let units_count = undefined;
-                    let form_factor = undefined;
-                    if (v.count) {
-                        const parts = v.count.split(' ');
-                        units_count = parseInt(parts[0]);
-                        form_factor = parts.slice(1).join(' ');
-                    }
-
-                    let strength = undefined;
-                    let strength_unit = undefined;
-                    if (v.strength) {
-                        const parts = v.strength.split(' ');
-                        strength = parts[0];
-                        strength_unit = parts.slice(1).join(' ');
-                    }
+                .map((v, index) => {
+                    const options: Record<string, string> = {};
+                    if (v.weight) options['Weight'] = v.weight;
+                    if (v.volume) options['Volume'] = v.volume;
+                    if (v.strength) options['Strength'] = v.strength;
+                    if (v.flavor) options['Flavor'] = v.flavor;
+                    if (v.pack) options['Pack'] = v.pack;
+                    if (v.count) options['Count'] = v.count;
+                    if (v.combo && v.combo !== 'No') options['Combo'] = v.combo;
+                    // Serialize custom dimension types into options JSONB
+                    customDimTypes.forEach(typeName => {
+                        const key = typeName.toLowerCase();
+                        if ((v as any)[key]) options[typeName] = (v as any)[key];
+                    });
 
                     return {
                         sku: v.sku.trim() || `${draftSku}-V${Math.random().toString(36).slice(2, 6)}`,
-                        variant_name: combinedName || 'Draft Variant',
-                        price: Number(v.price) || 0,
+                        variant_name: v.product_name || v.variant_name || 'Draft Variant',
+                        model_number: v.model_number || undefined,
+                        discount_base_price: Number(v.discount_base_price) || 0,
+                        price: Number(v.discount_base_price) || 0,
+                        weight: v.weight_input || v.weight || undefined,
+                        volume: v.volume_input || v.volume || undefined,
                         stock: Number(v.stock) || 0,
-                        cost_price: v.cost_price ? Number(v.cost_price) : undefined,
-                        volume: v.volume || undefined,
-                        pack: v.pack || undefined,
-                        isDefault: v.isDefault,
-                        // New fields
-                        weight_g: weight_g,
-                        units_count: units_count,
-                        form_factor: form_factor,
-                        strength: strength,
-                        strength_unit: strength_unit,
-                        flavor: v.flavor || undefined,
-                        is_combo: v.combo === 'Yes',
+                        isDefault: index === 0,
+                        isActive: v.isActive,
                         sale_price: v.sale_price || undefined,
+                        options: Object.keys(options).length > 0 ? options : undefined,
+                        length_cm: v.length_cm || undefined,
+                        width_cm: v.width_cm || undefined,
+                        height_cm: v.height_cm || undefined,
+                        item_weight_kg: v.item_weight_kg_input ? (parseFloat(v.item_weight_kg_input) / 1000) : undefined,
+                        shelf_life: v.shelf_life || undefined,
                     };
                 }),
             available_from: form.available_from_date ? new Date(`${form.available_from_date}T${form.available_from_time || '00:00'}`).toISOString() : undefined,
@@ -616,9 +655,9 @@ export default function AddProductPage() {
             toast.error('Product Name is required');
             return;
         }
-        const hasEmptyVariantName = variants.some(v => !v.variant_name.trim());
-        if (hasEmptyVariantName) {
-            toast.error('All variants must have a Variant Name');
+        const hasEmptyProductName = variants.some(v => !v.product_name.trim());
+        if (hasEmptyProductName) {
+            toast.error('All variants must have a Product Name');
             return;
         }
         const hasEmptySku = variants.some(v => !v.sku.trim());
@@ -641,7 +680,8 @@ export default function AddProductPage() {
             country_of_origin: form.country_of_origin || undefined,
             description: form.description.trim() || undefined,
             short_description: form.short_description.trim() || undefined,
-            intended_use: form.intended_use.trim() || undefined,
+            manufacturer: form.manufacturer.trim() || undefined,
+            lead_time: form.lead_time.trim() || undefined,
             form: form.form_type || undefined,
             specialities: form.specialities.length > 0 ? form.specialities : undefined,
             // SKU from the default variant (required by products table unique constraint)
@@ -653,67 +693,43 @@ export default function AddProductPage() {
                 : undefined,
 
             // Full variants array — backend maps these to product_variants rows
-            variants: variants.map(v => {
-                // Concatenate all active dimensions into variant_name for display/backend fallback
-                const activeDimensions = Object.entries(dimConfigs)
-                    .filter(([_, config]) => config.active)
-                    .map(([id]) => (v as any)[id])
-                    .filter(Boolean);
-
-                const combinedName = v.variant_name || activeDimensions.join(' ');
-
-                // Parse formatted strings for DB fields
-                let weight_g = undefined;
-                if (v.weight) {
-                    const [val, unit] = v.weight.split(' ');
-                    weight_g = unit === 'kg' ? parseFloat(val) * 1000 : parseFloat(val);
-                }
-
-                let units_count = undefined;
-                let form_factor = undefined;
-                if (v.count) {
-                    const parts = v.count.split(' ');
-                    units_count = parseInt(parts[0]);
-                    form_factor = parts.slice(1).join(' ');
-                }
-
-                let strength = undefined;
-                let strength_unit = undefined;
-                if (v.strength) {
-                    const parts = v.strength.split(' ');
-                    strength = parts[0];
-                    strength_unit = parts.slice(1).join(' ');
-                }
+            variants: variants.map((v, index) => {
+                const options: Record<string, string> = {};
+                if (v.weight) options['Weight'] = v.weight;
+                if (v.volume) options['Volume'] = v.volume;
+                if (v.strength) options['Strength'] = v.strength;
+                if (v.flavor) options['Flavor'] = v.flavor;
+                if (v.pack) options['Pack'] = v.pack;
+                if (v.count) options['Count'] = v.count;
+                if (v.combo && v.combo !== 'No') options['Combo'] = v.combo;
+                // Serialize custom dimension types into options JSONB
+                customDimTypes.forEach(typeName => {
+                    const key = typeName.toLowerCase();
+                    if ((v as any)[key]) options[typeName] = (v as any)[key];
+                });
 
                 return {
                     sku: v.sku.trim(),
-                    variant_name: combinedName.trim(),
-                    price: Number(v.price) || 0,
+                    variant_name: v.product_name || v.variant_name || 'Draft Variant',
+                    model_number: v.model_number || undefined,
+                    discount_base_price: Number(v.discount_base_price) || 0,
+                    price: Number(v.discount_base_price) || 0,
+                    weight: v.weight_input || v.weight || undefined,
+                    volume: v.volume_input || v.volume || undefined,
                     stock: Number(v.stock) || 0,
-                    cost_price: v.cost_price ? Number(v.cost_price) : undefined,
-                    volume: v.volume || undefined,    // “750 ml” → parsed to volume_ml by backend
-                    pack: v.pack || undefined,        // “Pack of 2” → pack_quantity=2 by backend
-                    isDefault: v.isDefault,
-                    // Sale Management
+                    isDefault: index === 0,
+                    isActive: v.isActive,
                     sale_price: v.sale_price || undefined,
                     sale_start_date: v.sale_start_date || undefined,
                     sale_start_time: v.sale_start_time || undefined,
                     sale_end_date: v.sale_end_date || undefined,
                     sale_end_time: v.sale_end_time || undefined,
-                    // Dimensions + shelf life → product_specifications
+                    options: Object.keys(options).length > 0 ? options : undefined,
                     length_cm: v.length_cm || undefined,
                     width_cm: v.width_cm || undefined,
                     height_cm: v.height_cm || undefined,
                     item_weight_kg: v.item_weight_kg_input ? (parseFloat(v.item_weight_kg_input) / 1000) : undefined,
-                    shelf_life: v.shelf_life || undefined,      // → shelf_life_months by backend
-                    // New fields
-                    weight_g: weight_g,
-                    units_count: units_count,
-                    form_factor: form_factor,
-                    strength: strength,
-                    strength_unit: strength_unit,
-                    flavor: v.flavor || undefined,
-                    is_combo: v.combo === 'Yes',
+                    shelf_life: v.shelf_life || undefined,
                 };
             }),
             available_from: form.available_from_date ? new Date(`${form.available_from_date}T${form.available_from_time || '00:00'}`).toISOString() : undefined,
@@ -978,7 +994,17 @@ export default function AddProductPage() {
                                         <input
                                             type="text"
                                             value={form.product_name}
-                                            onChange={e => update('product_name', e.target.value)}
+                                            onChange={e => {
+                                                const newName = e.target.value;
+                                                update('product_name', newName);
+                                                setVariants(prev => {
+                                                    const updated = [...prev];
+                                                    if (updated.length > 0) {
+                                                        updated[0] = { ...updated[0], product_name: newName, variant_name: newName };
+                                                    }
+                                                    return updated;
+                                                });
+                                            }}
                                             maxLength={100}
                                             className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 transition-all"
                                             placeholder="e.g. Ashwagandha Prowess"
@@ -995,6 +1021,30 @@ export default function AddProductPage() {
                                             onChange={e => update('brand', e.target.value)}
                                             className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 transition-all"
                                             placeholder="Vedashi"
+                                        />
+                                    </div>
+
+                                    {/* Manufacturer */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-text-primary mb-1.5">Manufacturer</label>
+                                        <input
+                                            type="text"
+                                            value={form.manufacturer}
+                                            onChange={e => update('manufacturer', e.target.value)}
+                                            className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 transition-all"
+                                            placeholder="e.g. Himalaya Drug Company"
+                                        />
+                                    </div>
+
+                                    {/* Lead Time */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-text-primary mb-1.5">Lead Time</label>
+                                        <input
+                                            type="text"
+                                            value={form.lead_time}
+                                            onChange={e => update('lead_time', e.target.value)}
+                                            className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 transition-all"
+                                            placeholder="e.g. 3-5 business days"
                                         />
                                     </div>
 
@@ -1060,18 +1110,6 @@ export default function AddProductPage() {
                                         </div>
                                     </div>
 
-
-                                    {/* Intended Use - full width */}
-                                    <div className="sm:col-span-2">
-                                        <label className="block text-sm font-medium text-text-primary mb-1.5">Intended Use</label>
-                                        <input
-                                            type="text"
-                                            value={form.intended_use}
-                                            onChange={e => update('intended_use', e.target.value)}
-                                            className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 transition-all"
-                                            placeholder="A daily supplement for stress relief..."
-                                        />
-                                    </div>
 
                                     {/* Description - full width */}
                                     <div className="sm:col-span-2">
@@ -1189,15 +1227,17 @@ export default function AddProductPage() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     {/* Dimension Selection */}
                                     <div className="space-y-4">
-                                        <p className="text-xs font-semibold text-text-secondary uppercase ">Select Variant Types</p>
+                                        <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider">Select Variant Types</p>
+                                        {/* ── Hardcoded 7 types ── */}
                                         <div className="grid grid-cols-2 gap-3">
-                                            {Object.entries(dimConfigs).map(([key, config]) => {
+                                            {HARDCODED_DIMS.map((key) => {
+                                                const config = dimConfigs[key] || { active: false, values: [] };
                                                 const Icon = key === 'weight' ? Weight : key === 'volume' ? Droplets : key === 'count' ? Hash : key === 'strength' ? Zap : key === 'flavor' ? Utensils : key === 'pack' ? Package : Layers;
                                                 return (
                                                     <button
                                                         key={key}
                                                         type="button"
-                                                        onClick={() => toggleDimensionActive(key as keyof typeof dimConfigs)}
+                                                        onClick={() => toggleDimensionActive(key)}
                                                         className={`flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 text-left ${config.active
                                                             ? 'bg-gold/[0.08] border-gold/40 text-gold-soft shadow-sm shadow-gold/10'
                                                             : 'bg-white/[0.02] border-border text-text-secondary hover:border-gold/20 hover:text-text-primary'
@@ -1210,9 +1250,69 @@ export default function AddProductPage() {
                                                 );
                                             })}
                                         </div>
+
+                                        {/* ── Custom types added by user ── */}
+                                        {customDimTypes.length > 0 && (
+                                            <div className="grid grid-cols-2 gap-3">
+                                                {customDimTypes.map((typeName) => {
+                                                    const key = typeName.toLowerCase();
+                                                    const config = dimConfigs[key] || { active: true, values: [] };
+                                                    return (
+                                                        <div key={key} className="relative group">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => toggleDimensionActive(key)}
+                                                                className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 text-left pr-8 ${
+                                                                    config.active
+                                                                        ? 'bg-gold/[0.08] border-gold/40 text-gold-soft shadow-sm shadow-gold/10'
+                                                                        : 'bg-white/[0.02] border-border text-text-secondary hover:border-gold/20 hover:text-text-primary'
+                                                                }`}
+                                                            >
+                                                                <Tag className={`h-4 w-4 flex-shrink-0 ${config.active ? 'text-gold' : 'text-text-muted'}`} />
+                                                                <span className="text-sm font-medium truncate">{typeName}</span>
+                                                                {config.active && <Check className="h-3.5 w-3.5 ml-auto flex-shrink-0 text-gold" />}
+                                                            </button>
+                                                            {/* Delete custom type */}
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => removeCustomDimType(typeName)}
+                                                                title={`Remove ${typeName}`}
+                                                                className="absolute top-1.5 right-1.5 p-0.5 rounded-md text-text-muted hover:text-danger hover:bg-danger/10 transition-colors opacity-0 group-hover:opacity-100"
+                                                            >
+                                                                <X className="h-3.5 w-3.5" />
+                                                            </button>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+
+                                        {/* ── Add custom variant type ── */}
+                                        <div className="mt-1 pt-4 border-t border-border/60">
+                                            <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">Add Custom Variant Type</p>
+                                            <div className="flex gap-2">
+                                                <input
+                                                    type="text"
+                                                    value={customDimInput}
+                                                    onChange={e => setCustomDimInput(e.target.value)}
+                                                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addCustomDimType(); } }}
+                                                    maxLength={20}
+                                                    placeholder="e.g. Color, Material, Size"
+                                                    className="flex-1 bg-transparent border border-border rounded-lg px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 transition-colors placeholder:text-text-muted"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={addCustomDimType}
+                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-gold/10 text-gold hover:bg-gold/20 rounded-lg text-sm font-medium transition-colors whitespace-nowrap"
+                                                >
+                                                    <Plus className="h-3.5 w-3.5" />
+                                                    Add
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
 
-                                    {/* Active Dimension Values */}
+                                    {/* Active Dimension Values (right panel) */}
                                     <div className="space-y-6">
                                         {Object.entries(dimConfigs).filter(([_, c]) => c.active).map(([key, config]) => (
                                             <div key={key} className="bg-white/[0.03] border border-border rounded-xl p-4 space-y-3">
@@ -1225,7 +1325,7 @@ export default function AddProductPage() {
                                                     {config.values.map((val, i) => (
                                                         <div key={i} className="flex items-center gap-1.5 bg-gold/[0.08] border border-gold/20 text-gold-soft px-2.5 py-1 rounded-lg text-xs font-medium">
                                                             {val}
-                                                            <button type="button" onClick={() => removeDimensionValue(key as keyof typeof dimConfigs, i)} className="p-0.5 hover:bg-gold/20 rounded transition-colors">
+                                                            <button type="button" onClick={() => removeDimensionValue(key, i)} className="p-0.5 hover:bg-gold/20 rounded transition-colors">
                                                                 <X className="h-3 w-3" />
                                                             </button>
                                                         </div>
@@ -1330,15 +1430,15 @@ export default function AddProductPage() {
                                                         <input
                                                             type="text"
                                                             placeholder={`Add ${key} value...`}
-                                                            value={dimInputs[key as keyof typeof dimInputs]}
+                                                            value={dimInputs[key] || ''}
                                                             onChange={e => setDimInputs(prev => ({ ...prev, [key]: e.target.value }))}
-                                                            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addDimensionValue(key as keyof typeof dimConfigs); } }}
+                                                            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addDimensionValue(key); } }}
                                                             className="flex-1 bg-transparent border border-border rounded-lg px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none transition-colors"
                                                         />
                                                     )}
                                                     <button
                                                         type="button"
-                                                        onClick={() => addDimensionValue(key as keyof typeof dimConfigs)}
+                                                        onClick={() => addDimensionValue(key)}
                                                         className="px-4 py-1.5 bg-gold/10 text-gold hover:bg-gold/20 rounded-lg text-sm font-medium transition-colors"
                                                     >
                                                         Add
@@ -1350,10 +1450,10 @@ export default function AddProductPage() {
                                         {Object.values(dimConfigs).every(d => !d.active) && (
                                             <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-border rounded-2xl bg-white/[0.01]">
                                                 <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-4">
-                                                    <Plus className="h-6 w-6 text-text-muted" />
+                                                    <Tag className="h-6 w-6 text-text-muted" />
                                                 </div>
                                                 <p className="text-sm font-medium text-text-secondary">No variant types selected</p>
-                                                <p className="text-xs text-text-muted mt-1 text-center max-w-[200px]">Select dimensions from the left to start configuring your product variants</p>
+                                                <p className="text-xs text-text-muted mt-1 text-center max-w-[200px]">Select a type on the left or add a custom one like "Color" or "Size"</p>
                                             </div>
                                         )}
                                     </div>
@@ -1400,18 +1500,26 @@ export default function AddProductPage() {
                                     return (
                                         <div className="border border-border rounded-xl bg-card-bg overflow-hidden shadow-sm">
                                             <div className="w-full overflow-x-auto">
-                                                <table className="min-w-[900px] w-full text-left text-sm whitespace-nowrap">
+                                                <table className="min-w-[1200px] w-full text-left text-sm whitespace-nowrap">
                                                     <thead className="bg-white/5 border-b border-border">
                                                         <tr>
-                                                            <th className="px-4 py-4 w-10"></th>
-                                                            {activeDims.map(([id]) => (
-                                                                <th key={id} className="px-4 py-4 font-medium text-text-secondary capitalize">{id}</th>
+                                                            <th className="px-4 py-4 w-10 text-center">#</th>
+                                                            {activeDims.map(([dim]) => (
+                                                                <th key={dim} className="px-4 py-4 font-medium text-text-secondary">{dim.charAt(0).toUpperCase() + dim.slice(1)}</th>
                                                             ))}
-                                                            <th className="px-4 py-4 font-medium text-text-secondary">Variant Name <span className="text-danger text-xs">*</span></th>
-                                                            <th className="px-4 py-4 font-medium text-text-secondary">SKU *</th>
-                                                            <th className="px-4 py-4 font-medium text-text-secondary">Price ($) *</th>
-                                                            <th className="px-4 py-4 font-medium text-text-secondary">Stock</th>
-                                                            <th className="px-4 py-4 font-medium text-text-secondary w-10"></th>
+                                                            <th className="px-4 py-4 font-medium text-text-secondary">Product Name <span className="text-danger text-xs">*</span></th>
+                                                            <th className="px-4 py-4 font-medium text-text-secondary">SKU <span className="text-danger text-xs">*</span></th>
+                                                            <th className="px-4 py-4 font-medium text-text-secondary">Model No.</th>
+                                                            <th className="px-4 py-4 font-medium text-text-secondary">Selling Price <span className="text-danger text-xs">*</span></th>
+                                                            <th className="px-4 py-4 font-medium text-text-secondary group relative">
+                                                                MRP
+                                                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-max max-w-[200px] bg-black/90 text-white text-xs rounded p-2 z-10 whitespace-normal text-center">
+                                                                    Original price shown as strikethrough on storefront
+                                                                </div>
+                                                            </th>
+                                                            <th className="px-4 py-4 font-medium text-text-secondary">Discount %</th>
+                                                            <th className="px-4 py-4 font-medium text-text-secondary">Stock <span className="text-danger text-xs">*</span></th>
+                                                            <th className="px-4 py-4 font-medium text-text-secondary w-16 text-center">Actions</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody className="divide-y divide-border/50">
@@ -1421,45 +1529,45 @@ export default function AddProductPage() {
                                                             return (
                                                                 <React.Fragment key={vIdx}>
                                                                     <tr className={`transition-colors ${isExpanded ? 'bg-white/[0.04]' : 'hover:bg-white/[0.02]'}`}>
-                                                                        <td className="px-4 py-3 align-top pt-4">
+                                                                        {/* 1. # (Static non-editable row number) */}
+                                                                        <td className="px-4 py-3 align-top pt-4 text-center">
+                                                                            <span className="text-xs font-semibold text-text-muted">{vIdx + 1}</span>
                                                                             <button
                                                                                 type="button"
                                                                                 onClick={() => toggleExpandVariant(vIdx)}
-                                                                                className="text-text-muted hover:text-gold transition-colors"
+                                                                                className="text-text-muted hover:text-gold transition-colors block mx-auto mt-1"
                                                                             >
                                                                                 {isExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
                                                                             </button>
                                                                         </td>
 
-                                                                        {activeDims.map(([id, config]) => (
-                                                                            <td key={id} className="px-4 py-3 align-top">
-                                                                                {autoGenerate || config.values.length <= 1 ? (
-                                                                                    <span className="bg-white/5 border border-border px-3 py-1.5 rounded text-xs font-medium text-text-primary">
-                                                                                        {(variant[id as keyof VariantRow] as string) || (config.values[0] ?? '—')}
-                                                                                    </span>
-                                                                                ) : (
-                                                                                    <select
-                                                                                        value={variant[id as keyof VariantRow] as string}
-                                                                                        onChange={e => updateVariant(vIdx, id as keyof VariantRow, e.target.value)}
-                                                                                        className="w-full min-w-[120px] rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
-                                                                                    >
-                                                                                        <option value="">Select</option>
-                                                                                        {config.values.map(v => <option key={v} value={v}>{v}</option>)}
-                                                                                    </select>
-                                                                                )}
+                                                                        {/* Dimension columns */}
+                                                                        {activeDims.map(([dim, config]) => (
+                                                                            <td key={dim} className="px-4 py-3 align-top min-w-[120px]">
+                                                                                <select
+                                                                                    value={(variant as any)[dim] || ''}
+                                                                                    onChange={e => updateVariant(vIdx, dim as keyof VariantRow, e.target.value)}
+                                                                                    className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors appearance-none"
+                                                                                >
+                                                                                    <option value="">Select</option>
+                                                                                    {config.values.map((val: string) => (
+                                                                                        <option key={val} value={val}>{val}</option>
+                                                                                    ))}
+                                                                                </select>
                                                                             </td>
                                                                         ))}
 
-                                                                        {/* Variant Name */}
-                                                                        <td className="px-4 py-3 align-top min-w-[150px]">
+                                                                        {/* Product Name */}
+                                                                        <td className="px-4 py-3 align-top min-w-[200px]">
                                                                             <input
                                                                                 type="text"
-                                                                                value={variant.variant_name}
-                                                                                onChange={e => updateVariant(vIdx, 'variant_name', e.target.value)}
-                                                                                placeholder="Leave blank to use selected dimensions"
+                                                                                value={variant.product_name}
+                                                                                onChange={e => updateVariant(vIdx, 'product_name', e.target.value)}
+                                                                                placeholder="e.g. Ashwagandha 500g"
                                                                                 className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
                                                                             />
                                                                         </td>
+
                                                                         {/* SKU */}
                                                                         <td className="px-4 py-3 align-top min-w-[150px]">
                                                                             <div className="relative">
@@ -1468,55 +1576,86 @@ export default function AddProductPage() {
                                                                                     value={variant.sku}
                                                                                     onChange={e => updateVariant(vIdx, 'sku', e.target.value)}
                                                                                     placeholder="Variant SKU"
-                                                                                    className={`w-full rounded-md border px-3 py-1.5 text-sm focus:outline-none bg-transparent transition-colors ${isDuplicate ? 'border-danger focus:border-danger text-danger pr-8' : 'border-border focus:border-gold/40'
-                                                                                        }`}
+                                                                                    className={`w-full rounded-md border px-3 py-1.5 text-sm focus:outline-none bg-transparent transition-colors ${isDuplicate ? 'border-danger focus:border-danger text-danger pr-8' : 'border-border focus:border-gold/40'}`}
                                                                                 />
                                                                                 {isDuplicate && <AlertCircle className="h-4 w-4 text-danger absolute right-2 top-2" />}
                                                                             </div>
                                                                         </td>
-                                                                        <td className="px-4 py-3 align-top">
+
+                                                                        {/* Model No. */}
+                                                                        <td className="px-4 py-3 align-top min-w-[120px]">
+                                                                            <input
+                                                                                type="text"
+                                                                                value={variant.model_number || ''}
+                                                                                onChange={e => updateVariant(vIdx, 'model_number', e.target.value)}
+                                                                                placeholder="Model number"
+                                                                                className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
+                                                                            />
+                                                                        </td>
+
+                                                                        {/* Selling Price (discount_base_price) */}
+                                                                        <td className="px-4 py-3 align-top min-w-[120px]">
                                                                             <div className="relative">
                                                                                 <input
-                                                                                    type="number"
-                                                                                    step="0.01"
-                                                                                    value={variant.price}
-                                                                                    onChange={e => updateVariant(vIdx, 'price', e.target.value ? parseFloat(e.target.value) : 0)}
+                                                                                    type="number" step="0.01"
+                                                                                    value={variant.discount_base_price === null ? '' : variant.discount_base_price}
+                                                                                    onChange={e => updateVariant(vIdx, 'discount_base_price', e.target.value ? parseFloat(e.target.value) : null)}
                                                                                     placeholder="0"
-                                                                                    className={`w-24 rounded-md border px-3 py-1.5 text-sm focus:outline-none bg-transparent transition-colors ${Number(variant.price) < 0 ? 'border-danger focus:border-danger text-danger' : 'border-border focus:border-gold/40'}`}
+                                                                                    className={`w-full rounded-md border px-3 py-1.5 text-sm focus:outline-none bg-transparent transition-colors ${Number(variant.discount_base_price) < 0 ? 'border-danger focus:border-danger text-danger' : 'border-border focus:border-gold/40'}`}
                                                                                 />
-                                                                                {Number(variant.price) < 0 && (
-                                                                                    <p className="absolute left-0 -bottom-4 text-[10px] text-danger whitespace-nowrap animate-in fade-in slide-in-from-top-1">
-                                                                                        Price cannot be negative
-                                                                                    </p>
+                                                                                {Number(variant.discount_base_price) < 0 && (
+                                                                                    <p className="absolute left-0 -bottom-4 text-[10px] text-danger whitespace-nowrap animate-in fade-in">Price cannot be negative</p>
                                                                                 )}
                                                                             </div>
                                                                         </td>
-                                                                        <td className="px-4 py-3 align-top">
+
+                                                                        {/* MRP (sale_price) */}
+                                                                        <td className="px-4 py-3 align-top min-w-[120px]">
+                                                                            <input
+                                                                                type="number" step="0.01"
+                                                                                value={variant.sale_price}
+                                                                                onChange={e => updateVariant(vIdx, 'sale_price', e.target.value)}
+                                                                                placeholder="0.00"
+                                                                                className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
+                                                                            />
+                                                                        </td>
+
+                                                                        {/* Discount % */}
+                                                                        <td className="px-4 py-3 align-top text-center pt-4">
+                                                                            {(() => {
+                                                                                const sellingPrice = Number(variant.discount_base_price);
+                                                                                const mrp = Number(variant.sale_price);
+                                                                                if (sellingPrice > 0 && mrp > 0 && mrp > sellingPrice) {
+                                                                                    const discount = Math.round((1 - sellingPrice / mrp) * 100);
+                                                                                    return <span className="bg-danger/20 text-danger text-xs font-bold px-2 py-0.5 rounded">{discount}% OFF</span>;
+                                                                                }
+                                                                                return <span className="text-text-muted text-xs">—</span>;
+                                                                            })()}
+                                                                        </td>
+
+                                                                        {/* 12. Stock */}
+                                                                        <td className="px-4 py-3 align-top min-w-[100px]">
                                                                             <div className="relative">
                                                                                 <input
                                                                                     type="number"
                                                                                     value={variant.stock}
                                                                                     onChange={e => updateVariant(vIdx, 'stock', e.target.value ? parseInt(e.target.value) : 0)}
-                                                                                    className={`w-24 rounded-md border px-3 py-1.5 text-sm focus:outline-none bg-transparent transition-colors ${Number(variant.stock) < 0 ? 'border-danger focus:border-danger text-danger' : 'border-border focus:border-gold/40'}`}
+                                                                                    className={`w-full rounded-md border px-3 py-1.5 text-sm focus:outline-none bg-transparent transition-colors ${Number(variant.stock) < 0 ? 'border-danger focus:border-danger text-danger' : 'border-border focus:border-gold/40'}`}
                                                                                 />
                                                                                 {Number(variant.stock) < 0 && (
-                                                                                    <p className="absolute left-0 -bottom-4 text-[10px] text-danger whitespace-nowrap animate-in fade-in slide-in-from-top-1">
-                                                                                        Stock cannot be negative
-                                                                                    </p>
+                                                                                    <p className="absolute left-0 -bottom-4 text-[10px] text-danger whitespace-nowrap animate-in fade-in">Stock cannot be negative</p>
                                                                                 )}
                                                                             </div>
                                                                         </td>
+
+                                                                        {/* 13. Actions */}
                                                                         <td className="px-4 py-3 text-center align-top pt-3">
                                                                             <div className="flex items-center justify-center gap-1">
-                                                                                <button
-                                                                                    type="button"
-                                                                                    onClick={() => setDefaultVariant(vIdx)}
-                                                                                    title={variant.isDefault ? 'Default variant' : 'Set as default'}
-                                                                                    className={`p-1.5 rounded-lg transition-colors hover:bg-white/5 ${variant.isDefault ? 'text-gold' : 'text-text-muted hover:text-gold'
-                                                                                        }`}
-                                                                                >
-                                                                                    <Star className={`h-4 w-4 transition-all duration-300 ${variant.isDefault ? 'fill-amber-400 text-amber-400 scale-110 drop-shadow-[0_0_8px_rgba(251,191,36,0.4)]' : ''}`} />
-                                                                                </button>
+                                                                                {vIdx === 0 ? (
+                                                                                    <Star className="h-4 w-4 fill-amber-400 text-amber-400 mx-1.5 drop-shadow-[0_0_8px_rgba(251,191,36,0.4)]" />
+                                                                                ) : (
+                                                                                    <div className="w-7"></div>
+                                                                                )}
                                                                                 <button
                                                                                     type="button"
                                                                                     onClick={() => removeVariantRow(vIdx)}
@@ -1531,27 +1670,11 @@ export default function AddProductPage() {
                                                                     {/* Expanded row */}
                                                                     {isExpanded && (
                                                                         <tr className="bg-white/[0.01] border-b border-border">
-                                                                            <td colSpan={activeDims.length + 6} className="p-5">
+                                                                            <td colSpan={9 + activeDims.length} className="p-5">
                                                                                 <div className="animate-fade-in-up space-y-6">
 
-                                                                                    {/* ÔöÇÔöÇ Extra fields row ÔöÇÔöÇ */}
+                                                                                    {/* ─ Extra fields row ─ */}
                                                                                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                                                                                        <div>
-                                                                                            <label className="block text-xs font-medium text-text-secondary mb-1">Cost Price ($)</label>
-                                                                                            <div className="relative">
-                                                                                                <input
-                                                                                                    type="number" step="0.01" min="0"
-                                                                                                    value={variant.cost_price}
-                                                                                                    onChange={e => updateVariant(vIdx, 'cost_price', e.target.value ? parseFloat(e.target.value) : 0)}
-                                                                                                    onWheel={e => (e.target as HTMLInputElement).blur()}
-                                                                                                    className={`w-full rounded-md border px-3 py-1.5 text-sm focus:outline-none bg-transparent transition-colors ${Number(variant.cost_price) < 0 ? 'border-danger focus:border-danger text-danger' : 'border-border focus:border-gold/40'}`}
-                                                                                                    placeholder="0.00"
-                                                                                                />
-                                                                                                {Number(variant.cost_price) < 0 && (
-                                                                                                    <p className="absolute left-0 -bottom-4 text-[10px] text-danger whitespace-nowrap">Cost cannot be negative</p>
-                                                                                                )}
-                                                                                            </div>
-                                                                                        </div>
                                                                                         <div>
                                                                                             <label className="block text-xs font-medium text-text-secondary mb-1">Shelf Life (months)</label>
                                                                                             <div className="relative">
@@ -1570,12 +1693,41 @@ export default function AddProductPage() {
                                                                                         </div>
                                                                                     </div>
 
-                                                                                    {/* ÔöÇÔöÇ Dimensions section ÔöÇÔöÇ */}
+                                                                                    {/* ─ Dimensions section ─ */}
                                                                                     <div>
-                                                                                        <p className="text-xs font-semibold text-text-secondary uppercase ">Dimensions</p>
-                                                                                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                                                                                        <p className="text-xs font-semibold text-text-secondary uppercase mb-3">Dimensions & Weight</p>
+                                                                                        
+                                                                                        <div className="grid grid-cols-2 gap-4 mb-4">
+                                                                                            {!dimConfigs.weight.active && (
+                                                                                                <div>
+                                                                                                    <label className="block text-xs font-medium text-text-secondary mb-1">Weight</label>
+                                                                                                    <input
+                                                                                                        type="text"
+                                                                                                        value={variant.weight_input || ''}
+                                                                                                        onChange={e => updateVariant(vIdx, 'weight_input', e.target.value)}
+                                                                                                        placeholder="e.g. 500g"
+                                                                                                        className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
+                                                                                                    />
+                                                                                                    <p className="text-[10px] text-text-muted mt-0.5 ml-1">g / kg / mg / oz / lb</p>
+                                                                                                </div>
+                                                                                            )}
+                                                                                            {!dimConfigs.volume.active && (
+                                                                                                <div>
+                                                                                                    <label className="block text-xs font-medium text-text-secondary mb-1">Volume</label>
+                                                                                                    <input
+                                                                                                        type="text"
+                                                                                                        value={variant.volume_input || ''}
+                                                                                                        onChange={e => updateVariant(vIdx, 'volume_input', e.target.value)}
+                                                                                                        placeholder="e.g. 250ml"
+                                                                                                        className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
+                                                                                                    />
+                                                                                                    <p className="text-[10px] text-text-muted mt-0.5 ml-1">ml / L</p>
+                                                                                                </div>
+                                                                                            )}
+                                                                                        </div>
+
+                                                                                        <div className="grid grid-cols-3 gap-4">
                                                                                             {([
-                                                                                                { label: 'Weight (g)', field: 'item_weight_kg_input' as keyof VariantRow },
                                                                                                 { label: 'Length (cm)', field: 'length_cm' as keyof VariantRow },
                                                                                                 { label: 'Width (cm)', field: 'width_cm' as keyof VariantRow },
                                                                                                 { label: 'Height (cm)', field: 'height_cm' as keyof VariantRow },
