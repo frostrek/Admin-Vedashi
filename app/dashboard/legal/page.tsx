@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { FileText, Plus, Search, Filter, Loader2, Edit2, Trash2, CheckCircle, XCircle, History, Eye, ArrowUp, ArrowDown, Type, Heading1, Info } from 'lucide-react';
+import { FileText, Plus, Search, Filter, Loader2, Edit2, Trash2, CheckCircle, XCircle, History, Eye, ArrowUp, ArrowDown, Type, Heading1, Info, Code } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { 
     getAdminLegalDocuments, 
@@ -18,7 +18,7 @@ export default function LegalManagement() {
     const [isEditing, setIsEditing] = useState(false);
     const [currentDoc, setCurrentDoc] = useState<Partial<LegalDocument> | null>(null);
     const [isPreviewing, setIsPreviewing] = useState(false);
-    const [blocks, setBlocks] = useState<{type: 'heading' | 'paragraph', text: string}[]>([]);
+    const [blocks, setBlocks] = useState<{type: 'heading' | 'paragraph' | 'html', text: string}[]>([]);
 
     const loadData = async () => {
         setLoading(true);
@@ -37,18 +37,19 @@ export default function LegalManagement() {
     }, []);
 
     // Helper to parse content into blocks or return a default single paragraph block
-    const parseContentToBlocks = (content: string) => {
+    const parseContentToBlocks = (content: string): {type: 'heading'|'paragraph'|'html', text: string}[] => {
+        if (!content) return [];
         try {
             const parsed = JSON.parse(content);
-            if (Array.isArray(parsed) && parsed.every(b => b.type && typeof b.text === 'string')) {
+            if (Array.isArray(parsed) && parsed.every(b => (b.type === 'heading' || b.type === 'paragraph' || b.type === 'html') && typeof b.text === 'string')) {
                 return parsed;
             }
         } catch (e) {
-            // Not JSON, likely old HTML content
+            // Not JSON, likely old HTML content or plain text
         }
-        // Fallback for legacy HTML: Wrap it in a single paragraph block or keep it for the block editor to handle
-        // If it looks like HTML, we might want to tell the user they need to re-format it
-        return [{ type: 'paragraph' as const, text: content }];
+        // Fallback: Check if it looks like HTML
+        const looksLikeHtml = /<[a-z][\s\S]*>/i.test(content);
+        return [{ type: looksLikeHtml ? 'html' : 'paragraph', text: content }];
     };
 
     useEffect(() => {
@@ -59,7 +60,7 @@ export default function LegalManagement() {
         }
     }, [currentDoc?.id, isEditing]);
 
-    const addBlock = (type: 'heading' | 'paragraph') => {
+    const addBlock = (type: 'heading' | 'paragraph' | 'html') => {
         setBlocks([...blocks, { type, text: '' }]);
     };
 
@@ -279,6 +280,13 @@ export default function LegalManagement() {
                                     >
                                         <Type className="h-3.5 w-3.5 text-gold" /> Add Paragraph
                                     </button>
+                                    <button 
+                                        type="button"
+                                        onClick={() => addBlock('html')}
+                                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-page-bg border border-border-subtle rounded-lg text-text-primary hover:border-gold transition"
+                                    >
+                                        <Code className="h-3.5 w-3.5 text-gold" /> Add HTML
+                                    </button>
                                     <div className="w-[1px] bg-border-subtle mx-1" />
                                     <button 
                                         type="button"
@@ -299,8 +307,10 @@ export default function LegalManagement() {
                                             <div key={idx}>
                                                 {block.type === 'heading' ? (
                                                     <h4 className="font-serif text-2xl font-bold text-gray-900">{block.text || 'Untitled Heading'}</h4>
-                                                ) : (
+                                                ) : block.type === 'paragraph' ? (
                                                     <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{block.text || 'Empty paragraph content...'}</p>
+                                                ) : (
+                                                    <div className="max-w-none" dangerouslySetInnerHTML={{ __html: block.text || '<!-- Empty HTML block -->' }} />
                                                 )}
                                             </div>
                                         ))}
@@ -317,6 +327,7 @@ export default function LegalManagement() {
                                             <div className="flex justify-center gap-3">
                                                 <button type="button" onClick={() => addBlock('heading')} className="text-xs font-bold text-gold bg-gold/5 px-4 py-2 rounded-xl border border-gold/20 hover:bg-gold/10 transition">Add Heading</button>
                                                 <button type="button" onClick={() => addBlock('paragraph')} className="text-xs font-bold text-gold bg-gold/5 px-4 py-2 rounded-xl border border-gold/20 hover:bg-gold/10 transition">Add Paragraph</button>
+                                                <button type="button" onClick={() => addBlock('html')} className="text-xs font-bold text-gold bg-gold/5 px-4 py-2 rounded-xl border border-gold/20 hover:bg-gold/10 transition">Add HTML</button>
                                             </div>
                                         </div>
                                     ) : blocks.map((block, idx) => (
@@ -324,7 +335,9 @@ export default function LegalManagement() {
                                             <div className="flex items-center justify-between mb-2">
                                                 <div className="flex items-center gap-2">
                                                     <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase ${
-                                                        block.type === 'heading' ? 'bg-gold/10 text-gold border border-gold/20' : 'bg-success/10 text-success border border-success/20'
+                                                        block.type === 'heading' ? 'bg-gold/10 text-gold border border-gold/20' : 
+                                                        block.type === 'paragraph' ? 'bg-success/10 text-success border border-success/20' :
+                                                        'bg-neutral-800 text-gold border border-neutral-700'
                                                     }`}>
                                                         {block.type}
                                                     </span>
@@ -345,7 +358,7 @@ export default function LegalManagement() {
                                                     placeholder="Enter heading text..."
                                                     className="w-full bg-card-bg border border-border-subtle rounded-lg px-4 py-2.5 text-lg font-bold text-text-primary focus:border-gold focus:outline-none"
                                                 />
-                                            ) : (
+                                            ) : block.type === 'paragraph' ? (
                                                 <textarea 
                                                     rows={4}
                                                     value={block.text}
@@ -353,6 +366,17 @@ export default function LegalManagement() {
                                                     placeholder="Enter paragraph content..."
                                                     className="w-full bg-card-bg border border-border-subtle rounded-lg px-4 py-2.5 text-sm text-text-primary leading-relaxed focus:border-gold focus:outline-none resize-none"
                                                 ></textarea>
+                                            ) : (
+                                                <div className="space-y-2">
+                                                    <textarea 
+                                                        rows={10}
+                                                        value={block.text}
+                                                        onChange={e => updateBlock(idx, e.target.value)}
+                                                        placeholder="Paste your raw HTML here (tables, custom styles, etc.)..."
+                                                        className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-2.5 text-xs font-mono text-gold leading-relaxed focus:border-gold focus:outline-none resize-none"
+                                                    ></textarea>
+                                                    <p className="text-[10px] text-text-muted italic">Warning: Raw HTML will be rendered directly. Ensure it is valid and safe.</p>
+                                                </div>
                                             )}
                                         </div>
                                     ))}

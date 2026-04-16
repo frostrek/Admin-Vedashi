@@ -60,7 +60,7 @@ const inputCls = "w-full rounded-xl border border-border bg-black/20 px-4 py-2.5
 export default function MediaLibraryPage() {
     const { isDark } = useTheme();
     const [slides, setSlides] = useState<HeroSlide[]>([]);
-    const [settings, setSettings] = useState<HeroSettings>({ slider_speed: 5000, arrow_visibility: 'hover', loop: true, slideshow_type: 'fade' });
+    const [settings, setSettings] = useState<HeroSettings>({ slider_speed: 3000, arrow_visibility: 'hover', loop: true, slideshow_type: 'fade' });
     const [loading, setLoading] = useState(true);
     const [savingSettings, setSavingSettings] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
@@ -273,10 +273,10 @@ export default function MediaLibraryPage() {
                             onChange={(e) => saveSettings({ ...settings, slider_speed: parseInt(e.target.value) })}
                             className={`w-full border text-[11px] font-bold uppercase rounded-xl px-4 py-3 focus:ring-2 focus:ring-gold/10 disabled:opacity-50 transition-all outline-none cursor-pointer appearance-none ${isDark ? 'bg-black/40 border-white/5 text-gold-soft focus:border-gold/30' : 'bg-white border-gold/20 text-emerald-950 focus:border-gold shadow-sm'}`}
                         >
-                            <option value={3000}>Fast (3s)</option>
-                            <option value={5000}>Normal (5s)</option>
-                            <option value={7000}>Slow (7s)</option>
-                            <option value={10000}>Stagnant (10s)</option>
+                            <option value={2000}>Fast (2s)</option>
+                            <option value={3000}>Normal (3s)</option>
+                            <option value={5000}>Slow (5s)</option>
+                            <option value={8000}>Stagnant (8s)</option>
                         </select>
                     </div>
 
@@ -502,11 +502,13 @@ export default function MediaLibraryPage() {
                                             </div></div>
 
                                         {/* Change Image Overlay */}
-                                        <div className="absolute inset-0 bg-primary/40 opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center backdrop-blur-sm">
+                                        <div 
+                                            onClick={() => fileInputRef.current?.click()}
+                                            className="absolute inset-0 z-30 bg-primary/40 opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center backdrop-blur-sm cursor-pointer"
+                                        >
                                             <button
                                                 type="button"
-                                                onClick={() => fileInputRef.current?.click()}
-                                                className="px-6 py-2.5 bg-gold text-primary rounded-full text-[10px] font-bold uppercase shadow-2xl hover:scale-110 transition-transform flex items-center gap-2"
+                                                className="px-6 py-2.5 bg-gold text-primary rounded-full text-[10px] font-bold uppercase shadow-2xl hover:scale-110 transition-transform flex items-center gap-2 pointer-events-none"
                                             >
                                                 <UploadCloud className="w-4 h-4" /> Recalibrate Asset
                                             </button>
