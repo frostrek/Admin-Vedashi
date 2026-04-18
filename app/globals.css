@@ -6,7 +6,7 @@
    Light: "Herbal Garden"  •  Dark: "Mystic Forest"
    ═══════════════════════════════════════════════════ */
 
-/* ─── Tailwind theme tokens (static, shared) ─── */
+/* ─── Tailwind theme tokens (statics, shared) ─── */
 
 @theme inline {
   /* Primary — Herbal Green family */
@@ -172,32 +172,79 @@ body {
 }
 
 /* === Typography Scale === */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-serif);
   line-height: 1.2;
   color: #A89250 !important;
 }
 
-h1 { font-size: 2.5rem; font-weight: 700; }
-h2 { font-size: 2rem; font-weight: 600; }
-h3 { font-size: 1.75rem; font-weight: 600; }
-h4 { font-size: 1.5rem; font-weight: 500; }
-h5 { font-size: 1.25rem; font-weight: 500; }
-h6 { font-size: 1rem; font-weight: 500; }
+h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+}
 
-small { font-size: 0.875rem; }
+h2 {
+  font-size: 2rem;
+  font-weight: 600;
+}
 
-button, input, textarea, select {
+h3 {
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+
+h4 {
+  font-size: 1.5rem;
+  font-weight: 500;
+}
+
+h5 {
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
+h6 {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+small {
+  font-size: 0.875rem;
+}
+
+button,
+input,
+textarea,
+select {
   font-family: var(--font-sans);
 }
 
 /* === Responsive Typography === */
 @media (max-width: 768px) {
-  h1 { font-size: 2rem; }
-  h2 { font-size: 1.75rem; }
-  h3 { font-size: 1.5rem; }
-  h4 { font-size: 1.25rem; }
-  h5 { font-size: 1.125rem; }
+  h1 {
+    font-size: 2rem;
+  }
+
+  h2 {
+    font-size: 1.75rem;
+  }
+
+  h3 {
+    font-size: 1.5rem;
+  }
+
+  h4 {
+    font-size: 1.25rem;
+  }
+
+  h5 {
+    font-size: 1.125rem;
+  }
 }
 
 /* ─── Scrollbar ─── */
@@ -549,9 +596,9 @@ body::before {
   color: var(--t-text-secondary);
 }
 
-.legal-rich-text h1, 
-.legal-rich-text h2, 
-.legal-rich-text h3, 
+.legal-rich-text h1,
+.legal-rich-text h2,
+.legal-rich-text h3,
 .legal-rich-text h4 {
   color: var(--t-text-primary);
   font-weight: 700;
@@ -560,29 +607,47 @@ body::before {
   line-height: 1.3;
 }
 
-.legal-rich-text h1 { font-size: 2.25rem; }
-.legal-rich-text h2 { font-size: 1.875rem; border-bottom: 1px solid var(--t-border-subtle); padding-bottom: 0.5rem; }
-.legal-rich-text h3 { font-size: 1.5rem; }
-.legal-rich-text h4 { font-size: 1.25rem; }
+.legal-rich-text h1 {
+  font-size: 2.25rem;
+}
+
+.legal-rich-text h2 {
+  font-size: 1.875rem;
+  border-bottom: 1px solid var(--t-border-subtle);
+  padding-bottom: 0.5rem;
+}
+
+.legal-rich-text h3 {
+  font-size: 1.5rem;
+}
+
+.legal-rich-text h4 {
+  font-size: 1.25rem;
+}
 
 .legal-rich-text p {
   margin-bottom: 1.25rem;
 }
 
-.legal-rich-text ul, 
+.legal-rich-text ul,
 .legal-rich-text ol {
   margin-bottom: 1.5rem;
   padding-left: 1.5rem;
 }
 
-.legal-rich-text ul { list-style-type: disc; }
-.legal-rich-text ol { list-style-type: decimal; }
+.legal-rich-text ul {
+  list-style-type: disc;
+}
+
+.legal-rich-text ol {
+  list-style-type: decimal;
+}
 
 .legal-rich-text li {
   margin-bottom: 0.5rem;
 }
 
-.legal-rich-text strong, 
+.legal-rich-text strong,
 .legal-rich-text b {
   font-weight: 700;
   color: var(--t-text-primary);
@@ -611,33 +676,46 @@ body::before {
 :root {
   --vibe-aura-opacity: 0.15;
   --vibe-pulse-speed: 2s;
-  --vibe-aura-color: #A89250; /* gold-ish */
+  --vibe-aura-color: #A89250;
+  /* gold-ish */
 }
 
 /* Aura class overrides */
-.aura-minimal { --vibe-aura-opacity: 0.05; }
-.aura-balanced { --vibe-aura-opacity: 0.2; }
-.aura-intense  { --vibe-aura-opacity: 0.45; }
+.aura-minimal {
+  --vibe-aura-opacity: 0.05;
+}
+
+.aura-balanced {
+  --vibe-aura-opacity: 0.2;
+}
+
+.aura-intense {
+  --vibe-aura-opacity: 0.45;
+}
 
 /* Dosha-specific theme overrides (subtle) */
 .theme-vata {
-  --t-primary: #5A8A8A; /* Air/Ether - Teal/Blue */
+  --t-primary: #5A8A8A;
+  /* Air/Ether - Teal/Blue */
   --t-gold: #9EB2B2;
 }
 
 .theme-pitta {
-  --t-primary: #8C4A4A; /* Fire/Water - Deep Red/Rust */
+  --t-primary: #8C4A4A;
+  /* Fire/Water - Deep Red/Rust */
   --t-gold: #C5A46D;
 }
 
 .theme-kapha {
-  --t-primary: #5A6A4A; /* Water/Earth - Moss/Olive */
+  --t-primary: #5A6A4A;
+  /* Water/Earth - Moss/Olive */
   --t-gold: #8B7A3D;
 }
 
 /* Global Vibe Effects on existing classes */
-.shadow-lg, .shadow-xl {
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1), 0 0 calc(25px * var(--vibe-aura-opacity)) var(--vibe-aura-color) !important;
+.shadow-lg,
+.shadow-xl {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 0 0 calc(25px * var(--vibe-aura-opacity)) var(--vibe-aura-color) !important;
   transition: box-shadow 0.4s ease !important;
 }
 
@@ -653,8 +731,17 @@ body::before {
 
 /* Harmony Pulse Animation */
 @keyframes harmonyPulse {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.02); opacity: 0.8; }
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.02);
+    opacity: 0.8;
+  }
 }
 
 .harmony-pulse {
@@ -665,6 +752,7 @@ body::before {
   from {
     transform: translateX(100%);
   }
+
   to {
     transform: translateX(0);
   }
@@ -678,6 +766,7 @@ body::before {
   from {
     transform: translateX(0);
   }
+
   to {
     transform: translateX(100%);
   }
@@ -685,4 +774,4 @@ body::before {
 
 .animate-slideOutRight {
   animation: slideOutRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
+}
