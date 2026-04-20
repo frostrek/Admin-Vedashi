@@ -4,7 +4,7 @@ import React, { useState, useEffect, use, Suspense, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getCategories, createCategory } from '@/lib/api/category';
 import { updateProduct } from '@/lib/api/product';
-import { getProduct, uploadProductImage, deleteProductImage, updateProductImage } from '@/lib/api';
+import { getProduct, uploadProductImage, deleteProductImage, updateProductImage, getFormOptions, createFormOption, deleteFormOption, getSpecialityOptions, createSpecialityOption, deleteSpecialityOption } from '@/lib/api';
 import CategoryMillerColumns from '@/components/admin/CategoryMillerColumns';
 import { Category } from '@/types/category';
 import { ArrowLeft, ArrowRight, Check, X, Plus, Trash2, ChevronDown, ChevronUp, AlertCircle, Info, Package, Layers, Star, ImageIcon, Maximize2, Loader2, Film, Search, Weight, Droplets, Hash, Zap, Utensils, Tag } from 'lucide-react';
@@ -104,6 +104,15 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
     const [categories, setCategories] = useState<Category[]>([]);
     const [isCategoryLoading, setIsCategoryLoading] = useState(false);
 
+    // ─── Dynamic Form & Speciality Options ────────────────────────────────
+    const [formOptions, setFormOptions] = useState<string[]>([]);
+    const [specialityOptions, setSpecialityOptions] = useState<string[]>([]);
+    const [newFormInput, setNewFormInput] = useState('');
+    const [showNewFormInput, setShowNewFormInput] = useState(false);
+    const [newSpecialityInput, setNewSpecialityInput] = useState('');
+    const [manageFormMode, setManageFormMode] = useState(false);
+    const [manageSpecMode, setManageSpecMode] = useState(false);
+
     const id = dbProductId || urlId;
 
 
@@ -178,9 +187,16 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
         let cancelled = false;
         async function load() {
             setLoading(true);
-            const [product, cats] = await Promise.all([getProduct(urlId), getCategories()]);
+            const [product, cats, forms, specs] = await Promise.all([
+                getProduct(urlId),
+                getCategories(),
+                getFormOptions(),
+                getSpecialityOptions(),
+            ]);
             if (cancelled) return;
             setCategories(cats);
+            setFormOptions(forms);
+            setSpecialityOptions(specs);
 
             if (!product) {
                 toast.error('Product not found');
@@ -1446,43 +1462,217 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                     </div>
 
 
-                                    {/* Form Type */}
+                                    {/* Form Type (Dynamic) */}
                                     <div>
-                                        <label className="block text-sm font-medium text-text-primary mb-1.5">Form</label>
-                                        <select
-                                            value={form.form_type}
-                                            onChange={e => update('form_type', e.target.value)}
-                                            className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 bg-white text-gray-900 transition-all"
-                                        >
-                                            <option value="">Select form</option>
-                                            {['Capsules', 'Tablets', 'Powder', 'Syrup', 'Oil', 'Churna'].map(f => (
-                                                <option key={f} value={f}>{f}</option>
-                                            ))}
-                                        </select>
+                                        <div className="flex justify-between items-baseline mb-1.5">
+                                            <label className="block text-sm font-medium text-text-primary">Form</label>
+                                            <button type="button" onClick={() => setManageFormMode(!manageFormMode)} className="text-xs font-medium text-gold hover:underline">{manageFormMode ? 'Done Managing' : 'Manage'}</button>
+                                        </div>
+                                        {manageFormMode ? (
+                                            <div className="p-3 border border-border rounded-lg bg-page-bg/50">
+                                                <div className="flex flex-wrap gap-2">
+                                                    {formOptions.map(f => (
+                                                        <span key={f} className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 border border-amber-200 rounded-md text-xs font-medium text-amber-800">
+                                                            {f}
+                                                            <button
+                                                                type="button"
+                                                                onClick={async () => {
+                                                                    const ok = await deleteFormOption(f);
+                                                                    if (ok) {
+                                                                        setFormOptions(prev => prev.filter(x => x !== f));
+                                                                        if (form.form_type === f) update('form_type', '');
+                                                                    }
+                                                                }}
+                                                                className="ml-0.5 text-amber-400 hover:text-red-500 transition-colors"
+                                                            >
+                                                                <X className="h-3 w-3" />
+                                                            </button>
+                                                        </span>
+                                                    ))}
+                                                    {formOptions.length === 0 && <span className="text-sm text-text-muted">No form options found.</span>}
+                                                </div>
+                                            </div>
+                                        ) : showNewFormInput ? (
+                                            <div className="flex gap-2">
+                                                <input
+                                                    type="text"
+                                                    value={newFormInput}
+                                                    onChange={e => setNewFormInput(e.target.value)}
+                                                    onKeyDown={async e => {
+                                                        if (e.key === 'Enter') {
+                                                            e.preventDefault();
+                                                            const name = newFormInput.trim();
+                                                            if (!name) return;
+                                                            const ok = await createFormOption(name);
+                                                            if (ok) {
+                                                                setFormOptions(prev => [...prev, name].sort());
+                                                                update('form_type', name);
+                                                                toast.success(`Form "${name}" added`);
+                                                            }
+                                                            setNewFormInput('');
+                                                            setShowNewFormInput(false);
+                                                        } else if (e.key === 'Escape') {
+                                                            setNewFormInput('');
+                                                            setShowNewFormInput(false);
+                                                        }
+                                                    }}
+                                                    autoFocus
+                                                    placeholder="Type new form name…"
+                                                    className="flex-1 rounded-lg border border-gold/40 px-4 py-2.5 text-sm focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/30 transition-all"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={async () => {
+                                                        const name = newFormInput.trim();
+                                                        if (!name) return;
+                                                        const ok = await createFormOption(name);
+                                                        if (ok) {
+                                                            setFormOptions(prev => [...prev, name].sort());
+                                                            update('form_type', name);
+                                                            toast.success(`Form "${name}" added`);
+                                                        }
+                                                        setNewFormInput('');
+                                                        setShowNewFormInput(false);
+                                                    }}
+                                                    className="px-3 py-2 bg-gold/10 text-gold hover:bg-gold/20 rounded-lg text-sm font-medium transition-colors"
+                                                >
+                                                    Add
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => { setNewFormInput(''); setShowNewFormInput(false); }}
+                                                    className="px-2 py-2 text-text-muted hover:text-danger rounded-lg text-sm transition-colors"
+                                                >
+                                                    <X className="h-4 w-4" />
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <select
+                                                value={form.form_type}
+                                                onChange={e => {
+                                                    if (e.target.value === '__new__') {
+                                                        setShowNewFormInput(true);
+                                                    } else {
+                                                        update('form_type', e.target.value);
+                                                    }
+                                                }}
+                                                className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 bg-white text-gray-900 transition-all"
+                                            >
+                                                <option value="">Select form</option>
+                                                {formOptions.map(f => (
+                                                    <option key={f} value={f}>{f}</option>
+                                                ))}
+                                                <option value="__new__">+ Add new form…</option>
+                                            </select>
+                                        )}
                                     </div>
 
-                                    {/* Specialities */}
+                                    {/* Specialities (Dynamic) */}
                                     <div className="sm:col-span-2">
-                                        <label className="block text-sm font-medium text-text-primary mb-1.5">Specialities</label>
-                                        <div className="flex flex-wrap gap-3">
-                                            {['Drug Free', 'Allergen Free', '100% Natural', 'Vegan', 'Ayurvedic', 'No Added Sugar'].map(spec => {
-                                                const isSelected = form.specialities.includes(spec);
-                                                return (
-                                                    <label key={spec} className={`flex items-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition-colors ${isSelected ? 'border-gold bg-gold/10' : 'border-border bg-white/5 hover:border-gold/40'}`}>
+                                        <div className="flex justify-between items-baseline mb-1.5">
+                                            <label className="block text-sm font-medium text-text-primary">Specialities</label>
+                                            <button type="button" onClick={() => setManageSpecMode(!manageSpecMode)} className="text-xs font-medium text-gold hover:underline">{manageSpecMode ? 'Done Managing' : 'Manage'}</button>
+                                        </div>
+                                        {manageSpecMode ? (
+                                            <div className="p-3 border border-border rounded-lg bg-page-bg/50">
+                                                <div className="flex flex-wrap gap-2">
+                                                    {specialityOptions.map(s => (
+                                                        <span key={s} className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 border border-emerald-200 rounded-md text-xs font-medium text-emerald-800">
+                                                            {s}
+                                                            <button
+                                                                type="button"
+                                                                onClick={async () => {
+                                                                    const ok = await deleteSpecialityOption(s);
+                                                                    if (ok) {
+                                                                        setSpecialityOptions(prev => prev.filter(x => x !== s));
+                                                                        update('specialities', form.specialities.filter(spec => spec !== s));
+                                                                    }
+                                                                }}
+                                                                className="ml-0.5 text-emerald-400 hover:text-red-500 transition-colors"
+                                                            >
+                                                                <X className="h-3 w-3" />
+                                                            </button>
+                                                        </span>
+                                                    ))}
+                                                    {specialityOptions.length === 0 && <span className="text-sm text-text-muted">No specialities found.</span>}
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="flex flex-wrap gap-3">
+                                                {specialityOptions.map(spec => {
+                                                    const isSelected = form.specialities.includes(spec);
+                                                    return (
+                                                        <label key={spec} className={`flex items-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition-colors ${isSelected ? 'border-gold bg-gold/10' : 'border-border bg-white/5 hover:border-gold/40'}`}>
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={isSelected}
+                                                                onChange={e => {
+                                                                    if (e.target.checked) update('specialities', [...form.specialities, spec]);
+                                                                    else update('specialities', form.specialities.filter(s => s !== spec));
+                                                                }}
+                                                                className="w-4 h-4 rounded text-gold focus:ring-gold"
+                                                            />
+                                                            <span className="text-sm font-medium text-text-primary">{spec}</span>
+                                                        </label>
+                                                    );
+                                                })}
+                                                {/* Show any selected values not in the fetched list */}
+                                                {form.specialities.filter(s => !specialityOptions.includes(s)).map(spec => (
+                                                    <label key={spec} className="flex items-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition-colors border-gold bg-gold/10">
                                                         <input
                                                             type="checkbox"
-                                                            checked={isSelected}
-                                                            onChange={e => {
-                                                                if (e.target.checked) update('specialities', [...form.specialities, spec]);
-                                                                else update('specialities', form.specialities.filter(s => s !== spec));
-                                                            }}
+                                                            checked={true}
+                                                            onChange={() => update('specialities', form.specialities.filter(s => s !== spec))}
                                                             className="w-4 h-4 rounded text-gold focus:ring-gold"
                                                         />
                                                         <span className="text-sm font-medium text-text-primary">{spec}</span>
                                                     </label>
-                                                );
-                                            })}
-                                        </div>
+                                                ))}
+                                                {/* Inline add new speciality */}
+                                                <div className="flex items-center gap-1.5">
+                                                    <input
+                                                        type="text"
+                                                        value={newSpecialityInput}
+                                                        onChange={e => setNewSpecialityInput(e.target.value)}
+                                                        onKeyDown={async e => {
+                                                            if (e.key === 'Enter') {
+                                                                e.preventDefault();
+                                                                const name = newSpecialityInput.trim();
+                                                                if (!name) return;
+                                                                const ok = await createSpecialityOption(name);
+                                                                if (ok) {
+                                                                    setSpecialityOptions(prev => [...prev, name].sort());
+                                                                    update('specialities', [...form.specialities, name]);
+                                                                    toast.success(`Speciality "${name}" added`);
+                                                                }
+                                                                setNewSpecialityInput('');
+                                                            }
+                                                        }}
+                                                        placeholder="+ Add new…"
+                                                        className="w-32 rounded-lg border border-dashed border-border px-3 py-2 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 transition-all placeholder:text-text-muted"
+                                                    />
+                                                    {newSpecialityInput.trim() && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={async () => {
+                                                                const name = newSpecialityInput.trim();
+                                                                if (!name) return;
+                                                                const ok = await createSpecialityOption(name);
+                                                                if (ok) {
+                                                                    setSpecialityOptions(prev => [...prev, name].sort());
+                                                                    update('specialities', [...form.specialities, name]);
+                                                                    toast.success(`Speciality "${name}" added`);
+                                                                }
+                                                                setNewSpecialityInput('');
+                                                            }}
+                                                            className="px-2 py-2 bg-gold/10 text-gold hover:bg-gold/20 rounded-lg text-xs font-medium transition-colors"
+                                                        >
+                                                            <Plus className="h-3.5 w-3.5" />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* Description - full width */}
