@@ -119,7 +119,7 @@ export default function AdminLoginPage() {
               <img 
                 src="/vedashi-logo.png" 
                 alt="Vedashi logo" 
-                className="h-20 sm:h-24 w-auto object-contain filter drop-shadow-md brightness-0 sepia saturate-[16] hue-rotate-[5deg] brightness-[2.5] contrast-[1.2]" 
+                className="h-20 w-auto object-contain filter brightness-0 invert" 
               />
             </div>
             <h2 className="font-serif text-xl font-bold text-[#e8f0e8] tracking-widest uppercase mb-1">Admin Portal</h2>

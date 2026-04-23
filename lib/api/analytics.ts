@@ -60,7 +60,7 @@ export interface TimeSeries {
     revenue: number;
     orders: number;
     newCustomers?: number;
-    returningOrders?: number;
+    returningCustomers?: number;
 }
 
 export interface PaymentMethod {

@@ -34,12 +34,12 @@ export default function LoyaltyAdminPage() {
     const [rules, setRules] = useState<any[]>([]);
     const [promotions, setPromotions] = useState<any[]>([]);
     const [wallets, setWallets] = useState<any[]>([]);
-    
+
     // Modal states
     const [selectedItem, setSelectedItem] = useState<any>(null);
     const [modalType, setModalType] = useState<'adjust' | 'tier' | 'rule' | 'promo' | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
-    
+
     // Adjustment form state
     const [adjPoints, setAdjPoints] = useState<number>(0);
     const [adjReason, setAdjReason] = useState('');
@@ -57,7 +57,7 @@ export default function LoyaltyAdminPage() {
             if (tData) setTiers(tData);
             if (rData) setRules(rData);
             if (pData) setPromotions(pData);
-            
+
             const wData = await getAdminLoyaltyWallets();
             if (wData) setWallets(wData);
         } catch (error) {
@@ -180,10 +180,10 @@ export default function LoyaltyAdminPage() {
         setIsProcessing(true);
         try {
             const isEdit = !!selectedItem.rule_id;
-            const res = isEdit 
+            const res = isEdit
                 ? await updateAdminLoyaltyRule(selectedItem.rule_id, selectedItem)
                 : await createAdminLoyaltyRule(selectedItem);
-            
+
             if (res.success) {
                 toast.success(isEdit ? 'Rule updated' : 'Rule created');
                 setModalType(null);
@@ -200,7 +200,7 @@ export default function LoyaltyAdminPage() {
         setIsProcessing(true);
         try {
             const isEdit = !!selectedItem.tier_id;
-            const res = isEdit 
+            const res = isEdit
                 ? await updateAdminLoyaltyTier(selectedItem.tier_id, selectedItem)
                 : await createAdminLoyaltyTier(selectedItem);
 
@@ -220,7 +220,7 @@ export default function LoyaltyAdminPage() {
         setIsProcessing(true);
         try {
             const isEdit = !!selectedItem.promo_id;
-            const res = isEdit 
+            const res = isEdit
                 ? await updateAdminLoyaltyPromotion(selectedItem.promo_id, selectedItem)
                 : await createAdminLoyaltyPromotion(selectedItem);
 
@@ -244,7 +244,7 @@ export default function LoyaltyAdminPage() {
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="font-serif text-2xl font-bold text-gold flex items-center gap-2">
-                            <Gift className="h-6 w-6" /> Loyalty & Rewards
+                            Loyalty & Rewards
                         </h1>
                         <p className="text-[15px] font-semibold text-brown mt-1 max-w-xl">Manage tiers, points rules, and exclusive promotions with ease.</p>
                     </div>
@@ -289,7 +289,7 @@ export default function LoyaltyAdminPage() {
                                     <h4 className="text-2xl font-bold text-emerald-800 dark:text-text-primary mb-1 font-mono">{formatNumber(stats.stats?.total_points_issued || stats.total_points_issued)}</h4>
                                     <p className="text-xs text-text-secondary font-medium">Lifetime points credited</p>
                                 </div>
-                                
+
                                 <div className="bg-card-bg border border-border rounded-xl p-5 hover:border-gold/30 transition-colors">
                                     <div className="flex justify-between items-center mb-2">
                                         <p className="text-sm text-text-secondary font-bold">Total Redeemed</p>
@@ -298,8 +298,8 @@ export default function LoyaltyAdminPage() {
                                     <h4 className="text-2xl font-bold text-blue-800 dark:text-text-primary mb-1 font-mono">{formatNumber(stats.stats?.total_points_redeemed || stats.total_points_redeemed)}</h4>
                                     <p className="text-xs text-text-secondary font-medium">Lifetime points burnt</p>
                                 </div>
-                                
-                                <div 
+
+                                <div
                                     onClick={() => setActiveTab('wallets')}
                                     className="bg-card-bg border border-border rounded-xl p-5 hover:border-gold/30 transition-all cursor-pointer group active:scale-[0.98]"
                                 >
@@ -328,11 +328,11 @@ export default function LoyaltyAdminPage() {
                         <div className="bg-card-bg border border-border rounded-xl overflow-hidden">
                             <div className="p-4 border-b border-border flex justify-between items-center bg-primary/10">
                                 <h4 className="font-serif font-bold text-text-primary">Loyalty Tiers</h4>
-                                <button 
+                                <button
                                     onClick={() => showTierModal()}
-                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-text-primary text-xs font-semibold rounded-lg border border-border transition-colors"
+                                    className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-light text-[#E8D8B9] text-sm font-semibold rounded-lg border border-gold/10 transition-all duration-300 shadow-sm"
                                 >
-                                    <Plus className="w-3.5 h-3.5" /> New Tier
+                                    <Plus className="w-4 h-4" /> New Tier
                                 </button>
                             </div>
                             <div className="overflow-x-auto">
@@ -362,16 +362,16 @@ export default function LoyaltyAdminPage() {
                                                 </td>
                                                 <td className="px-5 py-4 text-right">
                                                     <div className="flex justify-end gap-2 transition-opacity">
-                                                        <button 
+                                                        <button
                                                             onClick={() => showTierModal(t)}
-                                                            className="p-1.5 hover:bg-gold/10 text-gold rounded-lg transition-colors" 
+                                                            className="p-1.5 hover:bg-gold/10 text-gold rounded-lg transition-colors"
                                                             title="Edit Tier"
                                                         >
                                                             <Edit className="h-4 w-4" />
                                                         </button>
-                                                        <button 
+                                                        <button
                                                             onClick={() => handleDeleteTier(t.tier_id)}
-                                                            className="p-1.5 hover:bg-red-500/10 text-red-500 rounded-lg transition-colors" 
+                                                            className="p-1.5 hover:bg-red-500/10 text-red-500 rounded-lg transition-colors"
                                                             title="Delete Tier"
                                                         >
                                                             <Trash2 className="h-4 w-4" />
@@ -391,11 +391,11 @@ export default function LoyaltyAdminPage() {
                         <div className="bg-card-bg border border-border rounded-xl overflow-hidden">
                             <div className="p-4 border-b border-border flex justify-between items-center bg-primary/10">
                                 <h4 className="font-serif font-bold text-text-primary">Earning Rules</h4>
-                                <button 
+                                <button
                                     onClick={() => showRuleModal()}
-                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-text-primary text-xs font-semibold rounded-lg border border-border transition-colors"
+                                    className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-light text-[#E8D8B9] text-sm font-semibold rounded-lg border border-gold/10 transition-all duration-300 shadow-sm"
                                 >
-                                    <Plus className="w-3.5 h-3.5" /> New Rule
+                                    <Plus className="w-4 h-4" /> New Rule
                                 </button>
                             </div>
                             <div className="overflow-x-auto">
@@ -429,16 +429,16 @@ export default function LoyaltyAdminPage() {
                                                 </td>
                                                 <td className="px-5 py-4 text-right">
                                                     <div className="flex justify-end gap-2 transition-opacity">
-                                                        <button 
+                                                        <button
                                                             onClick={() => showRuleModal(r)}
-                                                            className="p-1.5 hover:bg-gold/10 text-gold rounded-lg transition-colors" 
+                                                            className="p-1.5 hover:bg-gold/10 text-gold rounded-lg transition-colors"
                                                             title="Edit Rule"
                                                         >
                                                             <Edit className="h-4 w-4" />
                                                         </button>
-                                                        <button 
+                                                        <button
                                                             onClick={() => handleDeleteRule(r.rule_id)}
-                                                            className="p-1.5 hover:bg-red-500/10 text-red-500 rounded-lg transition-colors" 
+                                                            className="p-1.5 hover:bg-red-500/10 text-red-500 rounded-lg transition-colors"
                                                             title="Delete Rule"
                                                         >
                                                             <Trash2 className="h-4 w-4" />
@@ -458,11 +458,11 @@ export default function LoyaltyAdminPage() {
                         <div className="bg-card-bg border border-border rounded-xl overflow-hidden">
                             <div className="p-4 border-b border-border flex justify-between items-center bg-primary/10">
                                 <h4 className="font-serif font-bold text-text-primary">Promotional Multipliers</h4>
-                                <button 
+                                <button
                                     onClick={() => showPromoModal()}
-                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-text-primary text-xs font-semibold rounded-lg border border-border transition-colors"
+                                    className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-light text-[#E8D8B9] text-sm font-semibold rounded-lg border border-gold/10 transition-all duration-300 shadow-sm"
                                 >
-                                    <Plus className="w-3.5 h-3.5" /> New Campaign
+                                    <Plus className="w-4 h-4" /> New Campaign
                                 </button>
                             </div>
                             <div className="overflow-x-auto">
@@ -504,16 +504,16 @@ export default function LoyaltyAdminPage() {
                                                     </td>
                                                     <td className="px-5 py-4 text-right">
                                                         <div className="flex justify-end gap-2 transition-opacity">
-                                                            <button 
+                                                            <button
                                                                 onClick={() => showPromoModal(p)}
-                                                                className="p-1.5 hover:bg-gold/10 text-gold rounded-lg transition-colors" 
+                                                                className="p-1.5 hover:bg-gold/10 text-gold rounded-lg transition-colors"
                                                                 title="Edit Campaign"
                                                             >
                                                                 <Edit className="h-4 w-4" />
                                                             </button>
-                                                            <button 
+                                                            <button
                                                                 onClick={() => handleDeletePromo(p.promo_id)}
-                                                                className="p-1.5 hover:bg-red-500/10 text-red-500 rounded-lg transition-colors" 
+                                                                className="p-1.5 hover:bg-red-500/10 text-red-500 rounded-lg transition-colors"
                                                                 title="Delete Campaign"
                                                             >
                                                                 <Trash2 className="h-4 w-4" />
@@ -573,9 +573,9 @@ export default function LoyaltyAdminPage() {
                                                     {w.updated_at ? new Date(w.updated_at).toLocaleDateString() : 'Never'}
                                                 </td>
                                                 <td className="px-5 py-4 text-right">
-                                                    <button 
+                                                    <button
                                                         onClick={() => showAdjustModal(w)}
-                                                        className="bg-gold/10 hover:bg-gold text-gold hover:text-white px-4 py-1.5 rounded-lg text-xs font-bold uppercase transition-all border border-gold/30"
+                                                        className="bg-primary hover:bg-primary-light text-[#E8D8B9] px-4 py-2 rounded-lg text-sm font-semibold transition-all border border-gold/10 shadow-sm"
                                                     >
                                                         Adjust
                                                     </button>
@@ -599,11 +599,11 @@ export default function LoyaltyAdminPage() {
                             <h4 className="font-serif text-xl font-bold text-gold">Manual Point Adjustment</h4>
                             <p className="text-xs text-text-muted mt-1">Adjusting balance for <span className="text-gold-soft font-bold">{selectedItem.full_name || selectedItem.email}</span></p>
                         </div>
-                        
+
                         <div className="p-6 space-y-4">
                             <div>
                                 <label className="block text-[10px] font-bold uppercase text-text-secondary mb-2">Point Delta (±)</label>
-                                <input 
+                                <input
                                     type="number"
                                     value={adjPoints || 0}
                                     onChange={(e) => setAdjPoints(parseInt(e.target.value) || 0)}
@@ -615,7 +615,7 @@ export default function LoyaltyAdminPage() {
 
                             <div>
                                 <label className="block text-[10px] font-bold uppercase text-text-secondary mb-2">Adjustment Reason</label>
-                                <textarea 
+                                <textarea
                                     value={adjReason || ''}
                                     onChange={(e) => setAdjReason(e.target.value)}
                                     placeholder="Admin manual correction, customer service credit, etc."
@@ -626,17 +626,17 @@ export default function LoyaltyAdminPage() {
                         </div>
 
                         <div className="p-6 bg-primary/5 border-t border-border flex gap-3">
-                            <button 
+                            <button
                                 onClick={() => setModalType(null)}
                                 className="flex-1 py-3 text-xs font-bold uppercase text-text-muted hover:text-text-primary transition-colors"
                             >
                                 Cancel
                             </button>
-                                <button 
-                                    onClick={handleAdjustPoints}
-                                    disabled={isProcessing || adjPoints === 0}
-                                    className="flex-1 bg-gold hover:bg-gold-muted disabled:opacity-50 text-primary py-3 rounded-xl text-xs font-bold uppercase transition-all shadow-lg shadow-gold/20 flex justify-center items-center gap-2"
-                                >
+                            <button
+                                onClick={handleAdjustPoints}
+                                disabled={isProcessing || adjPoints === 0}
+                                className="flex-1 bg-primary hover:bg-primary-light disabled:opacity-50 text-[#E8D8B9] py-3 rounded-xl text-sm font-semibold transition-all border border-gold/10 shadow-lg flex justify-center items-center gap-2"
+                            >
                                 {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply Adjustment'}
                             </button>
                         </div>
@@ -653,24 +653,24 @@ export default function LoyaltyAdminPage() {
                             <h4 className="font-serif text-xl font-bold text-gold">{selectedItem.rule_id ? 'Edit Earning Rule' : 'Create New Rule'}</h4>
                             <p className="text-xs text-text-muted mt-1">Configure how customers earn ritual points</p>
                         </div>
-                        
+
                         <div className="p-6 space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="col-span-2">
                                     <label className="block text-[10px] font-bold uppercase text-text-secondary mb-2">Rule Name / Display Title</label>
-                                    <input 
+                                    <input
                                         type="text"
                                         value={selectedItem.rule_name || ''}
-                                        onChange={(e) => setSelectedItem({...selectedItem, rule_name: e.target.value})}
+                                        onChange={(e) => setSelectedItem({ ...selectedItem, rule_name: e.target.value })}
                                         placeholder="e.g. Purchase Reward"
                                         className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:border-gold outline-none transition-all"
                                     />
                                 </div>
                                 <div className="col-span-2">
                                     <label className="block text-[10px] font-bold uppercase text-text-secondary mb-2">Action Type</label>
-                                    <select 
+                                    <select
                                         value={selectedItem.rule_type || 'purchase'}
-                                        onChange={(e) => setSelectedItem({...selectedItem, rule_type: e.target.value})}
+                                        onChange={(e) => setSelectedItem({ ...selectedItem, rule_type: e.target.value })}
                                         className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:border-gold outline-none transition-all"
                                     >
                                         <option value="purchase">Purchase</option>
@@ -682,19 +682,19 @@ export default function LoyaltyAdminPage() {
                                 </div>
                                 <div>
                                     <label className="block text-[10px] font-bold uppercase text-text-muted mb-2">Points Awarded</label>
-                                    <input 
+                                    <input
                                         type="number"
                                         value={selectedItem.points_amount || 0}
-                                        onChange={(e) => setSelectedItem({...selectedItem, points_amount: parseInt(e.target.value) || 0})}
+                                        onChange={(e) => setSelectedItem({ ...selectedItem, points_amount: parseInt(e.target.value) || 0 })}
                                         className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:border-gold outline-none transition-all font-mono"
                                     />
                                 </div>
                                 <div>
                                     <label className="block text-[10px] font-bold uppercase text-text-muted mb-2">Priority</label>
-                                    <input 
+                                    <input
                                         type="number"
                                         value={selectedItem.priority || 0}
-                                        onChange={(e) => setSelectedItem({...selectedItem, priority: parseInt(e.target.value) || 0})}
+                                        onChange={(e) => setSelectedItem({ ...selectedItem, priority: parseInt(e.target.value) || 0 })}
                                         className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:border-gold outline-none transition-all font-mono"
                                     />
                                 </div>
@@ -702,21 +702,21 @@ export default function LoyaltyAdminPage() {
 
                             <div>
                                 <label className="block text-[10px] font-bold uppercase text-text-secondary mb-2">Daily Limit (Max Points)</label>
-                                <input 
+                                <input
                                     type="number"
                                     value={selectedItem.max_points || ''}
-                                    onChange={(e) => setSelectedItem({...selectedItem, max_points: parseInt(e.target.value) || null})}
+                                    onChange={(e) => setSelectedItem({ ...selectedItem, max_points: parseInt(e.target.value) || null })}
                                     placeholder="No limit"
                                     className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:border-gold outline-none transition-all font-mono"
                                 />
                             </div>
 
                             <div className="flex items-center gap-3 pt-2">
-                                <input 
+                                <input
                                     type="checkbox"
                                     id="rule-active"
                                     checked={!!selectedItem.is_active}
-                                    onChange={(e) => setSelectedItem({...selectedItem, is_active: e.target.checked})}
+                                    onChange={(e) => setSelectedItem({ ...selectedItem, is_active: e.target.checked })}
                                     className="w-4 h-4 accent-gold"
                                 />
                                 <label htmlFor="rule-active" className="text-sm text-text-secondary font-medium">Rule is active and currently awarding points</label>
@@ -724,17 +724,17 @@ export default function LoyaltyAdminPage() {
                         </div>
 
                         <div className="p-6 bg-primary/5 border-t border-border flex gap-3">
-                            <button 
+                            <button
                                 onClick={() => setModalType(null)}
                                 className="flex-1 py-3 text-xs font-bold uppercase text-text-muted hover:text-text-primary transition-colors"
                             >
                                 Cancel
                             </button>
-                                <button 
-                                    onClick={handleSaveRule}
-                                    disabled={isProcessing}
-                                    className="flex-1 bg-gold hover:bg-gold-muted disabled:opacity-50 text-primary py-3 rounded-xl text-xs font-bold uppercase transition-all shadow-lg shadow-gold/20 flex justify-center items-center gap-2"
-                                >
+                            <button
+                                onClick={handleSaveRule}
+                                disabled={isProcessing}
+                                className="flex-1 bg-primary hover:bg-primary-light disabled:opacity-50 text-[#E8D8B9] py-3 rounded-xl text-sm font-semibold transition-all border border-gold/10 shadow-lg flex justify-center items-center gap-2"
+                            >
                                 {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save Rule'}
                             </button>
                         </div>
@@ -751,14 +751,14 @@ export default function LoyaltyAdminPage() {
                             <h4 className="font-serif text-xl font-bold text-gold">{selectedItem.tier_id ? 'Edit Tier' : 'Create New Tier'}</h4>
                             <p className="text-xs text-text-muted mt-1">Configure status levels and point multipliers</p>
                         </div>
-                        
+
                         <div className="p-6 space-y-4">
                             <div>
                                 <label className="block text-[10px] font-bold uppercase text-text-secondary mb-2">Tier Name</label>
-                                <input 
+                                <input
                                     type="text"
                                     value={selectedItem.tier_name || ''}
-                                    onChange={(e) => setSelectedItem({...selectedItem, tier_name: e.target.value})}
+                                    onChange={(e) => setSelectedItem({ ...selectedItem, tier_name: e.target.value })}
                                     placeholder="e.g. Gold Resident"
                                     className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:border-gold outline-none transition-all"
                                 />
@@ -767,20 +767,20 @@ export default function LoyaltyAdminPage() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-[10px] font-bold uppercase text-text-secondary mb-2">Min Lifetime Points</label>
-                                    <input 
+                                    <input
                                         type="number"
                                         value={selectedItem.min_points || 0}
-                                        onChange={(e) => setSelectedItem({...selectedItem, min_points: parseInt(e.target.value) || 0})}
+                                        onChange={(e) => setSelectedItem({ ...selectedItem, min_points: parseInt(e.target.value) || 0 })}
                                         className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:border-gold outline-none transition-all font-mono"
                                     />
                                 </div>
                                 <div>
                                     <label className="block text-[10px] font-bold uppercase text-text-secondary mb-2">Point Multiplier</label>
-                                    <input 
+                                    <input
                                         type="number"
                                         step="0.1"
                                         value={selectedItem.points_multiplier || 1}
-                                        onChange={(e) => setSelectedItem({...selectedItem, points_multiplier: parseFloat(e.target.value) || 1})}
+                                        onChange={(e) => setSelectedItem({ ...selectedItem, points_multiplier: parseFloat(e.target.value) || 1 })}
                                         className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:border-gold outline-none transition-all font-mono"
                                     />
                                 </div>
@@ -788,14 +788,14 @@ export default function LoyaltyAdminPage() {
 
                             <div>
                                 <label className="block text-[10px] font-bold uppercase text-text-secondary mb-2">Benefits (Key-Value JSON)</label>
-                                <textarea 
+                                <textarea
                                     value={typeof selectedItem.benefits === 'object' ? JSON.stringify(selectedItem.benefits, null, 2) : (selectedItem.benefits || '')}
                                     onChange={(e) => {
                                         try {
                                             const val = JSON.parse(e.target.value);
-                                            setSelectedItem({...selectedItem, benefits: val});
+                                            setSelectedItem({ ...selectedItem, benefits: val });
                                         } catch {
-                                            setSelectedItem({...selectedItem, benefits: e.target.value});
+                                            setSelectedItem({ ...selectedItem, benefits: e.target.value });
                                         }
                                     }}
                                     rows={4}
@@ -806,17 +806,17 @@ export default function LoyaltyAdminPage() {
                         </div>
 
                         <div className="p-6 bg-primary/5 border-t border-border flex gap-3">
-                            <button 
+                            <button
                                 onClick={() => setModalType(null)}
                                 className="flex-1 py-3 text-xs font-bold uppercase text-text-muted hover:text-text-primary transition-colors"
                             >
                                 Cancel
                             </button>
-                                <button 
-                                    onClick={handleSaveTier}
-                                    disabled={isProcessing}
-                                    className="flex-1 bg-gold hover:bg-gold-muted disabled:opacity-50 text-primary py-3 rounded-xl text-xs font-bold uppercase transition-all shadow-lg shadow-gold/20 flex justify-center items-center gap-2"
-                                >
+                            <button
+                                onClick={handleSaveTier}
+                                disabled={isProcessing}
+                                className="flex-1 bg-primary hover:bg-primary-light disabled:opacity-50 text-[#E8D8B9] py-3 rounded-xl text-sm font-semibold transition-all border border-gold/10 shadow-lg flex justify-center items-center gap-2"
+                            >
                                 {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save Tier'}
                             </button>
                         </div>
@@ -833,14 +833,14 @@ export default function LoyaltyAdminPage() {
                             <h4 className="font-serif text-xl font-bold text-gold">{selectedItem.promo_id ? 'Edit Promotion' : 'Create New Promotion'}</h4>
                             <p className="text-xs text-text-muted mt-1">Setup limited-time point boosts</p>
                         </div>
-                        
+
                         <div className="p-6 space-y-4">
                             <div>
                                 <label className="block text-[10px] font-bold uppercase text-text-secondary mb-2">Campaign Name</label>
-                                <input 
+                                <input
                                     type="text"
                                     value={selectedItem.promotion_name || ''}
-                                    onChange={(e) => setSelectedItem({...selectedItem, promotion_name: e.target.value})}
+                                    onChange={(e) => setSelectedItem({ ...selectedItem, promotion_name: e.target.value })}
                                     placeholder="e.g. Festival Season Boost"
                                     className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:border-gold outline-none transition-all"
                                 />
@@ -849,20 +849,20 @@ export default function LoyaltyAdminPage() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-[10px] font-bold uppercase text-text-secondary mb-2">Multiplier</label>
-                                    <input 
+                                    <input
                                         type="number"
                                         step="0.1"
                                         value={selectedItem.multiplier || 1}
-                                        onChange={(e) => setSelectedItem({...selectedItem, multiplier: parseFloat(e.target.value) || 1})}
+                                        onChange={(e) => setSelectedItem({ ...selectedItem, multiplier: parseFloat(e.target.value) || 1 })}
                                         className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:border-gold outline-none transition-all font-mono"
                                     />
                                 </div>
                                 <div>
                                     <label className="block text-[10px] font-bold uppercase text-text-secondary mb-2">Bonus Points</label>
-                                    <input 
+                                    <input
                                         type="number"
                                         value={selectedItem.bonus_points || 0}
-                                        onChange={(e) => setSelectedItem({...selectedItem, bonus_points: parseInt(e.target.value) || 0})}
+                                        onChange={(e) => setSelectedItem({ ...selectedItem, bonus_points: parseInt(e.target.value) || 0 })}
                                         className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:border-gold outline-none transition-all font-mono"
                                     />
                                 </div>
@@ -871,30 +871,30 @@ export default function LoyaltyAdminPage() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-[10px] font-bold uppercase text-text-secondary mb-2">Starts At</label>
-                                    <input 
+                                    <input
                                         type="date"
                                         value={selectedItem.starts_at ? new Date(selectedItem.starts_at).toISOString().split('T')[0] : ''}
-                                        onChange={(e) => setSelectedItem({...selectedItem, starts_at: e.target.value})}
+                                        onChange={(e) => setSelectedItem({ ...selectedItem, starts_at: e.target.value })}
                                         className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:border-gold outline-none transition-all"
                                     />
                                 </div>
                                 <div>
                                     <label className="block text-[10px] font-bold uppercase text-text-secondary mb-2">Ends At</label>
-                                    <input 
+                                    <input
                                         type="date"
                                         value={selectedItem.ends_at ? new Date(selectedItem.ends_at).toISOString().split('T')[0] : ''}
-                                        onChange={(e) => setSelectedItem({...selectedItem, ends_at: e.target.value})}
+                                        onChange={(e) => setSelectedItem({ ...selectedItem, ends_at: e.target.value })}
                                         className="w-full bg-primary/5 border border-border rounded-xl px-4 py-3 text-text-primary focus:border-gold outline-none transition-all"
                                     />
                                 </div>
                             </div>
 
                             <div className="flex items-center gap-3 pt-2">
-                                <input 
+                                <input
                                     type="checkbox"
                                     id="promo-active"
                                     checked={!!selectedItem.is_active}
-                                    onChange={(e) => setSelectedItem({...selectedItem, is_active: e.target.checked})}
+                                    onChange={(e) => setSelectedItem({ ...selectedItem, is_active: e.target.checked })}
                                     className="w-4 h-4 accent-gold"
                                 />
                                 <label htmlFor="promo-active" className="text-sm text-text-primary font-medium">Promotion is enabled</label>
@@ -902,17 +902,17 @@ export default function LoyaltyAdminPage() {
                         </div>
 
                         <div className="p-6 bg-primary/5 border-t border-border flex gap-3">
-                            <button 
+                            <button
                                 onClick={() => setModalType(null)}
                                 className="flex-1 py-3 text-xs font-bold uppercase text-text-muted hover:text-text-primary transition-colors"
                             >
                                 Cancel
                             </button>
-                                <button 
-                                    onClick={handleSavePromo}
-                                    disabled={isProcessing}
-                                    className="flex-1 bg-gold hover:bg-gold-muted disabled:opacity-50 text-primary py-3 rounded-xl text-xs font-bold uppercase transition-all shadow-lg shadow-gold/20 flex justify-center items-center gap-2"
-                                >
+                            <button
+                                onClick={handleSavePromo}
+                                disabled={isProcessing}
+                                className="flex-1 bg-primary hover:bg-primary-light disabled:opacity-50 text-[#E8D8B9] py-3 rounded-xl text-sm font-semibold transition-all border border-gold/10 shadow-lg flex justify-center items-center gap-2"
+                            >
                                 {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save Promotion'}
                             </button>
                         </div>

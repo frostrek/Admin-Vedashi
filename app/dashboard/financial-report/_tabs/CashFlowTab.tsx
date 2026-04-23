@@ -69,7 +69,7 @@ export default function CashFlowTab({ data }: { data?: FinancialReportData }) {
         <div className="lg:col-span-2 rounded-xl border border-border bg-card-bg p-6 shadow-sm flex flex-col min-h-[350px] hover-lift">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-text-muted uppercase tracking-wider">Cash Inflows from Orders</h3>
-            <span className="text-[10px] text-text-muted bg-page-bg px-2 py-1 rounded-full">Click a point</span>
+            <span className="text-[10px] text-black/60 bg-page-bg px-2 py-1 rounded-full">Click a point</span>
           </div>
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={data.salesTrend} onClick={handleAreaClick} style={{ cursor: 'pointer' }}>
@@ -80,8 +80,8 @@ export default function CashFlowTab({ data }: { data?: FinancialReportData }) {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--t-border-subtle)" />
-              <XAxis dataKey="period" stroke="var(--t-text-muted)" fontSize={10} tickMargin={10} tickFormatter={formatDate} />
-              <YAxis stroke="var(--t-text-muted)" fontSize={10} tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`} />
+              <XAxis dataKey="period" stroke="#333333" fontSize={10} tickMargin={10} tickFormatter={formatDate} />
+              <YAxis stroke="#333333" fontSize={10} tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`} />
               <RechartsTooltip content={<CustomTooltip />} />
               <Area
                 type="monotone"

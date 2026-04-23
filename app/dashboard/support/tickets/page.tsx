@@ -67,7 +67,7 @@ export default function AdminTicketsPage() {
                     <h1 className="font-serif text-2xl font-bold text-text-primary">Support Tickets</h1>
                     <p className="text-[15px] font-semibold text-brown mt-1">Manage customer support requests</p>
                 </div>
-                <button onClick={loadTickets} className="flex items-center gap-2 bg-card-bg border border-border px-4 py-2 rounded-xl text-sm text-text-muted hover:text-gold transition-colors">
+                <button onClick={loadTickets} className="flex items-center gap-2 bg-primary text-[#E8D8B9] border border-gold/10 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primary-light transition-all shadow-md">
                     <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                     Refresh
                 </button>

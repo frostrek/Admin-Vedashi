@@ -60,10 +60,10 @@ export default function AdminKBPage() {
                     <p className="text-[15px] font-semibold text-brown mt-1">{categories.length} categories · {articles.length} articles</p>
                 </div>
                 <div className="flex gap-2">
-                    <button onClick={() => { setShowCatForm(!showCatForm); setShowArticleForm(false); }} className="flex items-center gap-2 bg-card-bg border border-border px-3 py-2 rounded-xl text-sm text-text-muted hover:text-gold">
+                    <button onClick={() => { setShowCatForm(!showCatForm); setShowArticleForm(false); }} className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-[#E8D8B9] hover:bg-primary-light border border-gold/10 transition-all duration-300 shadow-sm">
                         <Folder className="h-4 w-4" /> {showCatForm ? 'Cancel' : 'Add Category'}
                     </button>
-                    <button onClick={() => { setShowArticleForm(!showArticleForm); setShowCatForm(false); setEditId(null); }} className="flex items-center gap-2 bg-gold/20 text-gold px-4 py-2 rounded-xl text-sm font-semibold hover:bg-gold/30">
+                    <button onClick={() => { setShowArticleForm(!showArticleForm); setShowCatForm(false); setEditId(null); }} className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-[#E8D8B9] hover:bg-primary-light border border-gold/10 transition-all duration-300 shadow-sm">
                         {showArticleForm ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
                         {showArticleForm ? 'Cancel' : 'Add Article'}
                     </button>
@@ -78,7 +78,7 @@ export default function AdminKBPage() {
                         <input value={cForm.slug} onChange={e => setCForm({ ...cForm, slug: e.target.value })} placeholder="Slug (auto)" className="bg-surface border border-border rounded-xl px-3 py-2 text-sm text-text" />
                         <input value={cForm.description} onChange={e => setCForm({ ...cForm, description: e.target.value })} placeholder="Description" className="bg-surface border border-border rounded-xl px-3 py-2 text-sm text-text" />
                     </div>
-                    <button type="submit" className="bg-gold/20 text-gold px-4 py-2 rounded-xl text-sm font-semibold hover:bg-gold/30">Create</button>
+                    <button type="submit" className="bg-primary text-[#E8D8B9] border border-gold/10 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primary-light transition-colors shadow-sm">Create</button>
                 </form>
             )}
 
@@ -98,7 +98,7 @@ export default function AdminKBPage() {
                     </div>
                     <input value={aForm.excerpt} onChange={e => setAForm({ ...aForm, excerpt: e.target.value })} placeholder="Excerpt" className="w-full bg-surface border border-border rounded-xl px-3 py-2 text-sm text-text" />
                     <textarea value={aForm.content} onChange={e => setAForm({ ...aForm, content: e.target.value })} placeholder="Content..." rows={6} className="w-full bg-surface border border-border rounded-xl px-3 py-2 text-sm text-text resize-none" required />
-                    <button type="submit" className="flex items-center gap-2 bg-gold/20 text-gold px-4 py-2 rounded-xl text-sm font-semibold hover:bg-gold/30">
+                    <button type="submit" className="flex items-center gap-2 bg-primary text-[#E8D8B9] border border-gold/10 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primary-light transition-colors shadow-sm">
                         <Save className="h-4 w-4" /> {editId ? 'Update' : 'Create'}
                     </button>
                 </form>

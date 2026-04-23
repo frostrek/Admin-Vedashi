@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useCallback, Fragment, useMemo } from 'react';
 import Link from 'next/link';
-import { getProducts, deleteProduct, bulkDeleteProducts, Product, getRankingOverrides, setRankingOverride, removeRankingOverride, RankingOverride, searchProductsAdmin, getProduct, updateVariantStatus, updateDefaultVariant, getDraftProducts, updateProduct } from '@/lib/api';
+import { getProducts, deleteProduct, bulkDeleteProducts, Product, getRankingOverrides, setRankingOverride, removeRankingOverride, RankingOverride, searchProductsAdmin, getProduct, updateVariantStatus, updateDefaultVariant, getDraftProducts, updateProduct, autoGenerateSeo } from '@/lib/api';
 import { getCategories } from '@/lib/api/category';
 import { Category } from '@/types/category';
-import { Download, SlidersHorizontal, Filter, Package, Star, Loader2, Tag, ChevronDown, FileEdit, X, ChevronLeft, ChevronRight, Plus, Pencil, Trash2, Search, UploadCloud } from 'lucide-react';
+import { Download, SlidersHorizontal, Filter, Package, Star, Loader2, Tag, ChevronDown, FileEdit, X, ChevronLeft, ChevronRight, Plus, Pencil, Trash2, Search, UploadCloud, Globe } from 'lucide-react';
 import SortableHeader, { SortDir, compare } from '@/components/SortableHeader';
 import toast from 'react-hot-toast';
 import BulkDiscountModal from '@/components/BulkDiscountModal';
@@ -598,6 +598,34 @@ export default function ProductsListPage() {
             }
         });
     };
+    
+    const handleBulkSeo = () => {
+        const count = selectedIds.size > 0 ? selectedIds.size : products.length;
+        const targetText = selectedIds.size > 0 ? `${selectedIds.size} selected product(s)` : 'ALL products';
+
+        setConfirmModal({
+            open: true,
+            title: 'Bulk SEO Generation',
+            message: `Are you sure you want to auto-generate SEO metadata and image alt text for ${targetText}? This will fill in missing fields and improve search visibility.`,
+            confirmVariant: 'primary',
+            confirmLabel: 'Generate',
+            onConfirm: async () => {
+                setConfirmModal(prev => ({ ...prev, loading: true }));
+                const res = await autoGenerateSeo({
+                    entity_type: 'product',
+                    entity_ids: selectedIds.size > 0 ? Array.from(selectedIds) : undefined,
+                    overwrite: false, // Don't overwrite existing manual entries by default
+                    include_alt_text: true
+                });
+                if (res.success) {
+                    toast.success('SEO generation complete');
+                } else {
+                    toast.error(res.error || 'SEO generation failed');
+                }
+                setConfirmModal(prev => ({ ...prev, open: false, loading: false }));
+            }
+        });
+    };
 
     const openDrafts = async () => {
         setDraftsOpen(true);
@@ -758,6 +786,14 @@ export default function ProductsListPage() {
                     >
                         <Tag className="h-4 w-4" />
                         <span className="hidden sm:inline">Bulk Actions</span>
+                    </button>
+                    <button
+                        onClick={handleBulkSeo}
+                        className="flex items-center gap-2 rounded-lg border border-gold/20 bg-gold/5 px-3 sm:px-4 py-2.5 text-sm font-semibold text-gold hover:bg-gold hover:text-white transition-all duration-300 shadow-sm"
+                        title="Auto-generate SEO for products"
+                    >
+                        <Globe className="h-4 w-4" />
+                        <span className="hidden sm:inline">Bulk SEO</span>
                     </button>
                     <button
                         onClick={() => setBulkExportOpen(true)}

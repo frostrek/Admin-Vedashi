@@ -237,14 +237,22 @@ aside:hover ::-webkit-scrollbar-thumb:hover {
   background: var(--surface-scrollbar-thumb-hover);
 }
 
-/* Modal scrollbar — thin */
+/* Modal scrollbar — minimal, hidden until hover */
 .overflow-y-auto::-webkit-scrollbar {
-  width: 4px;
+  width: 3px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .overflow-y-auto::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 99px;
+}
+
+.overflow-y-auto:hover::-webkit-scrollbar-thumb {
   background: var(--surface-scrollbar-thumb);
-  border-radius: 3px;
 }
 
 /* ─── Selection ─── */
@@ -265,7 +273,12 @@ select {
 
 input::placeholder,
 textarea::placeholder {
-  color: var(--t-text-muted) !important;
+  color: rgba(0, 0, 0, 0.5) !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: rgba(255, 255, 255, 0.4) !important;
 }
 
 select option {

@@ -237,7 +237,7 @@ function CreateCampaignForm() {
             <div className="grid gap-6">
                 {/* Campaign Details */}
                 <div className="bg-card-bg border border-border rounded-xl p-5 space-y-4">
-                    <h4 className="font-serif text-sm font-semibold text-text-secondary uppercase">Campaign Details</h4>
+                    <h4 className="font-serif text-sm font-semibold text-text-secondary">Campaign Details</h4>
                     <div>
                         <label className="block text-sm font-medium text-text-secondary mb-1.5">
                             Campaign Title <span className="text-red-400">*</span>
@@ -268,7 +268,7 @@ function CreateCampaignForm() {
                 {/* Audience */}
                 <div className="bg-card-bg border border-border rounded-xl p-5 space-y-3">
                     <div className="flex items-center justify-between">
-                        <h4 className="font-serif text-sm font-semibold text-text-secondary uppercase">Target Audience</h4>
+                        <h4 className="font-serif text-sm font-semibold text-text-secondary">Target Audience</h4>
                         <button
                             type="button"
                             onClick={() => {
@@ -393,7 +393,7 @@ function CreateCampaignForm() {
                 {/* Email Body */}
                 <div className="bg-card-bg border border-border rounded-xl p-5 space-y-3">
                     <div className="flex items-center justify-between">
-                        <h4 className="font-serif text-sm font-semibold text-text-secondary uppercase">Email Body (HTML)</h4>
+                        <h4 className="font-serif text-sm font-semibold text-text-secondary">Email Body (HTML)</h4>
                         <button
                             type="button"
                             onClick={() => setPreview(!preview)}
@@ -427,7 +427,7 @@ function CreateCampaignForm() {
 
                 {/* Send Mode */}
                 <div className="bg-card-bg border border-border rounded-xl p-5 space-y-4">
-                    <h4 className="font-serif text-sm font-semibold text-text-secondary uppercase">Delivery</h4>
+                    <h4 className="font-serif text-sm font-semibold text-text-secondary">Delivery</h4>
                     <div className="grid grid-cols-2 gap-3">
                         <label className={`flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition-colors ${scheduleMode === 'now' ? 'border-gold/40 bg-gold/[0.04]' : 'border-border hover:border-gold/20'}`}>
                             <input type="radio" name="scheduleMode" checked={scheduleMode === 'now'} onChange={() => setScheduleMode('now')} className="accent-gold" />
@@ -494,7 +494,7 @@ function CreateCampaignForm() {
                         <div className="flex items-center justify-between p-4 border-b border-border/50 bg-page-bg/50">
                             <div>
                                 <h1 className="font-serif text-2xl font-bold text-gold-soft">Add New Product</h1>
-                        <p className="text-[15px] font-semibold text-brown">Fill in the details to create a new product</p>
+                                <p className="text-[15px] font-semibold text-brown">Fill in the details to create a new product</p>
                             </div>
                             <button
                                 onClick={() => setShowRecipientsModal(false)}

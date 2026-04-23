@@ -945,7 +945,7 @@ export default function AddProductPage() {
                                     <button
                                         type="button"
                                         onClick={goNext}
-                                        className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark border border-gold/10 transition-all duration-300 shadow-lg shadow-primary/10"
+                                        className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-[#E8D8B9] hover:bg-primary-light border border-gold/10 transition-all duration-300 shadow-lg shadow-primary/10"
                                     >
                                         Next
                                         <ArrowRight className="h-4 w-4" />
@@ -955,7 +955,7 @@ export default function AddProductPage() {
                                         type="button"
                                         onClick={handleSubmit}
                                         disabled={loading}
-                                        className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark border border-gold/10 transition-all duration-300 shadow-lg shadow-primary/10 disabled:opacity-50"
+                                        className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-[#E8D8B9] hover:bg-primary-light border border-gold/10 transition-all duration-300 shadow-lg shadow-primary/10 disabled:opacity-50"
                                     >
                                         <Check className="h-4 w-4" />
                                         {loading ? 'Creating...' : 'Create Product'}
