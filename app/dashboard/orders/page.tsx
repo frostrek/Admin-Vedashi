@@ -764,7 +764,7 @@ export default function OrdersPage() {
                 </div>
                 <button
                     onClick={() => setExportOpen(true)}
-                    className="group flex items-center gap-2 rounded-xl border border-gold/25 bg-gradient-to-r from-primary to-primary-light px-5 py-2.5 text-sm font-semibold text-[#E8D8B9] hover:border-gold/50 transition-all duration-300 shadow-md hover:shadow-gold/10"
+                    className="group flex items-center gap-2 rounded-lg border border-gold/10 bg-primary px-5 py-2.5 text-sm font-semibold text-[#E8D8B9] hover:bg-primary-light transition-all duration-300 shadow-sm"
                 >
                     <Download className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5" />
                     Export
@@ -926,7 +926,7 @@ export default function OrdersPage() {
                             } finally { clearSelection(); setBulkProcessing(false); }
                         }}
                         disabled={bulkProcessing || (!bulkStatusValue && !bulkPaymentValue)}
-                        className="flex items-center gap-2 rounded-lg border border-[#E8D8B9]/40 bg-[#E8D8B9]/15 px-4 py-1.5 text-sm font-semibold text-[#E8D8B9] hover:bg-[#E8D8B9]/25 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                        className="flex items-center gap-2 rounded-lg border border-gold/10 bg-primary px-4 py-1.5 text-sm font-semibold text-[#E8D8B9] hover:bg-primary-light transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
                     >
                         {bulkProcessing ? <><RefreshCw className="h-3.5 w-3.5 animate-spin" /> Applying…</> : 'Apply'}
                     </button>

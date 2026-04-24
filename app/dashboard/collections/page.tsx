@@ -265,7 +265,7 @@ export default function CollectionsPage() {
                 </div>
                 <button
                     onClick={openCreate}
-                    className="flex items-center gap-2 px-8 py-3 bg-primary hover:bg-primary-dark shadow-lg hover:shadow-primary/20 text-white text-sm font-bold rounded-2xl transition-all transform active:scale-95"
+                    className="flex items-center gap-2 px-8 py-3 bg-primary hover:bg-primary-light border border-gold/10 shadow-lg shadow-primary/20 text-[#E8D8B9] text-sm font-bold rounded-lg transition-all transform active:scale-95"
                 >
                     <Plus className="w-5 h-5" /> New Collection
                 </button>

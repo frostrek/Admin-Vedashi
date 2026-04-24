@@ -43,7 +43,7 @@ export default function SeoHealthCheck() {
         try {
             setLoading(true);
             const res = await authFetch(`${API_URL}/api/seo/health-check`);
-            
+
             if (!res.ok) throw new Error(`Status ${res.status}`);
             const data = await res.json();
 
@@ -111,77 +111,84 @@ export default function SeoHealthCheck() {
     }
 
     return (
-        <div className="p-8 max-w-7xl mx-auto space-y-8 min-h-screen">
-            <div className="animate-fadeInUp" style={{ animationDelay: '0ms' }}>
-                <h1 className="font-serif text-3xl font-bold flex items-center gap-3 text-gold">
-                    <ShieldAlert className="h-8 w-8 text-gold" />
+        <div className="space-y-6 animate-fadeIn min-h-screen">
+            <div className="flex flex-col gap-1.5">
+                <h1 className="text-2xl font-bold text-text-primary">
                     SEO Health Check
                 </h1>
-                <p className="text-[15px] font-semibold text-brown mt-2">Audit your product catalog for missing or suboptimal SEO metadata.</p>
+                <p className="text-sm font-semibold text-black ml-1 flex items-center gap-2">
+                    Audit your product catalog for analysing SEO metadata.
+                </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-gradient-to-br from-card-bg to-card-bg-elevated p-6 rounded-2xl border border-border shadow-xl flex flex-col items-center justify-center text-center backdrop-blur-sm animate-fadeInUp" style={{ animationDelay: '100ms' }}>
-                    <span className="text-4xl font-bold text-gold">{products.length}</span>
-                    <span className="text-sm font-semibold text-gold-muted mt-2 whitespace-nowrap">Total Products Scanned</span>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                <div className="bg-card-bg p-5 rounded-2xl border border-border-subtle relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-gold/5 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
+                    <p className="text-xs text-text-muted font-bold uppercase tracking-wider mb-2">Total Scanned</p>
+                    <p className="text-3xl font-bold text-text-primary">{products.length}</p>
                 </div>
-                <div className="bg-gradient-to-br from-card-bg to-card-bg-elevated p-6 rounded-2xl border border-border shadow-xl flex flex-col items-center justify-center text-center backdrop-blur-sm animate-fadeInUp" style={{ animationDelay: '200ms' }}>
-                    <span className="text-4xl font-bold text-success flex items-center gap-2">
-                        <CheckCircle2 size={32} /> {healthyCount}
-                    </span>
-                    <span className="text-sm font-semibold text-gold-muted mt-2 whitespace-nowrap">Healthy Products</span>
+                <div className="bg-card-bg p-5 rounded-2xl border border-border-subtle relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-success/5 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
+                    <p className="text-xs text-text-muted font-bold uppercase tracking-wider mb-2">Healthy Registry</p>
+                    <div className="flex items-center gap-3">
+                        <p className="text-3xl font-bold text-success">{healthyCount}</p>
+                        <CheckCircle2 size={24} className="text-success/40" />
+                    </div>
                 </div>
-                <div className="bg-gradient-to-br from-card-bg to-card-bg-elevated p-6 rounded-2xl border border-border shadow-xl flex flex-col items-center justify-center text-center backdrop-blur-sm animate-fadeInUp" style={{ animationDelay: '300ms' }}>
-                    <span className="text-4xl font-bold text-warning flex items-center gap-2">
-                        <AlertTriangle size={32} /> {warningProducts.length}
-                    </span>
-                    <span className="text-sm font-semibold text-gold-muted mt-2 whitespace-nowrap">Needs Attention</span>
+                <div className="bg-card-bg p-5 rounded-2xl border border-border-subtle relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-danger/5 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
+                    <p className="text-xs text-text-muted font-bold uppercase tracking-wider mb-2">Needs Attention</p>
+                    <div className="flex items-center gap-3">
+                        <p className="text-3xl font-bold text-danger">{warningProducts.length}</p>
+                        <AlertTriangle size={24} className="text-danger/40" />
+                    </div>
                 </div>
             </div>
 
-            <div className="bg-gradient-to-br from-card-bg to-card-bg-elevated rounded-2xl shadow-xl border border-border overflow-hidden animate-fadeInUp backdrop-blur-sm" style={{ animationDelay: '400ms' }}>
-                <div className="px-6 py-5 border-b border-border bg-primary/10">
-                    <h4 className="font-serif text-base font-bold text-gold uppercase">Products Requiring SEO Updates</h4>
+            <div className="bg-card-bg rounded-2xl border border-border-subtle overflow-hidden shadow-sm">
+                <div className="px-5 py-4 border-b border-border-subtle bg-page-bg/50">
+                    <h4 className="font-serif text-sm font-bold text-text-primary">Products Requiring SEO Updates</h4>
                 </div>
 
                 {warningProducts.length === 0 ? (
                     <div className="p-12 text-center text-text-muted">
                         <CheckCircle2 className="mx-auto h-12 w-12 text-success opacity-50 mb-4" />
-                        <p className="text-lg font-medium text-gold">All products are fully optimized!</p>
+                        <p className="text-lg font-medium text-text-primary">All products are fully optimized!</p>
                         <p className="text-sm mt-1">No SEO warnings detected in current protocol registry.</p>
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-sm">
-                            <thead className="bg-primary/5 text-sm font-semibold text-gold-muted uppercase">
-                                <tr className="border-b border-border bg-page-bg/50">
-                                    <th className="px-5 py-3 text-sm font-bold text-gold-muted uppercase text-left">Product</th>
-                                    <th className="px-5 py-3 text-sm font-bold text-gold-muted uppercase text-left">Warnings</th>
-                                    <th className="px-5 py-3 text-sm font-bold text-gold-muted uppercase text-right">Actions</th>
+                            <thead className="bg-page-bg/50 text-xs font-semibold text-gold-muted uppercase border-b border-border-subtle">
+                                <tr>
+                                    <th className="px-5 py-3.5">Product</th>
+                                    <th className="px-5 py-3.5">Warnings</th>
+                                    <th className="px-5 py-3.5 text-right w-24">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-border-subtle">
+                            <tbody className="divide-y divide-border-subtle/50">
                                 {warningProducts.map((p) => (
-                                    <tr key={p.id} className="hover:bg-primary/5 transition-colors group">
-                                        <td className="px-6 py-4">
-                                            <div className="font-bold text-gold group-hover:text-gold-soft transition-colors">{p.name}</div>
-                                            <div className="text-text-muted text-[10px] mt-1 font-mono uppercase">{p.slug || 'No slug'}</div>
+                                    <tr key={p.id} className="hover:bg-page-bg/40 transition-colors group">
+                                        <td className="px-5 py-3">
+                                            <div className="font-bold text-text-primary text-[15px] group-hover:text-primary transition-colors">{p.name}</div>
+                                            <div className="text-text-muted text-[10px] mt-0.5 font-mono uppercase tracking-tight opacity-70">{p.slug || 'No slug'}</div>
                                         </td>
-                                        <td className="px-6 py-4 h-full align-middle">
-                                            <div className="flex flex-wrap gap-2">
+                                        <td className="px-5 py-3">
+                                            <div className="flex flex-wrap gap-1.5">
                                                 {p.warnings.map((w, i) => (
-                                                    <span key={i} className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-danger/10 text-danger border border-danger/20">
+                                                    <span key={i} className="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-black uppercase bg-danger/5 text-danger border border-danger/10">
                                                         {w}
                                                     </span>
                                                 ))}
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 text-right">
+                                        <td className="px-5 py-3 text-right">
                                             <Link
                                                 href={`/dashboard/products/edit/${p.slug || p.id}?step=4`}
-                                                className="inline-flex items-center gap-1 text-gold hover:text-gold-soft font-bold text-[11px] uppercase bg-primary/20 hover:bg-primary/40 border border-gold/10 px-3 py-1.5 rounded-lg transition-all"
+                                                className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-page-bg hover:bg-gold/10 text-text-muted hover:text-gold transition-all border border-border-subtle"
+                                                title="Edit SEO Registry"
                                             >
-                                                Edit <ArrowRight size={14} />
+                                                <ArrowRight size={16} />
                                             </Link>
                                         </td>
                                     </tr>

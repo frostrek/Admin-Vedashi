@@ -67,7 +67,7 @@ export default function AdminFaqsPage() {
                 </div>
                 <button
                     onClick={() => { setShowForm(!showForm); setEditId(null); setForm({ category: 'General', question: '', answer: '', sort_order: 0, is_visible: true }); }}
-                    className="flex items-center gap-2 bg-gold text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-gold transition-colors"
+                    className="flex items-center gap-2 bg-primary text-[#E8D8B9] border border-gold/10 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primary-light transition-all shadow-md"
                 >
                     {showForm ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
                     {showForm ? 'Cancel' : 'Add FAQ'}
@@ -114,7 +114,7 @@ export default function AdminFaqsPage() {
                         className="w-full bg-surface border border-border rounded-xl px-4 py-2.5 text-sm text-text resize-none"
                         required
                     />
-                    <button type="submit" className="flex items-center gap-2 bg-gold/20 text-gold px-5 py-2 rounded-xl text-sm font-semibold hover:bg-gold/30 transition-colors">
+                    <button type="submit" className="flex items-center gap-2 bg-primary text-[#E8D8B9] border border-gold/10 px-5 py-2 rounded-lg text-sm font-semibold hover:bg-primary-light transition-all shadow-md">
                         <Save className="h-4 w-4" />
                         {editId ? 'Update' : 'Create'}
                     </button>

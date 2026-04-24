@@ -59,7 +59,7 @@ export default function AdminHelpArticlesPage() {
                 </div>
                 <button
                     onClick={() => { setShowForm(!showForm); setEditId(null); setForm({ section: 'General', title: '', slug: '', content: '', is_published: false }); }}
-                    className="flex items-center gap-2 bg-gold/20 text-gold px-4 py-2 rounded-xl text-sm font-semibold hover:bg-gold/30 transition-colors"
+                    className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-[#E8D8B9] hover:bg-primary-light border border-gold/10 transition-all duration-300 shadow-sm"
                 >
                     {showForm ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
                     {showForm ? 'Cancel' : 'Add Article'}
@@ -81,7 +81,7 @@ export default function AdminHelpArticlesPage() {
                     </div>
                     <input type="text" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} placeholder="Slug (auto-generated)" className="w-full bg-surface border border-border rounded-xl px-4 py-2 text-sm text-text" />
                     <textarea value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} placeholder="Article content..." rows={8} className="w-full bg-surface border border-border rounded-xl px-4 py-2.5 text-sm text-text resize-none" required />
-                    <button type="submit" className="flex items-center gap-2 bg-gold/20 text-gold px-5 py-2 rounded-xl text-sm font-semibold hover:bg-gold/30 transition-colors">
+                    <button type="submit" className="flex items-center gap-2 bg-primary text-[#E8D8B9] px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primary-light transition-colors shadow-sm">
                         <Save className="h-4 w-4" /> {editId ? 'Update' : 'Create'}
                     </button>
                 </form>

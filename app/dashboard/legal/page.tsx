@@ -3,12 +3,12 @@
 import { useEffect, useState } from 'react';
 import { FileText, Plus, Search, Filter, Loader2, Edit2, Trash2, CheckCircle, XCircle, History, Eye, ArrowUp, ArrowDown, Type, Heading1, Info, Code } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { 
-    getAdminLegalDocuments, 
-    createAdminLegalDocument, 
-    updateAdminLegalDocument, 
+import {
+    getAdminLegalDocuments,
+    createAdminLegalDocument,
+    updateAdminLegalDocument,
     deleteAdminLegalDocument,
-    LegalDocument 
+    LegalDocument
 } from '@/lib/api';
 
 export default function LegalManagement() {
@@ -18,7 +18,7 @@ export default function LegalManagement() {
     const [isEditing, setIsEditing] = useState(false);
     const [currentDoc, setCurrentDoc] = useState<Partial<LegalDocument> | null>(null);
     const [isPreviewing, setIsPreviewing] = useState(false);
-    const [blocks, setBlocks] = useState<{type: 'heading' | 'paragraph' | 'html', text: string}[]>([]);
+    const [blocks, setBlocks] = useState<{ type: 'heading' | 'paragraph' | 'html', text: string }[]>([]);
 
     const loadData = async () => {
         setLoading(true);
@@ -37,7 +37,7 @@ export default function LegalManagement() {
     }, []);
 
     // Helper to parse content into blocks or return a default single paragraph block
-    const parseContentToBlocks = (content: string): {type: 'heading'|'paragraph'|'html', text: string}[] => {
+    const parseContentToBlocks = (content: string): { type: 'heading' | 'paragraph' | 'html', text: string }[] => {
         if (!content) return [];
         try {
             const parsed = JSON.parse(content);
@@ -78,7 +78,7 @@ export default function LegalManagement() {
     const moveBlock = (index: number, direction: 'up' | 'down') => {
         if (direction === 'up' && index === 0) return;
         if (direction === 'down' && index === blocks.length - 1) return;
-        
+
         const newBlocks = [...blocks];
         const targetIndex = direction === 'up' ? index - 1 : index + 1;
         [newBlocks[index], newBlocks[targetIndex]] = [newBlocks[targetIndex], newBlocks[index]];
@@ -87,7 +87,7 @@ export default function LegalManagement() {
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         // Convert blocks back to string for backend
         const content = JSON.stringify(blocks);
 
@@ -133,8 +133,8 @@ export default function LegalManagement() {
         }
     };
 
-    const filteredDocs = documents.filter(doc => 
-        doc.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    const filteredDocs = documents.filter(doc =>
+        doc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         doc.slug.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
@@ -143,10 +143,9 @@ export default function LegalManagement() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="font-serif text-2xl font-bold text-text-primary mb-1 flex items-center gap-2">
-                        <FileText className="h-6 w-6 text-gold" />
                         Legal Content Management
                     </h1>
-                    <p className="text-[15px] font-semibold text-brown border-l-2 border-gold/50 pl-3">
+                    <p className="text-[15px] font-semibold text-black">
                         Manage Terms of Service, Privacy Policy, and other legal documents.
                     </p>
                 </div>
@@ -156,7 +155,7 @@ export default function LegalManagement() {
                             setCurrentDoc({ slug: '', title: '', content: '', version: '1.0.0', is_active: true });
                             setIsEditing(true);
                         }}
-                        className="flex items-center gap-2 rounded-xl bg-gold px-4 py-2 font-semibold text-white transition hover:bg-gold-soft shadow-lg shadow-gold/20"
+                        className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-[#E8D8B9] transition-all hover:bg-primary-light"
                     >
                         <Plus className="h-4 w-4" /> New Legal Document
                     </button>
@@ -169,8 +168,8 @@ export default function LegalManagement() {
                         <h4 className="font-serif text-xl font-bold text-text-primary">
                             {currentDoc?.id ? `Edit Version ${currentDoc.version}` : 'Create New Legal Document'}
                         </h4>
-                        <button 
-                            onClick={() => { setIsEditing(false); setIsPreviewing(false); }} 
+                        <button
+                            onClick={() => { setIsEditing(false); setIsPreviewing(false); }}
                             className="text-text-muted hover:text-text-primary bg-page-bg px-3 py-1.5 rounded-lg text-sm border border-border-subtle transition"
                         >
                             Cancel
@@ -189,11 +188,11 @@ export default function LegalManagement() {
                                         </span>
                                     </span>
                                 </label>
-                                <input 
-                                    required 
-                                    type="text" 
-                                    value={currentDoc?.slug} 
-                                    onChange={e => setCurrentDoc({ ...currentDoc, slug: e.target.value })} 
+                                <input
+                                    required
+                                    type="text"
+                                    value={currentDoc?.slug}
+                                    onChange={e => setCurrentDoc({ ...currentDoc, slug: e.target.value })}
                                     placeholder="e.g. terms-of-service"
                                     className="w-full rounded-xl bg-page-bg border border-border-subtle px-4 py-2.5 text-sm text-text-primary focus:border-gold focus:outline-none"
                                     disabled={!!currentDoc?.id}
@@ -209,11 +208,11 @@ export default function LegalManagement() {
                                         </span>
                                     </span>
                                 </label>
-                                <input 
-                                    required 
-                                    type="text" 
-                                    value={currentDoc?.title} 
-                                    onChange={e => setCurrentDoc({ ...currentDoc, title: e.target.value })} 
+                                <input
+                                    required
+                                    type="text"
+                                    value={currentDoc?.title}
+                                    onChange={e => setCurrentDoc({ ...currentDoc, title: e.target.value })}
                                     placeholder="e.g. Terms of Service"
                                     className="w-full rounded-xl bg-page-bg border border-border-subtle px-4 py-2.5 text-sm text-text-primary focus:border-gold focus:outline-none"
                                 />
@@ -231,22 +230,22 @@ export default function LegalManagement() {
                                         </span>
                                     </span>
                                 </label>
-                                <input 
-                                    required 
-                                    type="text" 
-                                    value={currentDoc?.version} 
-                                    onChange={e => setCurrentDoc({ ...currentDoc, version: e.target.value })} 
+                                <input
+                                    required
+                                    type="text"
+                                    value={currentDoc?.version}
+                                    onChange={e => setCurrentDoc({ ...currentDoc, version: e.target.value })}
                                     placeholder="e.g. 1.0.1"
                                     className="w-full rounded-xl bg-page-bg border border-border-subtle px-4 py-2.5 text-sm text-text-primary focus:border-gold focus:outline-none"
                                 />
                             </div>
                             <div className="flex items-center gap-3 pt-8">
                                 <label className="relative inline-flex items-center cursor-pointer">
-                                    <input 
-                                        type="checkbox" 
-                                        checked={currentDoc?.is_active} 
-                                        onChange={e => setCurrentDoc({ ...currentDoc, is_active: e.target.checked })} 
-                                        className="sr-only peer" 
+                                    <input
+                                        type="checkbox"
+                                        checked={currentDoc?.is_active}
+                                        onChange={e => setCurrentDoc({ ...currentDoc, is_active: e.target.checked })}
+                                        className="sr-only peer"
                                     />
                                     <div className="w-11 h-6 bg-page-bg peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-text-muted after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-success peer-checked:after:bg-white border border-border-subtle"></div>
                                 </label>
@@ -266,21 +265,21 @@ export default function LegalManagement() {
                                     </span>
                                 </label>
                                 <div className="flex gap-2">
-                                    <button 
+                                    <button
                                         type="button"
                                         onClick={() => addBlock('heading')}
                                         className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-page-bg border border-border-subtle rounded-lg text-text-primary hover:border-gold transition"
                                     >
                                         <Heading1 className="h-3.5 w-3.5 text-gold" /> Add Heading
                                     </button>
-                                    <button 
+                                    <button
                                         type="button"
                                         onClick={() => addBlock('paragraph')}
                                         className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-page-bg border border-border-subtle rounded-lg text-text-primary hover:border-gold transition"
                                     >
                                         <Type className="h-3.5 w-3.5 text-gold" /> Add Paragraph
                                     </button>
-                                    <button 
+                                    <button
                                         type="button"
                                         onClick={() => addBlock('html')}
                                         className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-page-bg border border-border-subtle rounded-lg text-text-primary hover:border-gold transition"
@@ -288,7 +287,7 @@ export default function LegalManagement() {
                                         <Code className="h-3.5 w-3.5 text-gold" /> Add HTML
                                     </button>
                                     <div className="w-[1px] bg-border-subtle mx-1" />
-                                    <button 
+                                    <button
                                         type="button"
                                         onClick={() => setIsPreviewing(!isPreviewing)}
                                         className="text-xs font-bold text-gold hover:text-gold-soft flex items-center gap-1 px-3"
@@ -297,7 +296,7 @@ export default function LegalManagement() {
                                     </button>
                                 </div>
                             </div>
-                            
+
                             {isPreviewing ? (
                                 <div className="w-full min-h-[400px] rounded-xl bg-page-bg border border-border-subtle p-8 overflow-y-auto">
                                     <div className="max-w-3xl mx-auto space-y-6">
@@ -334,11 +333,10 @@ export default function LegalManagement() {
                                         <div key={idx} className="group relative bg-page-bg/50 border border-border-subtle rounded-xl p-4 transition-all hover:bg-page-bg hover:border-gold/30">
                                             <div className="flex items-center justify-between mb-2">
                                                 <div className="flex items-center gap-2">
-                                                    <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase ${
-                                                        block.type === 'heading' ? 'bg-gold/10 text-gold border border-gold/20' : 
+                                                    <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase ${block.type === 'heading' ? 'bg-gold/10 text-gold border border-gold/20' :
                                                         block.type === 'paragraph' ? 'bg-success/10 text-success border border-success/20' :
-                                                        'bg-neutral-800 text-gold border border-neutral-700'
-                                                    }`}>
+                                                            'bg-neutral-800 text-gold border border-neutral-700'
+                                                        }`}>
                                                         {block.type}
                                                     </span>
                                                     <span className="text-[10px] text-text-muted font-bold">#{idx + 1}</span>
@@ -351,7 +349,7 @@ export default function LegalManagement() {
                                                 </div>
                                             </div>
                                             {block.type === 'heading' ? (
-                                                <input 
+                                                <input
                                                     type="text"
                                                     value={block.text}
                                                     onChange={e => updateBlock(idx, e.target.value)}
@@ -359,7 +357,7 @@ export default function LegalManagement() {
                                                     className="w-full bg-card-bg border border-border-subtle rounded-lg px-4 py-2.5 text-lg font-bold text-text-primary focus:border-gold focus:outline-none"
                                                 />
                                             ) : block.type === 'paragraph' ? (
-                                                <textarea 
+                                                <textarea
                                                     rows={4}
                                                     value={block.text}
                                                     onChange={e => updateBlock(idx, e.target.value)}
@@ -368,7 +366,7 @@ export default function LegalManagement() {
                                                 ></textarea>
                                             ) : (
                                                 <div className="space-y-2">
-                                                    <textarea 
+                                                    <textarea
                                                         rows={10}
                                                         value={block.text}
                                                         onChange={e => updateBlock(idx, e.target.value)}
@@ -385,16 +383,16 @@ export default function LegalManagement() {
                         </div>
 
                         <div className="pt-6 border-t border-border-subtle text-right flex justify-end gap-3">
-                            <button 
+                            <button
                                 type="button"
                                 onClick={() => { setIsEditing(false); setIsPreviewing(false); }}
                                 className="px-6 py-2.5 rounded-xl border border-border-subtle text-text-muted hover:text-text-primary font-bold text-sm transition"
                             >
                                 Cancel
                             </button>
-                            <button 
-                                type="submit" 
-                                className="rounded-xl bg-gold px-8 py-2.5 text-sm font-bold text-white transition hover:bg-gold-soft shadow-lg shadow-gold/20"
+                            <button
+                                type="submit"
+                                className="rounded-lg bg-primary px-8 py-2.5 text-sm font-bold text-[#E8D8B9] border border-gold/10 transition-all hover:bg-primary-light shadow-lg shadow-primary/10"
                             >
                                 {currentDoc?.id ? 'Update Version' : 'Save Document'}
                             </button>
@@ -402,18 +400,18 @@ export default function LegalManagement() {
                     </form>
                 </div>
             ) : (
-                <div className="bg-card-bg border border-border-subtle rounded-xl p-6 min-h-[500px]">
-                    <div className="flex items-center justify-between mb-6">
+                <div className="bg-card-bg border border-border-subtle rounded-xl py-6 min-h-[500px]">
+                    <div className="flex items-center justify-between mb-6 px-6">
                         <h4 className="font-serif text-lg font-bold text-text-primary">Legal Documents & Versions</h4>
                         <div className="flex gap-2">
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
-                                <input 
-                                    type="text" 
-                                    placeholder="Search documents..." 
+                                <input
+                                    type="text"
+                                    placeholder="Search documents..."
                                     value={searchQuery}
                                     onChange={e => setSearchQuery(e.target.value)}
-                                    className="w-48 sm:w-64 rounded-xl bg-page-bg border border-border-subtle py-2 pl-9 pr-4 text-sm text-text-primary focus:border-gold focus:outline-none" 
+                                    className="w-48 sm:w-64 rounded-xl bg-page-bg border border-border-subtle py-2 pl-9 pr-4 text-sm text-text-primary focus:border-gold focus:outline-none"
                                 />
                             </div>
                             <button className="rounded-xl border border-border-subtle bg-page-bg p-2 text-text-muted hover:text-text-primary transition">
@@ -426,11 +424,11 @@ export default function LegalManagement() {
                         <table className="w-full text-left text-sm text-text-muted">
                             <thead className="bg-page-bg/50 text-sm font-semibold text-gold-muted uppercase">
                                 <tr>
-                                    <th className="px-4 py-3">Title / Slug</th>
+                                    <th className="pl-6 pr-4 py-3">Title / Slug</th>
                                     <th className="px-4 py-3">Version</th>
                                     <th className="px-4 py-3">Status</th>
                                     <th className="px-4 py-3">Last Updated</th>
-                                    <th className="px-4 py-3 text-right">Actions</th>
+                                    <th className="px-4 py-3 pr-6 text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border-subtle">
@@ -449,7 +447,7 @@ export default function LegalManagement() {
                                     </tr>
                                 ) : filteredDocs.map((doc) => (
                                     <tr key={doc.id} className="hover:bg-page-bg/30 transition">
-                                        <td className="px-4 py-3">
+                                        <td className="pl-6 pr-4 py-3">
                                             <p className="font-bold text-text-primary">{doc.title}</p>
                                             <p className="text-[10px] text-gold-muted font-bold uppercase">{doc.slug}</p>
                                         </td>
@@ -470,16 +468,16 @@ export default function LegalManagement() {
                                         <td className="px-4 py-3 text-text-secondary text-xs">
                                             {new Date(doc.updated_at).toLocaleDateString()}
                                         </td>
-                                        <td className="px-4 py-3 text-right">
+                                        <td className="px-4 py-3 pr-6 text-right">
                                             <div className="flex justify-end gap-2">
-                                                <button 
+                                                <button
                                                     onClick={() => { setCurrentDoc(doc); setIsEditing(true); }}
                                                     className="p-2 text-text-muted hover:text-gold transition bg-page-bg rounded-lg border border-border-subtle"
                                                     title="Edit Version"
                                                 >
                                                     <Edit2 className="h-4 w-4" />
                                                 </button>
-                                                <button 
+                                                <button
                                                     onClick={() => handleDelete(doc.id)}
                                                     className="p-2 text-text-muted hover:text-danger transition bg-page-bg rounded-lg border border-border-subtle"
                                                     title="Delete Version"

@@ -31,7 +31,7 @@ export default function KPICard({ label, value, delta, deltaLabel, tooltip, isIn
         </div>
       </div>
       <div className="flex items-end justify-between gap-4 mt-auto">
-        <span className="text-[26px] xl:text-3xl font-bold font-serif text-gold whitespace-nowrap tracking-tight">{value}</span>
+        <span className="text-[26px] xl:text-3xl font-bold font-serif text-black whitespace-nowrap tracking-tight">{value}</span>
         {delta !== undefined && (
           <div className="flex flex-col items-end shrink-0">
             <DeltaBadge delta={delta} isInverted={isInvertedDelta} />

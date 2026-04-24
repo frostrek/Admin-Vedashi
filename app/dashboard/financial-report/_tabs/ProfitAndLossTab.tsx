@@ -182,7 +182,7 @@ export default function ProfitAndLossTab({ data }: { data?: FinancialReportData 
         .plv2-sh-left { display:flex; align-items:center; gap:10px; }
         .plv2-sh-bar { width:3px; height:16px; border-radius:2px; flex-shrink:0; background:linear-gradient(to bottom,${GOLD},${GOLD_LIGHT}); }
         .plv2-sh-title { font-size:11px; font-weight:700; letter-spacing:0.10em; text-transform:uppercase; color:var(--t-text-muted,#888); }
-        .plv2-sh-badge { font-size:10px; letter-spacing:0.03em; color:var(--t-text-muted,#888); background:var(--t-page-bg,rgba(255,255,255,0.04)); border:1px solid rgba(168,146,80,0.10); border-radius:999px; padding:3px 10px; }
+        .plv2-sh-badge { font-size:10px; letter-spacing:0.04em; color:#444444; background:var(--t-page-bg,rgba(255,255,255,0.04)); border:1px solid rgba(168,146,80,0.10); border-radius:999px; padding:3px 10px; }
         .plv2-rule { height:1px; margin:14px 0; background:linear-gradient(90deg,transparent,${GOLD} 30%,${GOLD_LIGHT} 50%,${GOLD} 70%,transparent); opacity:0.18; }
 
         .plv2-row2 { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
@@ -208,7 +208,7 @@ export default function ProfitAndLossTab({ data }: { data?: FinancialReportData 
         .plv2-pie-wrap { position:relative; height:210px; }
         .plv2-pie-centre { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:none; gap:2px; }
         .plv2-pie-label { font-size:9px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--t-text-muted,#777); }
-        .plv2-pie-val { font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:700; color:${GOLD}; line-height:1.1; font-variant-numeric:tabular-nums; }
+        .plv2-pie-val { font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:700; color:#000000; line-height:1.1; font-variant-numeric:tabular-nums; }
         .plv2-pay-row { display:flex; align-items:center; justify-content:space-between; padding:8px 10px; border-radius:10px; cursor:pointer; border-bottom:1px solid rgba(168,146,80,0.07); transition:background 0.15s; }
         .plv2-pay-row:last-child { border-bottom:none; }
         .plv2-pay-row:hover { background:rgba(255,255,255,0.04); }
@@ -384,7 +384,7 @@ export default function ProfitAndLossTab({ data }: { data?: FinancialReportData 
                   <div className="plv2-wf-track">
                     <div className="plv2-wf-fill" style={{ width:`${Math.min(Math.abs(item.pct),100)}%`, background:fill }} />
                   </div>
-                  <span className={`plv2-wf-val${item.bold ? ' plv2-wf-val--bold' : ''}`} style={{ color: isNeg ? DANGER : (item.bold ? GOLD : 'var(--t-text-primary,#fff)') }}>
+                  <span className={`plv2-wf-val${item.bold ? ' plv2-wf-val--bold' : ''}`} style={{ color: isNeg ? DANGER : (item.bold ? '#000000' : 'var(--t-text-primary,#fff)') }}>
                     {isNeg ? '−' : ''}{formatINR(Math.abs(item.value))}
                   </span>
                 </div>
@@ -462,8 +462,8 @@ export default function ProfitAndLossTab({ data }: { data?: FinancialReportData 
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgba(168,146,80,0.07)" />
-                  <XAxis type="number" stroke="var(--t-text-muted,#666)" fontSize={9} tickLine={false} axisLine={false} tickFormatter={(v) => `₹${(v/1000).toFixed(0)}k`} />
-                  <YAxis dataKey="category" type="category" stroke="var(--t-text-muted,#666)" fontSize={11} tickLine={false} axisLine={false} width={116} tick={{ fill:'var(--t-text-secondary,#aaa)', fontFamily:"'DM Sans',sans-serif" }} />
+                  <XAxis type="number" stroke="#333333" fontSize={9} tickLine={false} axisLine={false} tickFormatter={(v) => `₹${(v/1000).toFixed(0)}k`} />
+                  <YAxis dataKey="category" type="category" stroke="#333333" fontSize={11} tickLine={false} axisLine={false} width={116} tick={{ fill:'#333333', fontFamily:"'DM Sans',sans-serif" }} />
                   <RechartsTooltip content={<BarTooltip />} cursor={{ fill:'rgba(168,146,80,0.06)' }} />
                    <Bar 
                     dataKey="revenue" 
@@ -502,7 +502,7 @@ export default function ProfitAndLossTab({ data }: { data?: FinancialReportData 
                     </div>
                     <span style={{ fontSize:12, fontWeight:isTop?600:400, color:'var(--t-text-primary,#fff)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{p.name}</span>
                     <span style={{ fontSize:12, color:'var(--t-text-secondary,#aaa)', textAlign:'right', fontVariantNumeric:'tabular-nums' }}>{p.unitsSold.toLocaleString('en-IN')}</span>
-                    <span style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:16, fontWeight:700, color:GOLD, textAlign:'right', fontVariantNumeric:'tabular-nums' }}>{formatINR(p.revenue)}</span>
+                    <span style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:16, fontWeight:700, color:'#000000', textAlign:'right', fontVariantNumeric:'tabular-nums' }}>{formatINR(p.revenue)}</span>
                     <span style={{ fontSize:10, fontWeight:700, textAlign:'right', color:isTop?GOLD:PRIMARY_MID, background:isTop?GOLD_PALE:PRIMARY_PALE, borderRadius:999, padding:'2px 7px', fontFamily:"'DM Sans',sans-serif" }}>{pct}%</span>
                   </div>
                 );

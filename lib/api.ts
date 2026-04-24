@@ -3716,3 +3716,25 @@ export async function deleteProductCountryPrice(productId: string, countryCode: 
         return false;
     }
 }
+
+/* ─── SEO Automation ─── */
+
+export async function autoGenerateSeo(params: { 
+    entity_type: 'product', 
+    entity_ids?: string[], 
+    overwrite?: boolean, 
+    include_alt_text?: boolean 
+}): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+        const res = await authFetch(`${API_URL}/api/seo/auto-generate`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify(params),
+        });
+        const json = await res.json();
+        return { success: json.success, data: json.data, error: json.message };
+    } catch (error) {
+        console.error('[Admin API] Failed to auto-generate SEO:', error);
+        return { success: false, error: 'Network error' };
+    }
+}

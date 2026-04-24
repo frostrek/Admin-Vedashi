@@ -247,7 +247,7 @@ export default function SecurityDashboard() {
                 </div>
                 <button
                     onClick={fetchData}
-                    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl border transition-all duration-300 text-[11px] font-bold uppercase ${isDark ? 'bg-primary/20 border-gold/10 text-gold-soft hover:text-gold hover:bg-primary/40' : 'bg-primary text-gold hover:bg-primary-light border-gold/20 shadow-md'}`}
+                    className={`flex items-center gap-2 px-5 py-2.5 rounded-lg border transition-all duration-300 text-[11px] font-bold uppercase bg-primary text-[#E8D8B9] border-gold/10 hover:bg-primary-light shadow-lg shadow-primary/20`}
                 >
                     <RefreshCw className="h-4 w-4" />
                     Refresh Protocol
@@ -383,7 +383,7 @@ export default function SecurityDashboard() {
                         <button
                             onClick={handleCreateBackup}
                             disabled={creatingBackup}
-                            className="flex items-center gap-2 px-6 py-2.5 bg-primary text-gold border border-gold/20 font-bold uppercase text-[11px] rounded-xl hover:bg-primary/80 transition-all duration-300 disabled:opacity-50 shadow-lg shadow-black/40"
+                            className="flex items-center gap-2 px-6 py-2.5 bg-primary text-[#E8D8B9] border border-gold/10 font-bold uppercase text-[11px] rounded-lg hover:bg-primary-light transition-all duration-300 disabled:opacity-50 shadow-lg shadow-primary/20"
                         >
                             {creatingBackup ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />

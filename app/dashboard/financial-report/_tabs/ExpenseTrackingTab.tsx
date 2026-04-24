@@ -173,7 +173,7 @@ export default function ExpenseTrackingTab({ data }: { data?: ExpenseBreakdown }
         .ext-sh-left { display:flex; align-items:center; gap:10px; }
         .ext-sh-bar { width:3px; height:16px; border-radius:2px; flex-shrink:0; background:linear-gradient(to bottom,${GOLD},${GOLD_LIGHT}); }
         .ext-sh-title { font-size:11px; font-weight:700; letter-spacing:0.10em; text-transform:uppercase; color:var(--t-text-muted,#888); }
-        .ext-sh-badge { font-size:10px; letter-spacing:0.03em; color:var(--t-text-muted,#888); background:var(--t-page-bg,rgba(255,255,255,0.04)); border:1px solid rgba(168,146,80,0.10); border-radius:999px; padding:3px 10px; }
+        .ext-sh-badge { font-size:10px; letter-spacing:0.04em; color:#444444; background:var(--t-page-bg,rgba(255,255,255,0.04)); border:1px solid rgba(168,146,80,0.10); border-radius:999px; padding:3px 10px; }
         .ext-rule { height:1px; margin:14px 0; background:linear-gradient(90deg,transparent,${GOLD} 30%,${GOLD_LIGHT} 50%,${GOLD} 70%,transparent); opacity:0.18; }
 
         .ext-kpi { display:grid; grid-template-columns:repeat(5,1fr); gap:14px; }
@@ -186,7 +186,7 @@ export default function ExpenseTrackingTab({ data }: { data?: ExpenseBreakdown }
         .ext-pie-wrap { position:relative; height:220px; }
         .ext-pie-centre { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:none; gap:2px; }
         .ext-pie-label { font-size:9px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--t-text-muted,#777); }
-        .ext-pie-val { font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:700; color:${GOLD}; line-height:1.1; font-variant-numeric:tabular-nums; }
+        .ext-pie-val { font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:700; color:#000000; line-height:1.1; font-variant-numeric:tabular-nums; }
 
         .ext-legend-row {
           display:flex; align-items:center; justify-content:space-between;
@@ -252,8 +252,8 @@ export default function ExpenseTrackingTab({ data }: { data?: ExpenseBreakdown }
                   }
                 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(168,146,80,0.07)" />
-                  <XAxis dataKey="period" stroke="var(--t-text-muted,#666)" fontSize={10} tickFormatter={formatDate} tickLine={false} axisLine={false} />
-                  <YAxis stroke="var(--t-text-muted,#666)" fontSize={10} tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`} tickLine={false} axisLine={false} />
+                  <XAxis dataKey="period" stroke="#333333" fontSize={10} tickFormatter={formatDate} tickLine={false} axisLine={false} />
+                  <YAxis stroke="#333333" fontSize={10} tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`} tickLine={false} axisLine={false} />
                   <RechartsTooltip content={<BarTooltipContent />} cursor={{ fill: 'rgba(168,146,80,0.06)' }} />
                   <Bar dataKey="shipping" name="Shipping" stackId="a" fill={PRIMARY} radius={[0, 0, 0, 0]} style={{ cursor: 'pointer' }} />
                   <Bar dataKey="discounts" name="Discounts" stackId="a" fill={PRIMARY_LIGHT} style={{ cursor: 'pointer' }} />
