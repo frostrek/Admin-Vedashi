@@ -211,7 +211,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
             setForm({
                 product_name: product.product_name || '',
                 brand: product.brand || '',
-                category_id: finalCatId,                country_of_origin: product.country_of_origin || (product as any).specifications?.country_of_origin || '',
+                category_id: finalCatId, country_of_origin: product.country_of_origin || (product as any).specifications?.country_of_origin || '',
                 form_type: (product as any).form || '',
                 specialities: (product as any).specialities || [],
 
@@ -232,7 +232,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
 
             // ── Step 2 & 3: Variants ──
             if (Array.isArray(product.variants) && product.variants.length > 0) {
-                const newDimConfigs = {
+                const newDimConfigs: Record<string, { active: boolean; values: string[] }> = {
                     weight: { active: false, values: [] as string[] },
                     volume: { active: false, values: [] as string[] },
                     count: { active: false, values: [] as string[] },
@@ -241,10 +241,10 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                     pack: { active: false, values: [] as string[] },
                     combo: { active: false, values: [] as string[] },
                 };
-                // Determine if this product relies entirely on shared images
+                // Determine if this product relies entirely on shared image
                 const allAssets: any[] = (product as any).assets || [];
                 const currentVariantIds = new Set(product.variants.map((v: any) => (v.variant_id || '').toLowerCase()));
-                
+
                 const distinctImageIds = new Set(
                     allAssets
                         .filter(a => !(a.media_type || a.mime_type || '').toLowerCase().startsWith('video'))
@@ -359,13 +359,13 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                         .filter((a: any) => {
                             const mt = (a.media_type || a.mime_type || '').toLowerCase();
                             if (mt.startsWith('video')) return false;
-                            
+
                             const aid = normalizeId(a.variant_id);
                             const vid = normalizeId(v.variant_id);
-                            
+
                             if (isSharedImages && index === 0) return true;
                             if (isSharedImages && index > 0) return false;
-                            
+
                             return (aid === vid || (!a.variant_id && index === 0));
                         })
                         .map((a: any) => {
@@ -381,13 +381,13 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                         .filter((a: any) => {
                             const mt = (a.media_type || a.mime_type || '').toLowerCase();
                             if (!mt.startsWith('video')) return false;
-                            
+
                             const aid = normalizeId(a.variant_id);
                             const vid = normalizeId(v.variant_id);
-                            
+
                             if (isSharedVideos && index === 0) return true;
                             if (isSharedVideos && index > 0) return false;
-                            
+
                             return (aid === vid || (!a.variant_id && index === 0));
                         })
                         .map((a: any) => {
@@ -859,7 +859,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                     if (v.count) options['Count'] = v.count;
                     if (v.combo && v.combo !== 'No') options['Combo'] = v.combo;
                     if (v.combo && v.combo !== 'No') options['Combo'] = v.combo;
-                    
+
                     // Serialize custom dimension types
                     customDimTypes.forEach(typeName => {
                         const key = typeName.toLowerCase();
@@ -1770,7 +1770,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     {/* Country Pricing Editor */}
                                     <div className="mt-8 border-t border-border pt-8">
                                         <CountryPricingEditor productId={id} defaultPriceInr={variants.length > 0 ? variants[0].price : 0} />
@@ -1824,11 +1824,10 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                                             <button
                                                                 type="button"
                                                                 onClick={() => toggleDimensionActive(key)}
-                                                                className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 text-left pr-8 ${
-                                                                    config.active
-                                                                        ? 'bg-gold/[0.08] border-gold/40 text-gold-soft shadow-sm shadow-gold/10'
-                                                                        : 'bg-white/[0.02] border-border text-text-secondary hover:border-gold/20 hover:text-text-primary'
-                                                                }`}
+                                                                className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 text-left pr-8 ${config.active
+                                                                    ? 'bg-gold/[0.08] border-gold/40 text-gold-soft shadow-sm shadow-gold/10'
+                                                                    : 'bg-white/[0.02] border-border text-text-secondary hover:border-gold/20 hover:text-text-primary'
+                                                                    }`}
                                                             >
                                                                 <Tag className={`h-4 w-4 flex-shrink-0 ${config.active ? 'text-gold' : 'text-text-muted'}`} />
                                                                 <span className="text-sm font-medium truncate">{typeName}</span>
@@ -2059,48 +2058,48 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                 {(() => {
                                     const activeDims = Object.entries(dimConfigs).filter(([_, c]) => c.active);
                                     return (
-                                <div className="border border-border rounded-xl bg-card-bg overflow-hidden shadow-sm">
-                                    <div className="w-full overflow-x-auto">
-                                        <table className="min-w-[1200px] w-full text-left text-sm whitespace-nowrap">
-                                            <thead className="bg-white/5 border-b border-border">
-                                                <tr>
-                                                    <th className="px-4 py-4 w-10 text-center">#</th>
-                                                    {activeDims.map(([dim]) => (
-                                                        <th key={dim} className="px-4 py-4 font-medium text-text-secondary">{dim.charAt(0).toUpperCase() + dim.slice(1)}</th>
-                                                    ))}
-                                                    <th className="px-4 py-4 font-medium text-text-secondary">Product Name <span className="text-danger text-xs">*</span></th>
-                                                    <th className="px-4 py-4 font-medium text-text-secondary">SKU <span className="text-danger text-xs">*</span></th>
-                                                    <th className="px-4 py-4 font-medium text-text-secondary">Model No.</th>
-                                                    <th className="px-4 py-4 font-medium text-text-secondary">Selling Price <span className="text-danger text-xs">*</span></th>
-                                                    <th className="px-4 py-4 font-medium text-text-secondary group relative">
-                                                        MRP
-                                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-max max-w-[200px] bg-black/90 text-white text-xs rounded p-2 z-10 whitespace-normal text-center">
-                                                            Original price shown as strikethrough on storefront
-                                                        </div>
-                                                    </th>
-                                                    <th className="px-4 py-4 font-medium text-text-secondary">Discount %</th>
-                                                    <th className="px-4 py-4 font-medium text-text-secondary">Stock <span className="text-danger text-xs">*</span></th>
-                                                    <th className="px-4 py-4 font-medium text-text-secondary w-16 text-center">Actions</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-border/50">
-                                                {variants.map((variant, vIdx) => {
-                                                    const isDuplicate = variant.sku && duplicateSkus.includes(variant.sku);
-                                                    const isExpanded = expandedVariantIndex === vIdx;
-                                                    return (
-                                                        <React.Fragment key={vIdx}>
-                                                            <tr className={`transition-colors ${isExpanded ? 'bg-white/[0.04]' : 'hover:bg-white/[0.02]'}`}>
-                                                                {/* 1. # (Static non-editable row number) */}
-                                                                <td className="px-4 py-3 align-top pt-4 text-center">
-                                                                    <span className="text-xs font-semibold text-text-muted">{vIdx + 1}</span>
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => toggleExpandVariant(vIdx)}
-                                                                        className="text-text-muted hover:text-gold transition-colors block mx-auto mt-1"
-                                                                    >
-                                                                        {isExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-                                                                    </button>
-                                                                </td>
+                                        <div className="border border-border rounded-xl bg-card-bg overflow-hidden shadow-sm">
+                                            <div className="w-full overflow-x-auto">
+                                                <table className="min-w-[1200px] w-full text-left text-sm whitespace-nowrap">
+                                                    <thead className="bg-white/5 border-b border-border">
+                                                        <tr>
+                                                            <th className="px-4 py-4 w-10 text-center">#</th>
+                                                            {activeDims.map(([dim]) => (
+                                                                <th key={dim} className="px-4 py-4 font-medium text-text-secondary">{dim.charAt(0).toUpperCase() + dim.slice(1)}</th>
+                                                            ))}
+                                                            <th className="px-4 py-4 font-medium text-text-secondary">Product Name <span className="text-danger text-xs">*</span></th>
+                                                            <th className="px-4 py-4 font-medium text-text-secondary">SKU <span className="text-danger text-xs">*</span></th>
+                                                            <th className="px-4 py-4 font-medium text-text-secondary">Model No.</th>
+                                                            <th className="px-4 py-4 font-medium text-text-secondary">Selling Price <span className="text-danger text-xs">*</span></th>
+                                                            <th className="px-4 py-4 font-medium text-text-secondary group relative">
+                                                                MRP
+                                                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-max max-w-[200px] bg-black/90 text-white text-xs rounded p-2 z-10 whitespace-normal text-center">
+                                                                    Original price shown as strikethrough on storefront
+                                                                </div>
+                                                            </th>
+                                                            <th className="px-4 py-4 font-medium text-text-secondary">Discount %</th>
+                                                            <th className="px-4 py-4 font-medium text-text-secondary">Stock <span className="text-danger text-xs">*</span></th>
+                                                            <th className="px-4 py-4 font-medium text-text-secondary w-16 text-center">Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-border/50">
+                                                        {variants.map((variant, vIdx) => {
+                                                            const isDuplicate = variant.sku && duplicateSkus.includes(variant.sku);
+                                                            const isExpanded = expandedVariantIndex === vIdx;
+                                                            return (
+                                                                <React.Fragment key={vIdx}>
+                                                                    <tr className={`transition-colors ${isExpanded ? 'bg-white/[0.04]' : 'hover:bg-white/[0.02]'}`}>
+                                                                        {/* 1. # (Static non-editable row number) */}
+                                                                        <td className="px-4 py-3 align-top pt-4 text-center">
+                                                                            <span className="text-xs font-semibold text-text-muted">{vIdx + 1}</span>
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() => toggleExpandVariant(vIdx)}
+                                                                                className="text-text-muted hover:text-gold transition-colors block mx-auto mt-1"
+                                                                            >
+                                                                                {isExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                                                                            </button>
+                                                                        </td>
 
                                                                         {/* Dimension columns */}
                                                                         {activeDims.map(([dim, config]) => (
@@ -2194,305 +2193,305 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                                                             })()}
                                                                         </td>
 
-                                                                {/* 12. Stock */}
-                                                                <td className="px-4 py-3 align-top min-w-[100px]">
-                                                                    <div className="relative">
-                                                                        <input
-                                                                            type="number"
-                                                                            value={variant.stock}
-                                                                            onChange={e => updateVariant(vIdx, 'stock', e.target.value ? parseInt(e.target.value) : 0)}
-                                                                            className={`w-full rounded-md border px-3 py-1.5 text-sm focus:outline-none bg-transparent transition-colors ${Number(variant.stock) < 0 ? 'border-danger focus:border-danger text-danger' : 'border-border focus:border-gold/40'}`}
-                                                                        />
-                                                                        {Number(variant.stock) < 0 && (
-                                                                            <p className="absolute left-0 -bottom-4 text-[10px] text-danger whitespace-nowrap animate-in fade-in">Stock cannot be negative</p>
-                                                                        )}
-                                                                    </div>
-                                                                </td>
-
-                                                                {/* 13. Actions */}
-                                                                <td className="px-4 py-3 text-center align-top pt-3">
-                                                                    <div className="flex items-center justify-center gap-1">
-                                                                        {vIdx === 0 ? (
-                                                                            <Star className="h-4 w-4 fill-amber-400 text-amber-400 mx-1.5 drop-shadow-[0_0_8px_rgba(251,191,36,0.4)]" />
-                                                                        ) : (
-                                                                            <div className="w-7"></div>
-                                                                        )}
-                                                                        <button
-                                                                            type="button"
-                                                                            onClick={() => removeVariantRow(vIdx)}
-                                                                            className="text-text-muted hover:text-danger p-1.5 rounded-lg transition-colors hover:bg-white/5"
-                                                                        >
-                                                                            <Trash2 className="h-4 w-4" />
-                                                                        </button>
-                                                                    </div>
-                                                                </td>
-                                                            </tr>
-
-                                                            {isExpanded && (
-                                                                <tr className="bg-white/[0.01] border-b border-border">
-                                                                    <td colSpan={9 + activeDims.length} className="p-5">
-                                                                        <div className="animate-fade-in-up space-y-6">
-
-                                                                            {/* ÔöÇÔöÇ Extra fields row ÔöÇÔöÇ */}
-                                                                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                                                                                <div>
-                                                                                    <label className="block text-xs font-medium text-text-secondary mb-1">Shelf Life (months)</label>
-                                                                                    <input
-                                                                                        type="number" min="0"
-                                                                                        value={variant.shelf_life}
-                                                                                        onChange={e => updateVariant(vIdx, 'shelf_life', e.target.value)}
-                                                                                        onWheel={e => (e.target as HTMLInputElement).blur()}
-                                                                                        className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
-                                                                                        placeholder="e.g. 24"
-                                                                                    />
-                                                                                </div>
+                                                                        {/* 12. Stock */}
+                                                                        <td className="px-4 py-3 align-top min-w-[100px]">
+                                                                            <div className="relative">
+                                                                                <input
+                                                                                    type="number"
+                                                                                    value={variant.stock}
+                                                                                    onChange={e => updateVariant(vIdx, 'stock', e.target.value ? parseInt(e.target.value) : 0)}
+                                                                                    className={`w-full rounded-md border px-3 py-1.5 text-sm focus:outline-none bg-transparent transition-colors ${Number(variant.stock) < 0 ? 'border-danger focus:border-danger text-danger' : 'border-border focus:border-gold/40'}`}
+                                                                                />
+                                                                                {Number(variant.stock) < 0 && (
+                                                                                    <p className="absolute left-0 -bottom-4 text-[10px] text-danger whitespace-nowrap animate-in fade-in">Stock cannot be negative</p>
+                                                                                )}
                                                                             </div>
+                                                                        </td>
 
-                                                                            {/* ─ Dimensions section ─ */}
-                                                                            <div>
-                                                                                <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3">Dimensions & Weight</p>
-                                                                                
-                                                                                <div className="grid grid-cols-2 gap-4 mb-4">
-                                                                                    {!dimConfigs['weight']?.active && (
-                                                                                        <div>
-                                                                                            <label className="block text-xs font-medium text-text-secondary mb-1">Weight</label>
-                                                                                            <input
-                                                                                                type="text"
-                                                                                                value={variant.weight_input || ''}
-                                                                                                onChange={e => updateVariant(vIdx, 'weight_input', e.target.value)}
-                                                                                                placeholder="e.g. 500g"
-                                                                                                className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
-                                                                                            />
-                                                                                            <p className="text-[10px] text-text-muted mt-0.5 ml-1">g / kg / mg / oz / lb</p>
-                                                                                        </div>
-                                                                                    )}
-                                                                                    {!dimConfigs['volume']?.active && (
-                                                                                        <div>
-                                                                                            <label className="block text-xs font-medium text-text-secondary mb-1">Volume</label>
-                                                                                            <input
-                                                                                                type="text"
-                                                                                                value={variant.volume_input || ''}
-                                                                                                onChange={e => updateVariant(vIdx, 'volume_input', e.target.value)}
-                                                                                                placeholder="e.g. 250ml"
-                                                                                                className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
-                                                                                            />
-                                                                                            <p className="text-[10px] text-text-muted mt-0.5 ml-1">ml / L</p>
-                                                                                        </div>
-                                                                                    )}
-                                                                                </div>
+                                                                        {/* 13. Actions */}
+                                                                        <td className="px-4 py-3 text-center align-top pt-3">
+                                                                            <div className="flex items-center justify-center gap-1">
+                                                                                {vIdx === 0 ? (
+                                                                                    <Star className="h-4 w-4 fill-amber-400 text-amber-400 mx-1.5 drop-shadow-[0_0_8px_rgba(251,191,36,0.4)]" />
+                                                                                ) : (
+                                                                                    <div className="w-7"></div>
+                                                                                )}
+                                                                                <button
+                                                                                    type="button"
+                                                                                    onClick={() => removeVariantRow(vIdx)}
+                                                                                    className="text-text-muted hover:text-danger p-1.5 rounded-lg transition-colors hover:bg-white/5"
+                                                                                >
+                                                                                    <Trash2 className="h-4 w-4" />
+                                                                                </button>
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
 
-                                                                                <div className="grid grid-cols-3 gap-4">
-                                                                                    {([
-                                                                                        { label: 'Length (cm)', field: 'length_cm' as keyof VariantRow },
-                                                                                        { label: 'Width (cm)', field: 'width_cm' as keyof VariantRow },
-                                                                                        { label: 'Height (cm)', field: 'height_cm' as keyof VariantRow },
-                                                                                    ]).map(({ label, field }) => (
-                                                                                        <div key={field}>
-                                                                                            <label className="block text-xs font-medium text-text-secondary mb-1">{label}</label>
+                                                                    {isExpanded && (
+                                                                        <tr className="bg-white/[0.01] border-b border-border">
+                                                                            <td colSpan={9 + activeDims.length} className="p-5">
+                                                                                <div className="animate-fade-in-up space-y-6">
+
+                                                                                    {/* ÔöÇÔöÇ Extra fields row ÔöÇÔöÇ */}
+                                                                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                                                                                        <div>
+                                                                                            <label className="block text-xs font-medium text-text-secondary mb-1">Shelf Life (months)</label>
                                                                                             <input
-                                                                                                type="number" step="0.01" min="0"
-                                                                                                value={variant[field] as string}
-                                                                                                onChange={e => updateVariant(vIdx, field, e.target.value)}
+                                                                                                type="number" min="0"
+                                                                                                value={variant.shelf_life}
+                                                                                                onChange={e => updateVariant(vIdx, 'shelf_life', e.target.value)}
                                                                                                 onWheel={e => (e.target as HTMLInputElement).blur()}
                                                                                                 className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
-                                                                                                placeholder="0"
+                                                                                                placeholder="e.g. 24"
                                                                                             />
                                                                                         </div>
-                                                                                    ))}
-                                                                                </div>
-                                                                            </div>
+                                                                                    </div>
 
-                                                                            {/* ÔöÇÔöÇ Images + Sale Management: 2-column grid ÔöÇÔöÇ */}
-                                                                            {(vIdx === 0 || !sharedImages) && (
-                                                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                                                                                    {/* LEFT: Images */}
+                                                                                    {/* ─ Dimensions section ─ */}
                                                                                     <div>
-                                                                                        <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3">Images</p>
-                                                                                        <div className="flex flex-wrap gap-3">
-                                                                                            {variant.images.map((img, imgIdx) => {
-                                                                                                const isDefault = imgIdx === 0;
-                                                                                                return (
-                                                                                                    <div key={imgIdx} className="flex flex-col gap-1 w-24">
+                                                                                        <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3">Dimensions & Weight</p>
+
+                                                                                        <div className="grid grid-cols-2 gap-4 mb-4">
+                                                                                            {!dimConfigs['weight']?.active && (
+                                                                                                <div>
+                                                                                                    <label className="block text-xs font-medium text-text-secondary mb-1">Weight</label>
+                                                                                                    <input
+                                                                                                        type="text"
+                                                                                                        value={variant.weight_input || ''}
+                                                                                                        onChange={e => updateVariant(vIdx, 'weight_input', e.target.value)}
+                                                                                                        placeholder="e.g. 500g"
+                                                                                                        className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
+                                                                                                    />
+                                                                                                    <p className="text-[10px] text-text-muted mt-0.5 ml-1">g / kg / mg / oz / lb</p>
+                                                                                                </div>
+                                                                                            )}
+                                                                                            {!dimConfigs['volume']?.active && (
+                                                                                                <div>
+                                                                                                    <label className="block text-xs font-medium text-text-secondary mb-1">Volume</label>
+                                                                                                    <input
+                                                                                                        type="text"
+                                                                                                        value={variant.volume_input || ''}
+                                                                                                        onChange={e => updateVariant(vIdx, 'volume_input', e.target.value)}
+                                                                                                        placeholder="e.g. 250ml"
+                                                                                                        className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
+                                                                                                    />
+                                                                                                    <p className="text-[10px] text-text-muted mt-0.5 ml-1">ml / L</p>
+                                                                                                </div>
+                                                                                            )}
+                                                                                        </div>
+
+                                                                                        <div className="grid grid-cols-3 gap-4">
+                                                                                            {([
+                                                                                                { label: 'Length (cm)', field: 'length_cm' as keyof VariantRow },
+                                                                                                { label: 'Width (cm)', field: 'width_cm' as keyof VariantRow },
+                                                                                                { label: 'Height (cm)', field: 'height_cm' as keyof VariantRow },
+                                                                                            ]).map(({ label, field }) => (
+                                                                                                <div key={field}>
+                                                                                                    <label className="block text-xs font-medium text-text-secondary mb-1">{label}</label>
+                                                                                                    <input
+                                                                                                        type="number" step="0.01" min="0"
+                                                                                                        value={variant[field] as string}
+                                                                                                        onChange={e => updateVariant(vIdx, field, e.target.value)}
+                                                                                                        onWheel={e => (e.target as HTMLInputElement).blur()}
+                                                                                                        className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
+                                                                                                        placeholder="0"
+                                                                                                    />
+                                                                                                </div>
+                                                                                            ))}
+                                                                                        </div>
+                                                                                    </div>
+
+                                                                                    {/* ÔöÇÔöÇ Images + Sale Management: 2-column grid ÔöÇÔöÇ */}
+                                                                                    {(vIdx === 0 || !sharedImages) && (
+                                                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                                                                                            {/* LEFT: Images */}
+                                                                                            <div>
+                                                                                                <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3">Images</p>
+                                                                                                <div className="flex flex-wrap gap-3">
+                                                                                                    {variant.images.map((img, imgIdx) => {
+                                                                                                        const isDefault = imgIdx === 0;
+                                                                                                        return (
+                                                                                                            <div key={imgIdx} className="flex flex-col gap-1 w-24">
+                                                                                                                <div
+                                                                                                                    draggable
+                                                                                                                    onDragStart={e => {
+                                                                                                                        e.dataTransfer.setData('text/plain', String(imgIdx));
+                                                                                                                        e.dataTransfer.effectAllowed = 'move';
+                                                                                                                    }}
+                                                                                                                    onDragOver={e => {
+                                                                                                                        e.preventDefault();
+                                                                                                                        e.dataTransfer.dropEffect = 'move';
+                                                                                                                    }}
+                                                                                                                    onDrop={e => {
+                                                                                                                        e.preventDefault();
+                                                                                                                        const fromIdx = parseInt(e.dataTransfer.getData('text/plain'), 10);
+                                                                                                                        reorderVariantImages(vIdx, fromIdx, imgIdx);
+                                                                                                                    }}
+                                                                                                                    className="relative group w-24 h-24 rounded-lg overflow-hidden border border-border cursor-grab active:cursor-grabbing select-none"
+                                                                                                                >
+                                                                                                                    <img src={img.preview} alt={`img-${imgIdx}`} className="w-full h-full object-cover pointer-events-none" />
+                                                                                                                    <span className="absolute top-1 right-1 bg-black/60 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">{imgIdx + 1}</span>
+                                                                                                                    {isDefault && (
+                                                                                                                        <span className="absolute bottom-1 left-1"><Star className="h-3 w-3 fill-gold text-gold" /></span>
+                                                                                                                    )}
+                                                                                                                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                                                                        <button type="button" onClick={() => setLightboxUrl(img.preview)} className="absolute inset-0 flex items-center justify-center text-white hover:text-gold transition-colors">
+                                                                                                                            <Maximize2 className="h-5 w-5" />
+                                                                                                                        </button>
+                                                                                                                        <button type="button" onClick={() => removeVariantImage(vIdx, imgIdx)} className="absolute top-1 left-1 p-1 rounded-full bg-black/40 text-white hover:text-red-400 transition-colors">
+                                                                                                                            <Trash2 className="h-3.5 w-3.5" />
+                                                                                                                        </button>
+                                                                                                                    </div>
+                                                                                                                </div>
+                                                                                                                <input
+                                                                                                                    type="text"
+                                                                                                                    placeholder="Alt text"
+                                                                                                                    value={img.alt_text || ''}
+                                                                                                                    onChange={e => handleVariantImageAltChange(vIdx, imgIdx, e.target.value)}
+                                                                                                                    className="w-full text-[10px] px-1.5 py-1 box-border border border-border rounded bg-white focus:ring-1 focus:ring-gold focus:border-gold placeholder:text-text-muted transition-colors text-text-primary"
+                                                                                                                />
+                                                                                                            </div>
+                                                                                                        );
+                                                                                                    })}
+                                                                                                    <label className="w-20 h-20 rounded-lg border-2 border-dashed border-border hover:border-gold/40 flex flex-col items-center justify-center gap-1 cursor-pointer transition-colors group/up">
+                                                                                                        <ImageIcon className="h-5 w-5 text-text-muted group-hover/up:text-gold transition-colors" />
+                                                                                                        <span className="text-[10px] text-text-muted group-hover/up:text-gold">Add</span>
+                                                                                                        <input type="file" accept="image/*" multiple className="hidden" onChange={e => handleVariantImageAdd(vIdx, e.target.files)} />
+                                                                                                    </label>
+                                                                                                </div>
+                                                                                                {variant.images.length > 0 && (
+                                                                                                    <p className="text-[11px] text-text-muted mt-2">Drag to reorder. Image #1 (Ô¡É) is default.</p>
+                                                                                                )}
+                                                                                                {vIdx === 0 && (
+                                                                                                    <label className="flex items-center gap-2 mt-3 cursor-pointer select-none group">
                                                                                                         <div
-                                                                                                            draggable
-                                                                                                            onDragStart={e => {
-                                                                                                                e.dataTransfer.setData('text/plain', String(imgIdx));
-                                                                                                                e.dataTransfer.effectAllowed = 'move';
-                                                                                                            }}
-                                                                                                            onDragOver={e => {
-                                                                                                                e.preventDefault();
-                                                                                                                e.dataTransfer.dropEffect = 'move';
-                                                                                                            }}
-                                                                                                            onDrop={e => {
-                                                                                                                e.preventDefault();
-                                                                                                                const fromIdx = parseInt(e.dataTransfer.getData('text/plain'), 10);
-                                                                                                                reorderVariantImages(vIdx, fromIdx, imgIdx);
-                                                                                                            }}
-                                                                                                            className="relative group w-24 h-24 rounded-lg overflow-hidden border border-border cursor-grab active:cursor-grabbing select-none"
+                                                                                                            className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all ${sharedImages ? 'bg-gold border-gold' : 'border-border group-hover:border-gold/40'}`}
+                                                                                                            onClick={() => setSharedImages(v => !v)}
                                                                                                         >
-                                                                                                            <img src={img.preview} alt={`img-${imgIdx}`} className="w-full h-full object-cover pointer-events-none" />
-                                                                                                            <span className="absolute top-1 right-1 bg-black/60 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">{imgIdx + 1}</span>
-                                                                                                            {isDefault && (
-                                                                                                                <span className="absolute bottom-1 left-1"><Star className="h-3 w-3 fill-gold text-gold" /></span>
-                                                                                                            )}
+                                                                                                            {sharedImages && <Check className="w-2.5 h-2.5 text-white" />}
+                                                                                                        </div>
+                                                                                                        <span className="text-xs text-text-secondary" onClick={() => setSharedImages(v => !v)}>
+                                                                                                            All variants share the same images
+                                                                                                        </span>
+                                                                                                    </label>
+                                                                                                )}
+                                                                                            </div>
+
+                                                                                            {/* Videos */}
+                                                                                            <div className="mt-5">
+                                                                                                <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3">Videos</p>
+                                                                                                <div className="flex flex-wrap gap-3">
+                                                                                                    {variant.videos.map((vid, vidIdx) => (
+                                                                                                        <div key={vidIdx} className="relative group w-28 h-20 rounded-lg overflow-hidden border border-border bg-black">
+                                                                                                            <p className="text-xs font-semibold text-text-secondary uppercase mb-3">Sale Management</p>           <div className="absolute inset-0 flex items-center justify-center">
+                                                                                                                <Film className="h-6 w-6 text-white/70" />
+                                                                                                            </div>
                                                                                                             <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                                                                <button type="button" onClick={() => setLightboxUrl(img.preview)} className="absolute inset-0 flex items-center justify-center text-white hover:text-gold transition-colors">
-                                                                                                                    <Maximize2 className="h-5 w-5" />
-                                                                                                                </button>
-                                                                                                                <button type="button" onClick={() => removeVariantImage(vIdx, imgIdx)} className="absolute top-1 left-1 p-1 rounded-full bg-black/40 text-white hover:text-red-400 transition-colors">
+                                                                                                                <button type="button" onClick={() => removeVariantVideo(vIdx, vidIdx)} className="absolute top-1 right-1 p-1 rounded-full bg-black/40 text-white hover:text-red-400 transition-colors">
                                                                                                                     <Trash2 className="h-3.5 w-3.5" />
                                                                                                                 </button>
                                                                                                             </div>
+                                                                                                            <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">VIDEO</span>
                                                                                                         </div>
+                                                                                                    ))}
+                                                                                                    <label className="w-28 h-20 rounded-lg border-2 border-dashed border-border hover:border-gold/40 flex flex-col items-center justify-center gap-1 cursor-pointer transition-colors group/up">
+                                                                                                        <Film className="h-5 w-5 text-text-muted group-hover/up:text-gold transition-colors" />
+                                                                                                        <span className="text-[10px] text-text-muted group-hover/up:text-gold">Add Video</span>
+                                                                                                        <input type="file" accept="video/mp4,video/webm,video/ogg" multiple className="hidden" onChange={e => handleVariantVideoAdd(vIdx, e.target.files)} />
+                                                                                                    </label>
+                                                                                                </div>
+                                                                                                <p className="text-[11px] text-text-muted mt-2">MP4, WebM, OGG — max 50MB per file.</p>
+                                                                                            </div>
+
+                                                                                            {/* RIGHT: Sale Management */}
+                                                                                            <div>
+                                                                                                <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3">Sale Management</p>
+                                                                                                <div className="space-y-3">
+                                                                                                    <div>
+                                                                                                        <label className="block text-xs font-medium text-text-secondary mb-1">Sale Price ($)</label>
                                                                                                         <input
-                                                                                                            type="text"
-                                                                                                            placeholder="Alt text"
-                                                                                                            value={img.alt_text || ''}
-                                                                                                            onChange={e => handleVariantImageAltChange(vIdx, imgIdx, e.target.value)}
-                                                                                                            className="w-full text-[10px] px-1.5 py-1 box-border border border-border rounded bg-white focus:ring-1 focus:ring-gold focus:border-gold placeholder:text-text-muted transition-colors text-text-primary"
+                                                                                                            type="number" step="0.01" min="0"
+                                                                                                            value={variant.sale_price}
+                                                                                                            onChange={e => updateVariant(vIdx, 'sale_price', e.target.value)}
+                                                                                                            onWheel={e => (e.target as HTMLInputElement).blur()}
+                                                                                                            placeholder="0.00"
+                                                                                                            className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
                                                                                                         />
                                                                                                     </div>
-                                                                                                );
-                                                                                            })}
-                                                                                            <label className="w-20 h-20 rounded-lg border-2 border-dashed border-border hover:border-gold/40 flex flex-col items-center justify-center gap-1 cursor-pointer transition-colors group/up">
-                                                                                                <ImageIcon className="h-5 w-5 text-text-muted group-hover/up:text-gold transition-colors" />
-                                                                                                <span className="text-[10px] text-text-muted group-hover/up:text-gold">Add</span>
-                                                                                                <input type="file" accept="image/*" multiple className="hidden" onChange={e => handleVariantImageAdd(vIdx, e.target.files)} />
-                                                                                            </label>
-                                                                                        </div>
-                                                                                        {variant.images.length > 0 && (
-                                                                                            <p className="text-[11px] text-text-muted mt-2">Drag to reorder. Image #1 (Ô¡É) is default.</p>
-                                                                                        )}
-                                                                                        {vIdx === 0 && (
-                                                                                            <label className="flex items-center gap-2 mt-3 cursor-pointer select-none group">
-                                                                                                <div
-                                                                                                    className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all ${sharedImages ? 'bg-gold border-gold' : 'border-border group-hover:border-gold/40'}`}
-                                                                                                    onClick={() => setSharedImages(v => !v)}
-                                                                                                >
-                                                                                                    {sharedImages && <Check className="w-2.5 h-2.5 text-white" />}
-                                                                                                </div>
-                                                                                                <span className="text-xs text-text-secondary" onClick={() => setSharedImages(v => !v)}>
-                                                                                                    All variants share the same images
-                                                                                                </span>
-                                                                                            </label>
-                                                                                        )}
-                                                                                    </div>
-
-                                                                                    {/* Videos */}
-                                                                                    <div className="mt-5">
-                                                                                        <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3">Videos</p>
-                                                                                        <div className="flex flex-wrap gap-3">
-                                                                                            {variant.videos.map((vid, vidIdx) => (
-                                                                                                <div key={vidIdx} className="relative group w-28 h-20 rounded-lg overflow-hidden border border-border bg-black">
-                                                                                                    <p className="text-xs font-semibold text-text-secondary uppercase mb-3">Sale Management</p>           <div className="absolute inset-0 flex items-center justify-center">
-                                                                                                        <Film className="h-6 w-6 text-white/70" />
+                                                                                                    <div className="grid grid-cols-2 gap-3">
+                                                                                                        <div>
+                                                                                                            <label className="block text-xs font-medium text-text-secondary mb-1">Sale Start Date</label>
+                                                                                                            <input
+                                                                                                                type="date"
+                                                                                                                value={variant.sale_start_date}
+                                                                                                                onChange={e => updateVariant(vIdx, 'sale_start_date', e.target.value)}
+                                                                                                                className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors [color-scheme:dark]"
+                                                                                                            />
+                                                                                                        </div>
+                                                                                                        <div>
+                                                                                                            <label className="block text-xs font-medium text-text-secondary mb-1">Start Time</label>
+                                                                                                            <input
+                                                                                                                type="time"
+                                                                                                                value={variant.sale_start_time}
+                                                                                                                onChange={e => updateVariant(vIdx, 'sale_start_time', e.target.value)}
+                                                                                                                className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors [color-scheme:dark]"
+                                                                                                            />
+                                                                                                        </div>
                                                                                                     </div>
-                                                                                                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                                                        <button type="button" onClick={() => removeVariantVideo(vIdx, vidIdx)} className="absolute top-1 right-1 p-1 rounded-full bg-black/40 text-white hover:text-red-400 transition-colors">
-                                                                                                            <Trash2 className="h-3.5 w-3.5" />
-                                                                                                        </button>
+                                                                                                    <div className="grid grid-cols-2 gap-3">
+                                                                                                        <div>
+                                                                                                            <label className="block text-xs font-medium text-text-secondary mb-1">Sale End Date</label>
+                                                                                                            <input
+                                                                                                                type="date"
+                                                                                                                value={variant.sale_end_date}
+                                                                                                                onChange={e => updateVariant(vIdx, 'sale_end_date', e.target.value)}
+                                                                                                                className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors [color-scheme:dark]"
+                                                                                                            />
+                                                                                                        </div>
+                                                                                                        <div>
+                                                                                                            <label className="block text-xs font-medium text-text-secondary mb-1">End Time</label>
+                                                                                                            <input
+                                                                                                                type="time"
+                                                                                                                value={variant.sale_end_time}
+                                                                                                                onChange={e => updateVariant(vIdx, 'sale_end_time', e.target.value)}
+                                                                                                                className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors [color-scheme:dark]"
+                                                                                                            />
+                                                                                                        </div>
                                                                                                     </div>
-                                                                                                    <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">VIDEO</span>
                                                                                                 </div>
-                                                                                            ))}
-                                                                                            <label className="w-28 h-20 rounded-lg border-2 border-dashed border-border hover:border-gold/40 flex flex-col items-center justify-center gap-1 cursor-pointer transition-colors group/up">
-                                                                                                <Film className="h-5 w-5 text-text-muted group-hover/up:text-gold transition-colors" />
-                                                                                                <span className="text-[10px] text-text-muted group-hover/up:text-gold">Add Video</span>
-                                                                                                <input type="file" accept="video/mp4,video/webm,video/ogg" multiple className="hidden" onChange={e => handleVariantVideoAdd(vIdx, e.target.files)} />
-                                                                                            </label>
-                                                                                        </div>
-                                                                                        <p className="text-[11px] text-text-muted mt-2">MP4, WebM, OGG — max 50MB per file.</p>
-                                                                                    </div>
+                                                                                            </div>
 
-                                                                                    {/* RIGHT: Sale Management */}
-                                                                                    <div>
-                                                                                        <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3">Sale Management</p>
-                                                                                        <div className="space-y-3">
-                                                                                            <div>
-                                                                                                <label className="block text-xs font-medium text-text-secondary mb-1">Sale Price ($)</label>
-                                                                                                <input
-                                                                                                    type="number" step="0.01" min="0"
-                                                                                                    value={variant.sale_price}
-                                                                                                    onChange={e => updateVariant(vIdx, 'sale_price', e.target.value)}
-                                                                                                    onWheel={e => (e.target as HTMLInputElement).blur()}
-                                                                                                    placeholder="0.00"
-                                                                                                    className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
-                                                                                                />
-                                                                                            </div>
-                                                                                            <div className="grid grid-cols-2 gap-3">
-                                                                                                <div>
-                                                                                                    <label className="block text-xs font-medium text-text-secondary mb-1">Sale Start Date</label>
-                                                                                                    <input
-                                                                                                        type="date"
-                                                                                                        value={variant.sale_start_date}
-                                                                                                        onChange={e => updateVariant(vIdx, 'sale_start_date', e.target.value)}
-                                                                                                        className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors [color-scheme:dark]"
-                                                                                                    />
-                                                                                                </div>
-                                                                                                <div>
-                                                                                                    <label className="block text-xs font-medium text-text-secondary mb-1">Start Time</label>
-                                                                                                    <input
-                                                                                                        type="time"
-                                                                                                        value={variant.sale_start_time}
-                                                                                                        onChange={e => updateVariant(vIdx, 'sale_start_time', e.target.value)}
-                                                                                                        className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors [color-scheme:dark]"
-                                                                                                    />
-                                                                                                </div>
-                                                                                            </div>
-                                                                                            <div className="grid grid-cols-2 gap-3">
-                                                                                                <div>
-                                                                                                    <label className="block text-xs font-medium text-text-secondary mb-1">Sale End Date</label>
-                                                                                                    <input
-                                                                                                        type="date"
-                                                                                                        value={variant.sale_end_date}
-                                                                                                        onChange={e => updateVariant(vIdx, 'sale_end_date', e.target.value)}
-                                                                                                        className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors [color-scheme:dark]"
-                                                                                                    />
-                                                                                                </div>
-                                                                                                <div>
-                                                                                                    <label className="block text-xs font-medium text-text-secondary mb-1">End Time</label>
-                                                                                                    <input
-                                                                                                        type="time"
-                                                                                                        value={variant.sale_end_time}
-                                                                                                        onChange={e => updateVariant(vIdx, 'sale_end_time', e.target.value)}
-                                                                                                        className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors [color-scheme:dark]"
-                                                                                                    />
-                                                                                                </div>
-                                                                                            </div>
                                                                                         </div>
-                                                                                    </div>
-
+                                                                                    )}
                                                                                 </div>
-                                                                            )}
-                                                                        </div>
-                                                                    </td>
-                                                                </tr>
-                                                            )}
-                                                        </React.Fragment>
-                                                    );
-                                                })}
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                                                            </td>
+                                                                        </tr>
+                                                                    )}
+                                                                </React.Fragment>
+                                                            );
+                                                        })}
+                                                    </tbody>
+                                                </table>
+                                            </div>
 
-                                    {/* Table footer */}
-                                    <div className="bg-white/5 border-t border-border px-5 py-3 flex items-center justify-between">
-                                        <span className="text-sm text-text-secondary">
-                                            Total Variants: <strong className="text-text-primary">{variants.length}</strong>
-                                        </span>
-                                        {!autoGenerate && (
-                                            <button
-                                                type="button"
-                                                onClick={addVariantRow}
-                                                className="flex items-center gap-1.5 text-sm font-medium text-gold hover:text-gold-soft transition-colors"
-                                            >
-                                                <Plus className="h-4 w-4" />
-                                                Add Row
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
+                                            {/* Table footer */}
+                                            <div className="bg-white/5 border-t border-border px-5 py-3 flex items-center justify-between">
+                                                <span className="text-sm text-text-secondary">
+                                                    Total Variants: <strong className="text-text-primary">{variants.length}</strong>
+                                                </span>
+                                                {!autoGenerate && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={addVariantRow}
+                                                        className="flex items-center gap-1.5 text-sm font-medium text-gold hover:text-gold-soft transition-colors"
+                                                    >
+                                                        <Plus className="h-4 w-4" />
+                                                        Add Row
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
                                     );
                                 })()}
                             </div>
