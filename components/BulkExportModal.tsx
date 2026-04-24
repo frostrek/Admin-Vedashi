@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { X, Layers, Star, Tag, ChevronDown, Download, Loader2, FileText } from 'lucide-react';
+import { X, Layers, Star, Tag, ChevronDown, Download, Loader2, FileText, FileDown, CheckCircle2, AlertCircle, Package } from 'lucide-react';
 import { Product, getProduct } from '@/lib/api';
+import { getCategories } from '@/lib/api/category';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import toast from 'react-hot-toast';
@@ -36,20 +37,61 @@ export default function BulkExportModal({ isOpen, onClose, products }: BulkExpor
     const [categories, setCategories] = useState<string[]>([]);
     const [subCategories, setSubCategories] = useState<string[]>([]);
     const [brands, setBrands] = useState<string[]>([]);
+    const [allCategoriesData, setAllCategoriesData] = useState<any[]>([]);
+    const [parentCategory, setParentCategory] = useState<string>('');
+    const [parentDropdownOpen, setParentDropdownOpen] = useState(false);
+    const [loadingOptions, setLoadingOptions] = useState(false);
 
     useEffect(() => {
         if (!isOpen) return;
-        const cats = [...new Set(products.map(p => p.category).filter(Boolean))] as string[];
-        const subs = [...new Set(products.map(p => p.sub_category).filter(Boolean))] as string[];
-        const brs = [...new Set(products.map(p => p.brand).filter(Boolean))] as string[];
-        setCategories(cats.sort());
-        setSubCategories(subs.sort());
-        setBrands(brs.sort());
+
+        const loadOptions = async () => {
+            setLoadingOptions(true);
+            try {
+                // Fetch all categories for robust name mapping
+                const allCats = await getCategories();
+                setAllCategoriesData(allCats);
+                const catMap = new Map(allCats.map(c => [c.category_id, c.name]));
+
+                const catsSet = new Set<string>();
+                const subsSet = new Set<string>();
+                const brandsSet = new Set<string>();
+
+                products.forEach(p => {
+                    // Try to get name from product object or map from category_id
+                    const catName = p.category || (p.category_id ? catMap.get(p.category_id) : null);
+                    if (catName) catsSet.add(catName);
+
+                    const subName = p.sub_category || (p.sub_category_id ? catMap.get(p.sub_category_id) : null);
+                    if (subName) subsSet.add(subName);
+
+                    if (p.brand) brandsSet.add(p.brand);
+                });
+
+                // If sets are still empty, try fallback to getting ALL unique categories from DB
+                if (catsSet.size === 0) {
+                    allCats.filter(c => !c.parent_id).forEach(c => catsSet.add(c.name));
+                    allCats.filter(c => c.parent_id).forEach(c => subsSet.add(c.name));
+                }
+
+                setCategories(Array.from(catsSet).sort());
+                setSubCategories(Array.from(subsSet).sort());
+                setBrands(Array.from(brandsSet).sort());
+            } catch (error) {
+                console.error('Failed to load export options:', error);
+            } finally {
+                setLoadingOptions(false);
+            }
+        };
+
+        loadOptions();
     }, [isOpen, products]);
 
     useEffect(() => {
         setTargetValue('');
+        setParentCategory('');
         setDropdownOpen(false);
+        setParentDropdownOpen(false);
     }, [targetType]);
 
     // Helper to load image to base64
@@ -304,7 +346,14 @@ export default function BulkExportModal({ isOpen, onClose, products }: BulkExpor
     const getOptionsForTargetType = (): string[] => {
         switch (targetType) {
             case 'category': return categories;
-            case 'sub_category': return subCategories;
+            case 'sub_category':
+                if (!parentCategory) return [];
+                const parent = allCategoriesData.find(c => c.name === parentCategory);
+                if (!parent) return [];
+                return allCategoriesData
+                    .filter(c => c.parent_id === parent.category_id)
+                    .map(c => c.name)
+                    .sort();
             case 'brand': return brands;
             default: return [];
         }
@@ -313,19 +362,14 @@ export default function BulkExportModal({ isOpen, onClose, products }: BulkExpor
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <div className="w-full max-w-md rounded-2xl bg-card-bg border border-border flex flex-col shadow-2xl overflow-hidden max-h-[90vh] animate-in fade-in zoom-in duration-200">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <div className="w-full max-w-md rounded-2xl bg-card-bg border border-border flex flex-col shadow-2xl overflow-visible max-h-[90vh] animate-in fade-in zoom-in duration-200">
 
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-border bg-page-bg">
-                    <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gold/10">
-                            <FileText className="h-5 w-5 text-gold" />
-                        </div>
-                        <div>
-                            <h2 className="font-serif text-xl font-bold text-gold-soft">Bulk Export</h2>
-                            <p className="text-xs text-text-secondary">Export inventory details to premium PDF</p>
-                        </div>
+                <div className="flex items-center justify-between p-5 border-b border-border bg-page-bg rounded-t-2xl">
+                    <div>
+                        <h2 className="font-serif text-xl font-bold text-gold">Bulk Export</h2>
+                        <p className="text-xs text-text-muted mt-1">Export inventory details to premium PDF</p>
                     </div>
                     <button
                         onClick={onClose}
@@ -337,7 +381,7 @@ export default function BulkExportModal({ isOpen, onClose, products }: BulkExpor
                 </div>
 
                 {/* Body */}
-                <div className="p-6 space-y-6 overflow-y-auto hidden-scrollbar">
+                <div className="p-6 space-y-5 overflow-y-auto hidden-scrollbar">
                     {isExporting ? (
                         <div className="py-8 flex flex-col items-center justify-center space-y-4">
                             <div className="relative h-20 w-20">
@@ -364,26 +408,26 @@ export default function BulkExportModal({ isOpen, onClose, products }: BulkExpor
                     ) : (
                         <>
                             <div>
-                                <label className="block text-xs font-bold text-gold-muted uppercase tracking-wider mb-3">
-                                    Select Export Scope
+                                <label className="block text-sm font-medium text-text-secondary mb-2">
+                                    Action Target
                                 </label>
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className="grid grid-cols-2 gap-2">
                                     {([
-                                        { value: 'category', label: 'By Category', icon: Layers },
+                                        { value: 'category', label: 'Category', icon: Layers },
                                         { value: 'sub_category', label: 'Subcategory', icon: Layers },
-                                        { value: 'brand', label: 'By Brand', icon: Star },
-                                        { value: 'all', label: 'All Library', icon: Tag },
+                                        { value: 'brand', label: 'Brand', icon: Star },
+                                        { value: 'all', label: 'All Products', icon: Tag },
                                     ] as const).map(({ value, label, icon: Icon }) => (
                                         <button
                                             key={value}
                                             onClick={() => setTargetType(value)}
-                                            className={`flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 ${targetType === value
-                                                ? 'border-gold bg-gold/5 shadow-sm ring-1 ring-gold/20'
-                                                : 'border-border bg-page-bg/50 text-text-muted hover:border-gold/30'
+                                            className={`flex items-center gap-2 p-3 rounded-xl border transition-all duration-300 ${targetType === value
+                                                ? 'border-gold bg-gold/10 text-gold'
+                                                : 'border-border bg-page-bg text-text-secondary hover:border-gold/50'
                                                 }`}
                                         >
-                                            <Icon className={`w-4 h-4 ${targetType === value ? 'text-gold' : 'text-text-muted'}`} />
-                                            <span className={`text-sm font-medium ${targetType === value ? 'text-gold-soft' : 'text-text-secondary'}`}>
+                                            <Icon className="w-4 h-4" />
+                                            <span className="text-sm font-medium">
                                                 {label}
                                             </span>
                                         </button>
@@ -392,49 +436,108 @@ export default function BulkExportModal({ isOpen, onClose, products }: BulkExpor
                             </div>
 
                             {targetType !== 'all' && (
-                                <div className="space-y-2">
-                                    <label className="block text-xs font-bold text-gold-muted uppercase tracking-wider">
-                                        Specific {targetType === 'category' ? 'Category' : targetType === 'sub_category' ? 'Subcategory' : 'Brand'}
-                                    </label>
-                                    <div className="relative">
-                                        <button
-                                            type="button"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setDropdownOpen(!dropdownOpen);
-                                            }}
-                                            className="w-full flex items-center justify-between rounded-xl border border-border bg-page-bg px-4 py-3 text-sm text-left focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40 transition-all hover:border-gold/30"
-                                        >
-                                            <span className={targetValue ? 'text-text-primary font-medium' : 'text-text-muted'}>
-                                                {targetValue || `Choose ${targetType.replace('_', ' ')}...`}
-                                            </span>
-                                            <ChevronDown className={`w-4 h-4 text-text-muted transition-transform duration-300 ${dropdownOpen ? 'rotate-180' : ''}`} />
-                                        </button>
+                                <div className="space-y-4">
+                                    {targetType === 'sub_category' && (
+                                        <div className="space-y-1">
+                                            <label className="block text-sm font-medium text-text-secondary mb-1">
+                                                Parent Category <span className="text-red-500 ml-0.5">*</span>
+                                            </label>
+                                            <div className="relative">
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setParentDropdownOpen(!parentDropdownOpen);
+                                                        setDropdownOpen(false);
+                                                    }}
+                                                    className="w-full flex items-center justify-between rounded-xl border border-border bg-page-bg px-4 py-2.5 text-sm text-left focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40 transition-all hover:border-gold/30"
+                                                >
+                                                    <span className={parentCategory ? 'text-text-primary' : 'text-text-muted'}>
+                                                        {loadingOptions ? 'Fetching categories...' : (parentCategory || 'Select a parent category...')}
+                                                    </span>
+                                                    <ChevronDown className={`w-4 h-4 text-text-muted transition-transform duration-300 ${parentDropdownOpen ? 'rotate-180' : ''}`} />
+                                                </button>
 
-                                        {dropdownOpen && (
-                                            <div className="absolute z-[70] w-full mt-2 max-h-60 overflow-y-auto rounded-xl border border-border bg-card-bg shadow-2xl p-1 animate-in slide-in-from-top-2 duration-200">
-                                                {options.length > 0 ? options.map((opt: string) => (
-                                                    <button
-                                                        key={opt}
-                                                        type="button"
-                                                        onClick={() => {
-                                                            setTargetValue(opt);
-                                                            setDropdownOpen(false);
-                                                        }}
-                                                        className={`w-full text-left px-4 py-3 text-sm rounded-lg transition-colors ${targetValue === opt
-                                                            ? 'bg-gold/10 text-gold-soft font-semibold'
-                                                            : 'text-text-primary hover:bg-gold/5'
-                                                            }`}
-                                                    >
-                                                        {opt}
-                                                    </button>
-                                                )) : (
-                                                    <div className="px-4 py-6 text-center text-sm text-text-muted">
-                                                        No options found
+                                                {parentDropdownOpen && (
+                                                    <div className="relative z-[80] w-full mt-2 max-h-60 overflow-y-auto rounded-xl border border-border bg-card-bg shadow-2xl p-1 animate-in fade-in slide-in-from-top-1 duration-200">
+                                                        {categories.length > 0 ? categories.map((opt: string) => (
+                                                            <button
+                                                                key={opt}
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setParentCategory(opt);
+                                                                    setTargetValue('');
+                                                                    setParentDropdownOpen(false);
+                                                                }}
+                                                                className={`w-full text-left px-4 py-3 text-sm rounded-lg transition-colors ${parentCategory === opt
+                                                                    ? 'bg-gold/10 text-gold-soft font-semibold'
+                                                                    : 'text-text-primary hover:bg-gold/5'
+                                                                    }`}
+                                                            >
+                                                                {opt}
+                                                            </button>
+                                                        )) : (
+                                                            <div className="px-4 py-6 text-center text-sm text-text-muted">
+                                                                No categories found
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 )}
                                             </div>
-                                        )}
+                                        </div>
+                                    )}
+
+                                    <div className="space-y-1">
+                                        <label className="block text-sm font-medium text-text-secondary mb-1">
+                                            {targetType === 'category' ? 'Category' : targetType === 'sub_category' ? 'Subcategory' : 'Brand'}
+                                            <span className="text-red-500 ml-0.5">*</span>
+                                        </label>
+                                        <div className="relative">
+                                            <button
+                                                type="button"
+                                                disabled={targetType === 'sub_category' && !parentCategory}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setDropdownOpen(!dropdownOpen);
+                                                    setParentDropdownOpen(false);
+                                                }}
+                                                className={`w-full flex items-center justify-between rounded-xl border border-border bg-page-bg px-4 py-2.5 text-sm text-left focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40 transition-all hover:border-gold/30 ${targetType === 'sub_category' && !parentCategory ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                            >
+                                                <span className={targetValue ? 'text-text-primary' : 'text-text-muted'}>
+                                                    {loadingOptions ? 'Fetching options...' : (targetValue || (targetType === 'sub_category' && !parentCategory ? 'Select parent first...' : `Select ${targetType === 'category' ? 'a category' : targetType === 'sub_category' ? 'a subcategory' : 'a brand'}...`))}
+                                                </span>
+                                                {loadingOptions ? (
+                                                    <Loader2 className="h-4 w-4 animate-spin text-gold" />
+                                                ) : (
+                                                    <ChevronDown className={`w-4 h-4 text-text-muted transition-transform duration-300 ${dropdownOpen ? 'rotate-180' : ''}`} />
+                                                )}
+                                            </button>
+
+                                            {dropdownOpen && (
+                                                <div className="relative z-[70] w-full mt-2 max-h-60 overflow-y-auto rounded-xl border border-border bg-card-bg shadow-2xl p-1 animate-in fade-in slide-in-from-top-1 duration-200">
+                                                    {options.length > 0 ? options.map((opt: string) => (
+                                                        <button
+                                                            key={opt}
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setTargetValue(opt);
+                                                                setDropdownOpen(false);
+                                                            }}
+                                                            className={`w-full text-left px-4 py-3 text-sm rounded-lg transition-colors ${targetValue === opt
+                                                                ? 'bg-gold/10 text-gold-soft font-semibold'
+                                                                : 'text-text-primary hover:bg-gold/5'
+                                                                }`}
+                                                        >
+                                                            {opt}
+                                                        </button>
+                                                    )) : (
+                                                        <div className="px-4 py-6 text-center text-sm text-text-muted">
+                                                            {loadingOptions ? 'Loading categories...' : 'No options found'}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             )}
@@ -443,21 +546,21 @@ export default function BulkExportModal({ isOpen, onClose, products }: BulkExpor
                 </div>
 
                 {/* Footer Buttons */}
-                <div className="p-6 border-t border-border bg-page-bg flex justify-end gap-3 mt-auto">
+                <div className="p-6 border-t border-border bg-page-bg flex justify-end items-center gap-3 mt-auto rounded-b-2xl">
                     <button
                         type="button"
                         onClick={onClose}
                         disabled={isExporting}
-                        className="px-5 py-2.5 text-sm font-semibold text-text-secondary hover:text-text-primary transition-colors disabled:opacity-30"
+                        className="px-5 py-2.5 text-sm font-medium text-text-secondary hover:text-white transition-colors disabled:opacity-30"
                     >
                         Cancel
                     </button>
                     <button
                         onClick={handleDownload}
                         disabled={isExporting || (targetType !== 'all' && !targetValue)}
-                        className="group flex items-center gap-2 px-8 py-3 rounded-xl bg-gold text-black font-bold hover:bg-gold-soft transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-gold/20"
+                        className="group flex items-center gap-2 px-8 py-3 rounded-xl bg-primary hover:bg-primary-light text-[#E8D8B9] text-sm font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-black/20"
                     >
-                        {isExporting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Download className="w-5 h-5 group-hover:-translate-y-0.5 transition-transform" />}
+                        {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" />}
                         {isExporting ? 'Preparing...' : 'Generate PDF'}
                     </button>
                 </div>
