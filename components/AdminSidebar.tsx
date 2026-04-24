@@ -6,7 +6,7 @@ import { useAdminAuth } from '@/context/AdminAuthContext';
 import {
     LayoutDashboard, Package, ShoppingCart, Tag, LogOut, Leaf,
     ChevronLeft, Menu, Truck, Megaphone, BarChart, Settings, Users, X, Shield, Search, Ticket,
-    FileText, MessageSquare, Star, ShieldAlert, LayoutTemplate, Images, HelpCircle, Send, MonitorSmartphone, Activity, Layers, DollarSign, Gift, FileBarChart2, RotateCcw, SlidersHorizontal
+    FileText, MessageSquare, Star, ShieldAlert, LayoutTemplate, Images, HelpCircle, Send, MonitorSmartphone, Activity, Layers, DollarSign, Gift, FileBarChart2, RotateCcw, SlidersHorizontal, Key
 } from 'lucide-react';
 const useState = require('react').useState;
 const useEffect = require('react').useEffect;
@@ -73,6 +73,7 @@ const systemNav = [
     { href: '/dashboard/security', label: 'Security & Ops', icon: Shield },
     { href: '/dashboard/settings', label: 'Settings', icon: Settings },
     { href: '/dashboard/gdpr', label: 'GDPR', icon: Shield },
+    { href: '/dashboard/partner-keys', label: 'API & Integrations', icon: Key },
 ];
 
 const allNavItems = [
