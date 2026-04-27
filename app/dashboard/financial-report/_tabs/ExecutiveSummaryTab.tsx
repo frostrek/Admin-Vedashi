@@ -21,12 +21,12 @@ const formatDate = (iso: string) => {
 };
 
 /* ── Vedashi brand palette ──────────────────────────────────── */
-const GOLD        = '#A89250';
-const GOLD_LIGHT  = '#C5A46D';
-const GOLD_PALE   = '#F0E8D5';
-const PRIMARY     = '#3B5D3B';
+const GOLD = '#A89250';
+const GOLD_LIGHT = '#C5A46D';
+const GOLD_PALE = '#F0E8D5';
+const PRIMARY = '#3B5D3B';
 const PRIMARY_LIGHT = '#8CAF8C';
-const PRIMARY_PALE  = '#E8F0E8';
+const PRIMARY_PALE = '#E8F0E8';
 
 /* ── Types ──────────────────────────────────────────────────── */
 interface ClickDetail {
@@ -40,8 +40,8 @@ interface ClickDetail {
 function ClickableDot(props: {
   cx?: number;
   cy?: number;
-  payload?: { period: string; revenue: number; orders: number; newCustomers?: number; returningOrders?: number };
-  onDotClick: (p: { period: string; revenue: number; orders: number; newCustomers?: number; returningOrders?: number }) => void;
+  payload?: { period: string; revenue: number; orders: number; newCustomers?: number; returningCustomers?: number };
+  onDotClick: (p: { period: string; revenue: number; orders: number; newCustomers?: number; returningCustomers?: number }) => void;
 }) {
   const { cx, cy, payload, onDotClick } = props;
   if (cx == null || cy == null || !payload) return null;
@@ -88,7 +88,7 @@ function CustomTooltip({
         </p>
         {orders !== undefined && (
           <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--t-text-secondary)' }}>
-             {orders} Orders
+            {orders} Orders
           </p>
         )}
       </div>
@@ -126,12 +126,12 @@ function SectionHeader({ title, hint }: { title: string; hint?: string }) {
         <span
           style={{
             fontSize: 10,
-            color: 'var(--t-text-muted)',
+            color: '#444444',
             background: 'var(--t-page-bg)',
             border: `1px solid var(--t-border-subtle)`,
             borderRadius: 999,
             padding: '3px 10px',
-            letterSpacing: '0.02em',
+            letterSpacing: '0.04em',
           }}
         >
           {hint}
@@ -173,44 +173,44 @@ export default function ExecutiveSummaryTab({
   const { summary, salesTrend } = data;
 
   /* deltas */
-  const currentRev    = summary.totalRevenue      || 0;
-  const prevRev       = prevData?.summary.totalRevenue || 0;
-  const revDelta      = prevRev > 0 ? ((currentRev - prevRev) / prevRev) * 100 : currentRev > 0 ? 100 : 0;
+  const currentRev = summary.totalRevenue || 0;
+  const prevRev = prevData?.summary.totalRevenue || 0;
+  const revDelta = prevRev > 0 ? ((currentRev - prevRev) / prevRev) * 100 : currentRev > 0 ? 100 : 0;
 
-  const currentOrd    = summary.totalOrders       || 0;
-  const prevOrd       = prevData?.summary.totalOrders || 0;
-  const ordDelta      = prevOrd > 0 ? ((currentOrd - prevOrd) / prevOrd) * 100 : currentOrd > 0 ? 100 : 0;
+  const currentOrd = summary.totalOrders || 0;
+  const prevOrd = prevData?.summary.totalOrders || 0;
+  const ordDelta = prevOrd > 0 ? ((currentOrd - prevOrd) / prevOrd) * 100 : currentOrd > 0 ? 100 : 0;
 
-  const currentAov    = summary.avgOrderValue     || 0;
-  const prevAov       = prevData?.summary.avgOrderValue || 0;
-  const aovDelta      = prevAov > 0 ? ((currentAov - prevAov) / prevAov) * 100 : currentAov > 0 ? 100 : 0;
+  const currentAov = summary.avgOrderValue || 0;
+  const prevAov = prevData?.summary.avgOrderValue || 0;
+  const aovDelta = prevAov > 0 ? ((currentAov - prevAov) / prevAov) * 100 : currentAov > 0 ? 100 : 0;
 
-  const currentCancel = summary.cancellationRate  || 0;
-  const prevCancel    = prevData?.summary.cancellationRate || 0;
-  const cancelDelta   = currentCancel - prevCancel;
+  const currentCancel = summary.cancellationRate || 0;
+  const prevCancel = prevData?.summary.cancellationRate || 0;
+  const cancelDelta = currentCancel - prevCancel;
 
   /* pie data */
-  const pieData   = [
-    { name: 'New',       value: summary.newVsReturning?.new       || 0 },
-    { name: 'Returning', value: summary.newVsReturning?.returning || 0 },
+  const pieData = [
+    { name: 'New Customers', value: summary.newVsReturning?.new || 0 },
+    { name: 'Returning Customers', value: summary.newVsReturning?.returning || 0 },
   ];
   const PIE_COLORS = [PRIMARY_LIGHT, GOLD];
-  const pieTotal  = pieData.reduce((s, p) => s + p.value, 0);
+  const pieTotal = pieData.reduce((s, p) => s + p.value, 0);
 
   /* handlers */
   const handleDotClick = useCallback(
-    (pt: { period: string; revenue: number; orders: number; newCustomers?: number; returningOrders?: number }) => {
+    (pt: { period: string; revenue: number; orders: number; newCustomers?: number; returningCustomers?: number }) => {
       setDetail({
         title: `📊 Sales — ${formatDate(pt.period)}`,
         heroLabel: 'Daily Revenue',
         heroValue: formatINR(pt.revenue),
         rows: [
-          { label: 'Date',             value: formatDate(pt.period) },
-          { label: 'Total Orders',      value: pt.orders?.toLocaleString('en-IN') || '—' },
-          { label: 'New Customers',     value: pt.newCustomers?.toLocaleString('en-IN') || '0' },
-          { label: 'Returning Orders',  value: pt.returningOrders?.toLocaleString('en-IN') || '0' },
-          { label: 'Avg / Order',      value: pt.orders > 0 ? formatINR(pt.revenue / pt.orders) : '—' },
-          { label: 'Rev Share',        value: currentRev > 0 ? `${((pt.revenue / currentRev) * 100).toFixed(1)}%` : '—' },
+          { label: 'Date', value: formatDate(pt.period) },
+          { label: 'Total Orders', value: pt.orders?.toLocaleString('en-IN') || '—' },
+          { label: 'New Customers', value: pt.newCustomers?.toLocaleString('en-IN') || '0' },
+          { label: 'Returning Customers', value: pt.returningCustomers?.toLocaleString('en-IN') || '0' },
+          { label: 'Avg / Order', value: pt.orders > 0 ? formatINR(pt.revenue / pt.orders) : '—' },
+          { label: 'Rev Share', value: currentRev > 0 ? `${((pt.revenue / currentRev) * 100).toFixed(1)}%` : '—' },
         ],
       });
     },
@@ -224,9 +224,9 @@ export default function ExecutiveSummaryTab({
       heroLabel: `${entry.name} Customers`,
       heroValue: entry.value.toLocaleString('en-IN'),
       rows: [
-        { label: 'Share',            value: pieTotal > 0 ? `${((entry.value / pieTotal) * 100).toFixed(1)}%` : '—' },
-        { label: 'Total Customers',  value: pieTotal.toLocaleString('en-IN') },
-        { label: 'Repeat Rate',      value: `${summary.repeatCustomerRate ?? 0}%` },
+        { label: 'Share', value: pieTotal > 0 ? `${((entry.value / pieTotal) * 100).toFixed(1)}%` : '—' },
+        { label: 'Total Customers', value: pieTotal.toLocaleString('en-IN') },
+        { label: 'Repeat Rate', value: `${summary.repeatCustomerRate ?? 0}%` },
       ],
     });
   };
@@ -236,7 +236,7 @@ export default function ExecutiveSummaryTab({
     if (!active || !payload?.length) return null;
     const { name, value, fill } = payload[0];
     const pct = pieTotal > 0 ? ((value / pieTotal) * 100).toFixed(1) : '0';
-    
+
     return (
       <div
         style={{
@@ -274,7 +274,7 @@ export default function ExecutiveSummaryTab({
         />
       )}
 
-      {/* ── KPI Grid ─────────────────────────────────────────── */ }
+      {/* ── KPI Grid ─────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <KPICard
           label="Total Revenue"
@@ -303,7 +303,7 @@ export default function ExecutiveSummaryTab({
         />
       </div>
 
-      {/* ── Charts Row ───────────────────────────────────────── */ }
+      {/* ── Charts Row ───────────────────────────────────────── */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
 
         {/* Area Chart */}
@@ -315,12 +315,12 @@ export default function ExecutiveSummaryTab({
               <AreaChart data={salesTrend} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="goldFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%"  stopColor={GOLD} stopOpacity={0.30} />
+                    <stop offset="5%" stopColor={GOLD} stopOpacity={0.30} />
                     <stop offset="95%" stopColor={GOLD} stopOpacity={0.00} />
                   </linearGradient>
                   {/* subtle background band */}
                   <linearGradient id="chartBg" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%"   stopColor={GOLD_PALE}    stopOpacity={0.25} />
+                    <stop offset="0%" stopColor={GOLD_PALE} stopOpacity={0.25} />
                     <stop offset="100%" stopColor={PRIMARY_PALE} stopOpacity={0.10} />
                   </linearGradient>
                 </defs>
@@ -336,7 +336,7 @@ export default function ExecutiveSummaryTab({
                 />
                 <XAxis
                   dataKey="period"
-                  stroke="var(--t-text-muted)"
+                  stroke="#333333"
                   fontSize={10}
                   tickMargin={12}
                   tickLine={false}
@@ -344,7 +344,7 @@ export default function ExecutiveSummaryTab({
                   tickFormatter={(v) => formatDate(v)}
                 />
                 <YAxis
-                  stroke="var(--t-text-muted)"
+                  stroke="#333333"
                   fontSize={10}
                   tickLine={false}
                   axisLine={false}
@@ -378,7 +378,7 @@ export default function ExecutiveSummaryTab({
                 <p style={{ fontSize: 10, color: 'var(--t-text-muted)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 3 }}>
                   {label}
                 </p>
-                <p style={{ fontSize: 14, fontWeight: 700, color: GOLD, fontVariantNumeric: 'tabular-nums' }}>
+                <p style={{ fontSize: 14, fontWeight: 700, color: '#000000', fontVariantNumeric: 'tabular-nums' }}>
                   {value}
                 </p>
               </div>
@@ -420,8 +420,8 @@ export default function ExecutiveSummaryTab({
               <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'var(--t-text-muted)' }}>
                 Repeat Rate
               </span>
-              <span style={{ fontSize: 26, fontWeight: 800, color: GOLD, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
-                {summary.repeatCustomerRate ?? 0}%
+              <span style={{ fontSize: 26, fontWeight: 800, color: '#000000', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+                {pieTotal > 0 ? ((pieData[1].value / pieTotal) * 100).toFixed(1) : '0'}%
               </span>
             </div>
           </div>

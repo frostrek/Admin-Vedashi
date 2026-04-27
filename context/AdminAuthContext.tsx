@@ -126,7 +126,12 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         if (typeof window !== 'undefined') {
             const stored = localStorage.getItem(ADMIN_KEY);
             if (stored) {
-                setUser(JSON.parse(stored));
+                try {
+                    setUser(JSON.parse(stored));
+                } catch (e) {
+                    console.error('Failed to parse admin user from local storage:', e);
+                    localStorage.removeItem(ADMIN_KEY);
+                }
             }
 
             // ── SESSION RECOVERY CHECK ──────────────────────────

@@ -78,7 +78,7 @@ export default function RefundsCancellationsTab({ data }: { data?: RefundSummary
         .ref-sh-left { display:flex; align-items:center; gap:10px; }
         .ref-sh-bar { width:3px; height:16px; border-radius:2px; flex-shrink:0; background:linear-gradient(to bottom,${GOLD},#C5A46D); }
         .ref-sh-title { font-size:11px; font-weight:700; letter-spacing:0.10em; text-transform:uppercase; color:var(--t-text-muted,#888); }
-        .ref-sh-badge { font-size:10px; letter-spacing:0.03em; color:var(--t-text-muted,#888); background:var(--t-page-bg,rgba(255,255,255,0.04)); border:1px solid rgba(168,146,80,0.10); border-radius:999px; padding:3px 10px; }
+        .ref-sh-badge { font-size:10px; letter-spacing:0.04em; color:#444444; background:var(--t-page-bg,rgba(255,255,255,0.04)); border:1px solid rgba(168,146,80,0.10); border-radius:999px; padding:3px 10px; }
         .ref-rule { height:1px; margin:14px 0; background:linear-gradient(90deg,transparent,${GOLD} 30%,#C5A46D 50%,${GOLD} 70%,transparent); opacity:0.18; }
 
         .ref-kpi { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
@@ -160,9 +160,9 @@ export default function RefundsCancellationsTab({ data }: { data?: RefundSummary
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(168,146,80,0.07)" />
-                    <XAxis dataKey="date" stroke="var(--t-text-muted,#666)" fontSize={10} tickFormatter={formatDate} tickLine={false} axisLine={false} />
-                    <YAxis yAxisId="left" stroke="var(--t-text-muted,#666)" fontSize={10} tickLine={false} axisLine={false} />
-                    <YAxis yAxisId="right" orientation="right" stroke="var(--t-text-muted,#666)" fontSize={10} tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`} tickLine={false} axisLine={false} />
+                    <XAxis dataKey="date" stroke="#333333" fontSize={10} tickFormatter={formatDate} tickLine={false} axisLine={false} />
+                    <YAxis yAxisId="left" stroke="#333333" fontSize={10} tickLine={false} axisLine={false} />
+                    <YAxis yAxisId="right" orientation="right" stroke="#333333" fontSize={10} tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`} tickLine={false} axisLine={false} />
                     <RechartsTooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(168,146,80,0.2)' }} />
                     <Bar yAxisId="left" dataKey="count" name="Count" fill={PRIMARY} radius={[4, 4, 0, 0]} barSize={20} />
                     <Area yAxisId="right" type="monotone" dataKey="amount" name="Amount" stroke={GOLD} fill="url(#refundGrad)" strokeWidth={2}
@@ -189,8 +189,8 @@ export default function RefundsCancellationsTab({ data }: { data?: RefundSummary
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={summaryBars} layout="vertical" margin={{ left: 10, right: 30, top: 4, bottom: 4 }}>
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgba(168,146,80,0.07)" />
-                  <XAxis type="number" stroke="var(--t-text-muted,#666)" fontSize={10} tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`} tickLine={false} axisLine={false} />
-                  <YAxis dataKey="name" type="category" stroke="var(--t-text-muted,#666)" fontSize={11} width={100} tick={{ fill:'var(--t-text-secondary,#aaa)', fontFamily:"'DM Sans',sans-serif" }} tickLine={false} axisLine={false} />
+                  <XAxis type="number" stroke="#333333" fontSize={10} tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`} tickLine={false} axisLine={false} />
+                  <YAxis dataKey="name" type="category" stroke="#333333" fontSize={11} width={100} tick={{ fill:'#333333', fontFamily:"'DM Sans',sans-serif" }} tickLine={false} axisLine={false} />
                   <RechartsTooltip
                     contentStyle={{ borderRadius: '12px', border: '1px solid rgba(168,146,80,0.22)', backgroundColor: 'var(--t-card-bg,#1C2A1C)', fontFamily:"'DM Sans',sans-serif", fontSize: 12 }}
                     formatter={(val: number | undefined) => formatINR(val ?? 0)}
@@ -207,7 +207,7 @@ export default function RefundsCancellationsTab({ data }: { data?: RefundSummary
             <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid rgba(168,146,80,0.1)' }}>
               <div className="ref-impact-row">
                 <span className="ref-impact-label">Total Impact</span>
-                <span className="ref-impact-val" style={{ color: GOLD }}>{formatINR(data.refundTotal + data.cancelLostRevenue)}</span>
+                <span className="ref-impact-val" style={{ color: '#000000' }}>{formatINR(data.refundTotal + data.cancelLostRevenue)}</span>
               </div>
               <div className="ref-impact-row" style={{ marginBottom: 0 }}>
                 <span className="ref-impact-label">Refund Rate</span>

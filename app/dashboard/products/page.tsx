@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useCallback, Fragment, useMemo } from 'react';
 import Link from 'next/link';
-import { getProducts, deleteProduct, bulkDeleteProducts, Product, getRankingOverrides, setRankingOverride, removeRankingOverride, RankingOverride, searchProductsAdmin, getProduct, updateVariantStatus, updateDefaultVariant, getDraftProducts, updateProduct } from '@/lib/api';
+import { getProducts, deleteProduct, bulkDeleteProducts, Product, getRankingOverrides, setRankingOverride, removeRankingOverride, RankingOverride, searchProductsAdmin, getProduct, updateVariantStatus, updateDefaultVariant, getDraftProducts, updateProduct, autoGenerateSeo } from '@/lib/api';
 import { getCategories } from '@/lib/api/category';
 import { Category } from '@/types/category';
-import { Download, SlidersHorizontal, Filter, Package, Star, Loader2, Tag, ChevronDown, FileEdit, X, ChevronLeft, ChevronRight, Plus, Pencil, Trash2, Search, UploadCloud } from 'lucide-react';
+import { Download, SlidersHorizontal, Filter, Package, Star, Loader2, Tag, ChevronDown, FileEdit, X, ChevronLeft, ChevronRight, Plus, Pencil, Trash2, Search, UploadCloud, Globe } from 'lucide-react';
 import SortableHeader, { SortDir, compare } from '@/components/SortableHeader';
 import toast from 'react-hot-toast';
 import BulkDiscountModal from '@/components/BulkDiscountModal';
@@ -69,7 +69,7 @@ export default function ProductsListPage() {
         confirmLabel: 'Confirm',
         loading: false
     });
-    
+
     // Lock background scroll when Drafts modal is open
     useEffect(() => {
         if (draftsOpen) {
@@ -138,7 +138,7 @@ export default function ProductsListPage() {
                     return { ...v, thumbnail_url, effectivelyDefault };
                 });
                 setProductVariants(prev => ({ ...prev, [productId]: fetchedVariants }));
-                
+
                 // If the product was already selected, make sure newly loaded variants are also selected
                 if (selectedIds.has(productId)) {
                     setSelectedVariantIds(prev => {
@@ -149,11 +149,11 @@ export default function ProductsListPage() {
                         return next;
                     });
                 }
-                
+
                 // Update the main product row image to match the default variant discovered in details
                 const defaultVariant = fetchedVariants.find(v => v.effectivelyDefault);
                 if (defaultVariant?.thumbnail_url) {
-                    const updateList = (list: Product[]) => list.map(p => 
+                    const updateList = (list: Product[]) => list.map(p =>
                         p.product_id === productId ? { ...p, images: [defaultVariant.thumbnail_url] } : p
                     );
                     setProducts(prev => updateList(prev));
@@ -230,13 +230,13 @@ export default function ProductsListPage() {
 
         if (success) {
             toast.success('Default variant updated');
-            
+
             // Also update the main product image in the list to match the new default variant
             const newDefaultVariant = productVariants[productId]?.find(v => (v.variant_id === variantId || v.sku === variantId));
             if (newDefaultVariant?.thumbnail_url) {
-                const updateProductInList = (list: Product[]) => list.map(p => 
-                    p.product_id === productId 
-                        ? { ...p, images: [newDefaultVariant.thumbnail_url, ...(p.images || []).slice(1)] } 
+                const updateProductInList = (list: Product[]) => list.map(p =>
+                    p.product_id === productId
+                        ? { ...p, images: [newDefaultVariant.thumbnail_url, ...(p.images || []).slice(1)] }
                         : p
                 );
                 setProducts(prev => updateProductInList(prev));
@@ -309,7 +309,7 @@ export default function ProductsListPage() {
 
     useEffect(() => {
         let base = searchResults !== null ? searchResults : products;
-        
+
         if (filterCategory !== 'all') {
             if (filterCategory === 'none') {
                 base = base.filter(p => !p.category_id);
@@ -335,7 +335,7 @@ export default function ProductsListPage() {
                 }
             }
         }
-        
+
         if (filterStock !== 'all') {
             base = base.filter(p => {
                 const qty = p.stock_quantity ?? p.quantity ?? 0;
@@ -345,18 +345,18 @@ export default function ProductsListPage() {
                 return true;
             });
         }
-        
+
         if (priceRange.min > 0 || priceRange.max < absoluteMaxPrice) {
             base = base.filter(p => {
                 const price = p.price ?? 0;
                 return price >= priceRange.min && price <= priceRange.max;
             });
         }
-        
+
         if (filterBestSeller === 'best_seller') {
             base = base.filter(p => overrideMap.has(p.product_id));
         }
-        
+
         setFiltered(base);
         setCurrentPage(1); // Reset to first page when filters change
     }, [products, searchResults, filterCategory, filterSubCategory, filterStock, priceRange, absoluteMaxPrice, filterBestSeller, overrideMap, allCategories]);
@@ -495,8 +495,8 @@ export default function ProductsListPage() {
         }
         if (draftSearchQuery.trim()) {
             const q = draftSearchQuery.toLowerCase();
-            result = result.filter(d => 
-                (d.product_name && d.product_name.toLowerCase().includes(q)) || 
+            result = result.filter(d =>
+                (d.product_name && d.product_name.toLowerCase().includes(q)) ||
                 (d.sku && d.sku.toLowerCase().includes(q)) ||
                 (d.category && d.category.toLowerCase().includes(q)) ||
                 (d.brand && d.brand.toLowerCase().includes(q))
@@ -599,6 +599,34 @@ export default function ProductsListPage() {
         });
     };
 
+    const handleBulkSeo = () => {
+        const count = selectedIds.size > 0 ? selectedIds.size : products.length;
+        const targetText = selectedIds.size > 0 ? `${selectedIds.size} selected product(s)` : 'ALL products';
+
+        setConfirmModal({
+            open: true,
+            title: 'Bulk SEO Generation',
+            message: `Are you sure you want to auto-generate SEO metadata and image alt text for ${targetText}? This will fill in missing fields and improve search visibility.`,
+            confirmVariant: 'primary',
+            confirmLabel: 'Generate',
+            onConfirm: async () => {
+                setConfirmModal(prev => ({ ...prev, loading: true }));
+                const res = await autoGenerateSeo({
+                    entity_type: 'product',
+                    entity_ids: selectedIds.size > 0 ? Array.from(selectedIds) : undefined,
+                    overwrite: false, // Don't overwrite existing manual entries by default
+                    include_alt_text: true
+                });
+                if (res.success) {
+                    toast.success('SEO generation complete');
+                } else {
+                    toast.error(res.error || 'SEO generation failed');
+                }
+                setConfirmModal(prev => ({ ...prev, open: false, loading: false }));
+            }
+        });
+    };
+
     const openDrafts = async () => {
         setDraftsOpen(true);
         setDraftsLoading(true);
@@ -612,7 +640,7 @@ export default function ProductsListPage() {
 
     const handleToggleSelect = (id: string) => {
         const isSelected = selectedIds.has(id);
-        
+
         // 1. Update product selection state
         setSelectedIds(prev => {
             const next = new Set(prev);
@@ -667,7 +695,7 @@ export default function ProductsListPage() {
 
     const handleToggleVariantSelect = (productId: string, variantId: string) => {
         const isSelected = selectedVariantIds.has(variantId);
-        
+
         setSelectedVariantIds(prev => {
             const next = new Set(prev);
             if (isSelected) next.delete(variantId);
@@ -758,6 +786,14 @@ export default function ProductsListPage() {
                     >
                         <Tag className="h-4 w-4" />
                         <span className="hidden sm:inline">Bulk Actions</span>
+                    </button>
+                    <button
+                        onClick={handleBulkSeo}
+                        className="flex items-center gap-2 rounded-lg border border-gold/10 bg-primary px-3 sm:px-4 py-2.5 text-sm font-semibold text-[#E8D8B9] hover:bg-primary-light transition-all duration-300 shadow-sm"
+                        title="Auto-generate SEO for products"
+                    >
+                        <Globe className="h-4 w-4" />
+                        <span className="hidden sm:inline">Bulk SEO</span>
                     </button>
                     <button
                         onClick={() => setBulkExportOpen(true)}
@@ -864,7 +900,7 @@ export default function ProductsListPage() {
                                         <ChevronDown className="absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted pointer-events-none" />
                                     </div>
                                 </div>
-                                
+
                                 {selectedDraftIds.size > 0 && (
                                     <div className="flex items-center flex-wrap gap-2 w-full sm:w-auto animate-fadeIn justify-end mt-2 sm:mt-0">
                                         <span className="text-xs font-semibold text-text-muted mr-1">{selectedDraftIds.size} selected</span>
@@ -942,11 +978,10 @@ export default function ProductsListPage() {
                                     {filteredDrafts.map(draft => (
                                         <div
                                             key={draft.product_id}
-                                            className={`group flex items-center gap-4 py-3.5 px-4 rounded-2xl transition-all duration-300 hover:shadow-sm border ${
-                                                selectedDraftIds.has(draft.product_id) 
-                                                    ? 'bg-primary/5 border-primary/30 dark:bg-primary/10' 
+                                            className={`group flex items-center gap-4 py-3.5 px-4 rounded-2xl transition-all duration-300 hover:shadow-sm border ${selectedDraftIds.has(draft.product_id)
+                                                    ? 'bg-primary/5 border-primary/30 dark:bg-primary/10'
                                                     : 'bg-page-bg/30 hover:bg-white dark:hover:bg-primary/5 border-transparent hover:border-border/40'
-                                            }`}
+                                                }`}
                                         >
                                             {/* Checkbox */}
                                             <input
@@ -963,7 +998,7 @@ export default function ProductsListPage() {
                                                     <span className="text-2xl">🌱</span>
                                                 )}
                                             </div>
- 
+
                                             {/* Info */}
                                             <div className="flex-1 min-w-0">
                                                 <p className="text-sm font-bold text-text-primary truncate transition-colors group-hover:text-primary">{draft.product_name}</p>
@@ -987,7 +1022,7 @@ export default function ProductsListPage() {
                                                     </p>
                                                 )}
                                             </div>
- 
+
                                             {/* Actions */}
                                             <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
                                                 <Link
@@ -1053,11 +1088,10 @@ export default function ProductsListPage() {
                 <div className="relative">
                     <button
                         onClick={() => setShowFilters(!showFilters)}
-                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all duration-300 text-sm font-medium ${
-                            showFilters || [filterCategory, filterStock, filterBestSeller].some(f => f !== 'all') || filterCategory === 'none' || priceRange.min > 0 || priceRange.max < absoluteMaxPrice
+                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all duration-300 text-sm font-medium ${showFilters || [filterCategory, filterStock, filterBestSeller].some(f => f !== 'all') || filterCategory === 'none' || priceRange.min > 0 || priceRange.max < absoluteMaxPrice
                                 ? 'bg-gold/10 border-gold/30 text-gold-muted ring-4 ring-gold/5'
                                 : 'bg-card-bg border-border text-text-secondary hover:border-gold/30 hover:text-gold-muted'
-                        }`}
+                            }`}
                     >
                         <SlidersHorizontal className="h-4 w-4" />
                         <span>Filters</span>
@@ -1080,8 +1114,8 @@ export default function ProductsListPage() {
                     {/* Filter Overlay Popup */}
                     {showFilters && (
                         <>
-                            <div 
-                                className="fixed inset-0 z-[60] bg-black/5" 
+                            <div
+                                className="fixed inset-0 z-[60] bg-black/5"
                                 onClick={() => setShowFilters(false)}
                             />
                             <div className="absolute right-0 mt-2 w-80 z-[70] bg-card-bg border border-border rounded-2xl shadow-2xl overflow-hidden animate-fadeInUp flex flex-col max-h-[80vh]">
@@ -1091,7 +1125,7 @@ export default function ProductsListPage() {
                                             <Filter className="h-4 w-4 text-gold" />
                                             Refine Products
                                         </h4>
-                                        <button 
+                                        <button
                                             onClick={() => {
                                                 setFilterCategory('all');
                                                 setFilterSubCategory('all');
@@ -1478,7 +1512,7 @@ export default function ProductsListPage() {
                         </tbody >
                     </table >
                 </div >
-                
+
                 {/* Pagination Controls */}
                 {filtered.length > 0 && (
                     <div className="flex items-center justify-between border-t border-border-subtle bg-page-bg/50 px-4 py-3 sm:px-6">
@@ -1487,7 +1521,7 @@ export default function ProductsListPage() {
                                 <p className="text-sm text-text-secondary">
                                     Showing <span className="font-semibold text-text-primary">{((currentPage - 1) * itemsPerPage) + 1}</span> to <span className="font-semibold text-text-primary">{Math.min(currentPage * itemsPerPage, filtered.length)}</span> of <span className="font-semibold text-text-primary">{filtered.length}</span> products
                                 </p>
-                                <select 
+                                <select
                                     className="text-xs bg-card-bg border border-border rounded px-2 py-1 text-text-primary cursor-pointer focus:outline-none focus:border-gold/50"
                                     value={itemsPerPage}
                                     onChange={(e) => {
@@ -1511,7 +1545,7 @@ export default function ProductsListPage() {
                                         <span className="sr-only">Previous</span>
                                         <ChevronLeft className="h-4 w-4" aria-hidden="true" />
                                     </button>
-                                    
+
                                     {Array.from({ length: totalPages }, (_, i) => i + 1)
                                         .filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
                                         .map((p, i, arr) => (
@@ -1521,15 +1555,14 @@ export default function ProductsListPage() {
                                                 )}
                                                 <button
                                                     onClick={() => handlePageChange(p)}
-                                                    className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 focus:outline-offset-0 transition-colors ${
-                                                        p === currentPage ? 'z-10 bg-gold/10 text-gold ring-1 ring-inset ring-gold/50' : 'text-text-primary ring-1 ring-inset ring-border hover:bg-gold/[0.05]'
-                                                    }`}
+                                                    className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 focus:outline-offset-0 transition-colors ${p === currentPage ? 'z-10 bg-gold/10 text-gold ring-1 ring-inset ring-gold/50' : 'text-text-primary ring-1 ring-inset ring-border hover:bg-gold/[0.05]'
+                                                        }`}
                                                 >
                                                     {p}
                                                 </button>
                                             </Fragment>
                                         ))}
-                                    
+
                                     <button
                                         onClick={() => handlePageChange(currentPage + 1)}
                                         disabled={currentPage === totalPages}

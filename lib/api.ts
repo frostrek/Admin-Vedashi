@@ -249,6 +249,8 @@ export interface Product {
     quantity?: number; // request-only: sets default variant stock (not returned in responses)
 
     stock_quantity?: number;
+    manufacturer?: string;
+    lead_time?: string;
     country_of_origin?: string;
     images?: string[];
     specifications?: any;
@@ -583,7 +585,86 @@ export async function checkApiHealth(): Promise<boolean> {
     }
 }
 
+/* ─── Dynamic Product Enums (Form & Speciality) ─── */
+
+export async function getFormOptions(): Promise<string[]> {
+    try {
+        const res = await fetch(`${API_URL}/api/products/enums/forms`, { credentials: 'include' });
+        const json: ApiResponse<string[]> = await res.json();
+        return json.success && Array.isArray(json.data) ? json.data : [];
+    } catch {
+        console.warn('[Admin API] Failed to fetch form options');
+        return [];
+    }
+}
+
+export async function createFormOption(name: string): Promise<boolean> {
+    try {
+        const res = await authFetch(`${API_URL}/api/products/enums/forms`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ name }),
+        });
+        const json: ApiResponse = await res.json();
+        return json.success;
+    } catch {
+        return false;
+    }
+}
+
+export async function deleteFormOption(name: string): Promise<boolean> {
+    try {
+        const res = await authFetch(`${API_URL}/api/products/enums/forms/${encodeURIComponent(name)}`, {
+            method: 'DELETE',
+            headers: authHeaders(),
+        });
+        const json: ApiResponse = await res.json();
+        return json.success;
+    } catch {
+        return false;
+    }
+}
+
+export async function getSpecialityOptions(): Promise<string[]> {
+    try {
+        const res = await fetch(`${API_URL}/api/products/enums/specialities`, { credentials: 'include' });
+        const json: ApiResponse<string[]> = await res.json();
+        return json.success && Array.isArray(json.data) ? json.data : [];
+    } catch {
+        console.warn('[Admin API] Failed to fetch speciality options');
+        return [];
+    }
+}
+
+export async function createSpecialityOption(name: string): Promise<boolean> {
+    try {
+        const res = await authFetch(`${API_URL}/api/products/enums/specialities`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ name }),
+        });
+        const json: ApiResponse = await res.json();
+        return json.success;
+    } catch {
+        return false;
+    }
+}
+
+export async function deleteSpecialityOption(name: string): Promise<boolean> {
+    try {
+        const res = await authFetch(`${API_URL}/api/products/enums/specialities/${encodeURIComponent(name)}`, {
+            method: 'DELETE',
+            headers: authHeaders(),
+        });
+        const json: ApiResponse = await res.json();
+        return json.success;
+    } catch {
+        return false;
+    }
+}
+
 /* ─── Orders ─── */
+
 
 export interface OrderItem {
     product_name?: string;
@@ -3633,5 +3714,27 @@ export async function deleteProductCountryPrice(productId: string, countryCode: 
     } catch (error) {
         console.error('[Admin API] Failed to delete product country price:', error);
         return false;
+    }
+}
+
+/* ─── SEO Automation ─── */
+
+export async function autoGenerateSeo(params: { 
+    entity_type: 'product', 
+    entity_ids?: string[], 
+    overwrite?: boolean, 
+    include_alt_text?: boolean 
+}): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+        const res = await authFetch(`${API_URL}/api/seo/auto-generate`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify(params),
+        });
+        const json = await res.json();
+        return { success: json.success, data: json.data, error: json.message };
+    } catch (error) {
+        console.error('[Admin API] Failed to auto-generate SEO:', error);
+        return { success: false, error: 'Network error' };
     }
 }

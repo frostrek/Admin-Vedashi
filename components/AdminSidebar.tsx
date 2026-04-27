@@ -6,7 +6,7 @@ import { useAdminAuth } from '@/context/AdminAuthContext';
 import {
     LayoutDashboard, Package, ShoppingCart, Tag, LogOut, Leaf,
     ChevronLeft, Menu, Truck, Megaphone, BarChart, Settings, Users, X, Shield, Search, Ticket,
-    FileText, MessageSquare, Star, ShieldAlert, LayoutTemplate, Images, HelpCircle, Send, MonitorSmartphone, Activity, Layers, DollarSign, Gift, FileBarChart2, RotateCcw, SlidersHorizontal
+    FileText, MessageSquare, Star, ShieldAlert, LayoutTemplate, Images, HelpCircle, Send, MonitorSmartphone, Activity, Layers, DollarSign, Gift, FileBarChart2, RotateCcw, SlidersHorizontal, Key
 } from 'lucide-react';
 const useState = require('react').useState;
 const useEffect = require('react').useEffect;
@@ -73,6 +73,7 @@ const systemNav = [
     { href: '/dashboard/security', label: 'Security & Ops', icon: Shield },
     { href: '/dashboard/settings', label: 'Settings', icon: Settings },
     { href: '/dashboard/gdpr', label: 'GDPR', icon: Shield },
+    { href: '/dashboard/partner-keys', label: 'API & Integrations', icon: Key },
 ];
 
 const allNavItems = [
@@ -149,13 +150,13 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
     const sidebarContent = (isCollapsed: boolean) => (
         <>
             {/* Logo */}
-            <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} px-4 pt-2 pb-0 border-b border-border-subtle`}>
+            <div className="flex items-center justify-center px-4 pt-2 pb-0 border-b border-border-subtle">
                 {!isCollapsed && (
                     <Link href="/dashboard" className="flex items-center gap-2.5">
                         <img
                             src="/vedashi-logo.png"
                             alt="Vedashi"
-                            className="h-16 w-auto object-contain filter drop-shadow-md brightness-0 sepia saturate-[16] hue-rotate-[5deg] brightness-[2.5] contrast-[1.2] transition-all duration-300"
+                            className="h-12 w-auto object-contain filter brightness-0 invert transition-all duration-300"
                         />
                     </Link>
                 )}
@@ -164,7 +165,7 @@ export default function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps)
                         <img
                             src="/Small-Logo.png"
                             alt="Vedashi"
-                            className="h-10 w-10 object-contain filter brightness-0 sepia saturate-[10] hue-rotate-[5deg] brightness-[1.8] contrast-[1.2]"
+                            className="h-9 w-9 object-contain filter brightness-0 invert"
                         />
                     </Link>
                 )}

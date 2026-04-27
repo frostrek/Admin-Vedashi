@@ -4,10 +4,10 @@ import React, { useState, useEffect, use, Suspense, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getCategories, createCategory } from '@/lib/api/category';
 import { updateProduct } from '@/lib/api/product';
-import { getProduct, uploadProductImage, deleteProductImage, updateProductImage } from '@/lib/api';
+import { getProduct, uploadProductImage, deleteProductImage, updateProductImage, getFormOptions, createFormOption, deleteFormOption, getSpecialityOptions, createSpecialityOption, deleteSpecialityOption } from '@/lib/api';
 import CategoryMillerColumns from '@/components/admin/CategoryMillerColumns';
 import { Category } from '@/types/category';
-import { ArrowLeft, ArrowRight, Check, X, Plus, Trash2, ChevronDown, ChevronUp, AlertCircle, Info, Package, Layers, Star, ImageIcon, Maximize2, Loader2, Film, Search, Weight, Droplets, Hash, Zap, Utensils } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, X, Plus, Trash2, ChevronDown, ChevronUp, AlertCircle, Info, Package, Layers, Star, ImageIcon, Maximize2, Loader2, Film, Search, Weight, Droplets, Hash, Zap, Utensils, Tag } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import CountryPicker from '@/components/CountryPicker';
@@ -42,22 +42,29 @@ const STEPS = [
 // ÔöÇÔöÇÔöÇ Types ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 interface VariantRow {
     variant_id?: string;
+    product_name: string;
+    discount_base_price: number | null;
+    model_number: string;
+    weight_input: string;
+    volume_input: string;
     weight?: string;
     volume?: string;
-    count?: string;
-    strength?: string;
-    flavor?: string;
-    pack?: string;
-    combo?: string;
     variant_name: string;
     sku: string;
     price: number;
-    cost_price: number;
     stock: number;
     shelf_life: string;
     length_cm: string;
     width_cm: string;
     height_cm: string;
+
+    // keep legacy strictly for Step 2 map compat if user falls back
+    count?: string;
+    strength?: string;
+    flavor?: string;
+    pack?: string;
+    combo?: string;
+    [key: string]: any;
     item_weight_kg_input: string;
     images: { preview: string; file?: File; asset_id?: string; alt_text?: string }[];
     videos: { preview: string; file?: File; asset_id?: string; alt_text?: string }[];
@@ -97,11 +104,20 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
     const [categories, setCategories] = useState<Category[]>([]);
     const [isCategoryLoading, setIsCategoryLoading] = useState(false);
 
+    // ─── Dynamic Form & Speciality Options ────────────────────────────────
+    const [formOptions, setFormOptions] = useState<string[]>([]);
+    const [specialityOptions, setSpecialityOptions] = useState<string[]>([]);
+    const [newFormInput, setNewFormInput] = useState('');
+    const [showNewFormInput, setShowNewFormInput] = useState(false);
+    const [newSpecialityInput, setNewSpecialityInput] = useState('');
+    const [manageFormMode, setManageFormMode] = useState(false);
+    const [manageSpecMode, setManageSpecMode] = useState(false);
+
     const id = dbProductId || urlId;
 
 
 
-    // ÔöÇÔöÇÔöÇ Step 1: General Info State ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // ─── Step 1: General Info State ──────────────────────────────────────────────────────────────────────────────────────────────────────
     const [form, setForm] = useState({
         product_name: '',
         brand: '',
@@ -109,7 +125,8 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
         country_of_origin: '',
         form_type: '',
         specialities: [] as string[],
-        intended_use: '',
+        manufacturer: '',
+        lead_time: '',
         description: '',
         short_description: '',
         available_from_date: '',
@@ -118,8 +135,9 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
         available_until_time: '',
     });
 
-    // ÔöÇÔöÇÔöÇ Step 2: Define Variants State ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
-    const [dimConfigs, setDimConfigs] = useState({
+    // ─── Step 2: Define Variants State ──────────────────────────────────────────────────────────────────────────────────────────────────
+    const HARDCODED_DIMS = ['weight', 'volume', 'count', 'strength', 'flavor', 'pack', 'combo'] as const;
+    const [dimConfigs, setDimConfigs] = useState<Record<string, { active: boolean; values: string[] }>>({
         weight: { active: false, values: [] as string[] },
         volume: { active: false, values: [] as string[] },
         count: { active: false, values: [] as string[] },
@@ -128,18 +146,27 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
         pack: { active: false, values: [] as string[] },
         combo: { active: false, values: [] as string[] },
     });
-    const [dimInputs, setDimInputs] = useState({
-        weight: '', volume: '', count: '', strength: '', flavor: '', pack: '', combo: ''
+    const [dimInputs, setDimInputs] = useState<Record<string, string>>({
+        weight: '',
+        volume: '',
+        count: '',
+        strength: '',
+        flavor: '',
+        pack: '',
+        combo: '',
     });
+    // Custom dimension types detected/added (e.g. "Color", "Material")
+    const [customDimTypes, setCustomDimTypes] = useState<string[]>([]);
+    const [customDimInput, setCustomDimInput] = useState('');
     const [weightUnit, setWeightUnit] = useState('g');
     const [volUnit, setVolUnit] = useState('ml');
     const [countUnit, setCountUnit] = useState('Tablets');
     const [strengthUnit, setStrengthUnit] = useState('mg');
 
-    // ÔöÇÔöÇÔöÇ Step 3: Variants Table State ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // ─── Step 3: Variants Table State ────────────────────────────────────────────────────────────────────────────────────────────────────
     const [autoGenerate, setAutoGenerate] = useState(false);
     const [variants, setVariants] = useState<VariantRow[]>([
-        { pack: '', volume: '', variant_name: '', sku: '', price: 0, cost_price: 0, stock: 0, shelf_life: '', length_cm: '', width_cm: '', height_cm: '', item_weight_kg_input: '', images: [], videos: [], defaultImageIndex: 0, sale_price: '', sale_start_date: '', sale_start_time: '', sale_end_date: '', sale_end_time: '', isDefault: false, isActive: true }
+        { product_name: '', discount_base_price: null, model_number: '', weight_input: '', volume_input: '', weight: '', volume: '', count: '', strength: '', flavor: '', pack: '', combo: '', variant_name: '', sku: '', price: 0, stock: 0, shelf_life: '', length_cm: '', width_cm: '', height_cm: '', item_weight_kg_input: '', images: [], videos: [], defaultImageIndex: 0, sale_price: '', sale_start_date: '', sale_start_time: '', sale_end_date: '', sale_end_time: '', isDefault: false, isActive: true }
     ]);
     const [expandedVariantIndex, setExpandedVariantIndex] = useState<number | null>(null);
     const [sharedImages, setSharedImages] = useState(false);
@@ -160,9 +187,16 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
         let cancelled = false;
         async function load() {
             setLoading(true);
-            const [product, cats] = await Promise.all([getProduct(urlId), getCategories()]);
+            const [product, cats, forms, specs] = await Promise.all([
+                getProduct(urlId),
+                getCategories(),
+                getFormOptions(),
+                getSpecialityOptions(),
+            ]);
             if (cancelled) return;
             setCategories(cats);
+            setFormOptions(forms);
+            setSpecialityOptions(specs);
 
             if (!product) {
                 toast.error('Product not found');
@@ -177,11 +211,12 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
             setForm({
                 product_name: product.product_name || '',
                 brand: product.brand || '',
-                category_id: finalCatId,                country_of_origin: product.country_of_origin || (product as any).specifications?.country_of_origin || '',
+                category_id: finalCatId, country_of_origin: product.country_of_origin || (product as any).specifications?.country_of_origin || '',
                 form_type: (product as any).form || '',
                 specialities: (product as any).specialities || [],
 
-                intended_use: product.intended_use || '',
+                manufacturer: product.manufacturer || '',
+                lead_time: product.lead_time || '',
                 description: product.description || '',
                 short_description: (product as any).short_description || '',
                 available_from_date: (product as any).available_from ? new Date((product as any).available_from).toISOString().split('T')[0] : '',
@@ -193,9 +228,11 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
             // Track product status so we can conditionally show "Save as Draft"
             setProductStatus(product.status || 'active');
 
+            const detectedCustomTypes: string[] = [];
+
             // ── Step 2 & 3: Variants ──
             if (Array.isArray(product.variants) && product.variants.length > 0) {
-                const newDimConfigs = {
+                const newDimConfigs: Record<string, { active: boolean; values: string[] }> = {
                     weight: { active: false, values: [] as string[] },
                     volume: { active: false, values: [] as string[] },
                     count: { active: false, values: [] as string[] },
@@ -204,10 +241,10 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                     pack: { active: false, values: [] as string[] },
                     combo: { active: false, values: [] as string[] },
                 };
-                // Determine if this product relies entirely on shared images
+                // Determine if this product relies entirely on shared image
                 const allAssets: any[] = (product as any).assets || [];
                 const currentVariantIds = new Set(product.variants.map((v: any) => (v.variant_id || '').toLowerCase()));
-                
+
                 const distinctImageIds = new Set(
                     allAssets
                         .filter(a => !(a.media_type || a.mime_type || '').toLowerCase().startsWith('video'))
@@ -227,12 +264,13 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                 const normalizeId = (id: any) => String(id || '').toLowerCase();
 
                 const mappedVariants: VariantRow[] = product.variants.map((v: any, index: number) => {
+                    // Check options for new fields
+                    const opts = typeof v.options === 'string' ? JSON.parse(v.options) : (v.options || {});
+                    console.log('[EditProduct] variant options JSONB:', v.variant_sku || v.sku, opts);
+
                     // Legacy field mapping
-                    let volStr = v.volume || '';
-                    if (!volStr && v.size_label) volStr = v.size_label;
-                    if (!volStr && v.volume_ml) {
-                        volStr = v.volume_ml >= 1000 ? `${v.volume_ml / 1000} L` : `${v.volume_ml} ml`;
-                    }
+                    let volStr = v.volume || opts['Volume'] || opts['volume'] || '';
+                    if (!volStr && v.size_label && v.size_label.toLowerCase() !== 'standard') volStr = v.size_label;
 
                     let pkStr = v.pack || '';
                     if (!pkStr && v.pack_quantity && v.pack_quantity > 1) pkStr = `Pack of ${v.pack_quantity}`;
@@ -254,26 +292,45 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                         sale_end_time = d.toISOString().slice(11, 16);
                     }
 
-                    // Metadata mapping for all dimensions
-                    const dims: (keyof typeof newDimConfigs)[] = ['weight', 'volume', 'count', 'strength', 'flavor', 'pack', 'combo'];
+                    // Standard dimension keys (case-insensitive matching)
+                    const STANDARD_DIMS = ['weight', 'volume', 'count', 'strength', 'flavor', 'pack', 'combo'];
+                    const dims: string[] = [...STANDARD_DIMS];
+
+                    // Detect dynamic option keys not in the standard set
+                    const dynamicKeys = Object.keys(opts).filter(k => !STANDARD_DIMS.includes(k.toLowerCase()));
+                    dynamicKeys.forEach(k => {
+                        const dKey = k.toLowerCase();
+                        if (!newDimConfigs[dKey]) {
+                            newDimConfigs[dKey] = { active: false, values: [] };
+                            // Add to detected custom types if it has a value (case-preserved for display)
+                            if (!detectedCustomTypes.includes(k)) {
+                                detectedCustomTypes.push(k);
+                            }
+                        }
+                        const val = opts[k];
+                        if (val) {
+                            newDimConfigs[dKey].active = true;
+                            if (!newDimConfigs[dKey].values.includes(val)) {
+                                newDimConfigs[dKey].values.push(val);
+                            }
+                        }
+                        if (!dims.includes(dKey)) dims.push(dKey);
+                    });
 
                     // Specific mapping for new database fields
-                    let weightStr = v.weight || '';
-                    if (!weightStr && v.weight_g) {
-                        weightStr = v.weight_g >= 1000 ? `${v.weight_g / 1000} kg` : `${v.weight_g} g`;
-                    }
+                    let weightStr = v.weight || opts['Weight'] || opts['weight'] || '';
 
-                    let countStr = v.count || '';
+                    let countStr = v.count || opts['Count'] || '';
                     if (!countStr && v.units_count) {
                         countStr = `${v.units_count} ${v.form_factor || ''}`.trim();
                     }
 
-                    let strengthStr = v.strength || '';
+                    let strengthStr = v.strength || opts['Strength'] || '';
                     if (v.strength_unit && !strengthStr.includes(v.strength_unit)) {
                         strengthStr = `${v.strength} ${v.strength_unit}`.trim();
                     }
 
-                    let comboStr = v.combo || '';
+                    let comboStr = v.combo || opts['Combo'] || '';
                     if (!comboStr && v.is_combo != null) {
                         comboStr = v.is_combo ? 'Yes' : 'No';
                     }
@@ -286,6 +343,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                         else if (d === 'strength') val = strengthStr;
                         else if (d === 'pack') val = pkStr;
                         else if (d === 'combo') val = comboStr;
+                        else if (d === 'flavor') val = opts['Flavor'] || v[d] || '';
                         else val = v[d] || '';
 
                         if (val) {
@@ -301,13 +359,13 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                         .filter((a: any) => {
                             const mt = (a.media_type || a.mime_type || '').toLowerCase();
                             if (mt.startsWith('video')) return false;
-                            
+
                             const aid = normalizeId(a.variant_id);
                             const vid = normalizeId(v.variant_id);
-                            
+
                             if (isSharedImages && index === 0) return true;
                             if (isSharedImages && index > 0) return false;
-                            
+
                             return (aid === vid || (!a.variant_id && index === 0));
                         })
                         .map((a: any) => {
@@ -323,13 +381,13 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                         .filter((a: any) => {
                             const mt = (a.media_type || a.mime_type || '').toLowerCase();
                             if (!mt.startsWith('video')) return false;
-                            
+
                             const aid = normalizeId(a.variant_id);
                             const vid = normalizeId(v.variant_id);
-                            
+
                             if (isSharedVideos && index === 0) return true;
                             if (isSharedVideos && index > 0) return false;
-                            
+
                             return (aid === vid || (!a.variant_id && index === 0));
                         })
                         .map((a: any) => {
@@ -341,8 +399,13 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                         })
                         .filter(vid => vid.preview);
 
-                    return {
+                    const variantObj: VariantRow = {
                         variant_id: v.variant_id || undefined,
+                        product_name: vName,
+                        discount_base_price: v.discount_base_price != null ? Number(v.discount_base_price) : null,
+                        model_number: v.model_number || '',
+                        weight_input: v.weight_g != null ? (v.weight_g >= 1000 ? `${v.weight_g / 1000}kg` : `${v.weight_g}g`) : '',
+                        volume_input: v.volume_ml != null ? (v.volume_ml >= 1000 ? `${v.volume_ml / 1000}L` : `${v.volume_ml}ml`) : '',
                         weight: weightStr,
                         volume: volStr,
                         count: countStr,
@@ -353,7 +416,6 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                         variant_name: vName,
                         sku: v.variant_sku || v.sku || '',
                         price: Number(v.price) || 0,
-                        cost_price: Number(v.cost_price) || 0,
                         stock: Number(v.stock_quantity ?? v.stock) || 0,
                         shelf_life: v.shelf_life_months != null ? String(v.shelf_life_months) : (v.shelf_life || ''),
                         length_cm: v.length_cm != null ? String(v.length_cm) : '',
@@ -368,13 +430,26 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                         sale_start_time,
                         sale_end_date,
                         sale_end_time,
-                        isDefault: v.is_default || false,
+                        isDefault: index === 0,
                         isActive: v.is_active !== false,
                     };
+
+                    // Spread dynamic option values onto variant row
+                    dynamicKeys.forEach(k => {
+                        variantObj[k.toLowerCase()] = opts[k];
+                    });
+
+                    return variantObj;
                 });
 
                 setVariants(mappedVariants);
+                console.log('[EditProduct] final dimConfigs after pre-population:', JSON.stringify(newDimConfigs, null, 2));
+                setCustomDimTypes(detectedCustomTypes);
                 setDimConfigs(newDimConfigs);
+                // Ensure dimInputs has entries for dynamic keys
+                const newDimInputs: Record<string, string> = { weight: '', volume: '', count: '', strength: '', flavor: '', pack: '', combo: '' };
+                Object.keys(newDimConfigs).forEach(k => { if (!(k in newDimInputs)) newDimInputs[k] = ''; });
+                setDimInputs(newDimInputs);
 
                 if (mappedVariants.length > 1) {
                     const firstHasAssets = mappedVariants[0].images.length > 0 || mappedVariants[0].videos.length > 0;
@@ -393,7 +468,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
     }, [urlId]);
 
     const parentCategories = categories.filter(c => !c.parent_id);
-    // ÔöÇÔöÇÔöÇ Form helpers ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // ─── Form helpers ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
     const update = (field: string, value: any) => setForm(prev => ({ ...prev, [field]: value }));
 
     const handleCategoryChange = (leafId: string, fullPath: Category[]) => {
@@ -402,10 +477,10 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
     const autoSlug = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
 
-    // ÔöÇÔöÇÔöÇ Step 2: Volume helpers ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
-    const toggleDimensionActive = (dim: keyof typeof dimConfigs) => {
+    // ─── Step 2: Dimension helpers ──────────────────────────────────────────────────────────────────────────────────────────────────────────
+    const toggleDimensionActive = (dim: string) => {
         setDimConfigs(prev => {
-            const isActivating = !prev[dim].active;
+            const isActivating = !prev[dim]?.active;
             const next = { ...prev };
 
             if (isActivating) {
@@ -416,13 +491,46 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                 }
             }
 
-            next[dim] = { ...next[dim], active: isActivating };
+            next[dim] = { ...(next[dim] || { values: [] }), active: isActivating };
             return next;
         });
     };
 
-    const addDimensionValue = (dim: keyof typeof dimConfigs) => {
-        const val = dimInputs[dim].trim();
+    const addCustomDimType = () => {
+        const raw = customDimInput.trim();
+        if (!raw) return;
+        if (raw.length > 20) { toast.error('Type name must be 20 characters or fewer'); return; }
+        // Capitalize first letter
+        const normalized = raw.charAt(0).toUpperCase() + raw.slice(1);
+        const key = normalized.toLowerCase();
+        // Duplicate check
+        if (HARDCODED_DIMS.includes(key as any) || customDimTypes.map(t => t.toLowerCase()).includes(key)) {
+            toast.error(`"${normalized}" already exists`);
+            return;
+        }
+        setCustomDimTypes(prev => [...prev, normalized]);
+        setDimConfigs(prev => ({ ...prev, [key]: { active: true, values: [] } }));
+        setDimInputs(prev => ({ ...prev, [key]: '' }));
+        setCustomDimInput('');
+    };
+
+    const removeCustomDimType = (typeName: string) => {
+        const key = typeName.toLowerCase();
+        setCustomDimTypes(prev => prev.filter(t => t !== typeName));
+        setDimConfigs(prev => {
+            const next = { ...prev };
+            delete next[key];
+            return next;
+        });
+        setDimInputs(prev => {
+            const next = { ...prev };
+            delete next[key];
+            return next;
+        });
+    };
+
+    const addDimensionValue = (dim: string) => {
+        const val = (dimInputs[dim] || '').trim();
         if (!val && dim !== 'combo') return;
 
         let finalVal = val;
@@ -433,19 +541,19 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
         else if (dim === 'pack') finalVal = val;
         else if (dim === 'combo') finalVal = val.toLowerCase() === 'yes' || val === 'true' ? 'Yes' : 'No';
 
-        if (!dimConfigs[dim].values.includes(finalVal)) {
+        if (!dimConfigs[dim]?.values.includes(finalVal)) {
             setDimConfigs(prev => ({
                 ...prev,
-                [dim]: { ...prev[dim], values: [...prev[dim].values, finalVal] }
+                [dim]: { ...prev[dim], values: [...(prev[dim]?.values || []), finalVal] }
             }));
         }
         setDimInputs(prev => ({ ...prev, [dim]: '' }));
     };
 
-    const removeDimensionValue = (dim: keyof typeof dimConfigs, val: string) => {
+    const removeDimensionValue = (dim: string, val: string) => {
         setDimConfigs(prev => ({
             ...prev,
-            [dim]: { ...prev[dim], values: prev[dim].values.filter(v => v !== val) }
+            [dim]: { ...prev[dim], values: (prev[dim]?.values || []).filter(v => v !== val) }
         }));
     };
 
@@ -490,7 +598,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
         if (val) generateCombinations();
     };
 
-    // ÔöÇÔöÇÔöÇ Variant table helpers ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // ─── Variant table helpers ───────────────────────────────────────────────────────────────────────────────────────────────────────────
     const updateVariant = (index: number, field: keyof VariantRow, value: any) => {
         setVariants(prev => {
             const updated = [...prev];
@@ -502,7 +610,8 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
     const addVariantRow = () => {
         const anyActiveDim = Object.values(dimConfigs).some(d => d.active);
         const newVariant: any = {
-            variant_name: '', sku: '', price: 0, cost_price: 0, stock: 0,
+            product_name: '', discount_base_price: null, model_number: '', weight_input: '', volume_input: '', weight: '', volume: '', count: '', strength: '', flavor: '', pack: '', combo: '',
+            variant_name: '', sku: '', price: 0, stock: 0,
             shelf_life: '', length_cm: '', width_cm: '', height_cm: '', item_weight_kg_input: '',
             images: [], videos: [], defaultImageIndex: 0,
             sale_price: '', sale_start_date: '', sale_start_time: '', sale_end_date: '', sale_end_time: '',
@@ -528,7 +637,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
         setVariants(prev => prev.map((v, i) => ({ ...v, isDefault: i === index })));
     };
 
-    // ÔöÇÔöÇÔöÇ Variant image helpers ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // ─── Variant image helpers ───────────────────────────────────────────────────────────────────────────────────────────────────────────
     const handleVariantImageAdd = (vIdx: number, files: FileList | null) => {
         if (!files) return;
         const newImgs: { preview: string; file: File }[] = [];
@@ -659,7 +768,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
         setExpandedVariantIndex(prev => prev === index ? null : index);
     };
 
-    // ÔöÇÔöÇÔöÇ Step navigation ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // ─── Step navigation ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────
     const goNext = () => {
         if (currentStep === 1) {
             if (!form.product_name.trim()) {
@@ -687,8 +796,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
         if (currentStep === 3) {
             const negativeField = variants.find(v =>
                 Number(v.stock) < 0 ||
-                Number(v.price) < 0 ||
-                Number(v.cost_price) < 0 ||
+                Number(v.discount_base_price) < 0 ||
                 Number(v.sale_price) < 0 ||
                 Number(v.shelf_life) < 0 ||
                 Number(v.length_cm) < 0 ||
@@ -697,13 +805,13 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
             );
 
             if (negativeField) {
-                toast.error('Negative values are not allowed for stock, price, cost, or dimensions');
+                toast.error('Negative values are not allowed for stock, price, sale price, or dimensions');
                 return;
             }
 
-            const invalidVariant = variants.find(v => !v.sku.trim() || !v.price);
+            const invalidVariant = variants.find(v => !v.product_name.trim() || !v.sku.trim() || !v.discount_base_price);
             if (invalidVariant) {
-                toast.error('Please ensure all variants have an SKU and a Price (min 0.01)');
+                toast.error('Please ensure all variants have a Product Name, SKU, and Selling Price');
                 return;
             }
         }
@@ -729,7 +837,8 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
             category_id: form.category_id || undefined,
             country_of_origin: form.country_of_origin || undefined,
             description: form.description.trim() || undefined,
-            intended_use: form.intended_use.trim() || undefined,
+            manufacturer: form.manufacturer.trim() || undefined,
+            lead_time: form.lead_time.trim() || undefined,
             form: form.form_type || undefined,
             specialities: form.specialities,
 
@@ -740,67 +849,46 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
             },
             variants: variants
                 .filter(v => v.sku.trim() || v.variant_name.trim())
-                .map(v => {
-                    const activeDimensions = Object.entries(dimConfigs)
-                        .filter(([_, config]) => config.active)
-                        .map(([id]) => (v as any)[id])
-                        .filter(Boolean);
-                    const combinedName = v.variant_name || activeDimensions.join(' ');
+                .map((v, index) => {
+                    const options: Record<string, string> = {};
+                    if (v.weight) options['Weight'] = v.weight;
+                    if (v.volume) options['Volume'] = v.volume;
+                    if (v.strength) options['Strength'] = v.strength;
+                    if (v.flavor) options['Flavor'] = v.flavor;
+                    if (v.pack) options['Pack'] = v.pack;
+                    if (v.count) options['Count'] = v.count;
+                    if (v.combo && v.combo !== 'No') options['Combo'] = v.combo;
+                    if (v.combo && v.combo !== 'No') options['Combo'] = v.combo;
 
-                    // Parse formatted strings for DB fields
-                    let weight_g = undefined;
-                    if (v.weight) {
-                        const [val, unit] = v.weight.split(' ');
-                        weight_g = unit === 'kg' ? parseFloat(val) * 1000 : parseFloat(val);
-                    }
-
-                    let units_count = undefined;
-                    let form_factor = undefined;
-                    if (v.count) {
-                        const parts = v.count.split(' ');
-                        units_count = parseInt(parts[0]);
-                        form_factor = parts.slice(1).join(' ');
-                    }
-
-                    let strength = undefined;
-                    let strength_unit = undefined;
-                    if (v.strength) {
-                        const parts = v.strength.split(' ');
-                        strength = parts[0];
-                        strength_unit = parts.slice(1).join(' ');
-                    }
+                    // Serialize custom dimension types
+                    customDimTypes.forEach(typeName => {
+                        const key = typeName.toLowerCase();
+                        if (v[key]) options[typeName] = v[key];
+                    });
 
                     return {
                         variant_id: v.variant_id || undefined,
                         sku: v.sku.trim() || `${draftSku}-V${Math.random().toString(36).slice(2, 6)}`,
-                        variant_name: combinedName || 'Draft Variant',
-                        price: Number(v.price) || 0,
+                        variant_name: v.product_name || v.variant_name || 'Draft Variant',
+                        model_number: v.model_number || undefined,
+                        discount_base_price: Number(v.discount_base_price) || 0,
+                        price: Number(v.discount_base_price) || 0,
+                        weight: v.weight_input || v.weight || undefined,
+                        volume: v.volume_input || v.volume || undefined,
                         stock: Number(v.stock) || 0,
-                        cost_price: v.cost_price ? Number(v.cost_price) : undefined,
-                        volume: v.volume || undefined,
-                        pack: v.pack || undefined,
-                        isDefault: v.isDefault,
+                        isDefault: index === 0,
                         isActive: v.isActive,
-                        // Sale Management
                         sale_price: v.sale_price || undefined,
                         sale_start_date: v.sale_start_date || undefined,
                         sale_start_time: v.sale_start_time || undefined,
                         sale_end_date: v.sale_end_date || undefined,
                         sale_end_time: v.sale_end_time || undefined,
-                        // Dimensions + shelf life
+                        options: Object.keys(options).length > 0 ? options : undefined,
                         length_cm: v.length_cm || undefined,
                         width_cm: v.width_cm || undefined,
                         height_cm: v.height_cm || undefined,
                         item_weight_kg: v.item_weight_kg_input ? (parseFloat(v.item_weight_kg_input) / 1000) : undefined,
                         shelf_life: v.shelf_life || undefined,
-                        // New fields
-                        weight_g,
-                        units_count,
-                        form_factor,
-                        strength,
-                        strength_unit,
-                        flavor: v.flavor || undefined,
-                        is_combo: v.combo === 'Yes',
                     };
                 }),
             available_from: form.available_from_date ? new Date(`${form.available_from_date}T${form.available_from_time || '00:00'}`).toISOString() : undefined,
@@ -904,9 +992,9 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
     };
 
 
-    // ÔöÇÔöÇÔöÇ Submit ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // ─── Submit ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
     const handleSubmit = async () => {
-        // ÔöÇÔöÇ Validation ÔöÇÔöÇ
+        // ── Validation ──
         if (!form.product_name.trim()) {
             toast.error('Product Name is required');
             return;
@@ -923,7 +1011,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
             return;
         }
 
-        // ÔöÇÔöÇ Build payload ÔöÇÔöÇ
+        // ── Build payload ──
         const payload = {
             // Core product table fields
             product_name: form.product_name.trim(),
@@ -932,7 +1020,8 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
             country_of_origin: form.country_of_origin || undefined,
             description: form.description.trim() || undefined,
             short_description: form.short_description.trim() || undefined,
-            intended_use: form.intended_use.trim() || undefined,
+            manufacturer: form.manufacturer.trim() || undefined,
+            lead_time: form.lead_time.trim() || undefined,
             form: form.form_type || undefined,
             specialities: form.specialities.length > 0 ? form.specialities : undefined,
             status: productStatus === 'draft' ? 'active' : undefined,
@@ -944,68 +1033,46 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                 country_of_origin: form.country_of_origin || undefined,
             },
 
-            // Full variants array ÔÇö backend maps these to product_variants rows
-            variants: variants.map(v => {
-                const activeDimensions = Object.entries(dimConfigs)
-                    .filter(([_, config]) => config.active)
-                    .map(([id]) => (v as any)[id])
-                    .filter(Boolean);
-                const combinedName = v.variant_name || activeDimensions.join(' ');
+            // Full variants array — backend maps these to product_variants rows
+            variants: variants.map((v, index) => {
+                const options: Record<string, string> = {};
+                if (v.weight) options['Weight'] = v.weight;
+                if (v.volume) options['Volume'] = v.volume;
+                if (v.strength) options['Strength'] = v.strength;
+                if (v.flavor) options['Flavor'] = v.flavor;
+                if (v.pack) options['Pack'] = v.pack;
+                if (v.count) options['Count'] = v.count;
+                if (v.combo && v.combo !== 'No') options['Combo'] = v.combo;
 
-                // Parse formatted strings for DB fields
-                let weight_g = null;
-                if (v.weight) {
-                    const [val, unit] = v.weight.split(' ');
-                    weight_g = unit === 'kg' ? parseFloat(val) * 1000 : parseFloat(val);
-                }
-
-                let units_count = null;
-                let form_factor = null;
-                if (v.count) {
-                    const parts = v.count.split(' ');
-                    units_count = parseInt(parts[0]);
-                    form_factor = parts.slice(1).join(' ');
-                }
-
-                let strength = undefined;
-                let strength_unit = undefined;
-                if (v.strength) {
-                    const parts = v.strength.split(' ');
-                    strength = parts[0];
-                    strength_unit = parts.slice(1).join(' ');
-                }
+                // Serialize custom dimension types
+                customDimTypes.forEach(typeName => {
+                    const key = typeName.toLowerCase();
+                    if (v[key]) options[typeName] = v[key];
+                });
 
                 return {
                     variant_id: v.variant_id || undefined,
                     sku: v.sku.trim(),
-                    variant_name: combinedName.trim(),
-                    price: Number(v.price) || 0,
+                    variant_name: v.product_name || v.variant_name || 'Draft Variant',
+                    model_number: v.model_number || undefined,
+                    discount_base_price: Number(v.discount_base_price) || 0,
+                    price: Number(v.discount_base_price) || 0,
+                    weight: v.weight_input || v.weight || undefined,
+                    volume: v.volume_input || v.volume || undefined,
                     stock: Number(v.stock) || 0,
-                    cost_price: v.cost_price ? Number(v.cost_price) : undefined,
-                    volume: v.volume || undefined,
-                    pack: v.pack || undefined,
-                    isDefault: v.isDefault,
+                    isDefault: index === 0,
                     isActive: v.isActive,
-                    // Sale Management
                     sale_price: v.sale_price || undefined,
                     sale_start_date: v.sale_start_date || undefined,
                     sale_start_time: v.sale_start_time || undefined,
                     sale_end_date: v.sale_end_date || undefined,
                     sale_end_time: v.sale_end_time || undefined,
-                    // Dimensions + shelf life
+                    options: Object.keys(options).length > 0 ? options : undefined,
                     length_cm: v.length_cm || undefined,
                     width_cm: v.width_cm || undefined,
                     height_cm: v.height_cm || undefined,
                     item_weight_kg: v.item_weight_kg_input ? (parseFloat(v.item_weight_kg_input) / 1000) : undefined,
                     shelf_life: v.shelf_life || undefined,
-                    // New fields
-                    weight_g: weight_g,
-                    units_count: units_count,
-                    form_factor: form_factor,
-                    strength: strength,
-                    strength_unit: strength_unit,
-                    flavor: v.flavor || undefined,
-                    is_combo: v.combo === 'Yes',
                 };
             }),
             available_from: form.available_from_date ? new Date(`${form.available_from_date}T${form.available_from_time || '00:00'}`).toISOString() : undefined,
@@ -1148,11 +1215,11 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
         );
     }
 
-    // ÔöÇÔöÇÔöÇ Render ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+    // ─── Render ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
     return (
         <>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full overflow-x-hidden">
-                {/* ÔöÇÔöÇ Header ÔöÇÔöÇ */}
+                {/* ── Header ── */}
                 <div className="flex items-center gap-3 mb-6">
                     <Link href="/dashboard/products" className="rounded-lg border border-border p-2 hover:bg-gold/[0.06] hover:border-gold/20 transition-all duration-300">
                         <ArrowLeft className="h-4 w-4 text-text-muted" />
@@ -1163,10 +1230,10 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                     </div>
                 </div>
 
-                {/* ÔöÇÔöÇ Main Layout: Sidebar + Content ÔöÇÔöÇ */}
+                {/* ── Main Layout: Sidebar + Content ── */}
                 <div className="flex flex-col lg:flex-row gap-6">
 
-                    {/* ÔöÇÔöÇ Left Sidebar: Step Navigation ÔöÇÔöÇ */}
+                    {/* ── Left Sidebar: Step Navigation ── */}
                     <div className="w-full lg:w-64 flex-shrink-0">
                         <div className="rounded-xl border border-border bg-card-bg p-2 sticky top-6">
                             <nav className="flex flex-col gap-1">
@@ -1225,7 +1292,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                 })}
                             </nav>
 
-                            {/* ÔöÇÔöÇ Sidebar progress indicator ÔöÇÔöÇ */}
+                            {/* ── Sidebar progress indicator ── */}
                             <div className="mt-4 mx-4 mb-2">
                                 <div className="h-1.5 w-full bg-border rounded-full overflow-hidden">
                                     <div
@@ -1294,10 +1361,10 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                         </div>
                     </div>
 
-                    {/* ÔöÇÔöÇ Right Content Area ÔöÇÔöÇ */}
+                    {/* ── Right Content Area ── */}
                     <div className="flex-1 min-w-0 rounded-xl border border-border bg-gradient-to-br from-card-bg to-card-bg-elevated p-6 sm:p-8 min-h-[500px]">
 
-                        {/* ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ STEP 1: GENERAL INFO ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ */}
+                        {/* ────────────────────── STEP 1: GENERAL INFO ────────────────────── */}
                         {currentStep === 1 && (
                             <div className="space-y-6 animate-fade-in-up">
                                 <div className="border-b border-border pb-3">
@@ -1317,7 +1384,17 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                         <input
                                             type="text"
                                             value={form.product_name}
-                                            onChange={e => update('product_name', e.target.value)}
+                                            onChange={e => {
+                                                const newName = e.target.value;
+                                                update('product_name', newName);
+                                                setVariants(prev => {
+                                                    const updated = [...prev];
+                                                    if (updated.length > 0) {
+                                                        updated[0] = { ...updated[0], product_name: newName, variant_name: newName };
+                                                    }
+                                                    return updated;
+                                                });
+                                            }}
                                             maxLength={100}
                                             className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 transition-all"
                                             placeholder="e.g. Ashwagandha Prowess"
@@ -1334,6 +1411,30 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                             onChange={e => update('brand', e.target.value)}
                                             className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 transition-all"
                                             placeholder="Vedashi"
+                                        />
+                                    </div>
+
+                                    {/* Manufacturer */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-text-primary mb-1.5">Manufacturer</label>
+                                        <input
+                                            type="text"
+                                            value={form.manufacturer}
+                                            onChange={e => update('manufacturer', e.target.value)}
+                                            className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 transition-all"
+                                            placeholder="e.g. Himalaya Drug Company"
+                                        />
+                                    </div>
+
+                                    {/* Lead Time */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-text-primary mb-1.5">Lead Time</label>
+                                        <input
+                                            type="text"
+                                            value={form.lead_time}
+                                            onChange={e => update('lead_time', e.target.value)}
+                                            className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 transition-all"
+                                            placeholder="e.g. 3-5 business days"
                                         />
                                     </div>
 
@@ -1361,55 +1462,217 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                     </div>
 
 
-                                    {/* Form Type */}
+                                    {/* Form Type (Dynamic) */}
                                     <div>
-                                        <label className="block text-sm font-medium text-text-primary mb-1.5">Form</label>
-                                        <select
-                                            value={form.form_type}
-                                            onChange={e => update('form_type', e.target.value)}
-                                            className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 bg-white text-gray-900 transition-all"
-                                        >
-                                            <option value="">Select form</option>
-                                            {['Capsules', 'Tablets', 'Powder', 'Syrup', 'Oil', 'Churna'].map(f => (
-                                                <option key={f} value={f}>{f}</option>
-                                            ))}
-                                        </select>
+                                        <div className="flex justify-between items-baseline mb-1.5">
+                                            <label className="block text-sm font-medium text-text-primary">Form</label>
+                                            <button type="button" onClick={() => setManageFormMode(!manageFormMode)} className="text-xs font-medium text-gold hover:underline">{manageFormMode ? 'Done Managing' : 'Manage'}</button>
+                                        </div>
+                                        {manageFormMode ? (
+                                            <div className="p-3 border border-border rounded-lg bg-page-bg/50">
+                                                <div className="flex flex-wrap gap-2">
+                                                    {formOptions.map(f => (
+                                                        <span key={f} className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 border border-amber-200 rounded-md text-xs font-medium text-amber-800">
+                                                            {f}
+                                                            <button
+                                                                type="button"
+                                                                onClick={async () => {
+                                                                    const ok = await deleteFormOption(f);
+                                                                    if (ok) {
+                                                                        setFormOptions(prev => prev.filter(x => x !== f));
+                                                                        if (form.form_type === f) update('form_type', '');
+                                                                    }
+                                                                }}
+                                                                className="ml-0.5 text-amber-400 hover:text-red-500 transition-colors"
+                                                            >
+                                                                <X className="h-3 w-3" />
+                                                            </button>
+                                                        </span>
+                                                    ))}
+                                                    {formOptions.length === 0 && <span className="text-sm text-text-muted">No form options found.</span>}
+                                                </div>
+                                            </div>
+                                        ) : showNewFormInput ? (
+                                            <div className="flex gap-2">
+                                                <input
+                                                    type="text"
+                                                    value={newFormInput}
+                                                    onChange={e => setNewFormInput(e.target.value)}
+                                                    onKeyDown={async e => {
+                                                        if (e.key === 'Enter') {
+                                                            e.preventDefault();
+                                                            const name = newFormInput.trim();
+                                                            if (!name) return;
+                                                            const ok = await createFormOption(name);
+                                                            if (ok) {
+                                                                setFormOptions(prev => [...prev, name].sort());
+                                                                update('form_type', name);
+                                                                toast.success(`Form "${name}" added`);
+                                                            }
+                                                            setNewFormInput('');
+                                                            setShowNewFormInput(false);
+                                                        } else if (e.key === 'Escape') {
+                                                            setNewFormInput('');
+                                                            setShowNewFormInput(false);
+                                                        }
+                                                    }}
+                                                    autoFocus
+                                                    placeholder="Type new form name…"
+                                                    className="flex-1 rounded-lg border border-gold/40 px-4 py-2.5 text-sm focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/30 transition-all"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={async () => {
+                                                        const name = newFormInput.trim();
+                                                        if (!name) return;
+                                                        const ok = await createFormOption(name);
+                                                        if (ok) {
+                                                            setFormOptions(prev => [...prev, name].sort());
+                                                            update('form_type', name);
+                                                            toast.success(`Form "${name}" added`);
+                                                        }
+                                                        setNewFormInput('');
+                                                        setShowNewFormInput(false);
+                                                    }}
+                                                    className="px-3 py-2 bg-gold/10 text-gold hover:bg-gold/20 rounded-lg text-sm font-medium transition-colors"
+                                                >
+                                                    Add
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => { setNewFormInput(''); setShowNewFormInput(false); }}
+                                                    className="px-2 py-2 text-text-muted hover:text-danger rounded-lg text-sm transition-colors"
+                                                >
+                                                    <X className="h-4 w-4" />
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <select
+                                                value={form.form_type}
+                                                onChange={e => {
+                                                    if (e.target.value === '__new__') {
+                                                        setShowNewFormInput(true);
+                                                    } else {
+                                                        update('form_type', e.target.value);
+                                                    }
+                                                }}
+                                                className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 bg-white text-gray-900 transition-all"
+                                            >
+                                                <option value="">Select form</option>
+                                                {formOptions.map(f => (
+                                                    <option key={f} value={f}>{f}</option>
+                                                ))}
+                                                <option value="__new__">+ Add new form…</option>
+                                            </select>
+                                        )}
                                     </div>
 
-                                    {/* Specialities */}
+                                    {/* Specialities (Dynamic) */}
                                     <div className="sm:col-span-2">
-                                        <label className="block text-sm font-medium text-text-primary mb-1.5">Specialities</label>
-                                        <div className="flex flex-wrap gap-3">
-                                            {['Drug Free', 'Allergen Free', '100% Natural', 'Vegan', 'Ayurvedic', 'No Added Sugar'].map(spec => {
-                                                const isSelected = form.specialities.includes(spec);
-                                                return (
-                                                    <label key={spec} className={`flex items-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition-colors ${isSelected ? 'border-gold bg-gold/10' : 'border-border bg-white/5 hover:border-gold/40'}`}>
+                                        <div className="flex justify-between items-baseline mb-1.5">
+                                            <label className="block text-sm font-medium text-text-primary">Specialities</label>
+                                            <button type="button" onClick={() => setManageSpecMode(!manageSpecMode)} className="text-xs font-medium text-gold hover:underline">{manageSpecMode ? 'Done Managing' : 'Manage'}</button>
+                                        </div>
+                                        {manageSpecMode ? (
+                                            <div className="p-3 border border-border rounded-lg bg-page-bg/50">
+                                                <div className="flex flex-wrap gap-2">
+                                                    {specialityOptions.map(s => (
+                                                        <span key={s} className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 border border-emerald-200 rounded-md text-xs font-medium text-emerald-800">
+                                                            {s}
+                                                            <button
+                                                                type="button"
+                                                                onClick={async () => {
+                                                                    const ok = await deleteSpecialityOption(s);
+                                                                    if (ok) {
+                                                                        setSpecialityOptions(prev => prev.filter(x => x !== s));
+                                                                        update('specialities', form.specialities.filter(spec => spec !== s));
+                                                                    }
+                                                                }}
+                                                                className="ml-0.5 text-emerald-400 hover:text-red-500 transition-colors"
+                                                            >
+                                                                <X className="h-3 w-3" />
+                                                            </button>
+                                                        </span>
+                                                    ))}
+                                                    {specialityOptions.length === 0 && <span className="text-sm text-text-muted">No specialities found.</span>}
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="flex flex-wrap gap-3">
+                                                {specialityOptions.map(spec => {
+                                                    const isSelected = form.specialities.includes(spec);
+                                                    return (
+                                                        <label key={spec} className={`flex items-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition-colors ${isSelected ? 'border-gold bg-gold/10' : 'border-border bg-white/5 hover:border-gold/40'}`}>
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={isSelected}
+                                                                onChange={e => {
+                                                                    if (e.target.checked) update('specialities', [...form.specialities, spec]);
+                                                                    else update('specialities', form.specialities.filter(s => s !== spec));
+                                                                }}
+                                                                className="w-4 h-4 rounded text-gold focus:ring-gold"
+                                                            />
+                                                            <span className="text-sm font-medium text-text-primary">{spec}</span>
+                                                        </label>
+                                                    );
+                                                })}
+                                                {/* Show any selected values not in the fetched list */}
+                                                {form.specialities.filter(s => !specialityOptions.includes(s)).map(spec => (
+                                                    <label key={spec} className="flex items-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition-colors border-gold bg-gold/10">
                                                         <input
                                                             type="checkbox"
-                                                            checked={isSelected}
-                                                            onChange={e => {
-                                                                if (e.target.checked) update('specialities', [...form.specialities, spec]);
-                                                                else update('specialities', form.specialities.filter(s => s !== spec));
-                                                            }}
+                                                            checked={true}
+                                                            onChange={() => update('specialities', form.specialities.filter(s => s !== spec))}
                                                             className="w-4 h-4 rounded text-gold focus:ring-gold"
                                                         />
                                                         <span className="text-sm font-medium text-text-primary">{spec}</span>
                                                     </label>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-
-                                    {/* Intended Use - full width */}
-                                    <div className="sm:col-span-2">
-                                        <label className="block text-sm font-medium text-text-primary mb-1.5">Intended Use</label>
-                                        <input
-                                            type="text"
-                                            value={form.intended_use}
-                                            onChange={e => update('intended_use', e.target.value)}
-                                            className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 transition-all"
-                                            placeholder="A daily supplement for stress relief..."
-                                        />
+                                                ))}
+                                                {/* Inline add new speciality */}
+                                                <div className="flex items-center gap-1.5">
+                                                    <input
+                                                        type="text"
+                                                        value={newSpecialityInput}
+                                                        onChange={e => setNewSpecialityInput(e.target.value)}
+                                                        onKeyDown={async e => {
+                                                            if (e.key === 'Enter') {
+                                                                e.preventDefault();
+                                                                const name = newSpecialityInput.trim();
+                                                                if (!name) return;
+                                                                const ok = await createSpecialityOption(name);
+                                                                if (ok) {
+                                                                    setSpecialityOptions(prev => [...prev, name].sort());
+                                                                    update('specialities', [...form.specialities, name]);
+                                                                    toast.success(`Speciality "${name}" added`);
+                                                                }
+                                                                setNewSpecialityInput('');
+                                                            }
+                                                        }}
+                                                        placeholder="+ Add new…"
+                                                        className="w-32 rounded-lg border border-dashed border-border px-3 py-2 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 transition-all placeholder:text-text-muted"
+                                                    />
+                                                    {newSpecialityInput.trim() && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={async () => {
+                                                                const name = newSpecialityInput.trim();
+                                                                if (!name) return;
+                                                                const ok = await createSpecialityOption(name);
+                                                                if (ok) {
+                                                                    setSpecialityOptions(prev => [...prev, name].sort());
+                                                                    update('specialities', [...form.specialities, name]);
+                                                                    toast.success(`Speciality "${name}" added`);
+                                                                }
+                                                                setNewSpecialityInput('');
+                                                            }}
+                                                            className="px-2 py-2 bg-gold/10 text-gold hover:bg-gold/20 rounded-lg text-xs font-medium transition-colors"
+                                                        >
+                                                            <Plus className="h-3.5 w-3.5" />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* Description - full width */}
@@ -1507,7 +1770,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     {/* Country Pricing Editor */}
                                     <div className="mt-8 border-t border-border pt-8">
                                         <CountryPricingEditor productId={id} defaultPriceInr={variants.length > 0 ? variants[0].price : 0} />
@@ -1516,7 +1779,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                             </div>
                         )}
 
-                        {/* ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ STEP 2: DEFINE VARIANTS ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ */}
+                        {/* ────────────────────── STEP 2: DEFINE VARIANTS ────────────────────── */}
                         {currentStep === 2 && (
                             <div className="space-y-6 animate-fade-in-up">
                                 <div className="border-b border-border pb-3">
@@ -1529,13 +1792,14 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                     <div className="space-y-4">
                                         <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider">Select Variant Types</p>
                                         <div className="grid grid-cols-2 gap-3">
-                                            {Object.entries(dimConfigs).map(([key, config]) => {
+                                            {HARDCODED_DIMS.map((key) => {
+                                                const config = dimConfigs[key] || { active: false, values: [] };
                                                 const Icon = key === 'weight' ? Weight : key === 'volume' ? Droplets : key === 'count' ? Hash : key === 'strength' ? Zap : key === 'flavor' ? Utensils : key === 'pack' ? Package : Layers;
                                                 return (
                                                     <button
                                                         key={key}
                                                         type="button"
-                                                        onClick={() => toggleDimensionActive(key as keyof typeof dimConfigs)}
+                                                        onClick={() => toggleDimensionActive(key)}
                                                         className={`flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 text-left ${config.active
                                                             ? 'bg-gold/[0.08] border-gold/40 text-gold-soft shadow-sm shadow-gold/10'
                                                             : 'bg-white/[0.02] border-border text-text-secondary hover:border-gold/20 hover:text-text-primary'
@@ -1547,6 +1811,63 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                                     </button>
                                                 );
                                             })}
+                                        </div>
+
+                                        {/* Custom types */}
+                                        {customDimTypes.length > 0 && (
+                                            <div className="grid grid-cols-2 gap-3">
+                                                {customDimTypes.map((typeName) => {
+                                                    const key = typeName.toLowerCase();
+                                                    const config = dimConfigs[key] || { active: true, values: [] };
+                                                    return (
+                                                        <div key={key} className="relative group">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => toggleDimensionActive(key)}
+                                                                className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 text-left pr-8 ${config.active
+                                                                    ? 'bg-gold/[0.08] border-gold/40 text-gold-soft shadow-sm shadow-gold/10'
+                                                                    : 'bg-white/[0.02] border-border text-text-secondary hover:border-gold/20 hover:text-text-primary'
+                                                                    }`}
+                                                            >
+                                                                <Tag className={`h-4 w-4 flex-shrink-0 ${config.active ? 'text-gold' : 'text-text-muted'}`} />
+                                                                <span className="text-sm font-medium truncate">{typeName}</span>
+                                                                {config.active && <Check className="h-3.5 w-3.5 ml-auto flex-shrink-0 text-gold" />}
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => removeCustomDimType(typeName)}
+                                                                className="absolute top-1.5 right-1.5 p-0.5 rounded-md text-text-muted hover:text-danger hover:bg-danger/10 transition-colors opacity-0 group-hover:opacity-100"
+                                                            >
+                                                                <X className="h-3.5 w-3.5" />
+                                                            </button>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+
+                                        {/* Add custom variant type */}
+                                        <div className="mt-1 pt-4 border-t border-border/60">
+                                            <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-2">Add Custom Variant Type</p>
+                                            <div className="flex gap-2">
+                                                <input
+                                                    type="text"
+                                                    value={customDimInput}
+                                                    onChange={e => setCustomDimInput(e.target.value)}
+                                                    onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addCustomDimType())}
+                                                    maxLength={20}
+                                                    placeholder="e.g. Color, Material, Size"
+                                                    className="flex-1 bg-transparent border border-border rounded-lg px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 transition-colors placeholder:text-text-muted"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={addCustomDimType}
+                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-gold/10 text-gold hover:bg-gold/20 rounded-lg text-sm font-medium transition-colors whitespace-nowrap"
+                                                >
+                                                    <Plus className="h-3.5 w-3.5" />
+                                                    Add
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -1563,7 +1884,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                                     {config.values.map(val => (
                                                         <div key={val} className="flex items-center gap-1.5 bg-gold/[0.08] border border-gold/20 text-gold-soft px-2.5 py-1 rounded-lg text-xs font-medium">
                                                             {val}
-                                                            <button type="button" onClick={() => removeDimensionValue(key as keyof typeof dimConfigs, val)} className="p-0.5 hover:bg-gold/20 rounded transition-colors">
+                                                            <button type="button" onClick={() => removeDimensionValue(key, val)} className="p-0.5 hover:bg-gold/20 rounded transition-colors">
                                                                 <X className="h-3 w-3" />
                                                             </button>
                                                         </div>
@@ -1668,15 +1989,15 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                                         <input
                                                             type="text"
                                                             placeholder={`Add ${key} value...`}
-                                                            value={dimInputs[key as keyof typeof dimInputs]}
+                                                            value={dimInputs[key] || ''}
                                                             onChange={e => setDimInputs(prev => ({ ...prev, [key]: e.target.value }))}
-                                                            onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addDimensionValue(key as keyof typeof dimConfigs))}
+                                                            onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addDimensionValue(key))}
                                                             className="flex-1 bg-transparent border border-border rounded-lg px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none transition-colors"
                                                         />
                                                     )}
                                                     <button
                                                         type="button"
-                                                        onClick={() => addDimensionValue(key as keyof typeof dimConfigs)}
+                                                        onClick={() => addDimensionValue(key)}
                                                         className="px-4 py-1.5 bg-gold/10 text-gold hover:bg-gold/20 rounded-lg text-sm font-medium transition-colors"
                                                     >
                                                         Add
@@ -1699,7 +2020,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                             </div>
                         )}
 
-                        {/* ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ STEP 3: VARIANTS TABLE ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ */}
+                        {/* ────────────────────── STEP 3: VARIANTS TABLE ────────────────────── */}
                         {currentStep === 3 && (
                             <div className="space-y-6 animate-fade-in-up">
                                 <div className="border-b border-border pb-3">
@@ -1734,376 +2055,445 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                 </div>
 
                                 {/* Variants Table */}
-                                <div className="border border-border rounded-xl bg-card-bg overflow-hidden shadow-sm">
-                                    <div className="w-full overflow-x-auto">
-                                        <table className="min-w-[900px] w-full text-left text-sm whitespace-nowrap">
-                                            <thead className="bg-white/5 border-b border-border">
-                                                <tr>
-                                                    <th className="px-4 py-4 w-10"></th>
-                                                    {activeDims.map(([id]: [string, any]) => (
-                                                        <th key={id} className="px-4 py-4 font-medium text-text-secondary capitalize">{id}</th>
-                                                    ))}
-                                                    <th className="px-4 py-4 font-medium text-text-secondary">Variant Name <span className="text-danger text-xs">*</span></th>
-                                                    <th className="px-4 py-4 font-medium text-text-secondary">SKU *</th>
-                                                    <th className="px-4 py-4 font-medium text-text-secondary">Price ($) *</th>
-                                                    <th className="px-4 py-4 font-medium text-text-secondary">Stock</th>
-                                                    <th className="px-4 py-4 font-medium text-text-secondary w-10"></th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-border/50">
-                                                {variants.map((variant, vIdx) => {
-                                                    const isDuplicate = variant.sku && duplicateSkus.includes(variant.sku);
-                                                    const isExpanded = expandedVariantIndex === vIdx;
-                                                    return (
-                                                        <React.Fragment key={vIdx}>
-                                                            <tr className={`transition-colors ${isExpanded ? 'bg-white/[0.04]' : 'hover:bg-white/[0.02]'}`}>
-                                                                <td className="px-4 py-3 align-top pt-4">
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => toggleExpandVariant(vIdx)}
-                                                                        className="text-text-muted hover:text-gold transition-colors"
-                                                                    >
-                                                                        {isExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-                                                                    </button>
-                                                                </td>
-
-                                                                {activeDims.map(([id, config]: [string, any]) => (
-                                                                    <td key={id} className="px-4 py-3 align-top">
-                                                                        {autoGenerate || config.values.length <= 1 ? (
-                                                                            <span className="bg-white/5 border border-border px-3 py-1.5 rounded text-xs font-medium text-text-primary">
-                                                                                {(variant[id as keyof VariantRow] as string) || (config.values[0] ?? '—')}
-                                                                            </span>
-                                                                        ) : (
-                                                                            <select
-                                                                                value={variant[id as keyof VariantRow] as string}
-                                                                                onChange={e => updateVariant(vIdx, id as keyof VariantRow, e.target.value)}
-                                                                                className="w-full min-w-[120px] rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
+                                {(() => {
+                                    const activeDims = Object.entries(dimConfigs).filter(([_, c]) => c.active);
+                                    return (
+                                        <div className="border border-border rounded-xl bg-card-bg overflow-hidden shadow-sm">
+                                            <div className="w-full overflow-x-auto">
+                                                <table className="min-w-[1200px] w-full text-left text-sm whitespace-nowrap">
+                                                    <thead className="bg-white/5 border-b border-border">
+                                                        <tr>
+                                                            <th className="px-4 py-4 w-10 text-center">#</th>
+                                                            {activeDims.map(([dim]) => (
+                                                                <th key={dim} className="px-4 py-4 font-medium text-text-secondary">{dim.charAt(0).toUpperCase() + dim.slice(1)}</th>
+                                                            ))}
+                                                            <th className="px-4 py-4 font-medium text-text-secondary">Product Name <span className="text-danger text-xs">*</span></th>
+                                                            <th className="px-4 py-4 font-medium text-text-secondary">SKU <span className="text-danger text-xs">*</span></th>
+                                                            <th className="px-4 py-4 font-medium text-text-secondary">Model No.</th>
+                                                            <th className="px-4 py-4 font-medium text-text-secondary">Selling Price <span className="text-danger text-xs">*</span></th>
+                                                            <th className="px-4 py-4 font-medium text-text-secondary group relative">
+                                                                MRP
+                                                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-max max-w-[200px] bg-black/90 text-white text-xs rounded p-2 z-10 whitespace-normal text-center">
+                                                                    Original price shown as strikethrough on storefront
+                                                                </div>
+                                                            </th>
+                                                            <th className="px-4 py-4 font-medium text-text-secondary">Discount %</th>
+                                                            <th className="px-4 py-4 font-medium text-text-secondary">Stock <span className="text-danger text-xs">*</span></th>
+                                                            <th className="px-4 py-4 font-medium text-text-secondary w-16 text-center">Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-border/50">
+                                                        {variants.map((variant, vIdx) => {
+                                                            const isDuplicate = variant.sku && duplicateSkus.includes(variant.sku);
+                                                            const isExpanded = expandedVariantIndex === vIdx;
+                                                            return (
+                                                                <React.Fragment key={vIdx}>
+                                                                    <tr className={`transition-colors ${isExpanded ? 'bg-white/[0.04]' : 'hover:bg-white/[0.02]'}`}>
+                                                                        {/* 1. # (Static non-editable row number) */}
+                                                                        <td className="px-4 py-3 align-top pt-4 text-center">
+                                                                            <span className="text-xs font-semibold text-text-muted">{vIdx + 1}</span>
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() => toggleExpandVariant(vIdx)}
+                                                                                className="text-text-muted hover:text-gold transition-colors block mx-auto mt-1"
                                                                             >
-                                                                                <option value="">Select</option>
-                                                                                {config.values.map((v: string) => <option key={v} value={v}>{v}</option>)}
-                                                                            </select>
-                                                                        )}
-                                                                    </td>
-                                                                ))}
+                                                                                {isExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                                                                            </button>
+                                                                        </td>
 
-                                                                {/* Variant Name */}
-                                                                <td className="px-4 py-3 align-top min-w-[180px]">
-                                                                    <input
-                                                                        type="text"
-                                                                        value={variant.variant_name}
-                                                                        onChange={e => updateVariant(vIdx, 'variant_name', e.target.value)}
-                                                                        placeholder="Leave blank to use selected dimensions"
-                                                                        className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
-                                                                    />
-                                                                </td>
-                                                                {/* SKU */}
-                                                                <td className="px-4 py-3 align-top min-w-[150px]">
-                                                                    <div className="relative">
-                                                                        <input
-                                                                            type="text"
-                                                                            value={variant.sku}
-                                                                            onChange={e => updateVariant(vIdx, 'sku', e.target.value)}
-                                                                            placeholder="Variant SKU"
-                                                                            className={`w-full rounded-md border px-3 py-1.5 text-sm focus:outline-none bg-transparent transition-colors ${isDuplicate ? 'border-danger focus:border-danger text-danger pr-8' : 'border-border focus:border-gold/40'
-                                                                                }`}
-                                                                        />
-                                                                        {isDuplicate && <AlertCircle className="h-4 w-4 text-danger absolute right-2 top-2" />}
-                                                                    </div>
-                                                                </td>
-                                                                <td className="px-4 py-3 align-top">
-                                                                    <input
-                                                                        type="number"
-                                                                        step="0.01"
-                                                                        value={variant.price}
-                                                                        onChange={e => updateVariant(vIdx, 'price', e.target.value ? parseFloat(e.target.value) : 0)}
-                                                                        placeholder="0"
-                                                                        className="w-24 rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
-                                                                    />
-                                                                </td>
-                                                                <td className="px-4 py-3 align-top">
-                                                                    <div className="relative">
-                                                                        <input
-                                                                            type="number"
-                                                                            value={variant.stock}
-                                                                            onChange={e => updateVariant(vIdx, 'stock', e.target.value ? parseInt(e.target.value) : 0)}
-                                                                            className={`w-24 rounded-md border px-3 py-1.5 text-sm focus:outline-none bg-transparent transition-colors ${Number(variant.stock) < 0 ? 'border-danger focus:border-danger text-danger' : 'border-border focus:border-gold/40'}`}
-                                                                        />
-                                                                        {Number(variant.stock) < 0 && (
-                                                                            <p className="absolute left-0 -bottom-4 text-[10px] text-danger whitespace-nowrap animate-in fade-in slide-in-from-top-1">
-                                                                                Stock cannot be negative
-                                                                            </p>
-                                                                        )}
-                                                                    </div>
-                                                                </td>
-                                                                <td className="px-4 py-3 text-center align-top pt-3">
-                                                                    <div className="flex items-center justify-center gap-1">
-                                                                        <button
-                                                                            type="button"
-                                                                            onClick={() => setDefaultVariant(vIdx)}
-                                                                            title={variant.isDefault ? 'Default variant' : 'Set as default'}
-                                                                            className={`p-1.5 rounded-lg transition-colors hover:bg-white/5 ${variant.isDefault ? 'text-gold' : 'text-text-muted hover:text-gold'
-                                                                                }`}
-                                                                        >
-                                                                            <Star className={`h-4 w-4 transition-all duration-300 ${variant.isDefault ? 'fill-amber-400 text-amber-400 scale-110 drop-shadow-[0_0_8px_rgba(251,191,36,0.4)]' : ''}`} />
-                                                                        </button>
-                                                                        <button
-                                                                            type="button"
-                                                                            onClick={() => removeVariantRow(vIdx)}
-                                                                            className="text-text-muted hover:text-danger p-1.5 rounded-lg transition-colors hover:bg-white/5"
-                                                                        >
-                                                                            <Trash2 className="h-4 w-4" />
-                                                                        </button>
-                                                                    </div>
-                                                                </td>
-                                                            </tr>
+                                                                        {/* Dimension columns */}
+                                                                        {activeDims.map(([dim, config]) => (
+                                                                            <td key={dim} className="px-4 py-3 align-top min-w-[120px]">
+                                                                                <select
+                                                                                    value={(variant as any)[dim] || ''}
+                                                                                    onChange={e => updateVariant(vIdx, dim as keyof VariantRow, e.target.value)}
+                                                                                    className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors appearance-none"
+                                                                                >
+                                                                                    <option value="">Select</option>
+                                                                                    {config.values.map((val: string) => (
+                                                                                        <option key={val} value={val}>{val}</option>
+                                                                                    ))}
+                                                                                </select>
+                                                                            </td>
+                                                                        ))}
 
-                                                            {isExpanded && (
-                                                                <tr className="bg-white/[0.01] border-b border-border">
-                                                                    <td colSpan={activeDims.length + 6} className="p-5">
-                                                                        <div className="animate-fade-in-up space-y-6">
+                                                                        {/* Product Name */}
+                                                                        <td className="px-4 py-3 align-top min-w-[200px]">
+                                                                            <input
+                                                                                type="text"
+                                                                                value={variant.product_name}
+                                                                                onChange={e => updateVariant(vIdx, 'product_name', e.target.value)}
+                                                                                placeholder="e.g. Ashwagandha 500g"
+                                                                                className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
+                                                                            />
+                                                                        </td>
 
-                                                                            {/* ÔöÇÔöÇ Extra fields row ÔöÇÔöÇ */}
-                                                                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                                                                                <div>
-                                                                                    <label className="block text-xs font-medium text-text-secondary mb-1">Cost Price ($)</label>
-                                                                                    <input
-                                                                                        type="number" step="0.01" min="0"
-                                                                                        value={variant.cost_price}
-                                                                                        onChange={e => updateVariant(vIdx, 'cost_price', e.target.value ? parseFloat(e.target.value) : 0)}
-                                                                                        onWheel={e => (e.target as HTMLInputElement).blur()}
-                                                                                        className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
-                                                                                        placeholder="0.00"
-                                                                                    />
-                                                                                </div>
-                                                                                <div>
-                                                                                    <label className="block text-xs font-medium text-text-secondary mb-1">Shelf Life (months)</label>
-                                                                                    <input
-                                                                                        type="number" min="0"
-                                                                                        value={variant.shelf_life}
-                                                                                        onChange={e => updateVariant(vIdx, 'shelf_life', e.target.value)}
-                                                                                        onWheel={e => (e.target as HTMLInputElement).blur()}
-                                                                                        className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
-                                                                                        placeholder="e.g. 24"
-                                                                                    />
-                                                                                </div>
+                                                                        {/* SKU */}
+                                                                        <td className="px-4 py-3 align-top min-w-[150px]">
+                                                                            <div className="relative">
+                                                                                <input
+                                                                                    type="text"
+                                                                                    value={variant.sku}
+                                                                                    onChange={e => updateVariant(vIdx, 'sku', e.target.value)}
+                                                                                    placeholder="Variant SKU"
+                                                                                    className={`w-full rounded-md border px-3 py-1.5 text-sm focus:outline-none bg-transparent transition-colors ${isDuplicate ? 'border-danger focus:border-danger text-danger pr-8' : 'border-border focus:border-gold/40'}`}
+                                                                                />
+                                                                                {isDuplicate && <AlertCircle className="h-4 w-4 text-danger absolute right-2 top-2" />}
                                                                             </div>
+                                                                        </td>
 
-                                                                            {/* ÔöÇÔöÇ Dimensions section ÔöÇÔöÇ */}
-                                                                            <div>
-                                                                                <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3">Dimensions</p>
-                                                                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                                                                                    {([
-                                                                                        { label: 'Weight (g)', field: 'item_weight_kg_input' as keyof VariantRow },
-                                                                                        { label: 'Length (cm)', field: 'length_cm' as keyof VariantRow },
-                                                                                        { label: 'Width (cm)', field: 'width_cm' as keyof VariantRow },
-                                                                                        { label: 'Height (cm)', field: 'height_cm' as keyof VariantRow },
-                                                                                    ]).map(({ label, field }) => (
-                                                                                        <div key={field}>
-                                                                                            <label className="block text-xs font-medium text-text-secondary mb-1">{label}</label>
+                                                                        {/* Model No. */}
+                                                                        <td className="px-4 py-3 align-top min-w-[120px]">
+                                                                            <input
+                                                                                type="text"
+                                                                                value={variant.model_number || ''}
+                                                                                onChange={e => updateVariant(vIdx, 'model_number', e.target.value)}
+                                                                                placeholder="Model number"
+                                                                                className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
+                                                                            />
+                                                                        </td>
+
+                                                                        {/* Selling Price (discount_base_price) */}
+                                                                        <td className="px-4 py-3 align-top min-w-[120px]">
+                                                                            <div className="relative">
+                                                                                <input
+                                                                                    type="number" step="0.01"
+                                                                                    value={variant.discount_base_price === null ? '' : variant.discount_base_price}
+                                                                                    onChange={e => updateVariant(vIdx, 'discount_base_price', e.target.value ? parseFloat(e.target.value) : null)}
+                                                                                    placeholder="0"
+                                                                                    className={`w-full rounded-md border px-3 py-1.5 text-sm focus:outline-none bg-transparent transition-colors ${Number(variant.discount_base_price) < 0 ? 'border-danger focus:border-danger text-danger' : 'border-border focus:border-gold/40'}`}
+                                                                                />
+                                                                                {Number(variant.discount_base_price) < 0 && (
+                                                                                    <p className="absolute left-0 -bottom-4 text-[10px] text-danger whitespace-nowrap animate-in fade-in">Price cannot be negative</p>
+                                                                                )}
+                                                                            </div>
+                                                                        </td>
+
+                                                                        {/* MRP (sale_price) */}
+                                                                        <td className="px-4 py-3 align-top min-w-[120px]">
+                                                                            <input
+                                                                                type="number" step="0.01"
+                                                                                value={variant.sale_price}
+                                                                                onChange={e => updateVariant(vIdx, 'sale_price', e.target.value)}
+                                                                                placeholder="0.00"
+                                                                                className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
+                                                                            />
+                                                                        </td>
+
+                                                                        {/* Discount % */}
+                                                                        <td className="px-4 py-3 align-top text-center pt-4">
+                                                                            {(() => {
+                                                                                const sellingPrice = Number(variant.discount_base_price);
+                                                                                const mrp = Number(variant.sale_price);
+                                                                                if (sellingPrice > 0 && mrp > 0 && mrp > sellingPrice) {
+                                                                                    const discount = Math.round((1 - sellingPrice / mrp) * 100);
+                                                                                    return <span className="bg-danger/20 text-danger text-xs font-bold px-2 py-0.5 rounded">{discount}% OFF</span>;
+                                                                                }
+                                                                                return <span className="text-text-muted text-xs">—</span>;
+                                                                            })()}
+                                                                        </td>
+
+                                                                        {/* 12. Stock */}
+                                                                        <td className="px-4 py-3 align-top min-w-[100px]">
+                                                                            <div className="relative">
+                                                                                <input
+                                                                                    type="number"
+                                                                                    value={variant.stock}
+                                                                                    onChange={e => updateVariant(vIdx, 'stock', e.target.value ? parseInt(e.target.value) : 0)}
+                                                                                    className={`w-full rounded-md border px-3 py-1.5 text-sm focus:outline-none bg-transparent transition-colors ${Number(variant.stock) < 0 ? 'border-danger focus:border-danger text-danger' : 'border-border focus:border-gold/40'}`}
+                                                                                />
+                                                                                {Number(variant.stock) < 0 && (
+                                                                                    <p className="absolute left-0 -bottom-4 text-[10px] text-danger whitespace-nowrap animate-in fade-in">Stock cannot be negative</p>
+                                                                                )}
+                                                                            </div>
+                                                                        </td>
+
+                                                                        {/* 13. Actions */}
+                                                                        <td className="px-4 py-3 text-center align-top pt-3">
+                                                                            <div className="flex items-center justify-center gap-1">
+                                                                                {vIdx === 0 ? (
+                                                                                    <Star className="h-4 w-4 fill-amber-400 text-amber-400 mx-1.5 drop-shadow-[0_0_8px_rgba(251,191,36,0.4)]" />
+                                                                                ) : (
+                                                                                    <div className="w-7"></div>
+                                                                                )}
+                                                                                <button
+                                                                                    type="button"
+                                                                                    onClick={() => removeVariantRow(vIdx)}
+                                                                                    className="text-text-muted hover:text-danger p-1.5 rounded-lg transition-colors hover:bg-white/5"
+                                                                                >
+                                                                                    <Trash2 className="h-4 w-4" />
+                                                                                </button>
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
+
+                                                                    {isExpanded && (
+                                                                        <tr className="bg-white/[0.01] border-b border-border">
+                                                                            <td colSpan={9 + activeDims.length} className="p-5">
+                                                                                <div className="animate-fade-in-up space-y-6">
+
+                                                                                    {/* ÔöÇÔöÇ Extra fields row ÔöÇÔöÇ */}
+                                                                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                                                                                        <div>
+                                                                                            <label className="block text-xs font-medium text-text-secondary mb-1">Shelf Life (months)</label>
                                                                                             <input
-                                                                                                type="number" step="0.01" min="0"
-                                                                                                value={variant[field] as string}
-                                                                                                onChange={e => updateVariant(vIdx, field, e.target.value)}
+                                                                                                type="number" min="0"
+                                                                                                value={variant.shelf_life}
+                                                                                                onChange={e => updateVariant(vIdx, 'shelf_life', e.target.value)}
                                                                                                 onWheel={e => (e.target as HTMLInputElement).blur()}
                                                                                                 className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
-                                                                                                placeholder="0"
+                                                                                                placeholder="e.g. 24"
                                                                                             />
                                                                                         </div>
-                                                                                    ))}
-                                                                                </div>
-                                                                            </div>
+                                                                                    </div>
 
-                                                                            {/* ÔöÇÔöÇ Images + Sale Management: 2-column grid ÔöÇÔöÇ */}
-                                                                            {(vIdx === 0 || !sharedImages) && (
-                                                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                                                                                    {/* LEFT: Images */}
+                                                                                    {/* ─ Dimensions section ─ */}
                                                                                     <div>
-                                                                                        <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3">Images</p>
-                                                                                        <div className="flex flex-wrap gap-3">
-                                                                                            {variant.images.map((img, imgIdx) => {
-                                                                                                const isDefault = imgIdx === 0;
-                                                                                                return (
-                                                                                                    <div key={imgIdx} className="flex flex-col gap-1 w-24">
+                                                                                        <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3">Dimensions & Weight</p>
+
+                                                                                        <div className="grid grid-cols-2 gap-4 mb-4">
+                                                                                            {!dimConfigs['weight']?.active && (
+                                                                                                <div>
+                                                                                                    <label className="block text-xs font-medium text-text-secondary mb-1">Weight</label>
+                                                                                                    <input
+                                                                                                        type="text"
+                                                                                                        value={variant.weight_input || ''}
+                                                                                                        onChange={e => updateVariant(vIdx, 'weight_input', e.target.value)}
+                                                                                                        placeholder="e.g. 500g"
+                                                                                                        className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
+                                                                                                    />
+                                                                                                    <p className="text-[10px] text-text-muted mt-0.5 ml-1">g / kg / mg / oz / lb</p>
+                                                                                                </div>
+                                                                                            )}
+                                                                                            {!dimConfigs['volume']?.active && (
+                                                                                                <div>
+                                                                                                    <label className="block text-xs font-medium text-text-secondary mb-1">Volume</label>
+                                                                                                    <input
+                                                                                                        type="text"
+                                                                                                        value={variant.volume_input || ''}
+                                                                                                        onChange={e => updateVariant(vIdx, 'volume_input', e.target.value)}
+                                                                                                        placeholder="e.g. 250ml"
+                                                                                                        className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
+                                                                                                    />
+                                                                                                    <p className="text-[10px] text-text-muted mt-0.5 ml-1">ml / L</p>
+                                                                                                </div>
+                                                                                            )}
+                                                                                        </div>
+
+                                                                                        <div className="grid grid-cols-3 gap-4">
+                                                                                            {([
+                                                                                                { label: 'Length (cm)', field: 'length_cm' as keyof VariantRow },
+                                                                                                { label: 'Width (cm)', field: 'width_cm' as keyof VariantRow },
+                                                                                                { label: 'Height (cm)', field: 'height_cm' as keyof VariantRow },
+                                                                                            ]).map(({ label, field }) => (
+                                                                                                <div key={field}>
+                                                                                                    <label className="block text-xs font-medium text-text-secondary mb-1">{label}</label>
+                                                                                                    <input
+                                                                                                        type="number" step="0.01" min="0"
+                                                                                                        value={variant[field] as string}
+                                                                                                        onChange={e => updateVariant(vIdx, field, e.target.value)}
+                                                                                                        onWheel={e => (e.target as HTMLInputElement).blur()}
+                                                                                                        className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
+                                                                                                        placeholder="0"
+                                                                                                    />
+                                                                                                </div>
+                                                                                            ))}
+                                                                                        </div>
+                                                                                    </div>
+
+                                                                                    {/* ÔöÇÔöÇ Images + Sale Management: 2-column grid ÔöÇÔöÇ */}
+                                                                                    {(vIdx === 0 || !sharedImages) && (
+                                                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                                                                                            {/* LEFT: Images */}
+                                                                                            <div>
+                                                                                                <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3">Images</p>
+                                                                                                <div className="flex flex-wrap gap-3">
+                                                                                                    {variant.images.map((img, imgIdx) => {
+                                                                                                        const isDefault = imgIdx === 0;
+                                                                                                        return (
+                                                                                                            <div key={imgIdx} className="flex flex-col gap-1 w-24">
+                                                                                                                <div
+                                                                                                                    draggable
+                                                                                                                    onDragStart={e => {
+                                                                                                                        e.dataTransfer.setData('text/plain', String(imgIdx));
+                                                                                                                        e.dataTransfer.effectAllowed = 'move';
+                                                                                                                    }}
+                                                                                                                    onDragOver={e => {
+                                                                                                                        e.preventDefault();
+                                                                                                                        e.dataTransfer.dropEffect = 'move';
+                                                                                                                    }}
+                                                                                                                    onDrop={e => {
+                                                                                                                        e.preventDefault();
+                                                                                                                        const fromIdx = parseInt(e.dataTransfer.getData('text/plain'), 10);
+                                                                                                                        reorderVariantImages(vIdx, fromIdx, imgIdx);
+                                                                                                                    }}
+                                                                                                                    className="relative group w-24 h-24 rounded-lg overflow-hidden border border-border cursor-grab active:cursor-grabbing select-none"
+                                                                                                                >
+                                                                                                                    <img src={img.preview} alt={`img-${imgIdx}`} className="w-full h-full object-cover pointer-events-none" />
+                                                                                                                    <span className="absolute top-1 right-1 bg-black/60 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">{imgIdx + 1}</span>
+                                                                                                                    {isDefault && (
+                                                                                                                        <span className="absolute bottom-1 left-1"><Star className="h-3 w-3 fill-gold text-gold" /></span>
+                                                                                                                    )}
+                                                                                                                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                                                                        <button type="button" onClick={() => setLightboxUrl(img.preview)} className="absolute inset-0 flex items-center justify-center text-white hover:text-gold transition-colors">
+                                                                                                                            <Maximize2 className="h-5 w-5" />
+                                                                                                                        </button>
+                                                                                                                        <button type="button" onClick={() => removeVariantImage(vIdx, imgIdx)} className="absolute top-1 left-1 p-1 rounded-full bg-black/40 text-white hover:text-red-400 transition-colors">
+                                                                                                                            <Trash2 className="h-3.5 w-3.5" />
+                                                                                                                        </button>
+                                                                                                                    </div>
+                                                                                                                </div>
+                                                                                                                <input
+                                                                                                                    type="text"
+                                                                                                                    placeholder="Alt text"
+                                                                                                                    value={img.alt_text || ''}
+                                                                                                                    onChange={e => handleVariantImageAltChange(vIdx, imgIdx, e.target.value)}
+                                                                                                                    className="w-full text-[10px] px-1.5 py-1 box-border border border-border rounded bg-white focus:ring-1 focus:ring-gold focus:border-gold placeholder:text-text-muted transition-colors text-text-primary"
+                                                                                                                />
+                                                                                                            </div>
+                                                                                                        );
+                                                                                                    })}
+                                                                                                    <label className="w-20 h-20 rounded-lg border-2 border-dashed border-border hover:border-gold/40 flex flex-col items-center justify-center gap-1 cursor-pointer transition-colors group/up">
+                                                                                                        <ImageIcon className="h-5 w-5 text-text-muted group-hover/up:text-gold transition-colors" />
+                                                                                                        <span className="text-[10px] text-text-muted group-hover/up:text-gold">Add</span>
+                                                                                                        <input type="file" accept="image/*" multiple className="hidden" onChange={e => handleVariantImageAdd(vIdx, e.target.files)} />
+                                                                                                    </label>
+                                                                                                </div>
+                                                                                                {variant.images.length > 0 && (
+                                                                                                    <p className="text-[11px] text-text-muted mt-2">Drag to reorder. Image #1 (Ô¡É) is default.</p>
+                                                                                                )}
+                                                                                                {vIdx === 0 && (
+                                                                                                    <label className="flex items-center gap-2 mt-3 cursor-pointer select-none group">
                                                                                                         <div
-                                                                                                            draggable
-                                                                                                            onDragStart={e => {
-                                                                                                                e.dataTransfer.setData('text/plain', String(imgIdx));
-                                                                                                                e.dataTransfer.effectAllowed = 'move';
-                                                                                                            }}
-                                                                                                            onDragOver={e => {
-                                                                                                                e.preventDefault();
-                                                                                                                e.dataTransfer.dropEffect = 'move';
-                                                                                                            }}
-                                                                                                            onDrop={e => {
-                                                                                                                e.preventDefault();
-                                                                                                                const fromIdx = parseInt(e.dataTransfer.getData('text/plain'), 10);
-                                                                                                                reorderVariantImages(vIdx, fromIdx, imgIdx);
-                                                                                                            }}
-                                                                                                            className="relative group w-24 h-24 rounded-lg overflow-hidden border border-border cursor-grab active:cursor-grabbing select-none"
+                                                                                                            className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all ${sharedImages ? 'bg-gold border-gold' : 'border-border group-hover:border-gold/40'}`}
+                                                                                                            onClick={() => setSharedImages(v => !v)}
                                                                                                         >
-                                                                                                            <img src={img.preview} alt={`img-${imgIdx}`} className="w-full h-full object-cover pointer-events-none" />
-                                                                                                            <span className="absolute top-1 right-1 bg-black/60 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">{imgIdx + 1}</span>
-                                                                                                            {isDefault && (
-                                                                                                                <span className="absolute bottom-1 left-1"><Star className="h-3 w-3 fill-gold text-gold" /></span>
-                                                                                                            )}
+                                                                                                            {sharedImages && <Check className="w-2.5 h-2.5 text-white" />}
+                                                                                                        </div>
+                                                                                                        <span className="text-xs text-text-secondary" onClick={() => setSharedImages(v => !v)}>
+                                                                                                            All variants share the same images
+                                                                                                        </span>
+                                                                                                    </label>
+                                                                                                )}
+                                                                                            </div>
+
+                                                                                            {/* Videos */}
+                                                                                            <div className="mt-5">
+                                                                                                <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3">Videos</p>
+                                                                                                <div className="flex flex-wrap gap-3">
+                                                                                                    {variant.videos.map((vid, vidIdx) => (
+                                                                                                        <div key={vidIdx} className="relative group w-28 h-20 rounded-lg overflow-hidden border border-border bg-black">
+                                                                                                            <p className="text-xs font-semibold text-text-secondary uppercase mb-3">Sale Management</p>           <div className="absolute inset-0 flex items-center justify-center">
+                                                                                                                <Film className="h-6 w-6 text-white/70" />
+                                                                                                            </div>
                                                                                                             <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                                                                <button type="button" onClick={() => setLightboxUrl(img.preview)} className="absolute inset-0 flex items-center justify-center text-white hover:text-gold transition-colors">
-                                                                                                                    <Maximize2 className="h-5 w-5" />
-                                                                                                                </button>
-                                                                                                                <button type="button" onClick={() => removeVariantImage(vIdx, imgIdx)} className="absolute top-1 left-1 p-1 rounded-full bg-black/40 text-white hover:text-red-400 transition-colors">
+                                                                                                                <button type="button" onClick={() => removeVariantVideo(vIdx, vidIdx)} className="absolute top-1 right-1 p-1 rounded-full bg-black/40 text-white hover:text-red-400 transition-colors">
                                                                                                                     <Trash2 className="h-3.5 w-3.5" />
                                                                                                                 </button>
                                                                                                             </div>
+                                                                                                            <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">VIDEO</span>
                                                                                                         </div>
+                                                                                                    ))}
+                                                                                                    <label className="w-28 h-20 rounded-lg border-2 border-dashed border-border hover:border-gold/40 flex flex-col items-center justify-center gap-1 cursor-pointer transition-colors group/up">
+                                                                                                        <Film className="h-5 w-5 text-text-muted group-hover/up:text-gold transition-colors" />
+                                                                                                        <span className="text-[10px] text-text-muted group-hover/up:text-gold">Add Video</span>
+                                                                                                        <input type="file" accept="video/mp4,video/webm,video/ogg" multiple className="hidden" onChange={e => handleVariantVideoAdd(vIdx, e.target.files)} />
+                                                                                                    </label>
+                                                                                                </div>
+                                                                                                <p className="text-[11px] text-text-muted mt-2">MP4, WebM, OGG — max 50MB per file.</p>
+                                                                                            </div>
+
+                                                                                            {/* RIGHT: Sale Management */}
+                                                                                            <div>
+                                                                                                <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3">Sale Management</p>
+                                                                                                <div className="space-y-3">
+                                                                                                    <div>
+                                                                                                        <label className="block text-xs font-medium text-text-secondary mb-1">Sale Price ($)</label>
                                                                                                         <input
-                                                                                                            type="text"
-                                                                                                            placeholder="Alt text"
-                                                                                                            value={img.alt_text || ''}
-                                                                                                            onChange={e => handleVariantImageAltChange(vIdx, imgIdx, e.target.value)}
-                                                                                                            className="w-full text-[10px] px-1.5 py-1 box-border border border-border rounded bg-white focus:ring-1 focus:ring-gold focus:border-gold placeholder:text-text-muted transition-colors text-text-primary"
+                                                                                                            type="number" step="0.01" min="0"
+                                                                                                            value={variant.sale_price}
+                                                                                                            onChange={e => updateVariant(vIdx, 'sale_price', e.target.value)}
+                                                                                                            onWheel={e => (e.target as HTMLInputElement).blur()}
+                                                                                                            placeholder="0.00"
+                                                                                                            className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
                                                                                                         />
                                                                                                     </div>
-                                                                                                );
-                                                                                            })}
-                                                                                            <label className="w-20 h-20 rounded-lg border-2 border-dashed border-border hover:border-gold/40 flex flex-col items-center justify-center gap-1 cursor-pointer transition-colors group/up">
-                                                                                                <ImageIcon className="h-5 w-5 text-text-muted group-hover/up:text-gold transition-colors" />
-                                                                                                <span className="text-[10px] text-text-muted group-hover/up:text-gold">Add</span>
-                                                                                                <input type="file" accept="image/*" multiple className="hidden" onChange={e => handleVariantImageAdd(vIdx, e.target.files)} />
-                                                                                            </label>
-                                                                                        </div>
-                                                                                        {variant.images.length > 0 && (
-                                                                                            <p className="text-[11px] text-text-muted mt-2">Drag to reorder. Image #1 (Ô¡É) is default.</p>
-                                                                                        )}
-                                                                                        {vIdx === 0 && (
-                                                                                            <label className="flex items-center gap-2 mt-3 cursor-pointer select-none group">
-                                                                                                <div
-                                                                                                    className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all ${sharedImages ? 'bg-gold border-gold' : 'border-border group-hover:border-gold/40'}`}
-                                                                                                    onClick={() => setSharedImages(v => !v)}
-                                                                                                >
-                                                                                                    {sharedImages && <Check className="w-2.5 h-2.5 text-white" />}
-                                                                                                </div>
-                                                                                                <span className="text-xs text-text-secondary" onClick={() => setSharedImages(v => !v)}>
-                                                                                                    All variants share the same images
-                                                                                                </span>
-                                                                                            </label>
-                                                                                        )}
-                                                                                    </div>
-
-                                                                                    {/* Videos */}
-                                                                                    <div className="mt-5">
-                                                                                        <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3">Videos</p>
-                                                                                        <div className="flex flex-wrap gap-3">
-                                                                                            {variant.videos.map((vid, vidIdx) => (
-                                                                                                <div key={vidIdx} className="relative group w-28 h-20 rounded-lg overflow-hidden border border-border bg-black">
-                                                                                                    <p className="text-xs font-semibold text-text-secondary uppercase mb-3">Sale Management</p>           <div className="absolute inset-0 flex items-center justify-center">
-                                                                                                        <Film className="h-6 w-6 text-white/70" />
+                                                                                                    <div className="grid grid-cols-2 gap-3">
+                                                                                                        <div>
+                                                                                                            <label className="block text-xs font-medium text-text-secondary mb-1">Sale Start Date</label>
+                                                                                                            <input
+                                                                                                                type="date"
+                                                                                                                value={variant.sale_start_date}
+                                                                                                                onChange={e => updateVariant(vIdx, 'sale_start_date', e.target.value)}
+                                                                                                                className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors [color-scheme:dark]"
+                                                                                                            />
+                                                                                                        </div>
+                                                                                                        <div>
+                                                                                                            <label className="block text-xs font-medium text-text-secondary mb-1">Start Time</label>
+                                                                                                            <input
+                                                                                                                type="time"
+                                                                                                                value={variant.sale_start_time}
+                                                                                                                onChange={e => updateVariant(vIdx, 'sale_start_time', e.target.value)}
+                                                                                                                className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors [color-scheme:dark]"
+                                                                                                            />
+                                                                                                        </div>
                                                                                                     </div>
-                                                                                                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                                                        <button type="button" onClick={() => removeVariantVideo(vIdx, vidIdx)} className="absolute top-1 right-1 p-1 rounded-full bg-black/40 text-white hover:text-red-400 transition-colors">
-                                                                                                            <Trash2 className="h-3.5 w-3.5" />
-                                                                                                        </button>
+                                                                                                    <div className="grid grid-cols-2 gap-3">
+                                                                                                        <div>
+                                                                                                            <label className="block text-xs font-medium text-text-secondary mb-1">Sale End Date</label>
+                                                                                                            <input
+                                                                                                                type="date"
+                                                                                                                value={variant.sale_end_date}
+                                                                                                                onChange={e => updateVariant(vIdx, 'sale_end_date', e.target.value)}
+                                                                                                                className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors [color-scheme:dark]"
+                                                                                                            />
+                                                                                                        </div>
+                                                                                                        <div>
+                                                                                                            <label className="block text-xs font-medium text-text-secondary mb-1">End Time</label>
+                                                                                                            <input
+                                                                                                                type="time"
+                                                                                                                value={variant.sale_end_time}
+                                                                                                                onChange={e => updateVariant(vIdx, 'sale_end_time', e.target.value)}
+                                                                                                                className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors [color-scheme:dark]"
+                                                                                                            />
+                                                                                                        </div>
                                                                                                     </div>
-                                                                                                    <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">VIDEO</span>
                                                                                                 </div>
-                                                                                            ))}
-                                                                                            <label className="w-28 h-20 rounded-lg border-2 border-dashed border-border hover:border-gold/40 flex flex-col items-center justify-center gap-1 cursor-pointer transition-colors group/up">
-                                                                                                <Film className="h-5 w-5 text-text-muted group-hover/up:text-gold transition-colors" />
-                                                                                                <span className="text-[10px] text-text-muted group-hover/up:text-gold">Add Video</span>
-                                                                                                <input type="file" accept="video/mp4,video/webm,video/ogg" multiple className="hidden" onChange={e => handleVariantVideoAdd(vIdx, e.target.files)} />
-                                                                                            </label>
-                                                                                        </div>
-                                                                                        <p className="text-[11px] text-text-muted mt-2">MP4, WebM, OGG — max 50MB per file.</p>
-                                                                                    </div>
+                                                                                            </div>
 
-                                                                                    {/* RIGHT: Sale Management */}
-                                                                                    <div>
-                                                                                        <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider mb-3">Sale Management</p>
-                                                                                        <div className="space-y-3">
-                                                                                            <div>
-                                                                                                <label className="block text-xs font-medium text-text-secondary mb-1">Sale Price ($)</label>
-                                                                                                <input
-                                                                                                    type="number" step="0.01" min="0"
-                                                                                                    value={variant.sale_price}
-                                                                                                    onChange={e => updateVariant(vIdx, 'sale_price', e.target.value)}
-                                                                                                    onWheel={e => (e.target as HTMLInputElement).blur()}
-                                                                                                    placeholder="0.00"
-                                                                                                    className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors"
-                                                                                                />
-                                                                                            </div>
-                                                                                            <div className="grid grid-cols-2 gap-3">
-                                                                                                <div>
-                                                                                                    <label className="block text-xs font-medium text-text-secondary mb-1">Sale Start Date</label>
-                                                                                                    <input
-                                                                                                        type="date"
-                                                                                                        value={variant.sale_start_date}
-                                                                                                        onChange={e => updateVariant(vIdx, 'sale_start_date', e.target.value)}
-                                                                                                        className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors [color-scheme:dark]"
-                                                                                                    />
-                                                                                                </div>
-                                                                                                <div>
-                                                                                                    <label className="block text-xs font-medium text-text-secondary mb-1">Start Time</label>
-                                                                                                    <input
-                                                                                                        type="time"
-                                                                                                        value={variant.sale_start_time}
-                                                                                                        onChange={e => updateVariant(vIdx, 'sale_start_time', e.target.value)}
-                                                                                                        className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors [color-scheme:dark]"
-                                                                                                    />
-                                                                                                </div>
-                                                                                            </div>
-                                                                                            <div className="grid grid-cols-2 gap-3">
-                                                                                                <div>
-                                                                                                    <label className="block text-xs font-medium text-text-secondary mb-1">Sale End Date</label>
-                                                                                                    <input
-                                                                                                        type="date"
-                                                                                                        value={variant.sale_end_date}
-                                                                                                        onChange={e => updateVariant(vIdx, 'sale_end_date', e.target.value)}
-                                                                                                        className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors [color-scheme:dark]"
-                                                                                                    />
-                                                                                                </div>
-                                                                                                <div>
-                                                                                                    <label className="block text-xs font-medium text-text-secondary mb-1">End Time</label>
-                                                                                                    <input
-                                                                                                        type="time"
-                                                                                                        value={variant.sale_end_time}
-                                                                                                        onChange={e => updateVariant(vIdx, 'sale_end_time', e.target.value)}
-                                                                                                        className="w-full rounded-md border border-border px-3 py-1.5 text-sm focus:border-gold/40 focus:outline-none bg-transparent transition-colors [color-scheme:dark]"
-                                                                                                    />
-                                                                                                </div>
-                                                                                            </div>
                                                                                         </div>
-                                                                                    </div>
-
+                                                                                    )}
                                                                                 </div>
-                                                                            )}
-                                                                        </div>
-                                                                    </td>
-                                                                </tr>
-                                                            )}
-                                                        </React.Fragment>
-                                                    );
-                                                })}
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                                                            </td>
+                                                                        </tr>
+                                                                    )}
+                                                                </React.Fragment>
+                                                            );
+                                                        })}
+                                                    </tbody>
+                                                </table>
+                                            </div>
 
-                                    {/* Table footer */}
-                                    <div className="bg-white/5 border-t border-border px-5 py-3 flex items-center justify-between">
-                                        <span className="text-sm text-text-secondary">
-                                            Total Variants: <strong className="text-text-primary">{variants.length}</strong>
-                                        </span>
-                                        {!autoGenerate && (
-                                            <button
-                                                type="button"
-                                                onClick={addVariantRow}
-                                                className="flex items-center gap-1.5 text-sm font-medium text-gold hover:text-gold-soft transition-colors"
-                                            >
-                                                <Plus className="h-4 w-4" />
-                                                Add Row
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
+                                            {/* Table footer */}
+                                            <div className="bg-white/5 border-t border-border px-5 py-3 flex items-center justify-between">
+                                                <span className="text-sm text-text-secondary">
+                                                    Total Variants: <strong className="text-text-primary">{variants.length}</strong>
+                                                </span>
+                                                {!autoGenerate && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={addVariantRow}
+                                                        className="flex items-center gap-1.5 text-sm font-medium text-gold hover:text-gold-soft transition-colors"
+                                                    >
+                                                        <Plus className="h-4 w-4" />
+                                                        Add Row
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
                             </div>
                         )}
 

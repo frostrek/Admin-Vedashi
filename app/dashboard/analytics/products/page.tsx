@@ -28,6 +28,15 @@ import toast from 'react-hot-toast';
 export default function ProductAnalyticsDashboard() {
     const { isAuthenticated } = useAdminAuth();
     const [isLoading, setIsLoading] = useState(true);
+    
+    // Helper to format image URLs
+    const formatImgUrl = (path: string) => {
+        if (!path) return '';
+        if (path.startsWith('http') || path.startsWith('data:')) return path;
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+        return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
+    };
+
     const [dateRange, setDateRange] = useState('30'); // '7', '30', '90', '365'
 
     const [overview, setOverview] = useState<any>(null);
@@ -122,17 +131,17 @@ export default function ProductAnalyticsDashboard() {
         setViewAllType(type);
         setIsViewAllLoading(true);
         setViewAllData([]);
-        
+
         try {
             const now = new Date();
             const fromDate = new Date();
             fromDate.setDate(now.getDate() - parseInt(dateRange));
             const queryTime = `?date_from=${fromDate.toISOString().split('T')[0]}&date_to=${now.toISOString().split('T')[0]}&limit=200`;
 
-            const res = type === 'top' 
+            const res = type === 'top'
                 ? await productAnalyticsApi.getTopSelling(queryTime)
                 : await productAnalyticsApi.getLowPerforming(queryTime);
-                
+
             if (res.success) {
                 setViewAllData(res.data);
             }
@@ -159,17 +168,17 @@ export default function ProductAnalyticsDashboard() {
             // Silently ignore clicks on chart background without payload
             return;
         }
-        
+
         const rawDate = payload.recorded_date || payload.date || payload.displayDate;
-        
+
         if (!rawDate) {
             toast.error('Date data is missing for this point.');
             return;
         }
-        
+
         // Prevent re-fetching if clicking the same date
         if (selectedDate === rawDate) return;
-        
+
         setSelectedDate(rawDate);
         setSelectedMetrics({ ...payload, type, displayDate: payload.displayDate || rawDate });
         setIsModalLoading(true);
@@ -243,70 +252,142 @@ export default function ProductAnalyticsDashboard() {
 
             {/* Summary Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 md:gap-6">
-                <div className="bg-card-bg rounded-2xl p-5 border border-border-subtle relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-gold/5 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
+                <div className="bg-card-bg rounded-2xl p-5 border border-border-subtle relative group">
+                    <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none -z-10">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-gold/5 rounded-bl-full transition-transform group-hover:scale-110"></div>
+                    </div>
                     <div className="flex items-center justify-between mb-4">
                         <div className="h-10 w-10 rounded-xl bg-gold/[0.08] flex items-center justify-center">
                             <Activity className="h-5 w-5 text-gold" />
                         </div>
                         <span className="text-xs font-medium text-success bg-success/10 px-2 py-1 rounded-md">Live</span>
                     </div>
-                    <p className="text-sm text-text-muted font-medium uppercase mb-1">Total Views</p>
+                    <div className="flex items-center gap-1.5 mb-1">
+                        <p className="text-sm text-text-muted font-medium uppercase">Total Views</p>
+                        <div className="relative group/info">
+                            <Info className="h-3.5 w-3.5 text-text-muted/40 cursor-help hover:text-gold transition-colors" />
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2.5 bg-card-bg border border-border shadow-2xl rounded-xl text-[10px] leading-relaxed text-text-secondary opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all z-[60] pointer-events-none font-medium">
+                                Total number of times your products have been viewed by unique users across the storefront.
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-border"></div>
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-card-bg"></div>
+                            </div>
+                        </div>
+                    </div>
                     <p className="text-2xl font-bold text-text-primary">{formatNumber(overview?.total_views || 0)}</p>
                 </div>
 
-                <div className="bg-card-bg rounded-2xl p-5 border border-border-subtle relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-success/5 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
+                <div className="bg-card-bg rounded-2xl p-5 border border-border-subtle relative group">
+                    <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none -z-10">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-success/5 rounded-bl-full transition-transform group-hover:scale-110"></div>
+                    </div>
                     <div className="flex items-center justify-between mb-4">
                         <div className="h-10 w-10 rounded-xl bg-success/10 flex items-center justify-center">
                             <TrendingUp className="h-5 w-5 text-success" />
                         </div>
                     </div>
-                    <p className="text-sm text-text-muted font-medium uppercase mb-1">Total Revenue</p>
+                    <div className="flex items-center gap-1.5 mb-1">
+                        <p className="text-sm text-text-muted font-medium uppercase">Total Revenue</p>
+                        <div className="relative group/info">
+                            <Info className="h-3.5 w-3.5 text-text-muted/40 cursor-help hover:text-success transition-colors" />
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2.5 bg-card-bg border border-border shadow-2xl rounded-xl text-[10px] leading-relaxed text-text-secondary opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all z-[60] pointer-events-none font-medium">
+                                Gross revenue generated from all successful sales before deductions, taxes, or refunds.
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-border"></div>
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-card-bg"></div>
+                            </div>
+                        </div>
+                    </div>
                     <p className="text-2xl font-bold text-text-primary">{formatCurrency(overview?.total_revenue || 0)}</p>
                 </div>
 
-                <div className="bg-card-bg rounded-2xl p-5 border border-border-subtle relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
+                <div className="bg-card-bg rounded-2xl p-5 border border-border-subtle relative group">
+                    <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none -z-10">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-bl-full transition-transform group-hover:scale-110"></div>
+                    </div>
                     <div className="flex items-center justify-between mb-4">
                         <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
                             <ShoppingCart className="h-5 w-5 text-blue-500" />
                         </div>
                     </div>
-                    <p className="text-sm text-text-muted font-medium uppercase mb-1">Avg Conversion</p>
+                    <div className="flex items-center gap-1.5 mb-1">
+                        <p className="text-sm text-text-muted font-medium uppercase">Avg Conversion</p>
+                        <div className="relative group/info">
+                            <Info className="h-3.5 w-3.5 text-text-muted/40 cursor-help hover:text-blue-500 transition-colors" />
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2.5 bg-card-bg border border-border shadow-2xl rounded-xl text-[10px] leading-relaxed text-text-secondary opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all z-[60] pointer-events-none font-medium">
+                                The percentage of product views that resulted in a completed purchase.
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-border"></div>
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-card-bg"></div>
+                            </div>
+                        </div>
+                    </div>
                     <p className="text-2xl font-bold text-text-primary">{parseFloat(overview?.avg_conversion_rate || 0).toFixed(2)}%</p>
                 </div>
 
-                <div className="bg-card-bg rounded-2xl p-5 border border-border-subtle relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
+                <div className="bg-card-bg rounded-2xl p-5 border border-border-subtle relative group">
+                    <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none -z-10">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full transition-transform group-hover:scale-110"></div>
+                    </div>
                     <div className="flex items-center justify-between mb-4">
                         <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
                             <Star className="h-5 w-5 text-primary" />
                         </div>
                     </div>
-                    <p className="text-sm text-text-muted font-medium uppercase mb-1">Total Reviews</p>
+                    <div className="flex items-center gap-1.5 mb-1">
+                        <p className="text-sm text-text-muted font-medium uppercase">Total Reviews</p>
+                        <div className="relative group/info">
+                            <Info className="h-3.5 w-3.5 text-text-muted/40 cursor-help hover:text-primary transition-colors" />
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2.5 bg-card-bg border border-border shadow-2xl rounded-xl text-[10px] leading-relaxed text-text-secondary opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all z-[60] pointer-events-none font-medium">
+                                Cumulative number of reviews and ratings submitted by verified customers.
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-border"></div>
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-card-bg"></div>
+                            </div>
+                        </div>
+                    </div>
                     <p className="text-2xl font-bold text-text-primary">{formatNumber(overview?.total_reviews || 0)}</p>
                 </div>
 
-                <div className="bg-card-bg rounded-2xl p-5 border border-border-subtle relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
+                <div className="bg-card-bg rounded-2xl p-5 border border-border-subtle relative group">
+                    <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none -z-10">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-bl-full transition-transform group-hover:scale-110"></div>
+                    </div>
                     <div className="flex items-center justify-between mb-4">
                         <div className="h-10 w-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
                             <Activity className="h-5 w-5 text-purple-500" />
                         </div>
                     </div>
-                    <p className="text-sm text-text-muted font-medium uppercase mb-1">Total Wishlists</p>
+                    <div className="flex items-center gap-1.5 mb-1">
+                        <p className="text-sm text-text-muted font-medium uppercase">Total Wishlists</p>
+                        <div className="relative group/info">
+                            <Info className="h-3.5 w-3.5 text-text-muted/40 cursor-help hover:text-purple-500 transition-colors" />
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2.5 bg-card-bg border border-border shadow-2xl rounded-xl text-[10px] leading-relaxed text-text-secondary opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all z-[60] pointer-events-none font-medium">
+                                Number of times products have been added to customer wishlists.
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-border"></div>
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-card-bg"></div>
+                            </div>
+                        </div>
+                    </div>
                     <p className="text-2xl font-bold text-text-primary">{formatNumber(overview?.total_wishlists || 0)}</p>
                 </div>
 
-                <div className="bg-card-bg rounded-2xl p-5 border border-border-subtle relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
+                <div className="bg-card-bg rounded-2xl p-5 border border-border-subtle relative group">
+                    <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none -z-10">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-bl-full transition-transform group-hover:scale-110"></div>
+                    </div>
                     <div className="flex items-center justify-between mb-4">
                         <div className="h-10 w-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
                             <Activity className="h-5 w-5 text-amber-500" />
                         </div>
                     </div>
-                    <p className="text-sm text-text-muted font-medium uppercase mb-1">Avg Health Score</p>
+                    <div className="flex items-center gap-1.5 mb-1">
+                        <p className="text-sm text-text-muted font-medium uppercase">Avg Health Score</p>
+                        <div className="relative group/info">
+                            <Info className="h-3.5 w-3.5 text-text-muted/40 cursor-help hover:text-amber-500 transition-colors" />
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2.5 bg-card-bg border border-border shadow-2xl rounded-xl text-[10px] leading-relaxed text-text-secondary opacity-0 invisible group-hover/info:opacity-100 group-hover/info:visible transition-all z-[60] pointer-events-none font-medium">
+                                A weighted metric calculating product visibility, conversion, and stock availability.
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-border"></div>
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-card-bg"></div>
+                            </div>
+                        </div>
+                    </div>
                     <div className="flex items-end gap-2">
                         <p className="text-2xl font-bold text-text-primary">{parseFloat(overview?.avg_health_score || 0).toFixed(1)}</p>
                         <p className="text-sm text-text-muted mb-1">/ 100</p>
@@ -318,7 +399,7 @@ export default function ProductAnalyticsDashboard() {
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                 {/* Revenue & Units Chart */}
                 <div className="bg-card-bg rounded-2xl border border-border-subtle p-5">
-                    <h4 className="font-serif text-sm font-semibold text-text-primary uppercase mb-6">Revenue & Sales Volume</h4>
+                    <h4 className="font-serif text-sm font-semibold text-text-primary mb-6">Revenue & Sales Volume</h4>
                     <div className="h-80 w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <ComposedChart data={revenueData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }} onClick={(data) => handleChartClick(data, 'revenue')} className="cursor-pointer">
@@ -350,7 +431,7 @@ export default function ProductAnalyticsDashboard() {
 
                 {/* Conversion Funnel */}
                 <div className="bg-card-bg rounded-2xl border border-border-subtle p-5">
-                    <h4 className="font-serif text-sm font-semibold text-text-primary uppercase mb-6">Conversion Funnel</h4>
+                    <h4 className="font-serif text-sm font-semibold text-text-primary mb-6">Conversion Funnel</h4>
                     <div className="h-80 w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={conversionData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }} onClick={(data) => handleChartClick(data, 'conversion')} className="cursor-pointer">
@@ -386,10 +467,10 @@ export default function ProductAnalyticsDashboard() {
                 {/* Top Selling */}
                 <div className="bg-card-bg rounded-2xl border border-border-subtle overflow-hidden flex flex-col">
                     <div className="px-5 py-4 border-b border-border-subtle flex justify-between items-center bg-page-bg/50">
-                        <h4 className="font-serif text-sm font-semibold text-text-primary uppercase">Top Selling Products</h4>
-                        <button 
+                        <h4 className="font-serif text-sm font-semibold text-text-primary">Top Selling Products</h4>
+                        <button
                             onClick={() => handleViewAll('top')}
-                            className="text-xs font-semibold text-gold hover:text-gold-soft transition-colors"
+                            className="bg-primary text-[#E8D8B9] border border-gold/10 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-primary-light transition-all shadow-lg shadow-primary/10"
                         >
                             View All
                         </button>
@@ -410,8 +491,8 @@ export default function ProductAnalyticsDashboard() {
                                         <td className="px-5 py-3">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 rounded-lg bg-page-bg flex-shrink-0 overflow-hidden border border-border-subtle">
-                                                    {product.thumbnail ? (
-                                                        <img src={product.thumbnail.startsWith('data:') ? product.thumbnail : `${process.env.NEXT_PUBLIC_API_URL}${product.thumbnail}`} alt="" className="w-full h-full object-cover" />
+                                                    {product.thumbnail || product.image_url || (product.images && product.images[0]) ? (
+                                                        <img src={formatImgUrl(product.thumbnail || product.image_url || (product.images && product.images[0]))} alt="" className="w-full h-full object-cover" />
                                                     ) : (
                                                         <div className="w-full h-full flex items-center justify-center text-text-muted"><Package className="h-4 w-4" /></div>
                                                     )}
@@ -443,12 +524,12 @@ export default function ProductAnalyticsDashboard() {
                 {/* Lowest Performing (Health Score) */}
                 <div className="bg-card-bg rounded-2xl border border-border-subtle overflow-hidden flex flex-col">
                     <div className="px-5 py-4 border-b border-border-subtle flex justify-between items-center bg-page-bg/50">
-                        <h4 className="font-serif text-sm font-semibold text-text-primary uppercase flex items-center gap-2">
+                        <h4 className="font-serif text-sm font-semibold text-text-primary flex items-center gap-2">
                             <AlertCircle className="h-4 w-4 text-danger" /> Needs Attention
                         </h4>
-                        <button 
+                        <button
                             onClick={() => handleViewAll('low')}
-                            className="text-xs font-semibold text-gold hover:text-gold-soft transition-colors"
+                            className="bg-primary text-[#E8D8B9] border border-gold/10 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-primary-light transition-all shadow-lg shadow-primary/10"
                         >
                             View All
                         </button>
@@ -575,7 +656,7 @@ export default function ProductAnalyticsDashboard() {
                                     <Target className="h-4 w-4 text-primary" />
                                     <h4 className="font-serif text-sm font-semibold text-text-primary uppercase">Top Drivers for this exact date</h4>
                                 </div>
-                                
+
                                 {isModalLoading ? (
                                     <div className="flex items-center justify-center p-12 bg-page-bg rounded-xl border border-border-subtle border-dashed">
                                         <div className="flex items-center gap-3 text-gold">
@@ -599,8 +680,8 @@ export default function ProductAnalyticsDashboard() {
                                                         <td className="px-5 py-3">
                                                             <div className="flex items-center gap-3">
                                                                 <div className="w-8 h-8 rounded-lg bg-card-bg flex-shrink-0 overflow-hidden border border-border-subtle">
-                                                                    {product.thumbnail ? (
-                                                                        <img src={product.thumbnail.startsWith('data:') ? product.thumbnail : `${process.env.NEXT_PUBLIC_API_URL}${product.thumbnail}`} alt="" className="w-full h-full object-cover" />
+                                                                    {product.thumbnail || product.image_url || (product.images && product.images[0]) ? (
+                                                                        <img src={formatImgUrl(product.thumbnail || product.image_url || (product.images && product.images[0]))} alt="" className="w-full h-full object-cover" />
                                                                     ) : (
                                                                         <div className="w-full h-full flex items-center justify-center text-text-muted"><Package className="h-3 w-3" /></div>
                                                                     )}
@@ -688,8 +769,8 @@ export default function ProductAnalyticsDashboard() {
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-4">
                                                         <div className="w-10 h-10 rounded-lg bg-page-bg flex-shrink-0 overflow-hidden border border-border-subtle">
-                                                            {product.thumbnail ? (
-                                                                <img src={product.thumbnail.startsWith('data:') ? product.thumbnail : `${process.env.NEXT_PUBLIC_API_URL}${product.thumbnail}`} alt="" className="w-full h-full object-cover" />
+                                                            {product.thumbnail || product.image_url || (product.images && product.images[0]) ? (
+                                                                <img src={formatImgUrl(product.thumbnail || product.image_url || (product.images && product.images[0]))} alt="" className="w-full h-full object-cover" />
                                                             ) : (
                                                                 <div className="w-full h-full flex items-center justify-center text-text-muted"><Package className="h-4 w-4" /></div>
                                                             )}

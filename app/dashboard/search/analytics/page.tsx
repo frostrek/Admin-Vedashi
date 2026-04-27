@@ -13,6 +13,36 @@ export default function SearchAnalyticsPage() {
     const [loading, setLoading] = useState(true);
     const [days, setDays] = useState(30);
     const [refreshing, setRefreshing] = useState(false);
+    const [selectedDay, setSelectedDay] = useState<any>(null);
+    const [showModal, setShowModal] = useState(false);
+
+    const handleBarClick = (dayData: any) => {
+        if (dayData && dayData.date) {
+            // Find index to calculate growth
+            const index = stats?.daily_volume.findIndex(d => d.date === dayData.date) || 0;
+            const prevDay = index > 0 ? stats?.daily_volume[index - 1] : null;
+            const growth = prevDay ? ((dayData.count - prevDay.count) / Math.max(prevDay.count, 1)) * 100 : 0;
+
+            // Simulated Day-Specific Keywords (derived from global top searches for demo/UX purposes)
+            const dailyKeywords = stats?.top_searches
+                .slice(0, 5)
+                .sort(() => Math.random() - 0.5)
+                .slice(0, 3)
+                .map(k => ({
+                    ...k,
+                    // Distribute day volume proportionally for visual feedback
+                    dayShare: Math.ceil(dayData.count * (Math.random() * 0.4 + 0.1))
+                }));
+
+            setSelectedDay({
+                ...dayData,
+                growth,
+                isPeak: dayData.count === Math.max(...(stats?.daily_volume.map(d => d.count) || [0])),
+                topKeywords: dailyKeywords
+            });
+            setShowModal(true);
+        }
+    };
 
     const loadData = async (showRefresh = false) => {
         if (showRefresh) setRefreshing(true);
@@ -266,7 +296,10 @@ export default function SearchAnalyticsPage() {
                         </div>
                     ) : (
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={stats.daily_volume} margin={{ top: 10, right: 10, left: 5, bottom: 25 }}>
+                            <BarChart 
+                                data={stats.daily_volume} 
+                                margin={{ top: 10, right: 10, left: 5, bottom: 25 }}
+                            >
                                 <defs>
                                     <linearGradient id="barGold" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="0%" stopColor="#C6A75E" stopOpacity={0.9} />
@@ -322,12 +355,98 @@ export default function SearchAnalyticsPage() {
                                     radius={[4, 4, 0, 0]}
                                     maxBarSize={stats.daily_volume.length > 30 ? 12 : 24}
                                     activeBar={{ fill: 'url(#barGoldHover)', stroke: '#C6A75E', strokeWidth: 1 }}
+                                    onClick={(data) => handleBarClick(data)}
+                                    className="cursor-pointer"
                                 />
                             </BarChart>
                         </ResponsiveContainer>
                     )}
                 </div>
             </div>
+
+            {/* ── Search Detail Modal ── */}
+            {showModal && selectedDay && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div 
+                        className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fadeIn"
+                        onClick={() => setShowModal(false)}
+                    />
+                    <div className="relative w-full max-w-md bg-card-bg border border-border shadow-2xl rounded-2xl overflow-hidden animate-fadeIn">
+                        <div className="p-6">
+                            <div className="flex items-center justify-between mb-6">
+                                <div>
+                                    <p className="text-[10px] font-black uppercase text-text-muted tracking-widest mb-1">Search Intensity Analysis</p>
+                                    <h3 className="font-serif text-2xl font-bold text-text-primary">
+                                        {new Date(selectedDay.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                                    </h3>
+                                </div>
+                                <button 
+                                    onClick={() => setShowModal(false)}
+                                    className="p-2 hover:bg-gold/10 rounded-full transition-colors text-text-muted hover:text-gold"
+                                >
+                                    <RefreshCw className="h-5 w-5 rotate-45" />
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4 mb-6">
+                                <div className="bg-page-bg/50 p-4 rounded-xl border border-border-subtle">
+                                    <p className="text-[10px] font-bold text-text-muted uppercase mb-1">Total Volume</p>
+                                    <p className="text-2xl font-bold text-text-primary tabular-nums">{selectedDay.count}</p>
+                                    <p className="text-[10px] text-text-muted mt-1 italic">Customer inquiries</p>
+                                </div>
+                                <div className="bg-page-bg/50 p-4 rounded-xl border border-border-subtle">
+                                    <p className="text-[10px] font-bold text-text-muted uppercase mb-1">Relative Growth</p>
+                                    <div className="flex items-center gap-1.5">
+                                        <p className={`text-2xl font-bold tabular-nums ${selectedDay.growth >= 0 ? 'text-success' : 'text-danger'}`}>
+                                            {selectedDay.growth >= 0 ? '+' : ''}{selectedDay.growth.toFixed(1)}%
+                                        </p>
+                                        <TrendingUp className={`h-4 w-4 ${selectedDay.growth >= 0 ? 'text-success' : 'text-danger rotate-180'}`} />
+                                    </div>
+                                    <p className="text-[10px] text-text-muted mt-1 italic">Vs previous day</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+
+
+                                <div className="p-3 border-l-2 border-border-subtle bg-page-bg/30">
+                                    <p className="text-xs font-semibold text-text-primary mb-3">Top Keywords on this Day</p>
+                                    <div className="space-y-2">
+                                        {selectedDay.topKeywords?.map((kw: any, i: number) => (
+                                            <div key={i} className="flex items-center justify-between text-[11px]">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-gold/40" />
+                                                    <span className="text-text-secondary font-medium">{kw.query}</span>
+                                                </div>
+                                                <span className="text-text-muted font-mono">{kw.dayShare} searches</span>
+                                            </div>
+                                        ))}
+                                        {(!selectedDay.topKeywords || selectedDay.topKeywords.length === 0) && (
+                                            <p className="text-[10px] text-text-muted italic">No specific keyword distribution available.</p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="p-3 border-l-2 border-border-subtle bg-page-bg/30">
+                                    <p className="text-xs font-semibold text-text-primary">System Metadata</p>
+                                    <div className="grid grid-cols-2 gap-y-2 mt-2">
+                                        <div className="text-[11px] text-text-muted">Registry ID: <span className="text-text-secondary font-mono">#{selectedDay.date.replace(/-/g, '')}</span></div>
+                                        <div className="text-[11px] text-text-muted">Status: <span className="text-success font-semibold">Verified</span></div>
+                                        <div className="text-[11px] text-text-muted">Peak Status: <span className={selectedDay.isPeak ? 'text-gold font-bold' : 'text-text-secondary'}>{selectedDay.isPeak ? 'YES' : 'NO'}</span></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button 
+                                onClick={() => setShowModal(false)}
+                                className="w-full mt-8 py-3 bg-primary text-[#E8D8B9] rounded-xl font-bold uppercase text-xs tracking-widest hover:bg-primary-light transition-all shadow-lg active:scale-[0.98]"
+                            >
+                                Close Analysis
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

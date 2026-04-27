@@ -1,10 +1,11 @@
 import { authFetch, API_URL } from '@/lib/api';
 
 import React, { useState, useEffect } from 'react';
-import { X, Percent, Calendar, Tag, Layers, Star, ChevronDown, Loader2, ArrowUpCircle, ArrowDownCircle, DollarSign, Trash2, Check } from 'lucide-react';
+import { X, Percent, Calendar, Tag, Layers, Star, ChevronDown, Loader2, ArrowUpCircle, ArrowDownCircle, DollarSign, Trash2, Check, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getToken } from '@/lib/auth';
 import { getProducts, Product } from '@/lib/api';
+import { getCategories } from '@/lib/api/category';
 
 interface BulkDiscountModalProps {
     isOpen: boolean;
@@ -73,6 +74,9 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
     const [categories, setCategories] = useState<string[]>([]);
     const [subCategories, setSubCategories] = useState<string[]>([]);
     const [brands, setBrands] = useState<string[]>([]);
+    const [allCategoriesData, setAllCategoriesData] = useState<any[]>([]);
+    const [parentCategory, setParentCategory] = useState<string>('');
+    const [parentDropdownOpen, setParentDropdownOpen] = useState(false);
     const [optionsLoading, setOptionsLoading] = useState(false);
     const [dropdownOpen, setDropdownOpen] = useState(false);
 
@@ -109,31 +113,61 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
         }
     };
 
-    // Fetch distinct values  when modal opens
+    // Fetch distinct values when modal opens
     useEffect(() => {
         if (!isOpen) return;
         setOptionsLoading(true);
-        getProducts()
-            .then((products: Product[]) => {
-                const cats = [...new Set(products.map(p => p.category).filter(Boolean))] as string[];
-                const subs = [...new Set(products.map(p => p.sub_category).filter(Boolean))] as string[];
-                const brs = [...new Set(products.map(p => p.brand).filter(Boolean))] as string[];
-                setCategories(cats.sort());
-                setSubCategories(subs.sort());
-                setBrands(brs.sort());
-            })
-            .catch(() => {
-                toast.error('Failed to load product options.');
-            })
-            .finally(() => setOptionsLoading(false));
 
+        const loadOptions = async () => {
+            try {
+                const [products, allCats] = await Promise.all([
+                    getProducts(),
+                    getCategories()
+                ]);
+
+                setAllCategoriesData(allCats);
+                const catMap = new Map(allCats.map(c => [c.category_id, c.name]));
+                const catsSet = new Set<string>();
+                const subsSet = new Set<string>();
+                const brandsSet = new Set<string>();
+
+                products.forEach(p => {
+                    const catName = p.category || (p.category_id ? catMap.get(p.category_id) : null);
+                    if (catName) catsSet.add(catName);
+
+                    const subName = p.sub_category || (p.sub_category_id ? catMap.get(p.sub_category_id) : null);
+                    if (subName) subsSet.add(subName);
+
+                    if (p.brand) brandsSet.add(p.brand);
+                });
+
+                // Fallback: If sets are empty, use categories from API directly
+                if (catsSet.size === 0) {
+                    allCats.filter(c => !c.parent_id).forEach(c => catsSet.add(c.name));
+                    allCats.filter(c => c.parent_id).forEach(c => subsSet.add(c.name));
+                }
+
+                setCategories(Array.from(catsSet).sort());
+                setSubCategories(Array.from(subsSet).sort());
+                setBrands(Array.from(brandsSet).sort());
+            } catch (error) {
+                console.error('Failed to load product options:', error);
+                toast.error('Failed to load product options.');
+            } finally {
+                setOptionsLoading(false);
+            }
+        };
+
+        loadOptions();
         fetchActiveDiscounts();
     }, [isOpen]);
 
-    // Reset targetValue when targetType changes
+    // Reset targetValue and parentCategory when targetType changes
     useEffect(() => {
         setTargetValue('');
+        setParentCategory('');
         setDropdownOpen(false);
+        setParentDropdownOpen(false);
     }, [targetType]);
 
     // Close dropdown on outside click
@@ -150,7 +184,14 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
     const getOptionsForTargetType = (): string[] => {
         switch (targetType) {
             case 'category': return categories;
-            case 'sub_category': return subCategories;
+            case 'sub_category':
+                if (!parentCategory) return [];
+                const parent = allCategoriesData.find(c => c.name === parentCategory);
+                if (!parent) return [];
+                return allCategoriesData
+                    .filter(c => c.parent_id === parent.category_id)
+                    .map(c => c.name)
+                    .sort();
             case 'brand': return brands;
             default: return [];
         }
@@ -400,11 +441,11 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
             <div
-                className="bg-card-bg border border-border rounded-xl shadow-2xl w-full max-w-lg overflow-visible flex flex-col max-h-[90vh]"
+                className="bg-card-bg border border-border rounded-2xl shadow-2xl w-full max-w-lg overflow-visible flex flex-col max-h-[90vh]"
                 style={{ animation: 'scaleUp 0.2s ease-out' }}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between p-5 border-b border-border shrink-0">
+                <div className="flex items-center justify-between p-5 border-b border-border rounded-t-2xl shrink-0">
                     <div>
                         <h2 className="font-serif text-xl font-bold text-gold">Bulk Actions</h2>
                         <p className="text-xs text-text-muted mt-1">
@@ -495,7 +536,7 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
                                 .map(({ value, label, icon: Icon }) => (
                                     <label
                                         key={value}
-                                        className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-all duration-200 ${targetType === value
+                                        className={`flex items-center gap-2 p-3 rounded-xl border cursor-pointer transition-all duration-300 ${targetType === value
                                             ? 'border-gold bg-gold/10 text-gold'
                                             : 'border-border bg-page-bg text-text-secondary hover:border-gold/50'
                                             }`}
@@ -517,61 +558,112 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
 
                     {/* Target Value Dropdown */}
                     {targetType !== 'all' && targetType !== 'selected' && (
-                        <div className="relative">
-                            <label className="block text-sm font-medium text-text-secondary mb-1">
-                                {targetType === 'category' ? 'Category' : targetType === 'sub_category' ? 'Subcategory' : 'Brand'}
-                                <span className="text-red-500 ml-0.5">*</span>
-                            </label>
+                        <div className="space-y-4">
+                            {targetType === 'sub_category' && (
+                                <div className="space-y-1">
+                                    <label className="block text-sm font-medium text-text-secondary mb-1">
+                                        Parent Category <span className="text-red-500 ml-0.5">*</span>
+                                    </label>
+                                    <div className="relative">
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setParentDropdownOpen(!parentDropdownOpen);
+                                                setDropdownOpen(false);
+                                            }}
+                                            className="w-full flex items-center justify-between rounded-xl border border-border bg-page-bg px-4 py-2.5 text-sm text-left focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40 transition-colors"
+                                        >
+                                            <span className={parentCategory ? 'text-text-primary' : 'text-text-muted'}>
+                                                {optionsLoading ? 'Fetching categories...' : (parentCategory || 'Select a parent category...')}
+                                            </span>
+                                            <ChevronDown className={`w-4 h-4 text-text-muted transition-transform duration-300 ${parentDropdownOpen ? 'rotate-180' : ''}`} />
+                                        </button>
+
+                                        {parentDropdownOpen && (
+                                            <div className="relative z-[80] w-full mt-2 max-h-60 overflow-y-auto rounded-xl border border-border bg-card-bg shadow-2xl p-1 animate-in fade-in slide-in-from-top-1 duration-200">
+                                                {categories.length > 0 ? categories.map((opt: string) => (
+                                                    <button
+                                                        key={opt}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setParentCategory(opt);
+                                                            setTargetValue('');
+                                                            setParentDropdownOpen(false);
+                                                        }}
+                                                        className={`w-full text-left px-4 py-3 text-sm rounded-lg transition-colors ${parentCategory === opt
+                                                            ? 'bg-gold/10 text-gold font-semibold'
+                                                            : 'text-text-primary hover:bg-gold/5'
+                                                            }`}
+                                                    >
+                                                        {opt}
+                                                    </button>
+                                                )) : (
+                                                    <div className="px-4 py-6 text-center text-sm text-text-muted">
+                                                        No categories found
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="relative">
-                                <button
-                                    type="button"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setDropdownOpen(!dropdownOpen);
-                                    }}
-                                    className="w-full flex items-center justify-between rounded-lg border border-border bg-page-bg px-4 py-2.5 text-sm text-left focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40 transition-colors"
-                                >
-                                    <span className={targetValue ? 'text-text-primary' : 'text-text-muted'}>
-                                        {targetValue || `Select ${targetType === 'category' ? 'a category' : targetType === 'sub_category' ? 'a subcategory' : 'a brand'}...`}
-                                    </span>
-                                    {optionsLoading ? (
-                                        <Loader2 className="w-4 h-4 animate-spin text-text-muted" />
-                                    ) : (
-                                        <ChevronDown className={`w-4 h-4 text-text-muted transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} />
+                                <label className="block text-sm font-medium text-text-secondary mb-1">
+                                    {targetType === 'category' ? 'Category' : targetType === 'sub_category' ? 'Subcategory' : 'Brand'}
+                                    <span className="text-red-500 ml-0.5">*</span>
+                                </label>
+                                <div className="relative">
+                                    <button
+                                        type="button"
+                                        disabled={targetType === 'sub_category' && !parentCategory}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setDropdownOpen(!dropdownOpen);
+                                            setParentDropdownOpen(false);
+                                        }}
+                                        className={`w-full flex items-center justify-between rounded-xl border border-border bg-page-bg px-4 py-2.5 text-sm text-left focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40 transition-colors ${targetType === 'sub_category' && !parentCategory ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    >
+                                        <span className={targetValue ? 'text-text-primary' : 'text-text-muted'}>
+                                            {optionsLoading ? 'Fetching options...' : (targetValue || (targetType === 'sub_category' && !parentCategory ? 'Select parent first...' : `Select ${targetType === 'category' ? 'a category' : targetType === 'sub_category' ? 'a subcategory' : 'a brand'}...`))}
+                                        </span>
+                                        {optionsLoading ? (
+                                            <Loader2 className="w-4 h-4 animate-spin text-text-muted" />
+                                        ) : (
+                                            <ChevronDown className={`w-4 h-4 text-text-muted transition-transform duration-300 ${dropdownOpen ? 'rotate-180' : ''}`} />
+                                        )}
+                                    </button>
+
+                                    {dropdownOpen && (
+                                        <div className="relative z-[70] w-full mt-2 max-h-60 overflow-y-auto rounded-xl border border-border bg-card-bg shadow-2xl p-1 animate-in fade-in slide-in-from-top-1 duration-200">
+                                            {options.length > 0 ? options.map((opt: string) => (
+                                                <button
+                                                    key={opt}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setTargetValue(opt);
+                                                        setDropdownOpen(false);
+                                                    }}
+                                                    className={`w-full text-left px-4 py-3 text-sm rounded-lg transition-colors ${targetValue === opt
+                                                        ? 'bg-gold/10 text-gold font-semibold'
+                                                        : 'text-text-primary hover:bg-gold/5'
+                                                        }`}
+                                                >
+                                                    {opt}
+                                                </button>
+                                            )) : (
+                                                <div className="px-4 py-6 text-center text-sm text-text-muted">
+                                                    {optionsLoading ? 'Loading...' : 'No options found'}
+                                                </div>
+                                            )}
+                                        </div>
                                     )}
-                                </button>
-
-                                {/* Dropdown list */}
-                                {dropdownOpen && options.length > 0 && (
-                                    <div className="absolute z-[70] w-full mt-1 max-h-48 overflow-y-auto rounded-lg border border-border bg-card-bg shadow-xl">
-                                        {options.map((opt) => (
-                                            <button
-                                                key={opt}
-                                                type="button"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setTargetValue(opt);
-                                                    setDropdownOpen(false);
-                                                }}
-                                                className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gold/10 transition-colors ${targetValue === opt
-                                                    ? 'bg-gold/10 text-gold font-medium'
-                                                    : 'text-text-primary'
-                                                    }`}
-                                            >
-                                                {opt}
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
-
-                                {dropdownOpen && options.length === 0 && !optionsLoading && (
-                                    <div className="absolute z-[70] w-full mt-1 rounded-lg border border-border bg-card-bg shadow-xl p-3 text-center text-sm text-text-muted">
-                                        No options found.
-                                    </div>
-                                )}
+                                </div>
                             </div>
                         </div>
                     )}
+
 
                     {targetType === 'selected' && (
                         <div className="p-4 rounded-lg bg-gold/5 border border-gold/20 flex items-center gap-3 mt-4 animate-fadeIn">
@@ -606,7 +698,7 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
                                         value={discountPercentage}
                                         onChange={(e) => setDiscountPercentage(e.target.value)}
                                         placeholder="e.g. 15"
-                                        className="w-full rounded-lg border border-border bg-page-bg pl-10 pr-4 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40"
+                                        className="w-full rounded-xl border border-border bg-page-bg pl-10 pr-4 py-3 text-sm text-text-primary placeholder:text-text-muted focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40"
                                     />
                                 </div>
                             </div>
@@ -622,7 +714,7 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
                                         type="datetime-local"
                                         value={saleStart}
                                         onChange={(e) => setSaleStart(e.target.value)}
-                                        className="w-full rounded-lg border border-border bg-page-bg px-3 py-2.5 text-sm text-text-primary focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40 cursor-pointer"
+                                        className="w-full rounded-xl border border-border bg-page-bg px-3 py-2.5 text-sm text-text-primary focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40 cursor-pointer"
                                     />
                                 </div>
                                 <div>
@@ -635,7 +727,7 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
                                         value={saleEnd}
                                         onChange={(e) => setSaleEnd(e.target.value)}
                                         min={saleStart || undefined}
-                                        className="w-full rounded-lg border border-border bg-page-bg px-3 py-2.5 text-sm text-text-primary focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40 cursor-pointer"
+                                        className="w-full rounded-xl border border-border bg-page-bg px-3 py-2.5 text-sm text-text-primary focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40 cursor-pointer"
                                     />
                                 </div>
                             </div>
@@ -729,7 +821,7 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
                                     <select
                                         value={valueType}
                                         onChange={(e) => setValueType(e.target.value as ValueType)}
-                                        className="w-full rounded-lg border border-border bg-page-bg px-3 py-2.5 text-sm text-text-primary focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40 cursor-pointer"
+                                        className="w-full rounded-xl border border-border bg-page-bg px-3 py-2.5 text-sm text-text-primary focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40 cursor-pointer"
                                     >
                                         <option value="percentage">Percentage (%)</option>
                                         <option value="amount">Fixed Amount</option>
@@ -753,7 +845,7 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
                                             value={priceValue}
                                             onChange={(e) => setPriceValue(e.target.value)}
                                             placeholder={valueType === 'percentage' ? "e.g. 10" : "e.g. 50000"}
-                                            className="w-full rounded-lg border border-border bg-page-bg pl-10 pr-4 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40"
+                                            className="w-full rounded-xl border border-border bg-page-bg pl-10 pr-4 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40"
                                         />
                                     </div>
                                 </div>
@@ -780,7 +872,7 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
                                         else if (fieldDef?.type === 'number') setCustomValue('');
                                         else setCustomValue('');
                                     }}
-                                    className="w-full rounded-lg border border-border bg-page-bg px-3 py-2.5 text-sm text-text-primary focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40 cursor-pointer"
+                                    className="w-full rounded-xl border border-border bg-page-bg px-3 py-2.5 text-sm text-text-primary focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40 cursor-pointer"
                                 >
                                     <option value="">Choose a field...</option>
                                     {CUSTOM_FIELDS.map(f => (
@@ -820,7 +912,7 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
                                                 <select
                                                     value={customValue}
                                                     onChange={(e) => setCustomValue(e.target.value)}
-                                                    className="w-full rounded-lg border border-border bg-page-bg px-3 py-2.5 text-sm text-text-primary focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40 cursor-pointer"
+                                                    className="w-full rounded-xl border border-border bg-page-bg px-3 py-2.5 text-sm text-text-primary focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40 cursor-pointer"
                                                 >
                                                     <option value="">Select {fieldDef.label.toLowerCase()}...</option>
                                                     {optionsList.map(opt => (
@@ -834,7 +926,7 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
                                                 <select
                                                     value={customValue}
                                                     onChange={(e) => setCustomValue(e.target.value)}
-                                                    className="w-full rounded-lg border border-border bg-page-bg px-3 py-2.5 text-sm text-text-primary focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40 cursor-pointer"
+                                                    className="w-full rounded-xl border border-border bg-page-bg px-3 py-2.5 text-sm text-text-primary focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40 cursor-pointer"
                                                 >
                                                     <option value="">Select status...</option>
                                                     {fieldDef.options.map(opt => (
@@ -849,7 +941,7 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
                                                 value={customValue}
                                                 onChange={(e) => setCustomValue(e.target.value)}
                                                 placeholder={`Enter new ${fieldDef?.label.toLowerCase()}...`}
-                                                className="w-full rounded-lg border border-border bg-page-bg px-4 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40"
+                                                className="w-full rounded-xl border border-border bg-page-bg px-4 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40"
                                             />
                                         );
                                     })()}
@@ -860,14 +952,14 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
 
 
                     {/* Actions */}
-                    <div className="flex justify-between gap-3 pt-4 shrink-0">
+                    <div className="flex justify-between gap-3 pt-4 shrink-0 rounded-b-2xl">
                         <div className="flex gap-2">
                             {activeTab === 'discount' && (
                                 <button
                                     type="button"
                                     onClick={() => handleSubmit(undefined, 'remove')}
                                     disabled={loading || (targetType !== 'all' && !targetValue.trim())}
-                                    className="px-4 py-2.5 text-sm font-semibold text-red-500 hover:text-red-400 hover:bg-red-500/10 transition-colors rounded-lg flex items-center gap-2 border border-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="px-4 py-2.5 text-sm font-semibold text-red-500 hover:text-red-400 hover:bg-red-500/10 transition-colors rounded-xl flex items-center gap-2 border border-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                                     Remove Discounts
@@ -879,7 +971,7 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
                                 type="button"
                                 onClick={onClose}
                                 disabled={loading}
-                                className="px-4 py-2 text-sm font-medium text-text-secondary hover:text-white transition-colors rounded-lg"
+                                className="px-4 py-2 text-sm font-medium text-text-secondary hover:text-white transition-colors rounded-xl"
                             >
                                 Cancel
                             </button>
@@ -894,7 +986,7 @@ export default function BulkDiscountModal({ isOpen, onClose, onApply, selectedId
                                     (activeTab === 'pricing' && !priceValue) ||
                                     (activeTab === 'custom' && (!customField || customValue === ''))
                                 }
-                                className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary-light text-[#E8D8B9] text-sm font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary-light text-[#E8D8B9] text-sm font-semibold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {loading ? (
                                     <>

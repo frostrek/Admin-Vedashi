@@ -228,7 +228,7 @@ export default function CouponsPage() {
                 </div>
                 <button
                     onClick={openCreate}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary-light text-[#E8D8B9] text-sm font-semibold rounded-lg transition-colors"
+                    className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary-light text-[#E8D8B9] text-sm font-semibold rounded-lg border border-gold/10 transition-all duration-300 shadow-sm"
                 >
                     <Plus className="w-4 h-4" />
                     Create Coupon
@@ -326,8 +326,9 @@ export default function CouponsPage() {
 
             {/* Create/Edit Modal */}
             {modalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-                    <div className="bg-card-bg border border-border rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setModalOpen(false)}>
+                    <div className="bg-card-bg border border-border rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden" onClick={e => e.stopPropagation()}>
+                        <div className="overflow-y-auto max-h-[90vh]">
                         <div className="flex items-center justify-between p-5 border-b border-border sticky top-0 bg-card-bg z-10">
                             <h4 className="font-serif text-lg font-bold text-gold">
                                 {editing ? 'Edit Coupon' : 'Create Coupon'}
@@ -493,8 +494,8 @@ export default function CouponsPage() {
                                         role="switch"
                                         aria-checked={form.is_active}
                                         onClick={() => setForm({ ...form, is_active: !form.is_active })}
-                                        className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-gold/40 focus:ring-offset-2 focus:ring-offset-page-bg ${form.is_active ? 'bg-emerald-500' : 'bg-gray-600'
-                                            }`}
+                                        style={{ backgroundColor: form.is_active ? '#3B5D3B' : '#4B5563' }}
+                                        className="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-gold/40 focus:ring-offset-2 focus:ring-offset-page-bg"
                                     >
                                         <span
                                             className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${form.is_active ? 'translate-x-5' : 'translate-x-0'
@@ -553,11 +554,12 @@ export default function CouponsPage() {
                                     Cancel
                                 </button>
                                 <button type="submit" disabled={saving}
-                                    className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary-light text-[#E8D8B9] text-sm font-semibold rounded-lg transition-colors disabled:opacity-50">
+                                    className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary-light text-[#E8D8B9] text-sm font-semibold rounded-lg border border-gold/20 transition-all disabled:opacity-50">
                                     {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : editing ? 'Update Coupon' : 'Create Coupon'}
                                 </button>
                             </div>
                         </form>
+                        </div>
                     </div>
                 </div>
             )}
