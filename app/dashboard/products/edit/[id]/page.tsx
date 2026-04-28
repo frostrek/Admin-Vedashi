@@ -2512,6 +2512,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                     entityDescription={form.description}
                                     entityBrand={form.brand}
                                     entityCategory={categories.find(c => c.category_id === form.category_id)?.name}
+                                    entityThumbnail={variants[0]?.images?.[0]?.preview || ''}
                                     value={seoData}
                                     onChange={setSeoData}
                                 />
