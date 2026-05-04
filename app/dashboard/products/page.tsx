@@ -789,7 +789,7 @@ export default function ProductsListPage() {
                     </button>
                     <button
                         onClick={handleBulkSeo}
-                        className="flex items-center gap-2 rounded-lg border border-gold/20 bg-gold/5 px-3 sm:px-4 py-2.5 text-sm font-semibold text-gold hover:bg-gold hover:text-white transition-all duration-300 shadow-sm"
+                        className="flex items-center gap-2 rounded-lg border border-gold/10 bg-primary px-3 sm:px-4 py-2.5 text-sm font-semibold text-[#E8D8B9] hover:bg-primary-light transition-all duration-300 shadow-sm"
                         title="Auto-generate SEO for products"
                     >
                         <Globe className="h-4 w-4" />
