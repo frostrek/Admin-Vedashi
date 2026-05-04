@@ -25,6 +25,7 @@ interface SeoEditorProps {
     entityDescription?: string;
     entityBrand?: string;
     entityCategory?: string;
+    entityThumbnail?: string;
     /** Current SEO state — controlled from parent */
     value: SeoData;
     onChange: (data: SeoData) => void;
@@ -58,6 +59,7 @@ export default function SeoEditor({
     entityDescription,
     entityBrand,
     entityCategory,
+    entityThumbnail,
     value,
     onChange,
 }: SeoEditorProps) {
@@ -112,8 +114,10 @@ export default function SeoEditor({
             meta_description: desc.slice(0, 160),
             og_title: title.slice(0, 60),
             og_description: desc.slice(0, 160),
+            og_image: value.og_image || entityThumbnail || '',
             twitter_title: title.slice(0, 60),
             twitter_description: desc.slice(0, 160),
+            twitter_image: value.twitter_image || entityThumbnail || '',
             robots: value.robots || 'index, follow',
         });
     };
