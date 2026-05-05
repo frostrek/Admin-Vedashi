@@ -606,7 +606,7 @@ export default function ProductsListPage() {
         setConfirmModal({
             open: true,
             title: 'Bulk SEO Generation',
-            message: `Are you sure you want to auto-generate SEO metadata and image alt text for ${targetText}? This will fill in missing fields and improve search visibility.`,
+            message: `This will scan ${targetText} and auto-fill only the missing SEO fields (meta title, description, OG image, Twitter image, etc.). Products with complete SEO data will be skipped. Continue?`,
             confirmVariant: 'primary',
             confirmLabel: 'Generate',
             onConfirm: async () => {
@@ -618,7 +618,14 @@ export default function ProductsListPage() {
                     include_alt_text: true
                 });
                 if (res.success) {
-                    toast.success('SEO generation complete');
+                    const d = res.data || {};
+                    const parts: string[] = [];
+                    if (d.generated > 0) parts.push(`${d.generated} new`);
+                    if (d.patched > 0) parts.push(`${d.patched} patched`);
+                    if (d.skipped > 0) parts.push(`${d.skipped} already complete`);
+                    if (d.alt_text_fixed > 0) parts.push(`${d.alt_text_fixed} alt texts fixed`);
+                    const summary = parts.length > 0 ? parts.join(', ') : 'No updates needed';
+                    toast.success(`SEO complete — ${summary} (${d.total || count} scanned)`);
                 } else {
                     toast.error(res.error || 'SEO generation failed');
                 }
