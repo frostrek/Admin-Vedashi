@@ -119,19 +119,64 @@ export default function BulkExportModal({ isOpen, onClose, products }: BulkExpor
         return `Rs. ${amount?.toLocaleString('en-IN') || 0}`;
     };
 
+    /** Shared product filter used by both PDF and Excel export */
+    const filterProducts = (): Product[] => {
+        if (targetType === 'all') return products;
+
+        // Build name→id maps from fetched categories
+        const nameToIds = new Map<string, Set<string>>();
+        allCategoriesData.forEach((c: any) => {
+            const existing = nameToIds.get(c.name) || new Set<string>();
+            existing.add(c.category_id);
+            nameToIds.set(c.name, existing);
+        });
+        const idToName = new Map<string, string>(allCategoriesData.map((c: any) => [c.category_id, c.name]));
+
+        return products.filter(p => {
+            if (targetType === 'brand') return p.brand === targetValue;
+
+            if (targetType === 'category') {
+                // Match by name string OR by category_id that resolves to the same name
+                if (p.category === targetValue) return true;
+                const resolvedName = p.category_id ? idToName.get(p.category_id) : null;
+                if (resolvedName === targetValue) return true;
+                // Also check if the product's category_id is a CHILD of the selected parent
+                const parentIds = nameToIds.get(targetValue);
+                if (parentIds) {
+                    // Check if p.category_id is a child whose parent matches
+                    const cat = allCategoriesData.find((c: any) => c.category_id === p.category_id);
+                    if (cat?.parent_id && parentIds.has(cat.parent_id)) return true;
+                    if (p.category_id && parentIds.has(p.category_id)) return true;
+                }
+                return false;
+            }
+
+            if (targetType === 'sub_category') {
+                // targetValue is the subcategory name (e.g. 'Gift Packs')
+                if (p.sub_category === targetValue) return true;
+                // Resolve the product's actual category_id to a name
+                const resolvedName = p.category_id ? idToName.get(p.category_id) : null;
+                if (resolvedName === targetValue) return true;
+                // Also match sub_category_id if present
+                const resolvedSubName = (p as any).sub_category_id ? idToName.get((p as any).sub_category_id) : null;
+                if (resolvedSubName === targetValue) return true;
+                // Final check: find the category IDs for this subcategory name and match
+                const subIds = nameToIds.get(targetValue);
+                if (subIds && p.category_id && subIds.has(p.category_id)) return true;
+                return false;
+            }
+
+            return true;
+        });
+    };
+
     const handleDownload = async () => {
         if (targetType !== 'all' && !targetValue) {
             toast.error(`Please select a ${targetType.replace('_', '')} to export.`);
             return;
         }
 
-        const filteredProducts = products.filter(p => {
-            if (targetType === 'all') return true;
-            if (targetType === 'category') return p.category === targetValue;
-            if (targetType === 'sub_category') return p.sub_category === targetValue;
-            if (targetType === 'brand') return p.brand === targetValue;
-            return true;
-        });
+        const filteredProducts = filterProducts();
 
         if (filteredProducts.length === 0) {
             toast.error('No products found matching the criteria.');
@@ -363,13 +408,7 @@ export default function BulkExportModal({ isOpen, onClose, products }: BulkExpor
             return;
         }
 
-        const filteredProducts = products.filter(p => {
-            if (targetType === 'all') return true;
-            if (targetType === 'category') return p.category === targetValue;
-            if (targetType === 'sub_category') return p.sub_category === targetValue;
-            if (targetType === 'brand') return p.brand === targetValue;
-            return true;
-        });
+        const filteredProducts = filterProducts();
 
         if (filteredProducts.length === 0) {
             toast.error('No products found matching the criteria.');
@@ -380,7 +419,8 @@ export default function BulkExportModal({ isOpen, onClose, products }: BulkExpor
         setExportProgress({ current: 0, total: filteredProducts.length });
 
         try {
-            const allRows: any[][] = [];
+            // Phase 1: Fetch all product details
+            const allProductDetails: any[] = [];
 
             for (let i = 0; i < filteredProducts.length; i++) {
                 const product = filteredProducts[i];
@@ -393,7 +433,26 @@ export default function BulkExportModal({ isOpen, onClose, products }: BulkExpor
                 } catch (e) {
                     console.warn(`Failed to fetch details for ${product.product_name}`, e);
                 }
+                allProductDetails.push(fp);
+            }
 
+            // Phase 2: Build sequential product ID map
+            const productIdMap = new Map<string, string>();
+            let prodCounter = 1;
+            for (const product of allProductDetails) {
+                if (!productIdMap.has(product.product_id)) {
+                    productIdMap.set(
+                        product.product_id,
+                        `PROD-${String(prodCounter).padStart(3, '0')}`
+                    );
+                    prodCounter++;
+                }
+            }
+
+            // Phase 3: Build rows
+            const allRows: any[][] = [];
+
+            for (const fp of allProductDetails) {
                 // Resolve image URLs from assets
                 const imageAssets = (fp.assets || [])
                     .filter((a: any) => !(a.media_type || a.mime_type || '').toLowerCase().startsWith('video'))
@@ -427,7 +486,7 @@ export default function BulkExportModal({ isOpen, onClose, products }: BulkExpor
                     const imgs = variantImages.length > 0 ? variantImages : imageAssets;
 
                     allRows.push([
-                        fp.product_id || '',
+                        productIdMap.get(fp.product_id) || '',
                         fp.brand || '',
                         fp.manufacturer || '',
                         fp.category || '',
