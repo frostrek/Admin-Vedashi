@@ -1,4 +1,4 @@
-// Category Types — mirrors backend schema
+// Category Types — mirrors backend schemas
 
 export interface Category {
     category_id: string;
