@@ -38,6 +38,7 @@ interface HeroSlide {
     is_active: boolean;
     sort_order: number;
     created_at: string;
+    link_url?: string;
 }
 
 const emptySlide: Omit<HeroSlide, 'id' | 'created_at' | 'sort_order'> = {
@@ -47,6 +48,7 @@ const emptySlide: Omit<HeroSlide, 'id' | 'created_at' | 'sort_order'> = {
     buttons: [],
     overlay_opacity: 0.5,
     is_active: true,
+    link_url: '',
 };
 
 interface HeroSettings {
@@ -148,6 +150,7 @@ export default function MediaLibraryPage() {
             buttons: s.buttons || [],
             overlay_opacity: s.overlay_opacity,
             is_active: s.is_active,
+            link_url: s.link_url || '',
         });
         setModalOpen(true);
     };
@@ -426,6 +429,14 @@ export default function MediaLibraryPage() {
                                         </button>
                                     </div>
                                 </div>
+
+                                {/* Link URL Badge */}
+                                {slide.link_url && (
+                                    <div className="absolute top-2 left-2 z-20 px-2.5 py-1 bg-white/90 backdrop-blur-sm rounded-full text-[9px] font-bold text-neutral-700 border border-neutral-200/50 shadow-sm flex items-center gap-1.5">
+                                        <ArrowRight className="w-2.5 h-2.5" />
+                                        Clickable
+                                    </div>
+                                )}
                             </div>
                         ))}
                     </div>
@@ -554,6 +565,32 @@ export default function MediaLibraryPage() {
                                             <p className="text-xs text-neutral-400 font-medium max-w-xs">High-resolution PNG, WebP or JPEG recommended for maximum clarity (Up to 10MB)</p>
                                         </div>
                                     )}
+                                </div>
+
+                                {/* Banner Click URL Section */}
+                                <div className="p-5 bg-neutral-50 rounded-[24px] border border-neutral-100 space-y-3 shadow-sm">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 rounded-xl bg-white border border-neutral-200 shadow-sm">
+                                            <ArrowRight className="w-4 h-4 text-gold" />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-bold text-neutral-800">Banner Click Destination</p>
+                                            <p className="text-[10px] text-neutral-400 uppercase font-bold tracking-tight">Where should the entire banner redirect when clicked?</p>
+                                        </div>
+                                    </div>
+                                    <input
+                                        type="text"
+                                        value={form.link_url || ''}
+                                        onChange={e => setForm({ ...form, link_url: e.target.value })}
+                                        placeholder="e.g. /products?brand=emami or /products/my-product-slug"
+                                        className="w-full bg-white rounded-xl border border-neutral-200 px-4 py-2.5 text-sm font-bold text-neutral-800 focus:border-gold/50 focus:outline-none transition-all font-mono placeholder:font-sans placeholder:font-medium placeholder:text-neutral-300"
+                                    />
+                                    <div className="flex items-start gap-2.5 bg-white/50 p-2.5 rounded-xl border border-neutral-200/50">
+                                        <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 text-gold/40 mt-0.5" />
+                                        <p className="text-[10px] text-neutral-500 font-medium leading-relaxed">
+                                            Use relative paths only (no domain). The storefront auto-prefixes the country. Leave empty to disable click redirect.
+                                        </p>
+                                    </div>
                                 </div>
 
                                 {/* Dynamic Headings Section */}
