@@ -40,8 +40,8 @@ export function VibeProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         const loadSettings = async () => {
             setIsLoading(true);
-            
-            // 1. Try LocalStorage fallback first for instant feel
+
+            // 1. Try LocalStorage fallback first for instant feels
             const local = localStorage.getItem('admin_vibe_matrix');
             if (local) {
                 try {
@@ -64,7 +64,7 @@ export function VibeProvider({ children }: { children: ReactNode }) {
                     console.error('Failed to sync vibe matrix from DB:', err);
                 }
             }
-            
+
             setIsLoading(false);
         };
 
@@ -74,11 +74,11 @@ export function VibeProvider({ children }: { children: ReactNode }) {
     // Apply settings to document
     useEffect(() => {
         const root = document.documentElement;
-        
+
         // Apply Aura
         root.classList.remove('aura-minimal', 'aura-balanced', 'aura-intense');
         root.classList.add(`aura-${settings.aura.toLowerCase()}`);
-        
+
         // Apply Dosha
         root.classList.remove('theme-vata', 'theme-pitta', 'theme-kapha');
         if (settings.dosha !== 'None') {
@@ -88,7 +88,7 @@ export function VibeProvider({ children }: { children: ReactNode }) {
         // Apply Pulse (CSS Variables)
         root.style.setProperty('--vibe-pulse-speed', `${(101 - settings.pulse) / 25}s`);
         root.style.setProperty('--vibe-aura-opacity', settings.aura === 'Minimal' ? '0.05' : settings.aura === 'Balanced' ? '0.15' : '0.3');
-        
+
     }, [settings]);
 
     const updateSettings = (newSettings: Partial<VibeSettings>) => {
