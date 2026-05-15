@@ -10,7 +10,9 @@ import SortableHeader, { SortDir, compare } from '@/components/SortableHeader';
 import toast from 'react-hot-toast';
 import BulkDiscountModal from '@/components/BulkDiscountModal';
 import BulkImportModal from '@/components/BulkImportModal';
+import BulkUpdateModal from '@/components/BulkUpdateModal';
 import BulkExportModal from '@/components/BulkExportModal';
+
 import ConfirmModal from '@/components/ConfirmModal';
 import PriceRangeSlider from '@/components/PriceRangeSlider';
 
@@ -36,7 +38,9 @@ export default function ProductsListPage() {
     const [togglingIds, setTogglingIds] = useState<Set<string>>(new Set());
     const [bulkDiscountOpen, setBulkDiscountOpen] = useState(false);
     const [bulkImportOpen, setBulkImportOpen] = useState(false);
+    const [bulkUpdateOpen, setBulkUpdateOpen] = useState(false);
     const [bulkExportOpen, setBulkExportOpen] = useState(false);
+
     const [draftsOpen, setDraftsOpen] = useState(false);
     const [drafts, setDrafts] = useState<Product[]>([]);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -788,7 +792,15 @@ export default function ProductsListPage() {
                         <span className="hidden sm:inline">Bulk Import</span>
                     </button>
                     <button
+                        onClick={() => setBulkUpdateOpen(true)}
+                        className="flex items-center gap-2 rounded-lg border border-gold/10 bg-primary px-3 sm:px-4 py-2.5 text-sm font-semibold text-[#E8D8B9] hover:bg-primary-light transition-all duration-300 shadow-sm"
+                    >
+                        <UploadCloud className="h-4 w-4" />
+                        <span className="hidden sm:inline">Bulk Update</span>
+                    </button>
+                    <button
                         onClick={() => setBulkDiscountOpen(true)}
+
                         className="flex items-center gap-2 rounded-lg border border-gold/10 bg-primary px-3 sm:px-4 py-2.5 text-sm font-semibold text-[#E8D8B9] hover:bg-primary-light transition-all duration-300 shadow-sm"
                     >
                         <Tag className="h-4 w-4" />
@@ -829,6 +841,12 @@ export default function ProductsListPage() {
                 onClose={() => setBulkImportOpen(false)}
                 onSuccess={loadProducts}
             />
+            <BulkUpdateModal
+                isOpen={bulkUpdateOpen}
+                onClose={() => setBulkUpdateOpen(false)}
+                onSuccess={loadProducts}
+            />
+
             <BulkExportModal
                 isOpen={bulkExportOpen}
                 onClose={() => setBulkExportOpen(false)}
