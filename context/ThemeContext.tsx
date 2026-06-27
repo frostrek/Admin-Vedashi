@@ -18,7 +18,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const [theme, setTheme] = useState<Theme>('dark');
     const [mounted, setMounted] = useState(false);
 
-    // Restore theme from localStorage on mount
+    // Restore theme from localStorage on mounts
     useEffect(() => {
         const stored = localStorage.getItem(STORAGE_KEY) as Theme | null;
         const initial = stored === 'light' ? 'light' : 'dark';
