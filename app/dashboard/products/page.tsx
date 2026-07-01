@@ -30,6 +30,13 @@ export default function ProductsListPage() {
     const [priceRange, setPriceRange] = useState({ min: 0, max: 10000 });
     const [absoluteMaxPrice, setAbsoluteMaxPrice] = useState(10000);
     const [filterBestSeller, setFilterBestSeller] = useState<string>('all');
+    const [filterBrands, setFilterBrands] = useState<Set<string>>(new Set());
+    const allBrands = useMemo(() => Array.from(new Set(products.map(p => p.brand).filter(Boolean) as string[])).sort(), [products]);
+    const [brandSearchQuery, setBrandSearchQuery] = useState('');
+    const filteredBrands = useMemo(() => {
+        if (!brandSearchQuery) return allBrands;
+        return allBrands.filter(brand => brand.toLowerCase().includes(brandSearchQuery.toLowerCase()));
+    }, [allBrands, brandSearchQuery]);
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(20);
     const [searchResults, setSearchResults] = useState<Product[] | null>(null);
@@ -357,13 +364,17 @@ export default function ProductsListPage() {
             });
         }
 
+        if (filterBrands.size > 0) {
+            base = base.filter(p => p.brand && filterBrands.has(p.brand));
+        }
+
         if (filterBestSeller === 'best_seller') {
             base = base.filter(p => overrideMap.has(p.product_id));
         }
 
         setFiltered(base);
         setCurrentPage(1); // Reset to first page when filters change
-    }, [products, searchResults, filterCategory, filterSubCategory, filterStock, priceRange, absoluteMaxPrice, filterBestSeller, overrideMap, allCategories]);
+    }, [products, searchResults, filterCategory, filterSubCategory, filterStock, priceRange, absoluteMaxPrice, filterBestSeller, filterBrands, overrideMap, allCategories]);
 
     // --- Sort + Pagination helpers ---
     const handleSort = (key: string, dir: SortDir) => {
@@ -1113,7 +1124,7 @@ export default function ProductsListPage() {
                 <div className="relative">
                     <button
                         onClick={() => setShowFilters(!showFilters)}
-                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all duration-300 text-sm font-medium ${showFilters || [filterCategory, filterStock, filterBestSeller].some(f => f !== 'all') || filterCategory === 'none' || priceRange.min > 0 || priceRange.max < absoluteMaxPrice
+                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all duration-300 text-sm font-medium ${showFilters || [filterCategory, filterStock, filterBestSeller].some(f => f !== 'all') || filterCategory === 'none' || filterBrands.size > 0 || priceRange.min > 0 || priceRange.max < absoluteMaxPrice
                                 ? 'bg-gold/10 border-gold/30 text-gold-muted ring-4 ring-gold/5'
                                 : 'bg-card-bg border-border text-text-secondary hover:border-gold/30 hover:text-gold-muted'
                             }`}
@@ -1157,6 +1168,8 @@ export default function ProductsListPage() {
                                                 setFilterStock('all');
                                                 setPriceRange({ min: 0, max: absoluteMaxPrice });
                                                 setFilterBestSeller('all');
+                                                setFilterBrands(new Set());
+                                                setBrandSearchQuery('');
                                                 setShowFilters(false);
                                             }}
                                             className="text-xs text-gold-muted hover:text-gold font-medium transition-colors"
@@ -1248,6 +1261,49 @@ export default function ProductsListPage() {
                                                 onChange={(min, max) => setPriceRange({ min, max })}
                                             />
                                         </div>
+
+                                        {/* Brands */}
+                                        {allBrands.length > 0 && (
+                                            <div className="space-y-3 pt-4 border-t border-border/50">
+                                                <label className="text-[11px] font-bold text-text-muted uppercase">Brand</label>
+                                                
+                                                {/* Brand Searchbar */}
+                                                <div className="relative">
+                                                    <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-text-muted" />
+                                                    <input
+                                                        type="text"
+                                                        value={brandSearchQuery}
+                                                        onChange={(e) => setBrandSearchQuery(e.target.value)}
+                                                        placeholder="Search brands..."
+                                                        className="w-full rounded-lg border border-border bg-card-bg/50 pl-8 pr-3 py-1.5 text-sm text-text-primary focus:border-gold/40 focus:outline-none transition-colors"
+                                                    />
+                                                </div>
+
+                                                <div className="flex flex-col gap-2 max-h-48 overflow-y-auto custom-scrollbar pr-2">
+                                                    {filteredBrands.length === 0 ? (
+                                                        <p className="text-xs text-text-muted italic text-center py-2">No brands found</p>
+                                                    ) : (
+                                                        filteredBrands.map(brand => (
+                                                            <label key={brand} className="flex items-center gap-2 cursor-pointer group">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={filterBrands.has(brand)}
+                                                                    onChange={(e) => {
+                                                                        const next = new Set(filterBrands);
+                                                                        if (e.target.checked) next.add(brand);
+                                                                        else next.delete(brand);
+                                                                        setFilterBrands(next);
+                                                                    }}
+                                                                    className="w-4 h-4 rounded border-border bg-card-bg/50 text-gold focus:ring-gold/20 focus:ring-offset-0 transition-all cursor-pointer"
+                                                                />
+                                                                <span className="text-sm text-text-primary group-hover:text-gold transition-colors">{brand}</span>
+                                                            </label>
+                                                        ))
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+
 
                                         {/* Availability/Best Seller */}
                                         <div className="space-y-2">
