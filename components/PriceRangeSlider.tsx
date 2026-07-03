@@ -102,7 +102,7 @@ export default function PriceRangeSlider({
                 <div className="flex-1 min-w-0 flex flex-col gap-1">
                     <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Min Price</span>
                     <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-xs">₹</span>
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-xs">$</span>
                         <input
                             type="number"
                             value={minVal}
@@ -118,7 +118,7 @@ export default function PriceRangeSlider({
                 <div className="flex-1 min-w-0 flex flex-col gap-1">
                     <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Max Price</span>
                     <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-xs">₹</span>
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-xs">$</span>
                         <input
                             type="number"
                             value={maxVal}

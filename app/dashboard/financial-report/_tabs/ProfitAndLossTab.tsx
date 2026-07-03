@@ -12,7 +12,7 @@ import HourlyHeatmap from '../_components/HourlyHeatmap';
 import ChartDetailModal from '../_components/ChartDetailModal';
 import { FinancialReportData } from '@/lib/api/analytics';
 
-const formatINR = (n: number) => '₹' + Math.round(n).toLocaleString('en-IN');
+const formatINR = (n: number) => '$' + Math.round(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 const GOLD         = '#A89250';
 const GOLD_LIGHT   = '#C5A46D';
@@ -67,7 +67,7 @@ export default function ProfitAndLossTab({ data }: { data?: FinancialReportData 
       heroLabel: 'Total Amount', heroValue: formatINR(e.amount),
       rows: [
         { label: 'Method',            value: e.method },
-        { label: 'Transactions',      value: e.count?.toLocaleString('en-IN') ?? '—' },
+        { label: 'Transactions',      value: e.count?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? '—' },
         { label: 'Share',             value: payTotal > 0 ? `${((e.amount / payTotal) * 100).toFixed(1)}%` : '—' },
         { label: 'Avg / Transaction', value: e.count > 0 ? formatINR(e.amount / e.count) : '—' },
       ],
@@ -87,7 +87,7 @@ export default function ProfitAndLossTab({ data }: { data?: FinancialReportData 
       heroLabel: 'Total Revenue Generated', heroValue: formatINR(pt.revenue),
       rows: [
         { label: 'Category Name',      value: pt.category },
-        { label: 'Orders Fulfilled',   value: pt.orders?.toLocaleString('en-IN') ?? '—' },
+        { label: 'Orders Fulfilled',   value: pt.orders?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? '—' },
         { label: 'Revenue Share',      value: rev > 0 ? `${((pt.revenue / rev) * 100).toFixed(1)}%` : '—' },
         { label: 'Avg Order Value',    value: pt.orders > 0 ? formatINR(pt.revenue / pt.orders) : '—' },
         { label: 'Category Health',     value: insight },
@@ -118,7 +118,7 @@ export default function ProfitAndLossTab({ data }: { data?: FinancialReportData 
       heroLabel: 'Revenue', heroValue: formatINR(p.revenue),
       rows: [
         { label: 'Product ID',     value: p.productId },
-        { label: 'Units Sold',     value: p.unitsSold.toLocaleString('en-IN') },
+        { label: 'Units Sold',     value: p.unitsSold.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) },
         { label: 'Revenue Share',  value: rev > 0 ? `${((p.revenue / rev) * 100).toFixed(1)}%` : '—' },
         { label: 'Avg Unit Price', value: p.unitsSold > 0 ? formatINR(p.revenue / p.unitsSold) : '—' },
       ],
@@ -462,7 +462,7 @@ export default function ProfitAndLossTab({ data }: { data?: FinancialReportData 
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgba(168,146,80,0.07)" />
-                  <XAxis type="number" stroke="#333333" fontSize={9} tickLine={false} axisLine={false} tickFormatter={(v) => `₹${(v/1000).toFixed(0)}k`} />
+                  <XAxis type="number" stroke="#333333" fontSize={9} tickLine={false} axisLine={false} tickFormatter={(v) => `$${(v/1000).toFixed(0)}k`} />
                   <YAxis dataKey="category" type="category" stroke="#333333" fontSize={11} tickLine={false} axisLine={false} width={116} tick={{ fill:'#333333', fontFamily:"'DM Sans',sans-serif" }} />
                   <RechartsTooltip content={<BarTooltip />} cursor={{ fill:'rgba(168,146,80,0.06)' }} />
                    <Bar 
@@ -501,7 +501,7 @@ export default function ProfitAndLossTab({ data }: { data?: FinancialReportData 
                       {isTop ? '✦' : p.rank}
                     </div>
                     <span style={{ fontSize:12, fontWeight:isTop?600:400, color:'var(--t-text-primary,#fff)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{p.name}</span>
-                    <span style={{ fontSize:12, color:'var(--t-text-secondary,#aaa)', textAlign:'right', fontVariantNumeric:'tabular-nums' }}>{p.unitsSold.toLocaleString('en-IN')}</span>
+                    <span style={{ fontSize:12, color:'var(--t-text-secondary,#aaa)', textAlign:'right', fontVariantNumeric:'tabular-nums' }}>{p.unitsSold.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     <span style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:16, fontWeight:700, color:'#000000', textAlign:'right', fontVariantNumeric:'tabular-nums' }}>{formatINR(p.revenue)}</span>
                     <span style={{ fontSize:10, fontWeight:700, textAlign:'right', color:isTop?GOLD:PRIMARY_MID, background:isTop?GOLD_PALE:PRIMARY_PALE, borderRadius:999, padding:'2px 7px', fontFamily:"'DM Sans',sans-serif" }}>{pct}%</span>
                   </div>

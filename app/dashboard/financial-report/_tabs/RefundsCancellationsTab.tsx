@@ -6,7 +6,7 @@ import KPICard from '../_components/KPICard';
 import ChartDetailModal from '../_components/ChartDetailModal';
 import type { RefundSummary } from '@/lib/api/analytics';
 
-const formatINR = (n: number) => '₹' + Math.round(n).toLocaleString('en-IN');
+const formatINR = (n: number) => '$' + Math.round(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const formatDate = (iso: string) => {
   try { return new Date(iso).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }); } catch { return iso; }
 };
@@ -162,7 +162,7 @@ export default function RefundsCancellationsTab({ data }: { data?: RefundSummary
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(168,146,80,0.07)" />
                     <XAxis dataKey="date" stroke="#333333" fontSize={10} tickFormatter={formatDate} tickLine={false} axisLine={false} />
                     <YAxis yAxisId="left" stroke="#333333" fontSize={10} tickLine={false} axisLine={false} />
-                    <YAxis yAxisId="right" orientation="right" stroke="#333333" fontSize={10} tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`} tickLine={false} axisLine={false} />
+                    <YAxis yAxisId="right" orientation="right" stroke="#333333" fontSize={10} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} tickLine={false} axisLine={false} />
                     <RechartsTooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(168,146,80,0.2)' }} />
                     <Bar yAxisId="left" dataKey="count" name="Count" fill={PRIMARY} radius={[4, 4, 0, 0]} barSize={20} />
                     <Area yAxisId="right" type="monotone" dataKey="amount" name="Amount" stroke={GOLD} fill="url(#refundGrad)" strokeWidth={2}
@@ -189,7 +189,7 @@ export default function RefundsCancellationsTab({ data }: { data?: RefundSummary
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={summaryBars} layout="vertical" margin={{ left: 10, right: 30, top: 4, bottom: 4 }}>
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgba(168,146,80,0.07)" />
-                  <XAxis type="number" stroke="#333333" fontSize={10} tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`} tickLine={false} axisLine={false} />
+                  <XAxis type="number" stroke="#333333" fontSize={10} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} tickLine={false} axisLine={false} />
                   <YAxis dataKey="name" type="category" stroke="#333333" fontSize={11} width={100} tick={{ fill:'#333333', fontFamily:"'DM Sans',sans-serif" }} tickLine={false} axisLine={false} />
                   <RechartsTooltip
                     contentStyle={{ borderRadius: '12px', border: '1px solid rgba(168,146,80,0.22)', backgroundColor: 'var(--t-card-bg,#1C2A1C)', fontFamily:"'DM Sans',sans-serif", fontSize: 12 }}

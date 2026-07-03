@@ -313,7 +313,7 @@ export default function PromoBannersPage() {
                                         rows={3}
                                         value={form.message}
                                         onChange={e => setForm({ ...form, message: e.target.value })}
-                                        placeholder="e.g. ✦ Free Shipping on orders over ₹5,000 ✦"
+                                        placeholder="e.g. ✦ Free Shipping on orders over $5,000 ✦"
                                         className="w-full rounded-xl border border-neutral-200 bg-neutral-50/50 px-4 py-3 text-sm text-black placeholder:text-neutral-400 focus:border-gold/40 focus:bg-white focus:outline-none focus:ring-4 focus:ring-gold/5 transition-all resize-none min-h-[100px] leading-relaxed italic"
                                     />
                                     <div className="flex items-center gap-2 text-[10px] text-neutral-400 px-1 font-medium">

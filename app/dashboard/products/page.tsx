@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, Fragment, useMemo } from 'react';
 import Link from 'next/link';
-import { getProducts, deleteProduct, bulkDeleteProducts, Product, getRankingOverrides, setRankingOverride, removeRankingOverride, RankingOverride, searchProductsAdmin, getProduct, updateVariantStatus, updateDefaultVariant, getDraftProducts, updateProduct, autoGenerateSeo } from '@/lib/api';
+import { getProducts, deleteProduct, bulkDeleteProducts, Product, getRankingOverrides, setRankingOverride, removeRankingOverride, RankingOverride, searchProductsAdmin, getProduct, updateVariantStatus, updateDefaultVariant, getDraftProducts, updateProduct, autoGenerateSeo, formatINR } from '@/lib/api';
 import { getCategories } from '@/lib/api/category';
 import { Category } from '@/types/category';
 import { Download, SlidersHorizontal, Filter, Package, Star, Loader2, Tag, ChevronDown, FileEdit, X, ChevronLeft, ChevronRight, Plus, Pencil, Trash2, Search, UploadCloud, Globe } from 'lucide-react';
@@ -1419,7 +1419,7 @@ export default function ProductsListPage() {
                                                     })()}
                                                 </td>
                                                 <td className="px-4 py-3 text-sm font-medium text-gold">
-                                                    ₹{(product.price ?? 0).toLocaleString('en-IN')}
+                                                    {formatINR(product.price ?? 0)}
                                                 </td>
 
                                                 {/* ─── Best Seller Column ─── */}
@@ -1535,7 +1535,7 @@ export default function ProductsListPage() {
                                                                                             v.pack_quantity > 1 ? `Pack of ${v.pack_quantity}` : ''
                                                                                         ].filter(Boolean).join(' - ') || 'Standard'}
                                                                                     </td>
-                                                                                    <td className="px-4 py-2 font-medium text-gold">₹{(parseFloat(v.price) || 0).toLocaleString('en-IN')}</td>
+                                                                                    <td className="px-4 py-2 font-medium text-gold">{formatINR(parseFloat(v.price) || 0)}</td>
                                                                                     <td className="px-4 py-2">
                                                                                         <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold ${vBadge.className}`}>
                                                                                             {vBadge.text}

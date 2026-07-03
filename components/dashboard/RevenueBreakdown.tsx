@@ -39,7 +39,7 @@ export default function RevenueBreakdown({
             ) : (
                 <>
                     <p className="text-3xl font-bold text-gold mb-6 tracking-tight">
-                        ₹{total.toLocaleString('en-IN')}
+                        ${total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </p>
 
                     <div className="space-y-4">
@@ -53,7 +53,7 @@ export default function RevenueBreakdown({
                                         </span>
                                         <div className="flex items-center gap-2">
                                             <span className="text-sm font-semibold text-gold-soft">
-                                                ₹{item.value.toLocaleString('en-IN')}
+                                                ${item.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </span>
                                             <span className="text-xs text-text-muted">
                                                 ({percentage.toFixed(1)}%)

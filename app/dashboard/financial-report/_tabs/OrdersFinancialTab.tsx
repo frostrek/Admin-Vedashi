@@ -5,7 +5,7 @@ import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import ChartDetailModal from '../_components/ChartDetailModal';
 import type { OrdersFinancialData, OrderFinancialRow } from '@/lib/api/analytics';
 
-const formatINR = (n: number) => '₹' + Math.round(n).toLocaleString('en-IN');
+const formatINR = (n: number) => '$' + Math.round(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const formatDate = (iso: string) => {
   try { return new Date(iso).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch { return iso; }
 };
@@ -48,7 +48,7 @@ export default function OrdersFinancialTab({ data, isLoading, page, search, onPa
         { label: 'Customer', value: o.customer },
         { label: 'Date', value: formatDate(o.date) },
         { label: 'Subtotal', value: formatINR(o.subtotal) },
-        { label: 'Discounts', value: o.discounts > 0 ? `-${formatINR(o.discounts)}` : '₹0' },
+        { label: 'Discounts', value: o.discounts > 0 ? `-${formatINR(o.discounts)}` : '$0' },
         { label: 'Shipping', value: formatINR(o.shipping) },
         { label: 'Final Total', value: formatINR(o.finalTotal) },
         { label: 'Payment Method', value: o.paymentMethod },

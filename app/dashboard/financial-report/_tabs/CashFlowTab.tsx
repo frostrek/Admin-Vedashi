@@ -6,7 +6,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsToolti
 import ChartDetailModal from '../_components/ChartDetailModal';
 import { FinancialReportData } from '@/lib/api/analytics';
 
-const formatINR = (n: number) => '₹' + Math.round(n).toLocaleString('en-IN');
+const formatINR = (n: number) => '$' + Math.round(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const formatDate = (iso: string) => {
   try {
     return new Date(iso).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -36,7 +36,7 @@ export default function CashFlowTab({ data }: { data?: FinancialReportData }) {
       rows: [
         { label: 'Period', value: formatDate(String(pt.period)) },
         { label: 'Cash Inflow', value: formatINR(pt.revenue) },
-        { label: 'Orders', value: pt.orders?.toLocaleString('en-IN') || '—' },
+        { label: 'Orders', value: pt.orders?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '—' },
         { label: 'Avg / Order', value: pt.orders > 0 ? formatINR(pt.revenue / pt.orders) : '—' },
       ],
     });
@@ -81,7 +81,7 @@ export default function CashFlowTab({ data }: { data?: FinancialReportData }) {
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--t-border-subtle)" />
               <XAxis dataKey="period" stroke="#333333" fontSize={10} tickMargin={10} tickFormatter={formatDate} />
-              <YAxis stroke="#333333" fontSize={10} tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`} />
+              <YAxis stroke="#333333" fontSize={10} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
               <RechartsTooltip content={<CustomTooltip />} />
               <Area
                 type="monotone"

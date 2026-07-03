@@ -6,7 +6,7 @@ import KPICard from '../_components/KPICard';
 import ChartDetailModal from '../_components/ChartDetailModal';
 import type { ExpenseBreakdown } from '@/lib/api/analytics';
 
-const formatINR = (n: number) => '₹' + Math.round(n).toLocaleString('en-IN');
+const formatINR = (n: number) => '$' + Math.round(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const formatDate = (iso: string) => {
   try { return new Date(iso).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }); } catch { return iso; }
 };
@@ -253,7 +253,7 @@ export default function ExpenseTrackingTab({ data }: { data?: ExpenseBreakdown }
                 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(168,146,80,0.07)" />
                   <XAxis dataKey="period" stroke="#333333" fontSize={10} tickFormatter={formatDate} tickLine={false} axisLine={false} />
-                  <YAxis stroke="#333333" fontSize={10} tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`} tickLine={false} axisLine={false} />
+                  <YAxis stroke="#333333" fontSize={10} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} tickLine={false} axisLine={false} />
                   <RechartsTooltip content={<BarTooltipContent />} cursor={{ fill: 'rgba(168,146,80,0.06)' }} />
                   <Bar dataKey="shipping" name="Shipping" stackId="a" fill={PRIMARY} radius={[0, 0, 0, 0]} style={{ cursor: 'pointer' }} />
                   <Bar dataKey="discounts" name="Discounts" stackId="a" fill={PRIMARY_LIGHT} style={{ cursor: 'pointer' }} />

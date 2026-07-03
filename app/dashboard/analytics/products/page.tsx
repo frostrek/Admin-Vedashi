@@ -618,7 +618,7 @@ export default function ProductAnalyticsDashboard() {
                                         <div className="bg-page-bg rounded-xl p-4 border border-border-subtle">
                                             <p className="text-xs text-text-muted font-medium uppercase mb-1">Avg Order Val.</p>
                                             <p className="text-xl font-bold text-text-primary">
-                                                {selectedMetrics.units_sold > 0 ? formatCurrency((selectedMetrics.revenue || 0) / selectedMetrics.units_sold) : '₹0'}
+                                                {selectedMetrics.units_sold > 0 ? formatCurrency((selectedMetrics.revenue || 0) / selectedMetrics.units_sold) : '$0'}
                                             </p>
                                         </div>
                                         <div className="bg-page-bg rounded-xl p-4 border border-border-subtle">

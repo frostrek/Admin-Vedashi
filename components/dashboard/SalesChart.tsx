@@ -114,7 +114,7 @@ export default function SalesChart({
                             axisLine={false}
                             tickLine={false}
                             tick={{ fontSize: 10, fill: colors.axis, fontWeight: 600 }}
-                            tickFormatter={(v: number) => `₹${(v / 1000).toFixed(0)}k`}
+                            tickFormatter={(v: number) => `$${(v / 1000).toFixed(0)}k`}
                         />
                         <Tooltip
                             contentStyle={{
@@ -129,7 +129,7 @@ export default function SalesChart({
                             }}
                             itemStyle={{ color: colors.tooltipLabel, fontWeight: 700 }}
                             labelStyle={{ color: colors.tooltipText, fontWeight: 800, marginBottom: 4, letterSpacing: '0.05em', textTransform: 'uppercase', fontSize: '10px' }}
-                            formatter={(val: number | undefined) => [`₹${(val ?? 0).toLocaleString('en-IN')}`, 'Synthesis Total']}
+                            formatter={(val: number | undefined) => [`$${(val ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 'Synthesis Total']}
                         />
                         <Area
                             type="monotone"

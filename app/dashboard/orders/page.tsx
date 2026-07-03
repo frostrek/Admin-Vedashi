@@ -326,7 +326,7 @@ function FilterPopover({
                             )}
                             {(amountRange.min > 0 || amountRange.max < absoluteMaxAmount) && (
                                 <span className="flex items-center gap-1 text-xs font-medium bg-gold/10 text-gold border border-gold/20 rounded-full px-2.5 py-1">
-                                    ₹{amountRange.min.toLocaleString('en-IN')} – ₹{amountRange.max.toLocaleString('en-IN')}
+                                    ${amountRange.min.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} – ${amountRange.max.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                     <button onClick={() => setAmountRange({ min: 0, max: absoluteMaxAmount })}><X className="h-3 w-3" /></button>
                                 </span>
                             )}

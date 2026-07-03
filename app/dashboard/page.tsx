@@ -14,10 +14,11 @@ import StatCard from '@/components/dashboard/StatCard';
 import SalesChart from '@/components/dashboard/SalesChart';
 import RevenueBreakdown from '@/components/dashboard/RevenueBreakdown';
 
-// ─── INR Formatter ──────────────────────────────────────────────────
-function formatINR(amount: number): string {
-    return '₹' + amount.toLocaleString('en-IN');
+// ─── USD Formatter ──────────────────────────────────────────────────
+function formatUSD(amount: number): string {
+    return '$' + amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
+const formatINR = formatUSD; // backward compat alias
 
 export default function DashboardPage() {
     const [products, setProducts] = useState<Product[]>([]);
