@@ -270,9 +270,9 @@ export default function CouponsPage() {
                                             </td>
                                             <td className="px-4 py-3">
                                                 {c.discount_type === 'percentage' || c.discount_type === 'first_order'
-                                                    ? `${c.discount_value}%${c.max_discount_cap ? ` (max ₹${c.max_discount_cap})` : ''}`
+                                                    ? `${c.discount_value}%${c.max_discount_cap ? ` (max $${c.max_discount_cap})` : ''}`
                                                     : c.discount_type === 'fixed'
-                                                        ? `₹${c.discount_value}`
+                                                        ? `$${c.discount_value}`
                                                         : c.discount_type === 'free_shipping'
                                                             ? 'Free Shipping'
                                                             : c.discount_type === 'bogo'
@@ -282,7 +282,7 @@ export default function CouponsPage() {
                                                 {c.discount_type === 'first_order' && <div className="text-xs text-emerald-400 mt-1">First Order</div>}
                                             </td>
                                             <td className="px-4 py-3 text-text-muted">
-                                                {parseFloat(String(c.min_order_amount)) > 0 ? `₹${c.min_order_amount}` : '—'}
+                                                {parseFloat(String(c.min_order_amount)) > 0 ? `$${c.min_order_amount}` : '—'}
                                             </td>
                                             <td className="px-4 py-3">
                                                 <span className="text-text-primary">{c.used_count}</span>
@@ -359,7 +359,7 @@ export default function CouponsPage() {
                                         className="w-full rounded-lg border border-border bg-page-bg px-4 py-2.5 text-sm text-text-primary focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/40"
                                     >
                                         <option value="percentage">Percentage (%)</option>
-                                        <option value="fixed">Fixed (₹)</option>
+                                        <option value="fixed">Fixed ($)</option>
                                         <option value="free_shipping">Free Shipping</option>
                                         <option value="bogo">BOGO (Buy X Get Y)</option>
                                         <option value="first_order">First Order (%)</option>
@@ -529,7 +529,7 @@ export default function CouponsPage() {
                             {/* Live Preview */}
                             {(form.discount_value || form.discount_type === 'free_shipping' || form.discount_type === 'bogo') && (
                                 <div className="bg-gold/[0.06] border border-gold/20 rounded-lg p-3">
-                                    <p className="text-xs font-medium text-gold mb-1">Preview (on ₹{previewDiscount().sample} order)</p>
+                                    <p className="text-xs font-medium text-gold mb-1">Preview (on ${previewDiscount().sample} order)</p>
                                     {previewDiscount().type === 'bogo' ? (
                                         <p className="text-sm text-text-primary">
                                             Discount: <span className="font-bold text-emerald-400">Depends on cart items at checkout</span>
@@ -540,8 +540,8 @@ export default function CouponsPage() {
                                         </p>
                                     ) : (
                                         <p className="text-sm text-text-primary">
-                                            Discount: <span className="font-bold text-emerald-400">₹{previewDiscount().discount.toFixed(2)}</span>
-                                            {' → '}Final: <span className="font-bold text-gold">₹{previewDiscount().final.toFixed(2)}</span>
+                                            Discount: <span className="font-bold text-emerald-400">${previewDiscount().discount.toFixed(2)}</span>
+                                            {' → '}Final: <span className="font-bold text-gold">${previewDiscount().final.toFixed(2)}</span>
                                         </p>
                                     )}
                                 </div>

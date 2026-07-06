@@ -1961,7 +1961,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                                                 onChange={e => setStrengthUnit(e.target.value)}
                                                                 className="bg-card-bg border border-border rounded-lg px-2 py-1.5 text-xs focus:border-gold/40 focus:outline-none"
                                                             >
-                                                                {['mg', 'IU'].map(u => <option key={u} value={u}>{u}</option>)}
+                                                                {['mg', 'IU', '%'].map(u => <option key={u} value={u}>{u}</option>)}
                                                             </select>
                                                         </div>
                                                     ) : key === 'pack' ? (

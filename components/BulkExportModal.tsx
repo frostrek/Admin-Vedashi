@@ -116,7 +116,7 @@ export default function BulkExportModal({ isOpen, onClose, products }: BulkExpor
     };
 
     const formatPrice = (amount: number) => {
-        return `Rs. ${amount?.toLocaleString('en-IN') || 0}`;
+        return `Rs. ${amount?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || 0}`;
     };
 
     /** Shared product filter used by both PDF and Excel export */

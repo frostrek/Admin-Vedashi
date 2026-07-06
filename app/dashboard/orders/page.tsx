@@ -326,7 +326,7 @@ function FilterPopover({
                             )}
                             {(amountRange.min > 0 || amountRange.max < absoluteMaxAmount) && (
                                 <span className="flex items-center gap-1 text-xs font-medium bg-gold/10 text-gold border border-gold/20 rounded-full px-2.5 py-1">
-                                    ₹{amountRange.min.toLocaleString('en-IN')} – ₹{amountRange.max.toLocaleString('en-IN')}
+                                    ${amountRange.min.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} – ${amountRange.max.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                     <button onClick={() => setAmountRange({ min: 0, max: absoluteMaxAmount })}><X className="h-3 w-3" /></button>
                                 </span>
                             )}
@@ -695,8 +695,8 @@ export default function OrdersPage() {
 
     const updatePayment = async (orderId: string, newStatus: string) => {
         const targetOrder = orders.find(o => o.id === orderId);
-        if (targetOrder?.payment_method === 'razorpay' && targetOrder?.payment_status?.toUpperCase() === 'PAID' && newStatus.toUpperCase() === 'UNPAID') {
-            toast.error('Razorpay payments cannot be marked unpaid. Initiate a refund instead.');
+        if ((targetOrder?.payment_method === 'razorpay' || targetOrder?.payment_method === 'cloudpayments') && targetOrder?.payment_status?.toUpperCase() === 'PAID' && newStatus.toUpperCase() === 'UNPAID') {
+            toast.error('Online payments cannot be marked unpaid. Initiate a refund instead.');
             return;
         }
         setUpdatingPayments(prev => new Set(prev).add(orderId));
@@ -994,9 +994,9 @@ export default function OrdersPage() {
                                             <td className="px-4 py-3.5">
                                                 <div className="flex items-center gap-2 flex-wrap">
                                                     <PaymentToggle status={order.payment_status ?? 'UNPAID'} onToggle={(ns) => updatePayment(order.id, ns)}
-                                                        disabled={updatingPayments.has(order.id) || (order.payment_status?.toUpperCase() === 'PAID' && (order.payment_method === 'razorpay' || order.payment_method === 'cod'))} />
-                                                    <span className={`text-[10px] font-semibold uppercase rounded-full px-2 py-0.5 ${order.payment_method === 'razorpay' ? 'bg-blue-500/15 text-blue-400' : 'bg-green-500/15 text-green-400'}`}>
-                                                        {order.payment_method === 'razorpay' ? 'RZP' : 'COD'}
+                                                        disabled={updatingPayments.has(order.id) || (order.payment_status?.toUpperCase() === 'PAID' && (order.payment_method === 'razorpay' || order.payment_method === 'cloudpayments' || order.payment_method === 'cod'))} />
+                                                    <span className={`text-[10px] font-semibold uppercase rounded-full px-2 py-0.5 ${order.payment_method === 'razorpay' ? 'bg-blue-500/15 text-blue-400' : (order.payment_method === 'cloudpayments' ? 'bg-purple-500/15 text-purple-400' : 'bg-green-500/15 text-green-400')}`}>
+                                                        {order.payment_method === 'razorpay' ? 'RZP' : (order.payment_method === 'cloudpayments' ? 'CP' : 'COD')}
                                                     </span>
                                                 </div>
                                             </td>
@@ -1155,14 +1155,16 @@ export default function OrdersPage() {
                                     <div className="flex items-center justify-between">
                                         <span className="text-xs text-text-secondary">Payment</span>
                                         <PaymentToggle status={selectedOrder.payment_status ?? 'UNPAID'} onToggle={(ns) => updatePayment(selectedOrder.id, ns)}
-                                            disabled={updatingPayments.has(selectedOrder.id) || (selectedOrder.payment_status?.toUpperCase() === 'PAID' && (selectedOrder.payment_method === 'razorpay' || selectedOrder.payment_method === 'cod'))} />
+                                            disabled={updatingPayments.has(selectedOrder.id) || (selectedOrder.payment_status?.toUpperCase() === 'PAID' && (selectedOrder.payment_method === 'razorpay' || selectedOrder.payment_method === 'cloudpayments' || selectedOrder.payment_method === 'cod'))} />
                                     </div>
                                     <div className="flex items-center justify-between">
                                         <span className="text-xs text-text-secondary">Method</span>
                                         <span className="text-xs font-medium text-text-primary">
                                             {(selectedOrder.payment_method || paymentInfo?.payment_method) === 'razorpay'
                                                 ? <span className="flex items-center gap-1"><Shield className="h-3 w-3 text-blue-400" /> Razorpay</span>
-                                                : <span className="flex items-center gap-1"><Banknote className="h-3 w-3 text-green-400" /> Cash on Delivery</span>}
+                                                : (selectedOrder.payment_method || paymentInfo?.payment_method) === 'cloudpayments'
+                                                    ? <span className="flex items-center gap-1"><Shield className="h-3 w-3 text-purple-400" /> CloudPayments</span>
+                                                    : <span className="flex items-center gap-1"><Banknote className="h-3 w-3 text-green-400" /> Cash on Delivery</span>}
                                         </span>
                                     </div>
                                     {paymentInfo?.razorpay_payment_id && (

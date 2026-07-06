@@ -163,9 +163,12 @@ export async function authFetch(input: RequestInfo | URL, init?: RequestInit): P
     return res;
 }
 
-export function formatINR(amount: number): string {
-    return '₹' + amount.toLocaleString('en-IN');
+export function formatUSD(amount: number): string {
+    return '$' + amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
+
+/** @deprecated Use formatUSD instead */
+export const formatINR = formatUSD;
 
 /* ─── Profile Management ─── */
 

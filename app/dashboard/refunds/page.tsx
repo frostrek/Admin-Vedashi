@@ -567,8 +567,8 @@ function DetailDrawer({ refundData, loading, onClose, onProcess, onRetry, action
                             {r.transaction_ref && <InfoRow label="Transaction Ref" value={r.transaction_ref} mono />}
                             {r.notes && <InfoRow label="Notes" value={r.notes} />}
                             {r.reason && <InfoRow label="Reason" value={r.reason} />}
-                            <InfoRow label="Created" value={new Date(r.created_at).toLocaleString('en-IN')} />
-                            {r.processed_at && <InfoRow label="Processed" value={new Date(r.processed_at).toLocaleString('en-IN')} />}
+                            <InfoRow label="Created" value={new Date(r.created_at).toLocaleString('en-US')} />
+                            {r.processed_at && <InfoRow label="Processed" value={new Date(r.processed_at).toLocaleString('en-US')} />}
                         </Section>
 
                         <Section title="Order Info">
@@ -610,7 +610,7 @@ function DetailDrawer({ refundData, loading, onClose, onProcess, onRetry, action
                                             <div className="flex-1 min-w-0">
                                                 <p className="text-xs font-medium text-text-primary">{log.action.replace(/_/g, ' ')}</p>
                                                 <p className="text-[10px] text-text-muted">
-                                                    {new Date(log.created_at).toLocaleString('en-IN')}
+                                                    {new Date(log.created_at).toLocaleString('en-US')}
                                                 </p>
                                             </div>
                                         </div>
@@ -698,7 +698,7 @@ function CreateRefundModal({ onClose, onSuccess }: { onClose: () => void; onSucc
                                 placeholder="Enter order ID (UUID)" className={`${inputClass} w-full`} disabled={creating} />
                         </div>
                         <div className="space-y-1">
-                            <label className="text-[11px] uppercase text-text-muted font-bold tracking-wider">Amount (₹) *</label>
+                            <label className="text-[11px] uppercase text-text-muted font-bold tracking-wider">Amount ($) *</label>
                             <input type="number" value={amount} onChange={e => setAmount(e.target.value)}
                                 placeholder="0.00" min="0" step="0.01" className={`${inputClass} w-full`} disabled={creating} />
                         </div>
@@ -758,7 +758,7 @@ function ProcessRefundModal({ refund, onClose, onSuccess }: { refund: any; onClo
             return;
         }
         if (finalAmount > maxAmount) {
-            toast.error(`Amount exceeds maximum requested refund (₹${maxAmount})`);
+            toast.error(`Amount exceeds maximum requested refund ($${maxAmount})`);
             return;
         }
 
@@ -837,7 +837,7 @@ function ProcessRefundModal({ refund, onClose, onSuccess }: { refund: any; onClo
                         {refundType === 'partial' && (
                             <div className="space-y-1" style={{ animation: 'fadeInScale 0.2s ease-out' }}>
                                 <label className="text-[11px] uppercase text-text-muted font-bold tracking-wider">
-                                    Amount (₹)
+                                    Amount ($)
                                 </label>
                                 <input type="number" value={amount} onChange={e => setAmount(e.target.value)}
                                     min="0" max={maxAmount} step="0.01" className={`${inputClass} w-full`} disabled={processing} />
@@ -888,7 +888,7 @@ function ProcessRefundModal({ refund, onClose, onSuccess }: { refund: any; onClo
                                 <div className="space-y-0.5">
                                     <h4 className="text-xs font-bold text-amber-300">Store Credit Wallet (COD)</h4>
                                     <p className="text-[11px] text-amber-300/80 leading-relaxed">
-                                        The refunded amount will be credited to the customer's loyalty wallet directly as Store Credit points (1 pt = ₹1) upon processing.
+                                        The refunded amount will be credited to the customer's loyalty wallet directly as Store Credit points (1 pt = $1) upon processing.
                                     </p>
                                 </div>
                             </div>
@@ -966,7 +966,7 @@ function RefundsDevPanel({ onCreated }: { onCreated: () => void }) {
         try {
             const res = await devCreateTestRefund({ mode, amount: parseFloat(amount) });
             if (res.success) {
-                toast.success(`Test refund created (${mode}, ₹${amount})`);
+                toast.success(`Test refund created (${mode}, $${amount})`);
                 onCreated();
             } else toast.error(res.message || 'Failed');
         } catch { toast.error('Network error'); }

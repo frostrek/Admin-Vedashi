@@ -11,7 +11,7 @@ import ChartDetailModal from '../_components/ChartDetailModal';
 import { FinancialReportData } from '@/lib/api/analytics';
 
 /* ── Formatters ─────────────────────────────────────────────── */
-const formatINR = (n: number) => '₹' + Math.round(n).toLocaleString('en-IN');
+const formatINR = (n: number) => '$' + Math.round(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const formatDate = (iso: string) => {
   try {
     return new Date(iso).toLocaleDateString('en-IN', {
@@ -206,9 +206,9 @@ export default function ExecutiveSummaryTab({
         heroValue: formatINR(pt.revenue),
         rows: [
           { label: 'Date', value: formatDate(pt.period) },
-          { label: 'Total Orders', value: pt.orders?.toLocaleString('en-IN') || '—' },
-          { label: 'New Customers', value: pt.newCustomers?.toLocaleString('en-IN') || '0' },
-          { label: 'Returning Customers', value: pt.returningCustomers?.toLocaleString('en-IN') || '0' },
+          { label: 'Total Orders', value: pt.orders?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '—' },
+          { label: 'New Customers', value: pt.newCustomers?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0' },
+          { label: 'Returning Customers', value: pt.returningCustomers?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0' },
           { label: 'Avg / Order', value: pt.orders > 0 ? formatINR(pt.revenue / pt.orders) : '—' },
           { label: 'Rev Share', value: currentRev > 0 ? `${((pt.revenue / currentRev) * 100).toFixed(1)}%` : '—' },
         ],
@@ -222,10 +222,10 @@ export default function ExecutiveSummaryTab({
     setDetail({
       title: `👥 ${entry.name} Customers`,
       heroLabel: `${entry.name} Customers`,
-      heroValue: entry.value.toLocaleString('en-IN'),
+      heroValue: entry.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
       rows: [
         { label: 'Share', value: pieTotal > 0 ? `${((entry.value / pieTotal) * 100).toFixed(1)}%` : '—' },
-        { label: 'Total Customers', value: pieTotal.toLocaleString('en-IN') },
+        { label: 'Total Customers', value: pieTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) },
         { label: 'Repeat Rate', value: `${summary.repeatCustomerRate ?? 0}%` },
       ],
     });
@@ -255,7 +255,7 @@ export default function ExecutiveSummaryTab({
           </span>
         </div>
         <p style={{ fontSize: 16, fontWeight: 800, color: 'var(--t-text-primary)' }}>
-          {value.toLocaleString('en-IN')}
+          {value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           <span style={{ fontSize: 12, fontWeight: 600, color: fill, marginLeft: 6 }}>({pct}%)</span>
         </p>
       </div>
@@ -284,7 +284,7 @@ export default function ExecutiveSummaryTab({
         />
         <KPICard
           label="Total Orders"
-          value={currentOrd.toLocaleString('en-IN')}
+          value={currentOrd.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           delta={ordDelta}
           tooltip="The total count of orders placed within the selected time range."
         />
@@ -348,7 +348,7 @@ export default function ExecutiveSummaryTab({
                   fontSize={10}
                   tickLine={false}
                   axisLine={false}
-                  tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`}
+                  tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
                   width={48}
                 />
                 <RechartsTooltip content={<CustomTooltip />} cursor={{ stroke: GOLD, strokeWidth: 1, strokeDasharray: '4 4' }} />
@@ -444,7 +444,7 @@ export default function ExecutiveSummaryTab({
                   </div>
                   <div className="flex items-center gap-3">
                     <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--t-text-primary)', fontVariantNumeric: 'tabular-nums' }}>
-                      {entry.value.toLocaleString('en-IN')}
+                      {entry.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                     <span
                       style={{
@@ -471,7 +471,7 @@ export default function ExecutiveSummaryTab({
               Total
             </span>
             <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--t-text-primary)', fontVariantNumeric: 'tabular-nums' }}>
-              {pieTotal.toLocaleString('en-IN')}
+              {pieTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
           </div>
         </ChartCard>

@@ -437,7 +437,7 @@ export default function ShipmentsPage() {
                                                 }`}>{s.is_cod ? 'COD' : 'Prepaid'}</span>
                                         </td>
                                         <td className="p-3 text-right font-mono text-sm text-text-primary">
-                                            <span className="font-sans mr-0.5 text-[0.85em]">₹</span>{(s.amount || s.final_total || 0).toLocaleString('en-IN')}
+                                            <span className="font-sans mr-0.5 text-[0.85em]">$</span>{(s.amount || s.final_total || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                         </td>
                                         <td className="p-3 text-xs text-text-muted">
                                             {new Date(s.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' })}
@@ -646,7 +646,7 @@ function DetailDrawer({ shipment, loading, onClose, onCancel, onDownloadLabel, d
                                 <InfoRow label="Shipment ID" value={shipment.shipment_id} mono />
                                 <InfoRow label="AWB Tracking #" value={shipment.awb_code || 'Pending Assignment'} mono={!!shipment.awb_code} />
                                 <InfoRow label="Fulfillment Service" value={shipment.is_cod ? 'Cash on Delivery (COD)' : 'Prepaid Dispatch'} />
-                                <InfoRow label="Invoice Value" value={<><span className="font-sans mr-0.5 text-[0.85em]">₹</span>{(shipment.amount || 0).toLocaleString('en-IN')}</>} isPrimary />
+                                <InfoRow label="Invoice Value" value={<><span className="font-sans mr-0.5 text-[0.85em]">$</span>{(shipment.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</>} isPrimary />
                             </Section>
 
                             <Section title="Reference Order">
@@ -680,11 +680,11 @@ function DetailDrawer({ shipment, loading, onClose, onCancel, onDownloadLabel, d
                                                 <div className="flex-1 min-w-0 pr-4">
                                                     <p className="text-[13px] text-text-primary font-semibold truncate group-hover:text-gold transition-colors">{item.product?.product_name || 'Managed SKU'}</p>
                                                     <p className="text-[10px] text-text-muted font-bold uppercase mt-0.5">
-                                                        Quantity: {item.quantity} × <span className="font-sans mr-0.25 text-[0.9em]">₹</span>{(item.unit_price || 0).toLocaleString('en-IN')}
+                                                        Quantity: {item.quantity} × <span className="font-sans mr-0.25 text-[0.9em]">$</span>{(item.unit_price || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                     </p>
                                                 </div>
                                                 <div className="text-xs font-mono font-bold text-text-primary bg-border/20 px-2 py-1 rounded">
-                                                    <span className="font-sans mr-0.25 text-[0.9em]">₹</span>{(item.unit_price * item.quantity).toLocaleString('en-IN')}
+                                                    <span className="font-sans mr-0.25 text-[0.9em]">$</span>{(item.unit_price * item.quantity).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                 </div>
                                             </div>
                                         ))}
@@ -1116,10 +1116,10 @@ function CourierSelectModal({ shipment, onClose, onSuccess }: {
                                                         <div className="flex flex-col items-end gap-3 shrink-0">
                                                             <div className="text-right">
                                                                 <p className={`text-2xl font-serif font-black tabular-nums leading-none ${isActive ? 'text-primary' : 'text-text-primary'}`}>
-                                                                    <span className="font-sans mr-0.5 text-[0.85em]">₹</span>{c.rate}
+                                                                    <span className="font-sans mr-0.5 text-[0.85em]">$</span>{c.rate}
                                                                 </p>
                                                                 {c.rto_charges != null && (
-                                                                    <p className="text-[10px] text-rose-500/70 font-bold uppercase tracking-tight mt-1">RTO Opt-in: <span className="font-sans mr-0.5">₹</span>{c.rto_charges}</p>
+                                                                    <p className="text-[10px] text-rose-500/70 font-bold uppercase tracking-tight mt-1">RTO Opt-in: <span className="font-sans mr-0.5">$</span>{c.rto_charges}</p>
                                                                 )}
                                                             </div>
 
@@ -1178,7 +1178,7 @@ function CourierSelectModal({ shipment, onClose, onSuccess }: {
                                 <div className="grid grid-cols-2 w-full gap-0 bg-page-bg/60 rounded-2xl border border-border/40 overflow-hidden shadow-sm">
                                     <div className="p-4 flex flex-col border-r border-border/40">
                                         <span className="text-[10px] text-primary/50 font-bold uppercase tracking-wider mb-1">Service Fee</span>
-                                        <span className="text-xl font-serif font-black text-primary"><span className="font-sans mr-0.5 text-[0.85em]">₹</span>{confirmCourier.rate}</span>
+                                        <span className="text-xl font-serif font-black text-primary"><span className="font-sans mr-0.5 text-[0.85em]">$</span>{confirmCourier.rate}</span>
                                     </div>
                                     <div className="p-4 flex flex-col bg-primary/[0.02]">
                                         <span className="text-[10px] text-primary/50 font-bold uppercase tracking-wider mb-1">Delivery ETA</span>

@@ -11,7 +11,7 @@ const GOLD = '#A89250';
 const GOLD_LIGHT = '#C5A46D';
 const PRIMARY = '#3B5D3B';
 
-const formatINR = (n: number) => '₹' + Math.round(n).toLocaleString('en-IN');
+const formatINR = (n: number) => '$' + Math.round(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 export default function HourlyHeatmap({ data }: HourlyHeatmapProps) {
   const [detail, setDetail] = useState<{

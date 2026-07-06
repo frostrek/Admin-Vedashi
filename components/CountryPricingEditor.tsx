@@ -87,7 +87,7 @@ export default function CountryPricingEditor({ productId, defaultPriceInr }: Cou
         setRowsByVariant(prev => {
             const variantRows = prev[variantId] || [];
             const usedCodes = new Set(variantRows.map(r => r.country_code));
-            const available = currencies.filter(c => !usedCodes.has(c.country_code) && c.country_code !== 'IN');
+            const available = currencies.filter(c => !usedCodes.has(c.country_code) && c.country_code !== 'US');
             
             if (available.length === 0) {
                 setError('All configured countries already have overrides for this variant.');
@@ -138,7 +138,7 @@ export default function CountryPricingEditor({ productId, defaultPriceInr }: Cou
         }
 
         if (hasInvalid) {
-            setError('Each row needs a country and valid INR price > 0.');
+            setError('Each row needs a country and valid local price > 0.');
             setTimeout(() => setError(''), 4000);
             return;
         }
@@ -200,7 +200,7 @@ export default function CountryPricingEditor({ productId, defaultPriceInr }: Cou
                     </div>
                     <div>
                         <h4 className="font-serif text-lg font-semibold text-text-primary">Country Pricing Overrides</h4>
-                        <p className="text-xs text-text-muted mt-0.5">Manage regional INR pricing for all product variants</p>
+                        <p className="text-xs text-text-muted mt-0.5">Manage exact local currency pricing for all product variants</p>
                     </div>
                 </div>
                 {variants.length > 0 && (
@@ -217,7 +217,7 @@ export default function CountryPricingEditor({ productId, defaultPriceInr }: Cou
             </div>
 
             <p className="text-xs text-text-muted">
-                Set custom INR prices per variant for selected countries. The storefront will automatically convert this base INR value into the local country currency.
+                Set exact local currency prices per variant for selected countries. The storefront will display this exact value.
             </p>
 
             {error && (
@@ -243,7 +243,7 @@ export default function CountryPricingEditor({ productId, defaultPriceInr }: Cou
                         const vId = variant.variant_id;
                         const rows = rowsByVariant[vId] || [];
                         const usedCodes = new Set(rows.map(r => r.country_code));
-                        const availableCountries = currencies.filter(c => !usedCodes.has(c.country_code) && c.country_code !== 'IN');
+                        const availableCountries = currencies.filter(c => !usedCodes.has(c.country_code) && c.country_code !== 'US');
                         
                         return (
                             <div key={vId} className="bg-white/[0.02] border border-border rounded-xl p-4 space-y-4 overflow-hidden">
@@ -255,7 +255,7 @@ export default function CountryPricingEditor({ productId, defaultPriceInr }: Cou
                                         </h5>
                                         <div className="text-xs text-text-muted mt-1 flex items-center gap-1.5">
                                             <span>Base Price:</span>
-                                            <span className="text-white font-mono">₹{Number(variant.price).toLocaleString('en-IN')}</span>
+                                            <span className="text-white font-mono">${Number(variant.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                         </div>
                                     </div>
                                     <button
@@ -271,22 +271,17 @@ export default function CountryPricingEditor({ productId, defaultPriceInr }: Cou
 
                                 {rows.length > 0 ? (
                                     <div className="space-y-2">
-                                        <div className="grid grid-cols-[minmax(200px,2fr)_140px_minmax(160px,1.2fr)_44px] gap-6 px-4 text-[10px] font-bold text-text-muted uppercase tracking-widest border-b border-border/30 pb-3">
+                                        <div className="grid grid-cols-[minmax(200px,2fr)_140px_44px] gap-6 px-4 text-[10px] font-bold text-text-muted uppercase tracking-widest border-b border-border/30 pb-3">
                                             <span>Country / Market</span>
-                                            <span>Price (INR)</span>
-                                            <span className="hidden md:block text-right">Preview Conversion</span>
-                                            <span className="md:hidden text-right">Preview</span>
+                                            <span>Exact Local Price</span>
                                             <span></span>
                                         </div>
 
                                         {rows.map((row, idx) => {
                                             const currInfo = getCurrencyInfo(row.country_code);
-                                            const converted = currInfo && Number(row.price_inr) > 0
-                                                ? `${currInfo.currency_symbol} ${(Number(row.price_inr) * Number(currInfo.exchange_rate)).toFixed(2)}`
-                                                : '—';
 
                                             return (
-                                                <div key={idx} className="grid grid-cols-[minmax(200px,2fr)_140px_minmax(160px,1.2fr)_44px] gap-6 items-center bg-white/[0.04] border border-white/5 rounded-2xl px-4 py-4 hover:bg-white/[0.07] hover:border-gold/30 transition-all duration-300">
+                                                <div key={idx} className="grid grid-cols-[minmax(200px,2fr)_140px_44px] gap-6 items-center bg-white/[0.04] border border-white/5 rounded-2xl px-4 py-4 hover:bg-white/[0.07] hover:border-gold/30 transition-all duration-300">
                                                     
                                                     {/* Country Selector - Widened and non-truncating */}
                                                     <div className="relative min-w-[180px]">
@@ -312,7 +307,9 @@ export default function CountryPricingEditor({ productId, defaultPriceInr }: Cou
                                                     {/* Price Input - Clean labels */}
                                                     <div className="space-y-1.5">
                                                       <div className="relative">
-                                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gold/40 text-xs font-mono select-none">₹</span>
+                                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gold/40 text-xs font-mono select-none">
+                                                            {currInfo?.currency_symbol || '$'}
+                                                        </span>
                                                         <input
                                                             type="number"
                                                             min="0"
@@ -325,17 +322,7 @@ export default function CountryPricingEditor({ productId, defaultPriceInr }: Cou
                                                       </div>
                                                     </div>
                                                     
-                                                    {/* Estimation Badge - Vertically center-aligned */}
-                                                    <div className="flex flex-col items-end gap-1.5">
-                                                        <div className="text-[13px] font-bold text-gold-soft bg-gold/10 px-4 py-2 rounded-xl border border-gold/20 shadow-inner whitespace-nowrap">
-                                                            {converted}
-                                                        </div>
-                                                        {currInfo && (
-                                                            <div className="text-[9px] text-text-muted font-medium bg-white/5 px-2 py-0.5 rounded uppercase tracking-wider">
-                                                                Rate: 1:{(Number(currInfo.exchange_rate)).toFixed(4)} {currInfo.currency_code}
-                                                            </div>
-                                                        )}
-                                                    </div>
+
                                                     
                                                     {/* Delete Action */}
                                                     <button

@@ -705,7 +705,7 @@ function DetailDrawer({ returnData, loading, onClose, onApprove, onGenerateAWB, 
                                     <InfoRow label="Base Order" value={`#${r.order_id}`} mono isPrimary />
                                     <InfoRow label="Fulfilment Status" value={(r.order_status || 'Unknown').split('_').map((w: string) => w[0] + w.slice(1).toLowerCase()).join(' ')} />
                                     <InfoRow label="Payment Gateway" value={(r.payment_status || 'N/A').charAt(0).toUpperCase() + (r.payment_status || '').slice(1).toLowerCase()} />
-                                    <InfoRow label="Value (Recoverable)" value={<><span className="font-sans mr-0.5 text-[0.85em]">₹</span>{(r.final_total || r.subtotal || 0).toLocaleString('en-IN')}</>} />
+                                    <InfoRow label="Value (Recoverable)" value={<><span className="font-sans mr-0.5 text-[0.85em]">$</span>{(r.final_total || r.subtotal || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</>} />
                                 </Section>
 
                                 <Section title="Client Representative">

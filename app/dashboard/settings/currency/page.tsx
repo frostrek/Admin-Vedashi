@@ -125,7 +125,7 @@ export default function CurrencySettingsPage() {
     const previewConversion = (rate: number) => {
         if (!rate || rate <= 0) return '';
         const converted = 1000 * rate;
-        return `₹1,000 ≈ ${converted.toFixed(2)}`;
+        return `$1,000 ≈ ${converted.toFixed(2)}`;
     };
 
     return (
@@ -139,7 +139,7 @@ export default function CurrencySettingsPage() {
                     </h1>
                     <p className="text-sm text-gray-500 mt-1">
                         Manage country → currency → exchange rate mappings for international pricing.
-                        All product prices are stored in INR and converted using these rates.
+                        All product prices are stored in USD and converted using these rates.
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -226,7 +226,7 @@ export default function CurrencySettingsPage() {
                             />
                         </div>
                         <div>
-                            <label className="block text-xs font-medium text-gray-500 mb-1">Exchange Rate (1 INR = ?)</label>
+                            <label className="block text-xs font-medium text-gray-500 mb-1">Exchange Rate (1 USD = ?)</label>
                             <input
                                 type="number"
                                 step="0.000001"
@@ -273,7 +273,7 @@ export default function CurrencySettingsPage() {
                                 <th className="text-left px-4 py-3 font-semibold text-gray-600">Currency</th>
                                 <th className="text-left px-4 py-3 font-semibold text-gray-600">Symbol</th>
                                 <th className="text-right px-4 py-3 font-semibold text-gray-600">Exchange Rate</th>
-                                <th className="text-right px-4 py-3 font-semibold text-gray-600">₹1,000 =</th>
+                                <th className="text-right px-4 py-3 font-semibold text-gray-600">$1,000 =</th>
                                 <th className="text-right px-4 py-3 font-semibold text-gray-600">Last Updated</th>
                                 <th className="text-right px-4 py-3 font-semibold text-gray-600">Actions</th>
                             </tr>
@@ -298,8 +298,8 @@ export default function CurrencySettingsPage() {
                                     <td className="px-4 py-3 text-gray-700">{entry.currency_symbol}</td>
                                     <td className="px-4 py-3 text-right font-mono text-gray-700">{Number(entry.exchange_rate).toFixed(6)}</td>
                                     <td className="px-4 py-3 text-right text-gray-600">
-                                        {entry.currency_code === 'INR'
-                                            ? '₹1,000'
+                                        {entry.currency_code === 'USD'
+                                            ? '$1,000'
                                             : `${entry.currency_symbol}${(1000 * Number(entry.exchange_rate)).toFixed(2)}`
                                         }
                                     </td>
@@ -337,9 +337,9 @@ export default function CurrencySettingsPage() {
             <div className="bg-blue-50/60 border border-blue-200 rounded-xl p-4">
                 <h4 className="text-sm font-semibold text-blue-800 mb-1">How Exchange Rates Work</h4>
                 <ul className="text-xs text-blue-700 space-y-1 list-disc list-inside">
-                    <li>All product prices are stored in INR in the database.</li>
-                    <li>The exchange rate defines: <strong>1 INR = X Target Currency</strong> (e.g. 1 INR = 0.0116 USD).</li>
-                    <li>When a customer from a configured country visits, the INR price is multiplied by the rate and displayed in their local currency.</li>
+                    <li>All product prices are stored in USD in the database.</li>
+                    <li>The exchange rate defines: <strong>1 USD = X Target Currency</strong> (e.g. 1 USD = 83.50 INR).</li>
+                    <li>When a customer from a configured country visits, the USD price is multiplied by the rate and displayed in their local currency.</li>
                     <li><strong>USD is the global fallback</strong> — if a visitor&apos;s country has no config, prices display in USD.</li>
                     <li>Country-specific product price overrides (set on the product edit page) take priority over the default price before conversion.</li>
                 </ul>
