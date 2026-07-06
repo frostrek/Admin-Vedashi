@@ -64,7 +64,9 @@ function DetailRow({ label, value }: { label: string; value: any }) {
 function formatGateway(val: string) {
     if (!val) return 'N/A';
     if (val.toUpperCase() === 'ORIGINAL_PAYMENT') return 'Razorpay';
-    return val;
+    if (val.toLowerCase() === 'razorpay') return 'Razorpay';
+    if (val.toLowerCase() === 'cloudpayments') return 'CloudPayments';
+    return val.toUpperCase();
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -252,6 +254,7 @@ export default function PaymentLogsPage() {
                         >
                             <option value="">All Gateways</option>
                             <option value="razorpay">Razorpay</option>
+                            <option value="cloudpayments">CloudPayments</option>
                             <option value="cod">COD</option>
                         </select>
                         <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-text-muted pointer-events-none" />
