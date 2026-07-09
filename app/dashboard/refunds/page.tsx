@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
     fetchRefundsList, fetchRefundById, fetchRefundStats,
-    createRefund, processRefund, retryRefund, formatINR,
+    createRefund, processRefund, retryRefund, formatCurrency,
     devCreateTestRefund, devSimulateFullFlow, devSimulateRefundFailure
 } from '@/lib/api';
 import {
@@ -32,6 +32,8 @@ const MODE_CONFIG: Record<string, { label: string; color: string; bg: string; bo
     MANUAL: { label: 'Manual', color: 'text-orange-300', bg: 'bg-orange-500/10', border: 'border-orange-500/25', icon: Banknote },
 };
 
+const CLOUDPAYMENTS_MODE = { label: 'CloudPayments', color: 'text-teal-300', bg: 'bg-teal-500/10', border: 'border-teal-500/25', icon: CreditCard };
+
 const statusFilters = ['PENDING', 'PROCESSING', 'PROCESSED', 'FAILED'];
 const modeFilters = ['ORIGINAL_PAYMENT', 'WALLET', 'UPI', 'BANK_TRANSFER', 'MANUAL'];
 
@@ -45,8 +47,10 @@ function StatusBadge({ status }: { status: string }) {
     );
 }
 
-function ModeBadge({ mode }: { mode: string }) {
-    const cfg = MODE_CONFIG[mode] || { label: mode, color: 'text-zinc-400', bg: 'bg-zinc-500/10', border: 'border-zinc-500/25', icon: CreditCard };
+function ModeBadge({ mode, paymentGateway }: { mode: string; paymentGateway?: string }) {
+    // If mode is ORIGINAL_PAYMENT and gateway is cloudpayments, show CloudPayments badge
+    const isCloudPayments = mode === 'ORIGINAL_PAYMENT' && paymentGateway === 'cloudpayments';
+    const cfg = isCloudPayments ? CLOUDPAYMENTS_MODE : (MODE_CONFIG[mode] || { label: mode, color: 'text-zinc-400', bg: 'bg-zinc-500/10', border: 'border-zinc-500/25', icon: CreditCard });
     const Icon = cfg.icon;
     return (
         <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider ${cfg.color} ${cfg.bg} border ${cfg.border} rounded-full px-2.5 py-0.5`}>
@@ -368,9 +372,9 @@ export default function RefundsPage() {
                                     </td>
                                     <td className="p-3 text-text-primary text-sm">{r.customer_name || '—'}</td>
                                     <td className="p-3 text-right">
-                                        <span className="font-semibold text-text-primary">{formatINR(parseFloat(r.amount || 0))}</span>
+                                        <span className="font-semibold text-text-primary">{formatCurrency(parseFloat(r.amount || 0), r.currency || 'USD')}</span>
                                     </td>
-                                    <td className="p-3"><ModeBadge mode={r.mode} /></td>
+                                    <td className="p-3"><ModeBadge mode={r.mode} paymentGateway={r.payment_gateway} /></td>
                                     <td className="p-3"><StatusBadge status={r.status} /></td>
                                     <td className="p-3 text-xs text-text-muted">
                                         {new Date(r.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' })}
@@ -473,7 +477,7 @@ function StatCard({ label, value, amount, color }: { label: string; value: numbe
             <p className="text-[10px] uppercase text-text-muted font-bold tracking-wider">{label}</p>
             <p className={`text-xl font-bold text-${color}-400 mt-0.5`}>{value}</p>
             {amount !== undefined && amount > 0 && (
-                <p className="text-xs text-text-muted mt-0.5">{formatINR(parseFloat(String(amount)))}</p>
+                <p className="text-xs text-text-muted mt-0.5">{formatCurrency(parseFloat(String(amount)))}</p>
             )}
         </div>
     );
@@ -511,7 +515,7 @@ function DetailDrawer({ refundData, loading, onClose, onProcess, onRetry, action
                         {/* Status + Mode */}
                         <div className="flex items-center gap-3">
                             <StatusBadge status={r.status} />
-                            <ModeBadge mode={r.mode} />
+                            <ModeBadge mode={r.mode} paymentGateway={r.payment_gateway} />
                         </div>
 
                         {/* Timeline */}
@@ -559,8 +563,12 @@ function DetailDrawer({ refundData, loading, onClose, onProcess, onRetry, action
 
                         <Section title="Refund Info">
                             <InfoRow label="Refund ID" value={r.refund_id} mono />
-                            <InfoRow label="Amount" value={formatINR(parseFloat(r.amount || 0))} />
-                            <InfoRow label="Mode" value={MODE_CONFIG[r.mode]?.label || r.mode} />
+                            <InfoRow label="Amount" value={formatCurrency(parseFloat(r.amount || 0), r.currency || 'USD')} />
+                            <InfoRow label="Mode" value={
+                                (r.mode === 'ORIGINAL_PAYMENT' && r.payment_gateway === 'cloudpayments')
+                                    ? 'CloudPayments'
+                                    : (MODE_CONFIG[r.mode]?.label || r.mode)
+                            } />
                             <InfoRow label="Status" value={STATUS_CONFIG[r.status]?.label || r.status} />
                             {r.receipt && <InfoRow label="Receipt" value={r.receipt} mono />}
                             {r.razorpay_refund_id && <InfoRow label="RZP Refund ID" value={r.razorpay_refund_id} mono />}
@@ -576,7 +584,7 @@ function DetailDrawer({ refundData, loading, onClose, onProcess, onRetry, action
                             <InfoRow label="Order Status" value={(r.order_status || '').toUpperCase()} />
                             <InfoRow label="Payment Status" value={(r.payment_status || '').toUpperCase()} />
                             <InfoRow label="Payment Method" value={(r.payment_method || '').toUpperCase()} />
-                            <InfoRow label="Order Total" value={formatINR(parseFloat(r.final_total || r.subtotal || 0))} />
+                            <InfoRow label="Order Total" value={formatCurrency(parseFloat(r.final_total || r.subtotal || 0), r.currency || 'USD')} />
                         </Section>
 
                         {r.linked_return_id && (
@@ -593,9 +601,15 @@ function DetailDrawer({ refundData, loading, onClose, onProcess, onRetry, action
                             <InfoRow label="Phone" value={r.customer_phone || '—'} />
                         </Section>
 
-                        {r.razorpay_payment_id && (
+                        {(r.razorpay_payment_id || r.payment_gateway) && (
                             <Section title="Payment Gateway">
-                                <InfoRow label="Payment ID" value={r.razorpay_payment_id} mono />
+                                <InfoRow label="Gateway" value={
+                                    r.payment_gateway === 'cloudpayments' ? 'CloudPayments (Russia)'
+                                    : r.payment_gateway === 'razorpay' ? 'Razorpay'
+                                    : r.razorpay_payment_id?.startsWith('cp_') ? 'CloudPayments (Russia)'
+                                    : 'Razorpay'
+                                } />
+                                <InfoRow label="Payment ID" value={r.razorpay_payment_id || '—'} mono />
                                 {r.razorpay_order_id && <InfoRow label="Razorpay Order" value={r.razorpay_order_id} mono />}
                             </Section>
                         )}
@@ -741,6 +755,14 @@ function ProcessRefundModal({ refund, onClose, onSuccess }: { refund: any; onClo
     const isWallet = refund.mode === 'WALLET';
     const isLegacyManual = !isPrepaid && !isWallet;
 
+    // Detect CloudPayments gateway
+    const isCloudPayments = isPrepaid && (
+        refund.payment_gateway === 'cloudpayments' ||
+        refund.currency === 'RUB' ||
+        refund.razorpay_payment_id?.startsWith('cp_')
+    );
+    const isRazorpay = isPrepaid && !isCloudPayments;
+
     const [refundType, setRefundType] = useState<'full' | 'partial'>('full');
     const [amount, setAmount] = useState(String(refund.amount || ''));
     const [speed, setSpeed] = useState<'normal' | 'optimum'>('normal');
@@ -758,7 +780,7 @@ function ProcessRefundModal({ refund, onClose, onSuccess }: { refund: any; onClo
             return;
         }
         if (finalAmount > maxAmount) {
-            toast.error(`Amount exceeds maximum requested refund ($${maxAmount})`);
+            toast.error(`Amount exceeds maximum requested refund (${formatCurrency(maxAmount, refund.currency || 'USD')})`);
             return;
         }
 
@@ -774,10 +796,18 @@ function ProcessRefundModal({ refund, onClose, onSuccess }: { refund: any; onClo
                 amount: finalAmount,
                 transaction_ref: transactionRef.trim() || undefined,
                 notes: notes.trim() || undefined,
-                speed: isPrepaid ? speed : undefined,
+                speed: isRazorpay ? speed : undefined,
             });
             if (res.success) {
-                toast.success(isPrepaid ? 'Razorpay refund initiated' : (isWallet ? 'Credited to wallet' : 'Refund processed'));
+                if (isCloudPayments) {
+                    toast.success('CloudPayments refund processed');
+                } else if (isRazorpay) {
+                    toast.success('Razorpay refund initiated');
+                } else if (isWallet) {
+                    toast.success('Credited to wallet');
+                } else {
+                    toast.success('Refund processed');
+                }
                 onSuccess();
             } else {
                 toast.error(res.message || 'Failed to process refund');
@@ -796,13 +826,15 @@ function ProcessRefundModal({ refund, onClose, onSuccess }: { refund: any; onClo
                 style={{ animation: 'fadeInScale 0.2s ease-out' }}>
                 <div className="p-6 space-y-5">
                     <div className="flex items-start gap-3">
-                        <div className="p-2.5 bg-emerald-500/10 rounded-xl border border-emerald-500/20 shrink-0">
-                            <ArrowRight className="h-5 w-5 text-emerald-400" />
+                        <div className={`p-2.5 rounded-xl border shrink-0 ${isCloudPayments ? 'bg-teal-500/10 border-teal-500/20' : 'bg-emerald-500/10 border-emerald-500/20'}`}>
+                            <ArrowRight className={`h-5 w-5 ${isCloudPayments ? 'text-teal-400' : 'text-emerald-400'}`} />
                         </div>
                         <div>
-                            <h3 className="text-base font-bold text-text-primary">Process Refund</h3>
+                            <h3 className="text-base font-bold text-text-primary">
+                                {isCloudPayments ? 'CloudPayments Refund' : isRazorpay ? 'Razorpay Refund' : 'Process Refund'}
+                            </h3>
                             <p className="text-xs text-text-muted mt-0.5">
-                                Pending {formatINR(maxAmount)} for Order {refund.order_id?.slice(0, 8)}...
+                                Pending {formatCurrency(maxAmount, refund.currency || 'USD')} for Order {refund.order_id?.slice(0, 8)}...
                             </p>
                         </div>
                     </div>
@@ -819,7 +851,7 @@ function ProcessRefundModal({ refund, onClose, onSuccess }: { refund: any; onClo
                                             : 'bg-white/[0.02] border-border text-text-muted hover:text-text-primary'
                                         }`}
                                 >
-                                    Full Refund ({formatINR(maxAmount)})
+                                    Full Refund ({formatCurrency(maxAmount, refund.currency || 'USD')})
                                 </button>
                                 <button
                                     onClick={() => setRefundType('partial')}
@@ -837,16 +869,16 @@ function ProcessRefundModal({ refund, onClose, onSuccess }: { refund: any; onClo
                         {refundType === 'partial' && (
                             <div className="space-y-1" style={{ animation: 'fadeInScale 0.2s ease-out' }}>
                                 <label className="text-[11px] uppercase text-text-muted font-bold tracking-wider">
-                                    Amount ($)
+                                    Amount ({refund.currency || 'USD'})
                                 </label>
                                 <input type="number" value={amount} onChange={e => setAmount(e.target.value)}
                                     min="0" max={maxAmount} step="0.01" className={`${inputClass} w-full`} disabled={processing} />
-                                <p className="text-[10px] text-text-muted/70">Enter amount (max {formatINR(maxAmount)})</p>
+                                <p className="text-[10px] text-text-muted/70">Enter amount (max {formatCurrency(maxAmount, refund.currency || 'USD')})</p>
                             </div>
                         )}
 
-                        {/* Instant vs Normal Speed Toggle (For Prepaid) */}
-                        {isPrepaid && (
+                        {/* Instant vs Normal Speed Toggle (For Razorpay only — not supported by CloudPayments) */}
+                        {isRazorpay && (
                             <div className="space-y-1 pt-1">
                                 <label className="text-[11px] uppercase text-text-muted font-bold tracking-wider">Refund Speed</label>
                                 <div className="grid grid-cols-2 gap-2">
@@ -878,6 +910,19 @@ function ProcessRefundModal({ refund, onClose, onSuccess }: { refund: any; onClo
                                         ? 'Takes 5-7 business days to reflect in customer account.'
                                         : 'Credits immediately. Extra Razorpay charges may apply.'}
                                 </p>
+                            </div>
+                        )}
+
+                        {/* CloudPayments Info Box */}
+                        {isCloudPayments && (
+                            <div className="flex items-start gap-3 p-3 bg-teal-500/10 border border-teal-500/20 rounded-xl mt-1" style={{ animation: 'fadeInScale 0.2s ease-out' }}>
+                                <CreditCard className="h-5 w-5 text-teal-400 shrink-0" />
+                                <div className="space-y-0.5">
+                                    <h4 className="text-xs font-bold text-teal-300">CloudPayments (Russia)</h4>
+                                    <p className="text-[11px] text-teal-300/80 leading-relaxed">
+                                        Refund will be processed via CloudPayments in {refund.currency || 'RUB'}. Funds typically return to the customer&apos;s card within 1–3 business days.
+                                    </p>
+                                </div>
                             </div>
                         )}
 
@@ -923,7 +968,7 @@ function ProcessRefundModal({ refund, onClose, onSuccess }: { refund: any; onClo
                             {processing ? (
                                 <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Processing...</>
                             ) : (
-                                <><Check className="h-3.5 w-3.5" /> Process Refund</>
+                                <><Check className="h-3.5 w-3.5" /> {isCloudPayments ? 'Process via CloudPayments' : 'Process Refund'}</>
                             )}
                         </button>
                     </div>

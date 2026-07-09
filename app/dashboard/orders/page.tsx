@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import {
     getOrders, getOrderById, updateOrderStatus as apiUpdateStatus,
     updatePaymentStatus as apiUpdatePayment, bulkUpdateOrderStatus,
-    bulkUpdateOrderPaymentStatus, Order, downloadInvoiceAdmin, formatINR,
+    bulkUpdateOrderPaymentStatus, Order, downloadInvoiceAdmin, formatINR, formatCurrency,
     getPaymentInfo, createRefund, getRefunds, PaymentInfo, RefundRecord,
     cancelShipment, regenerateLabel, approveReturn, rejectReturn,
     createShipment, getAutomationSettings, AutomationSettings
@@ -73,6 +73,8 @@ interface OrderDetail {
     payment_status?: string;
     payment_method?: string;
     created_at: string;
+    currency?: string;
+    exchange_rate?: number;
     grand_total?: number;
     order_notes?: string;
     shipping_address?: {
@@ -127,6 +129,8 @@ interface FilterPopoverProps {
     setFilterStatus: (v: string) => void;
     filterPayment: string;
     setFilterPayment: (v: string) => void;
+    filterCountry: string;
+    setFilterCountry: (v: string) => void;
     filterDate: string;
     setFilterDate: (v: string) => void;
     activeFilterCount: number;
@@ -141,6 +145,7 @@ function FilterPopover({
     filterDateTo, setFilterDateTo,
     filterStatus, setFilterStatus,
     filterPayment, setFilterPayment,
+    filterCountry, setFilterCountry,
     filterDate, setFilterDate,
     activeFilterCount, clearAllFilters, clearSelection
 }: FilterPopoverProps) {
@@ -318,6 +323,12 @@ function FilterPopover({
                                     <button onClick={() => setFilterPayment('all')}><X className="h-3 w-3" /></button>
                                 </span>
                             )}
+                            {filterCountry !== 'all' && (
+                                <span className="flex items-center gap-1 text-xs font-medium bg-gold/10 text-gold border border-gold/20 rounded-full px-2.5 py-1">
+                                    Country: {filterCountry.charAt(0).toUpperCase() + filterCountry.slice(1)}
+                                    <button onClick={() => setFilterCountry('all')}><X className="h-3 w-3" /></button>
+                                </span>
+                            )}
                             {filterDate !== 'all' && (
                                 <span className="flex items-center gap-1 text-xs font-medium bg-gold/10 text-gold border border-gold/20 rounded-full px-2.5 py-1">
                                     {filterDate === 'today' ? 'Today' : filterDate === '7days' ? 'Last 7 days' : 'Last 30 days'}
@@ -326,7 +337,7 @@ function FilterPopover({
                             )}
                             {(amountRange.min > 0 || amountRange.max < absoluteMaxAmount) && (
                                 <span className="flex items-center gap-1 text-xs font-medium bg-gold/10 text-gold border border-gold/20 rounded-full px-2.5 py-1">
-                                    ${amountRange.min.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} – ${amountRange.max.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    {formatCurrency(amountRange.min, 'INR')} – {formatCurrency(amountRange.max, 'INR')}
                                     <button onClick={() => setAmountRange({ min: 0, max: absoluteMaxAmount })}><X className="h-3 w-3" /></button>
                                 </span>
                             )}
@@ -364,6 +375,7 @@ export default function OrdersPage() {
     const [loadingDetail, setLoadingDetail] = useState(false);
     const [filterStatus, setFilterStatus] = useState<string>('all');
     const [filterPayment, setFilterPayment] = useState<string>('all');
+    const [filterCountry, setFilterCountry] = useState<string>('all');
     const [filterDate, setFilterDate] = useState<string>('all');
     const [amountRange, setAmountRange] = useState({ min: 0, max: 10000 });
     const [absoluteMaxAmount, setAbsoluteMaxAmount] = useState(10000);
@@ -390,6 +402,8 @@ export default function OrdersPage() {
     const [refundAmount, setRefundAmount] = useState('');
     const [refundReason, setRefundReason] = useState('');
     const [refundProcessing, setRefundProcessing] = useState(false);
+    const [refundType, setRefundType] = useState<'full' | 'partial'>('full');
+    const [partialRefundAmount, setPartialRefundAmount] = useState<string>('');
 
     const headerRef = useRef<HTMLDivElement>(null);
     const filterBarRef = useRef<HTMLDivElement>(null);
@@ -445,7 +459,7 @@ export default function OrdersPage() {
         if (rows.length > 0) {
             gsap.fromTo(rows, { opacity: 0, x: -6 }, { opacity: 1, x: 0, duration: 0.28, stagger: 0.025, ease: 'power2.out' });
         }
-    }, [currentPage, filterStatus, filterPayment, filterDate, searchQuery, sortKey, sortDir]);
+    }, [currentPage, filterStatus, filterPayment, filterCountry, filterDate, searchQuery, sortKey, sortDir]);
 
     // ── Data fetch ────────────────────────────────────────────
     const lastOrdersRef = useRef<Order[]>([]);
@@ -556,6 +570,16 @@ export default function OrdersPage() {
     const filtered = orders.filter(o => {
         const statusMatch = filterStatus === 'all' || o.status === filterStatus;
         const paymentMatch = filterPayment === 'all' || o.payment_status?.toLowerCase() === filterPayment.toLowerCase();
+        
+        let countryMatch = true;
+        if (filterCountry === 'russia') {
+            countryMatch = o.currency === 'RUB';
+        } else if (filterCountry === 'korea') {
+            countryMatch = o.currency === 'KRW';
+        } else if (filterCountry === 'international') {
+            countryMatch = o.currency !== 'RUB' && o.currency !== 'KRW';
+        }
+
         let dateMatch = true;
         if (filterDate !== 'all') {
             const orderDate = new Date(o.created_at);
@@ -575,10 +599,10 @@ export default function OrdersPage() {
             const q = searchQuery.toLowerCase();
             searchMatch = !!(o.id.toLowerCase().includes(q) || o.customer_name?.toLowerCase().includes(q) || o.customer_email?.toLowerCase().includes(q));
         }
-        return statusMatch && paymentMatch && dateMatch && amountMatch && searchMatch;
+        return statusMatch && paymentMatch && countryMatch && dateMatch && amountMatch && searchMatch;
     });
 
-    useEffect(() => { setCurrentPage(1); }, [filterStatus, filterPayment, filterDate, amountRange, searchQuery]);
+    useEffect(() => { setCurrentPage(1); }, [filterStatus, filterPayment, filterCountry, filterDate, amountRange, searchQuery]);
 
     useEffect(() => {
         if (orders.length > 0) {
@@ -738,13 +762,14 @@ export default function OrdersPage() {
     const activeFilterCount = [
         filterStatus !== 'all',
         filterPayment !== 'all',
+        filterCountry !== 'all',
         filterDate !== 'all',
         amountRange.min > 0 || amountRange.max < absoluteMaxAmount,
         !!filterDateFrom || !!filterDateTo,
     ].filter(Boolean).length;
 
     const clearAllFilters = () => {
-        setFilterStatus('all'); setFilterPayment('all'); setFilterDate('all');
+        setFilterStatus('all'); setFilterPayment('all'); setFilterCountry('all'); setFilterDate('all');
         setFilterDateFrom(''); setFilterDateTo('');
         setAmountRange({ min: 0, max: absoluteMaxAmount });
         setSearchQuery(''); clearSelection();
@@ -815,6 +840,21 @@ export default function OrdersPage() {
                         </div>
                     </div>
 
+                    {/* Country */}
+                    <div className="flex items-center gap-1.5 px-4 py-3 border-r border-border/60 hover:bg-gold/[0.03] transition-colors">
+                        <span className="text-[11px] text-text-muted uppercase tracking-wider font-semibold whitespace-nowrap">Country</span>
+                        <div className="relative flex items-center">
+                            <select value={filterCountry} onChange={e => { setFilterCountry(e.target.value); clearSelection(); }}
+                                className="appearance-none bg-transparent border-none outline-none text-sm font-medium text-text-primary cursor-pointer pr-4">
+                                <option value="all">All</option>
+                                <option value="russia">Russia</option>
+                                <option value="international">International</option>
+                                <option value="korea">Korea</option>
+                            </select>
+                            <ChevronDown className="absolute right-0 h-3 w-3 text-text-muted pointer-events-none" />
+                        </div>
+                    </div>
+
                     {/* Period */}
                     <div className="flex items-center gap-1.5 px-4 py-3 border-r border-border/60 hover:bg-gold/[0.03] transition-colors">
                         <span className="text-[15px] text-text-muted uppercase tracking-wider font-semibold whitespace-nowrap">Period</span>
@@ -875,6 +915,8 @@ export default function OrdersPage() {
                         setFilterStatus={setFilterStatus}
                         filterPayment={filterPayment}
                         setFilterPayment={setFilterPayment}
+                        filterCountry={filterCountry}
+                        setFilterCountry={setFilterCountry}
                         filterDate={filterDate}
                         setFilterDate={setFilterDate}
                         activeFilterCount={activeFilterCount}
@@ -990,11 +1032,35 @@ export default function OrdersPage() {
                                             <td className="px-4 py-3.5">
                                                 <span className="text-sm text-text-secondary tabular-nums">{order.items?.length ?? 0}<span className="text-text-muted text-xs ml-1">item{(order.items?.length ?? 0) !== 1 ? 's' : ''}</span></span>
                                             </td>
-                                            <td className="px-4 py-3.5"><span className="text-sm font-semibold text-gold tabular-nums">{formatINR(order.total)}</span></td>
+                                            <td className="px-4 py-3.5"><span className="text-sm font-semibold text-gold tabular-nums">{formatCurrency(order.total, order.currency)}</span></td>
                                             <td className="px-4 py-3.5">
                                                 <div className="flex items-center gap-2 flex-wrap">
-                                                    <PaymentToggle status={order.payment_status ?? 'UNPAID'} onToggle={(ns) => updatePayment(order.id, ns)}
-                                                        disabled={updatingPayments.has(order.id) || (order.payment_status?.toUpperCase() === 'PAID' && (order.payment_method === 'razorpay' || order.payment_method === 'cloudpayments' || order.payment_method === 'cod'))} />
+                                                    {(() => {
+                                                        const refundedAmt = Number((order as any).calculated_refunded_amount || (order as any).refunded_amount) || 0;
+                                                        const totalAmt = Number(order.total) || 0;
+                                                        const isExplicitlyRefunded = order.payment_status?.toUpperCase().includes('REFUND');
+                                                        const isFullyRefunded = isExplicitlyRefunded || (refundedAmt > 0 && refundedAmt >= totalAmt);
+                                                        const isPartiallyRefunded = !isFullyRefunded && refundedAmt > 0 && refundedAmt < totalAmt;
+
+                                                        if (isFullyRefunded) {
+                                                            return (
+                                                                <span className="text-[10px] font-semibold uppercase rounded-full px-2 py-0.5 bg-warning/15 text-warning whitespace-nowrap">
+                                                                    {isExplicitlyRefunded ? order.payment_status?.replace(/_/g, ' ') : 'REFUNDED'}
+                                                                </span>
+                                                            );
+                                                        }
+                                                        if (isPartiallyRefunded) {
+                                                            return (
+                                                                <span className="text-[10px] font-semibold uppercase rounded-full px-2 py-0.5 bg-warning/15 text-warning whitespace-nowrap">
+                                                                    PARTIALLY REFUNDED
+                                                                </span>
+                                                            );
+                                                        }
+                                                        return (
+                                                            <PaymentToggle status={order.payment_status ?? 'UNPAID'} onToggle={(ns) => updatePayment(order.id, ns)}
+                                                                disabled={updatingPayments.has(order.id) || (order.payment_status?.toUpperCase() === 'PAID' && (order.payment_method === 'razorpay' || order.payment_method === 'cloudpayments' || order.payment_method === 'cod'))} />
+                                                        );
+                                                    })()}
                                                     <span className={`text-[10px] font-semibold uppercase rounded-full px-2 py-0.5 ${order.payment_method === 'razorpay' ? 'bg-blue-500/15 text-blue-400' : (order.payment_method === 'cloudpayments' ? 'bg-purple-500/15 text-purple-400' : 'bg-green-500/15 text-green-400')}`}>
                                                         {order.payment_method === 'razorpay' ? 'RZP' : (order.payment_method === 'cloudpayments' ? 'CP' : 'COD')}
                                                     </span>
@@ -1154,8 +1220,32 @@ export default function OrdersPage() {
                                     </div>
                                     <div className="flex items-center justify-between">
                                         <span className="text-xs text-text-secondary">Payment</span>
-                                        <PaymentToggle status={selectedOrder.payment_status ?? 'UNPAID'} onToggle={(ns) => updatePayment(selectedOrder.id, ns)}
-                                            disabled={updatingPayments.has(selectedOrder.id) || (selectedOrder.payment_status?.toUpperCase() === 'PAID' && (selectedOrder.payment_method === 'razorpay' || selectedOrder.payment_method === 'cloudpayments' || selectedOrder.payment_method === 'cod'))} />
+                                        {(() => {
+                                            const refundedAmt = Number((selectedOrder as any).calculated_refunded_amount || (selectedOrder as any).refunded_amount) || 0;
+                                            const totalAmt = Number(selectedOrder.total) || 0;
+                                            const isExplicitlyRefunded = selectedOrder.payment_status?.toUpperCase().includes('REFUND');
+                                            const isFullyRefunded = isExplicitlyRefunded || (refundedAmt > 0 && refundedAmt >= totalAmt);
+                                            const isPartiallyRefunded = !isFullyRefunded && refundedAmt > 0 && refundedAmt < totalAmt;
+
+                                            if (isFullyRefunded) {
+                                                return (
+                                                    <span className="text-[10px] font-semibold uppercase rounded-full px-2 py-0.5 bg-warning/15 text-warning whitespace-nowrap">
+                                                        {isExplicitlyRefunded ? selectedOrder.payment_status?.replace(/_/g, ' ') : 'REFUNDED'}
+                                                    </span>
+                                                );
+                                            }
+                                            if (isPartiallyRefunded) {
+                                                return (
+                                                    <span className="text-[10px] font-semibold uppercase rounded-full px-2 py-0.5 bg-warning/15 text-warning whitespace-nowrap">
+                                                        PARTIALLY REFUNDED
+                                                    </span>
+                                                );
+                                            }
+                                            return (
+                                                <PaymentToggle status={selectedOrder.payment_status ?? 'UNPAID'} onToggle={(ns) => updatePayment(selectedOrder.id, ns)}
+                                                    disabled={updatingPayments.has(selectedOrder.id) || (selectedOrder.payment_status?.toUpperCase() === 'PAID' && (selectedOrder.payment_method === 'razorpay' || selectedOrder.payment_method === 'cloudpayments' || selectedOrder.payment_method === 'cod'))} />
+                                            );
+                                        })()}
                                     </div>
                                     <div className="flex items-center justify-between">
                                         <span className="text-xs text-text-secondary">Method</span>
@@ -1202,12 +1292,12 @@ export default function OrdersPage() {
                                                             <span className={`inline-block rounded-full px-2 py-0.5 font-medium text-[10px] ${r.status === 'PROCESSED' ? 'bg-success/15 text-success' : r.status === 'FAILED' ? 'bg-danger/15 text-danger' : 'bg-warning/15 text-warning'}`}>{r.status}</span>
                                                             <span className="text-text-muted">{r.reason}</span>
                                                         </div>
-                                                        <span className="font-semibold text-gold">{formatINR(r.amount)}</span>
+                                                        <span className="font-semibold text-gold">{formatCurrency(r.amount, selectedOrder.currency)}</span>
                                                     </div>
                                                 ))}
                                                 <div className="flex justify-between text-xs font-semibold border-t border-border/50 pt-2">
                                                     <span className="text-text-secondary">Total Refunded</span>
-                                                    <span className="text-warning">{formatINR(totalRefunded)}</span>
+                                                    <span className="text-warning">{formatCurrency(totalRefunded, selectedOrder.currency)}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -1344,8 +1434,9 @@ export default function OrdersPage() {
                                             const name = item.product?.product_name ?? item.product_name ?? 'Unknown Product';
                                             const variant = item.variant?.variant_name ?? item.variant?.size_label ?? '';
                                             const brand = item.product?.brand;
-                                            const unitPrice = item.unit_price ?? item.price ?? 0;
-                                            const lineTotal = item.line_total ?? (unitPrice * item.quantity);
+                                            const rawUnitPrice = item.unit_price ?? item.price ?? 0;
+                                            const unitPrice = selectedOrder.currency === 'USD' ? rawUnitPrice : Math.round(rawUnitPrice * (selectedOrder.exchange_rate || 1));
+                                            const lineTotal = unitPrice * item.quantity;
                                             const volume = item.variant?.volume_ml ? `${item.variant.volume_ml}ml` : null;
                                             return (
                                                 <div key={item.order_item_id ?? i} className="flex items-start gap-3 py-2.5 border-b border-border/40 last:border-0">
@@ -1362,8 +1453,8 @@ export default function OrdersPage() {
                                                         </div>
                                                     </div>
                                                     <div className="text-right flex-shrink-0">
-                                                        <p className="text-sm font-semibold text-gold">{formatINR(lineTotal)}</p>
-                                                        <p className="text-xs text-text-muted">{formatINR(unitPrice)} each</p>
+                                                        <p className="text-sm font-semibold text-gold">{formatCurrency(lineTotal, selectedOrder.currency)}</p>
+                                                        <p className="text-xs text-text-muted">{formatCurrency(unitPrice, selectedOrder.currency)} each</p>
                                                     </div>
                                                 </div>
                                             );
@@ -1372,11 +1463,21 @@ export default function OrdersPage() {
                                 </div>
                             </div>
                             <div className="rounded-xl border border-border bg-card-bg p-4 space-y-2">
-                                <div className="flex justify-between text-sm"><span className="text-text-secondary">Subtotal</span><span className="text-text-primary tabular-nums">{formatINR(selectedOrder.subtotal ?? selectedOrder.total)}</span></div>
+                                <div className="flex justify-between text-sm"><span className="text-text-secondary">Subtotal</span><span className="text-text-primary tabular-nums">{formatCurrency(selectedOrder.subtotal ?? selectedOrder.total, selectedOrder.currency)}</span></div>
+
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-text-secondary">Delivery Fee</span>
+                                    <span className="text-text-primary tabular-nums">
+                                        {formatCurrency(
+                                            (selectedOrder as any).shipping_amount ?? 0,
+                                            selectedOrder.currency
+                                        )}
+                                    </span>
+                                </div>
 
                                 <div className="flex justify-between pt-2.5 border-t border-border">
                                     <span className="font-serif text-base font-bold text-gold">Grand Total</span>
-                                    <span className="font-serif text-base font-bold text-gold tabular-nums">{formatINR((selectedOrder as OrderDetail).grand_total ?? selectedOrder.total)}</span>
+                                    <span className="font-serif text-base font-bold text-gold tabular-nums">{formatCurrency((selectedOrder as OrderDetail).grand_total ?? selectedOrder.total, selectedOrder.currency)}</span>
                                 </div>
                             </div>
                         </div>
