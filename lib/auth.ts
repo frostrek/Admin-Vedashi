@@ -8,7 +8,7 @@ const REFRESH_TOKEN_KEY = 'admin_refresh_token';
 const USER_KEY = 'admin_user';
 
 /**
- * Get the stored authentication token
+ * Get the stored authentication tokens
  */
 export function getToken(): string | null {
     if (typeof window === 'undefined') return null;
