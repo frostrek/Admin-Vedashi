@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
     fetchShipments, fetchShipmentById,
-    cancelShipmentById, fetchShipmentCouriers, bulkGetShipmentLabels, formatINR,
+    cancelShipmentById, fetchShipmentCouriers, bulkGetShipmentLabels, formatCurrency,
     fetchCourierOptions, assignShipmentCourier, generateShipmentLabel,
     scheduleShipmentPickup
 } from '@/lib/api';
@@ -437,7 +437,7 @@ export default function ShipmentsPage() {
                                                 }`}>{s.is_cod ? 'COD' : 'Prepaid'}</span>
                                         </td>
                                         <td className="p-3 text-right font-mono text-sm text-text-primary">
-                                            <span className="font-sans mr-0.5 text-[0.85em]">$</span>{(s.amount || s.final_total || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            {formatCurrency(s.amount || s.final_total || 0, s.currency || 'USD')}
                                         </td>
                                         <td className="p-3 text-xs text-text-muted">
                                             {new Date(s.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' })}
@@ -646,7 +646,7 @@ function DetailDrawer({ shipment, loading, onClose, onCancel, onDownloadLabel, d
                                 <InfoRow label="Shipment ID" value={shipment.shipment_id} mono />
                                 <InfoRow label="AWB Tracking #" value={shipment.awb_code || 'Pending Assignment'} mono={!!shipment.awb_code} />
                                 <InfoRow label="Fulfillment Service" value={shipment.is_cod ? 'Cash on Delivery (COD)' : 'Prepaid Dispatch'} />
-                                <InfoRow label="Invoice Value" value={<><span className="font-sans mr-0.5 text-[0.85em]">$</span>{(shipment.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</>} isPrimary />
+                                <InfoRow label="Invoice Value" value={formatCurrency(shipment.amount || shipment.final_total || 0, shipment.currency || 'USD')} isPrimary />
                             </Section>
 
                             <Section title="Reference Order">
@@ -675,19 +675,24 @@ function DetailDrawer({ shipment, loading, onClose, onCancel, onDownloadLabel, d
                             {shipment.items?.length > 0 && (
                                 <Section title="Inventory Profile">
                                     <div className="space-y-3">
-                                        {shipment.items.map((item: any, i: number) => (
-                                            <div key={i} className="flex items-center justify-between py-2 group">
-                                                <div className="flex-1 min-w-0 pr-4">
-                                                    <p className="text-[13px] text-text-primary font-semibold truncate group-hover:text-gold transition-colors">{item.product?.product_name || 'Managed SKU'}</p>
-                                                    <p className="text-[10px] text-text-muted font-bold uppercase mt-0.5">
-                                                        Quantity: {item.quantity} × <span className="font-sans mr-0.25 text-[0.9em]">$</span>{(item.unit_price || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                    </p>
+                                        {shipment.items.map((item: any, i: number) => {
+                                            const rawUnitPrice = item.unit_price || item.price || 0;
+                                            const unitPrice = shipment.currency === 'USD' ? rawUnitPrice : Math.round(rawUnitPrice * (shipment.exchange_rate || 1));
+                                            const lineTotal = unitPrice * item.quantity;
+                                            return (
+                                                <div key={i} className="flex items-center justify-between py-2 group">
+                                                    <div className="flex-1 min-w-0 pr-4">
+                                                        <p className="text-[13px] text-text-primary font-semibold truncate group-hover:text-gold transition-colors">{item.product?.product_name || 'Managed SKU'}</p>
+                                                        <p className="text-[10px] text-text-muted font-bold uppercase mt-0.5">
+                                                            Quantity: {item.quantity} × {formatCurrency(unitPrice, shipment.currency || 'USD')}
+                                                        </p>
+                                                    </div>
+                                                    <div className="text-xs font-mono font-bold text-text-primary bg-border/20 px-2 py-1 rounded">
+                                                        {formatCurrency(lineTotal, shipment.currency || 'USD')}
+                                                    </div>
                                                 </div>
-                                                <div className="text-xs font-mono font-bold text-text-primary bg-border/20 px-2 py-1 rounded">
-                                                    <span className="font-sans mr-0.25 text-[0.9em]">$</span>{(item.unit_price * item.quantity).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                </div>
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 </Section>
                             )}

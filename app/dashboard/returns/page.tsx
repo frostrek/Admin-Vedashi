@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import {
     fetchReturns, fetchReturnById,
     approveReturnById, generateReturnAWB, cancelReturnShipment, cancelReturnOrder, rejectReturnById, completeReturnById,
-    trackReturnShipment, createReturnRequest, formatINR,
+    trackReturnShipment, createReturnRequest, formatCurrency,
     devCreateTestReturn, devSimulateReturnApproval, devSimulateReturnAWB, devSimulateCancelReturnShipment, devSimulateCancelReturnOrder,
     devSimulateReturnPickedUp, devSimulateReturnInTransit, devSimulateReturnReceived,
     devSimulateRtoStep
@@ -705,7 +705,7 @@ function DetailDrawer({ returnData, loading, onClose, onApprove, onGenerateAWB, 
                                     <InfoRow label="Base Order" value={`#${r.order_id}`} mono isPrimary />
                                     <InfoRow label="Fulfilment Status" value={(r.order_status || 'Unknown').split('_').map((w: string) => w[0] + w.slice(1).toLowerCase()).join(' ')} />
                                     <InfoRow label="Payment Gateway" value={(r.payment_status || 'N/A').charAt(0).toUpperCase() + (r.payment_status || '').slice(1).toLowerCase()} />
-                                    <InfoRow label="Value (Recoverable)" value={<><span className="font-sans mr-0.5 text-[0.85em]">$</span>{(r.final_total || r.subtotal || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</>} />
+                                    <InfoRow label="Value (Recoverable)" value={<span className="font-sans">{formatCurrency(r.final_total || r.subtotal || 0, r.currency || 'USD')}</span>} />
                                 </Section>
 
                                 <Section title="Client Representative">
@@ -976,10 +976,21 @@ function DevTestPanel({ onCreated }: { onCreated: () => void }) {
     const [simReturnId, setSimReturnId] = useState('');
     const [simStatus, setSimStatus] = useState<string | null>(null);
 
+    // New Fields
+    const [amount, setAmount] = useState('100');
+    const [currency, setCurrency] = useState('USD');
+    const [orderEmail, setOrderEmail] = useState('test@vedashi.dev');
+
     const handleCreate = async () => {
         setLoading(true);
         try {
-            const res = await devCreateTestReturn({ type, status });
+            const res = await devCreateTestReturn({ 
+                type, 
+                status, 
+                amount: amount ? parseFloat(amount) : undefined,
+                currency,
+                order_email: orderEmail 
+            });
             if (res.success) {
                 toast.success(`Test ${type} created (${status})`);
                 if (res.data?.return_id) setSimReturnId(res.data.return_id);
@@ -1236,6 +1247,21 @@ function DevTestPanel({ onCreated }: { onCreated: () => void }) {
                             <option value="RECEIVED">Received</option>
                             <option value="COMPLETED">Completed</option>
                         </select>
+                    </div>
+                    <div className="space-y-0.5">
+                        <label className="text-[10px] uppercase text-text-muted font-bold tracking-wider">Amount</label>
+                        <input type="number" value={amount} onChange={e => setAmount(e.target.value)}
+                            className="appearance-none rounded-lg border border-border bg-card-bg px-2 py-1 text-xs text-text-primary focus:border-gold/50 focus:outline-none w-20" />
+                    </div>
+                    <div className="space-y-0.5">
+                        <label className="text-[10px] uppercase text-text-muted font-bold tracking-wider">Currency</label>
+                        <input type="text" value={currency} onChange={e => setCurrency(e.target.value.toUpperCase())}
+                            className="appearance-none rounded-lg border border-border bg-card-bg px-2 py-1 text-xs text-text-primary focus:border-gold/50 focus:outline-none w-16 uppercase" />
+                    </div>
+                    <div className="space-y-0.5">
+                        <label className="text-[10px] uppercase text-text-muted font-bold tracking-wider">Order Email</label>
+                        <input type="email" value={orderEmail} onChange={e => setOrderEmail(e.target.value)}
+                            className="appearance-none rounded-lg border border-border bg-card-bg px-2 py-1 text-xs text-text-primary focus:border-gold/50 focus:outline-none w-40" />
                     </div>
                     <button onClick={handleCreate} disabled={loading}
                         className="inline-flex items-center gap-1 rounded-lg bg-amber-500/10 border border-amber-500/25 px-3 py-1 text-xs font-medium text-amber-300 hover:bg-amber-500/15 transition-all disabled:opacity-50">

@@ -34,6 +34,7 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
         updated: number;
         errors: { row: number; sku: string; error: string }[];
         mediaErrors?: { url: string; error: string }[];
+        updates?: { row: number; sku: string; name: string; details: string }[];
     } | null>(null);
     const [jobId, setJobId] = useState<string | null>(null);
     const [progressStatus, setProgressStatus] = useState<{
@@ -446,6 +447,40 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
                                                         <td className="px-4 py-2.5 text-amber-600 font-medium text-xs">Media</td>
                                                         <td className="px-4 py-2.5 text-text-muted font-mono text-xs truncate max-w-[150px]" title={err.url}>{err.url}</td>
                                                         <td className="px-4 py-2.5 text-amber-700">{err.error}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Updates List */}
+                            {results.updates && results.updates.length > 0 && (
+                                <div className="mt-6 border border-blue-200 rounded-xl overflow-hidden">
+                                    <div className="bg-blue-50 px-4 py-3 flex items-center justify-between border-b border-blue-100">
+                                        <div className="flex items-center gap-2 text-blue-700 font-medium text-sm">
+                                            <CheckCircle2 className="h-4 w-4" /> Updated Products
+                                        </div>
+                                    </div>
+                                    <div className="max-h-60 overflow-y-auto p-0">
+                                        <table className="w-full text-left text-sm">
+                                            <thead className="bg-white sticky top-0 border-b border-blue-100/50 shadow-sm">
+                                                <tr className="text-xs text-blue-800 uppercase">
+                                                    <th className="px-4 py-2 font-medium">Row</th>
+                                                    <th className="px-4 py-2 font-medium">Product / SKU</th>
+                                                    <th className="px-4 py-2 font-medium">Update Details</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-blue-100 bg-white">
+                                                {results.updates.map((upd, idx) => (
+                                                    <tr key={`upd-${idx}`} className="hover:bg-blue-50/50">
+                                                        <td className="px-4 py-2.5 text-blue-600 font-mono text-xs">Row {upd.row}</td>
+                                                        <td className="px-4 py-2.5 text-blue-900 font-mono text-xs">
+                                                            <div className="font-semibold text-text-primary truncate max-w-[150px]" title={upd.name}>{upd.name}</div>
+                                                            <div className="text-text-muted mt-0.5">{upd.sku}</div>
+                                                        </td>
+                                                        <td className="px-4 py-2.5 text-blue-700 text-xs">{upd.details}</td>
                                                     </tr>
                                                 ))}
                                             </tbody>

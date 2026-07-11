@@ -167,7 +167,22 @@ export function formatUSD(amount: number): string {
     return '$' + amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-/** @deprecated Use formatUSD instead */
+export function formatCurrency(amount: number | string | null | undefined, currencyCode: string = 'USD'): string {
+    const num = Number(amount) || 0;
+    try {
+        const formatter = new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: currencyCode,
+            minimumFractionDigits: currencyCode === 'KRW' ? 0 : 2,
+            maximumFractionDigits: currencyCode === 'KRW' ? 0 : 2,
+        });
+        return formatter.format(num);
+    } catch (e) {
+        return `${currencyCode} ${num.toFixed(2)}`;
+    }
+}
+
+/** @deprecated Use formatUSD or formatCurrency instead */
 export const formatINR = formatUSD;
 
 /* ─── Profile Management ─── */
@@ -695,9 +710,12 @@ export interface Order {
     grand_total?: number;
     final_price?: number;
     subtotal?: number;
+    shipping_amount?: number;
     status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled' | 'on_hold';
     payment_status?: string;
     payment_method?: string;
+    currency?: string;
+    exchange_rate?: number;
     created_at: string;
 
     // Shipment & Tracking
@@ -780,6 +798,10 @@ export async function getOrders(params?: { dateFrom?: string; dateTo?: string })
                 status: (row.order_status ?? row.status ?? 'pending').toLowerCase() as Order['status'],
                 payment_status: row.payment_status,
                 payment_method: row.payment_method || 'cod',
+                calculated_refunded_amount: row.calculated_refunded_amount,
+                refunded_amount: row.refunded_amount,
+                currency: row.currency || 'USD',
+                exchange_rate: row.exchange_rate != null ? parseFloat(row.exchange_rate) : 1,
                 created_at: row.created_at ?? new Date().toISOString(),
                 has_shipment: !!row.has_shipment,
             };
@@ -816,9 +838,12 @@ export async function getOrderById(id: string): Promise<Order | null> {
                 subtotal: parseFloat(row.subtotal ?? row.total_amount ?? 0),
                 status: (row.order_status ?? row.status ?? 'pending').toLowerCase() as Order['status'],
                 payment_status: row.payment_status,
+                currency: row.currency || 'USD',
+                exchange_rate: row.exchange_rate != null ? parseFloat(row.exchange_rate) : 1,
                 created_at: row.created_at ?? new Date().toISOString(),
                 // Extra fields the detail modal needs
                 ...(row.grand_total != null ? { grand_total: parseFloat(row.grand_total) } : {}),
+                ...(row.shipping_amount != null ? { shipping_amount: parseFloat(row.shipping_amount) } : {}),
                 ...(row.order_notes ? { order_notes: row.order_notes } : {}),
                 ...(row.shipping_address ? { shipping_address: row.shipping_address } : {}),
                 payment_method: row.payment_method || 'cod',
@@ -3356,7 +3381,7 @@ export async function devGetStatus(): Promise<ApiResponse<any>> {
     } catch { return { success: false, message: 'Network error' }; }
 }
 
-export async function devCreateTestReturn(data: { type?: string; status?: string } = {}): Promise<ApiResponse<any>> {
+export async function devCreateTestReturn(data: { type?: string; status?: string; amount?: number; currency?: string; order_email?: string } = {}): Promise<ApiResponse<any>> {
     try {
         const res = await authFetch(`${API_URL}/api/dev/create-test-return`, {
             method: 'POST',

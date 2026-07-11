@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getPaymentLogs, getOrderPaymentTimeline, formatINR } from '@/lib/api';
+import { getPaymentLogs, getOrderPaymentTimeline, formatCurrency } from '@/lib/api';
 import {
     Search,
     ChevronLeft,
@@ -186,13 +186,13 @@ export default function PaymentLogsPage() {
 
             {/* ── Stats Cards ── */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <StatCard 
-                    label="Total Volume" 
-                    value={formatINR(stats.totalVolume)} 
-                    subValue={stats.refundVolume > 0 ? `-${formatINR(stats.refundVolume)} Refunded` : undefined}
+                <StatCard
+                    label="Total Volume"
+                    value={formatCurrency(stats.totalVolume, 'USD')}
+                    subValue={stats.refundVolume > 0 ? `-${formatCurrency(stats.refundVolume, 'USD')} Refunded` : undefined}
                     subColor="text-rose-400"
-                    icon={TrendingUp} 
-                    color="bg-gold/10 text-gold border border-gold/20" 
+                    icon={TrendingUp}
+                    color="bg-gold/10 text-gold border border-gold/20"
                 />
                 <StatCard label="Successful" value={stats.successCount} icon={CheckCircle2} color="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" />
                 <StatCard label="Pending" value={stats.pendingCount} icon={Hourglass} color="bg-amber-500/10 text-amber-400 border border-amber-500/20" />
@@ -347,7 +347,7 @@ export default function PaymentLogsPage() {
 
                                         {/* Amount */}
                                         <td className="p-3 text-right">
-                                            <span className="font-semibold text-text-primary">{formatINR(parseFloat(log.amount || 0))}</span>
+                                            <span className="font-semibold text-text-primary">{formatCurrency(parseFloat(log.amount || 0), log.currency || 'USD')}</span>
                                         </td>
 
                                         {/* Type */}
@@ -443,7 +443,7 @@ export default function PaymentLogsPage() {
                             <div className="grid grid-cols-2 gap-3">
                                 <div className={`${cardClass} p-3`}>
                                     <p className="text-[10px] uppercase font-bold tracking-wider text-text-muted mb-1">Amount</p>
-                                    <p className="text-xl font-bold text-gold">{formatINR(parseFloat(selectedLog.amount || 0))}</p>
+                                    <p className="text-xl font-bold text-gold">{formatCurrency(parseFloat(selectedLog.amount || 0), selectedLog.currency || 'USD')}</p>
                                 </div>
                                 <div className={`${cardClass} p-3`}>
                                     <p className="text-[10px] uppercase font-bold tracking-wider text-text-muted mb-1">Status</p>
@@ -456,7 +456,7 @@ export default function PaymentLogsPage() {
                                 <div className={`${cardClass} px-3 divide-y divide-border/40`}>
                                     <DetailRow label="Payment Type" value={selectedLog.payment_type} />
                                     <DetailRow label="Payment ID" value={selectedLog.payment_id} />
-                                    <DetailRow label="Razorpay ID" value={selectedLog.razorpay_payment_id} />
+                                    <DetailRow label="Transaction ID" value={selectedLog.razorpay_payment_id} />
                                     <DetailRow label="Transaction Ref" value={selectedLog.transaction_reference} />
                                     <DetailRow label="Gateway" value={formatGateway(selectedLog.payment_gateway || selectedLog.payment_method)} />
                                     <DetailRow label="Signature" value={selectedLog.razorpay_signature ? 'Present (Verified)' : null} />
@@ -523,7 +523,7 @@ export default function PaymentLogsPage() {
                                                         </div>
                                                         <div className="flex items-center justify-between gap-2">
                                                             <span className="text-sm font-semibold text-text-primary">
-                                                                {formatINR(parseFloat(tLog.amount))}
+                                                                {formatCurrency(parseFloat(tLog.amount || 0), tLog.currency || 'USD')}
                                                             </span>
                                                             <StatusBadge status={tLog.payment_status} />
                                                         </div>

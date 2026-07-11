@@ -9,6 +9,7 @@ interface PriceRangeSliderProps {
     initialMin?: number;
     initialMax?: number;
     onChange: (min: number, max: number) => void;
+    currencySymbol?: string;
 }
 
 export default function PriceRangeSlider({
@@ -17,7 +18,8 @@ export default function PriceRangeSlider({
     step = 10,
     initialMin,
     initialMax,
-    onChange
+    onChange,
+    currencySymbol = '$'
 }: PriceRangeSliderProps) {
     const [minVal, setMinVal] = useState(initialMin ?? min);
     const [maxVal, setMaxVal] = useState(initialMax ?? max);
@@ -102,7 +104,7 @@ export default function PriceRangeSlider({
                 <div className="flex-1 min-w-0 flex flex-col gap-1">
                     <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Min Price</span>
                     <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-xs">$</span>
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-xs">{currencySymbol}</span>
                         <input
                             type="number"
                             value={minVal}
@@ -118,7 +120,7 @@ export default function PriceRangeSlider({
                 <div className="flex-1 min-w-0 flex flex-col gap-1">
                     <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Max Price</span>
                     <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-xs">$</span>
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-xs">{currencySymbol}</span>
                         <input
                             type="number"
                             value={maxVal}
