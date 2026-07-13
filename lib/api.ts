@@ -1,7 +1,7 @@
 /**
  * Admin API Client
  * Backend: https://ecommerce-backend-h23p.onrender.com
- * Response format: { success: boolean, message: string, data: T }
+ * Response formats: { success: boolean, message: string, data: T }
  */
 
 import { getToken, setToken, getRefreshToken, setRefreshToken } from '@/lib/auth';
@@ -484,14 +484,14 @@ export async function getProduct(id: string, skipCache: boolean = false): Promis
         if (json.success && json.data) {
             const product = json.data;
             const hasVariants = !!(product.variants && product.variants.length > 0);
-            
+
             // Calculate aggregated stock from variants, if any
-            const variantStockCount = hasVariants 
+            const variantStockCount = hasVariants
                 ? (product.variants?.reduce((sum: number, v: any) => sum + (v.stock_quantity ?? 0), 0) ?? 0)
                 : 0;
 
             const stockQty = hasVariants ? variantStockCount : (product.stock_quantity ?? 0);
-            
+
             // Price lives on variants — prefer default variant, fallback to first active
             const defaultVariant = product.variants?.find((v: any) => v.is_default)
                 ?? product.variants?.find((v: any) => v.is_active !== false)
@@ -3747,11 +3747,11 @@ export async function deleteProductCountryPrice(productId: string, countryCode: 
 
 /* ─── SEO Automation ─── */
 
-export async function autoGenerateSeo(params: { 
-    entity_type: 'product', 
-    entity_ids?: string[], 
-    overwrite?: boolean, 
-    include_alt_text?: boolean 
+export async function autoGenerateSeo(params: {
+    entity_type: 'product',
+    entity_ids?: string[],
+    overwrite?: boolean,
+    include_alt_text?: boolean
 }): Promise<{ success: boolean; data?: any; error?: string }> {
     try {
         const res = await authFetch(`${API_URL}/api/seo/auto-generate`, {
