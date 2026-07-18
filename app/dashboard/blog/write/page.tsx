@@ -7,8 +7,9 @@ import {
     getAdminBlogPost, createBlogPost, updateBlogPost, getAdminBlogCategories, getAdminBlogTags,
     BlogPost, BlogCategory, BlogTag
 } from '@/lib/api';
-import { ChevronLeft, Save, Globe, Image as ImageIcon, Loader2, X, Plus } from 'lucide-react';
+import { ChevronLeft, Save, Globe, Image as ImageIcon, Loader2, X, Plus, Check, Pencil } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { transliterateToSlug } from '@/lib/transliterate';
 
 // Helper component for multi-select pills
 function MultiSelectPills({ 
@@ -87,6 +88,7 @@ function WritePostContent() {
 
     const [title, setTitle] = useState('');
     const [slug, setSlug] = useState('');
+    const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
     const [excerpt, setExcerpt] = useState('');
     const [body, setBody] = useState('');
     // For legacy support, defaults to 'wellness_guides' but we generally won't use it now
@@ -124,6 +126,8 @@ function WritePostContent() {
                 if (post) {
                     setTitle(post.title);
                     setSlug(post.slug);
+                    const autoSlug = transliterateToSlug(post.title);
+                    setSlugManuallyEdited(post.slug !== autoSlug);
                     setExcerpt(post.excerpt || '');
                     setBody(post.body);
                     setBlogType(post.blog_type || 'wellness_guides');
@@ -146,6 +150,18 @@ function WritePostContent() {
             setLoading(false);
         })();
     }, [isEditing, postId, router]);
+
+    const handleTitleChange = (val: string) => {
+        setTitle(val);
+        if (!slugManuallyEdited) {
+            setSlug(transliterateToSlug(val));
+        }
+    };
+
+    const handleSlugChange = (val: string) => {
+        setSlug(val);
+        setSlugManuallyEdited(true);
+    };
 
     const handleSave = async (publish: boolean = false) => {
         if (!title.trim() || !body.trim()) {
@@ -235,20 +251,34 @@ function WritePostContent() {
                             <input
                                 type="text"
                                 value={title}
-                                onChange={e => setTitle(e.target.value)}
+                                onChange={e => handleTitleChange(e.target.value)}
                                 className="w-full rounded-lg border border-border bg-page-bg px-4 py-3 text-lg text-text-primary focus:border-gold/50 focus:outline-none"
                                 placeholder="A Catchy Title..."
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-text-secondary mb-1">Slug (optional)</label>
+                            <div className="flex items-center justify-between mb-1">
+                                <label className="block text-sm font-medium text-text-secondary">Slug (optional)</label>
+                                {slug && (
+                                    <span className={`text-[11px] flex items-center gap-1 ${slugManuallyEdited ? 'text-amber-500' : 'text-green-500 dark:text-green-400'}`}>
+                                        {slugManuallyEdited ? <Pencil className="w-3 h-3" /> : <Check className="w-3 h-3" />}
+                                        {slugManuallyEdited ? 'Manually edited' : 'Auto-generated'}
+                                    </span>
+                                )}
+                            </div>
                             <input
                                 type="text"
                                 value={slug}
-                                onChange={e => setSlug(e.target.value)}
-                                className="w-full rounded-lg border border-border bg-page-bg px-4 py-2 text-sm text-text-primary focus:border-gold/50 focus:outline-none"
+                                onChange={e => handleSlugChange(e.target.value)}
+                                className="w-full rounded-lg border border-border bg-page-bg px-4 py-2 text-sm text-text-primary focus:border-gold/50 focus:outline-none font-mono"
                                 placeholder="auto-generated-from-title"
                             />
+                            <div className="mt-2 bg-page-bg border border-border/50 rounded-lg p-3">
+                                <p className="text-xs text-text-muted mb-1 font-medium">Storefront URL Preview:</p>
+                                <a href={`${process.env.NEXT_PUBLIC_STOREFRONT_URL || 'https://vedashi.com'}/blog/${slug || '{slug}'}`} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-500 hover:underline break-all">
+                                    {`${process.env.NEXT_PUBLIC_STOREFRONT_URL || 'https://vedashi.com'}/blog/${slug || '{slug}'}`}
+                                </a>
+                            </div>
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-text-secondary mb-1">Excerpt (Short description)</label>

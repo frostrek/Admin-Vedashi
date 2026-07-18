@@ -14,8 +14,9 @@ import CountryPicker from '@/components/CountryPicker';
 import SeoEditor from '@/components/SeoEditor';
 import CountryPricingEditor from '@/components/CountryPricingEditor';
 import type { SeoData } from '@/lib/api/seo';
+import { transliterateToSlug } from '@/lib/transliterate';
 
-// ÔöÇÔöÇÔöÇ Constants ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 type AttributeType = 'Volume' | 'Pack' | 'Flavor' | 'Vintage';
 const PREDEFINED_PACKS = ['Single', 'Pack of 2', 'Pack of 4', 'Pack of 6', 'Pack of 12', 'Case'];
 const PREDEFINED_UNITS = ['ml', 'L'];
@@ -39,7 +40,7 @@ const STEPS = [
 
 // Countries are now provided by CountryPicker component (197 countries with flags)
 
-// ÔöÇÔöÇÔöÇ Types ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+// ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 interface VariantRow {
     variant_id?: string;
     product_name: string;
@@ -120,6 +121,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
     // ─── Step 1: General Info State ──────────────────────────────────────────────────────────────────────────────────────────────────────
     const [form, setForm] = useState({
         product_name: '',
+        slug: '',
         brand: '',
         category_id: '',
         country_of_origin: '',
@@ -134,6 +136,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
         available_until_date: '',
         available_until_time: '',
     });
+    const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
 
     // ─── Step 2: Define Variants State ──────────────────────────────────────────────────────────────────────────────────────────────────
     const HARDCODED_DIMS = ['weight', 'volume', 'count', 'strength', 'flavor', 'pack', 'combo'] as const;
@@ -210,6 +213,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
             const finalCatId = product.category_id || '';
             setForm({
                 product_name: product.product_name || '',
+                slug: product.slug || '',
                 brand: product.brand || '',
                 category_id: finalCatId, country_of_origin: product.country_of_origin || (product as any).specifications?.country_of_origin || '',
                 form_type: (product as any).form || '',
@@ -224,6 +228,10 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                 available_until_date: (product as any).available_until ? new Date((product as any).available_until).toISOString().split('T')[0] : '',
                 available_until_time: (product as any).available_until ? new Date((product as any).available_until).toISOString().split('T')[1].substring(0, 5) : '',
             });
+
+            if (product.slug) {
+                setSlugManuallyEdited(true);
+            }
 
             // Track product status so we can conditionally show "Save as Draft"
             setProductStatus(product.status || 'active');
@@ -474,8 +482,6 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
     const handleCategoryChange = (leafId: string, fullPath: Category[]) => {
         update('category_id', leafId);
     };
-    const autoSlug = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-
 
     // ─── Step 2: Dimension helpers ──────────────────────────────────────────────────────────────────────────────────────────────────────────
     const toggleDimensionActive = (dim: string) => {
@@ -1015,6 +1021,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
         const payload = {
             // Core product table fields
             product_name: form.product_name.trim(),
+            slug: form.slug.trim() || undefined,
             brand: form.brand.trim() || undefined,
             category_id: form.category_id || undefined,
             country_of_origin: form.country_of_origin || undefined,
@@ -1386,7 +1393,13 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                             value={form.product_name}
                                             onChange={e => {
                                                 const newName = e.target.value;
-                                                update('product_name', newName);
+                                                setForm(prev => {
+                                                    const next = { ...prev, product_name: newName };
+                                                    if (!slugManuallyEdited) {
+                                                        next.slug = transliterateToSlug(newName);
+                                                    }
+                                                    return next;
+                                                });
                                                 setVariants(prev => {
                                                     const updated = [...prev];
                                                     if (updated.length > 0) {
@@ -1399,6 +1412,23 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                             className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 transition-all"
                                             placeholder="e.g. Ashwagandha Prowess"
                                             required
+                                        />
+                                    </div>
+                                    
+                                    {/* Slug - full width */}
+                                    <div className="sm:col-span-2">
+                                        <div className="flex justify-between items-end mb-1.5">
+                                            <label className="block text-sm font-medium text-text-primary">Product Slug (URL)</label>
+                                        </div>
+                                        <input
+                                            type="text"
+                                            value={form.slug}
+                                            onChange={e => {
+                                                setSlugManuallyEdited(true);
+                                                update('slug', e.target.value);
+                                            }}
+                                            className="w-full rounded-lg border border-border px-4 py-2.5 text-sm text-text-secondary focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 transition-all font-mono"
+                                            placeholder="auto-generated-slug"
                                         />
                                     </div>
 

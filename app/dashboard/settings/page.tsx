@@ -66,7 +66,7 @@ export default function SettingsPage() {
     const [returnConfig, setReturnConfig] = useState<MerchantReturnConfig>({
         policy_days: 30,
         return_fees: 'free',
-        policy_url: 'https://vedashi.com/returns',
+        policy_url: 'https://vedashi.com/vozvrat',
         description: '30-day hassle-free returns.'
     });
 
@@ -723,7 +723,7 @@ export default function SettingsPage() {
                                     value={returnConfig.policy_url}
                                     onChange={(e) => setReturnConfig({ ...returnConfig, policy_url: e.target.value })}
                                     className="w-full rounded-lg border border-border bg-card-bg px-4 py-2 text-sm text-text-primary focus:border-gold/50 focus:outline-none"
-                                    placeholder="https://vedashi.com/returns"
+                                    placeholder="https://vedashi.com/vozvrat"
                                 />
                             </div>
 

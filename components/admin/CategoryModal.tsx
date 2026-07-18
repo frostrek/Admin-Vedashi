@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Loader2, UploadCloud, ImageIcon, Tag } from 'lucide-react';
+import { X, Loader2, UploadCloud, ImageIcon, Tag, Check, Pencil } from 'lucide-react';
 import { Category, CreateCategoryPayload, UpdateCategoryPayload } from '@/types/category';
+import { transliterateToSlug } from '@/lib/transliterate';
 
 interface CategoryModalProps {
     isOpen: boolean;
@@ -26,16 +27,6 @@ export default function CategoryModal({ isOpen, onClose, onSubmit, editCategory,
     const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
-
-    const slugify = (text: string) => {
-        return text
-            .toLowerCase()
-            .trim()
-            .replace(/\s+/g, '-')
-            .replace(/&/g, '-and-')
-            .replace(/[^a-z0-9-]/g, '')
-            .replace(/-+/g, '-');
-    };
 
     const isEdit = !!editCategory;
 
@@ -61,7 +52,7 @@ export default function CategoryModal({ isOpen, onClose, onSubmit, editCategory,
             setIsActive(editCategory.is_active ?? true);
             // If the existing slug already matches the auto-generated slug of the current name,
             // we treat it as "not manually edited" so it can continue to follow name changes.
-            const autoSlug = slugify(editCategory.name);
+            const autoSlug = transliterateToSlug(editCategory.name);
             setSlugManuallyEdited(editCategory.slug !== autoSlug);
             setImagePreview(editCategory.image_url || null);
             setImageFile(null);
@@ -81,7 +72,7 @@ export default function CategoryModal({ isOpen, onClose, onSubmit, editCategory,
     const handleNameChange = (value: string) => {
         setName(value);
         if (!slugManuallyEdited) {
-            setSlug(slugify(value));
+            setSlug(transliterateToSlug(value));
         }
     };
 
@@ -130,6 +121,17 @@ export default function CategoryModal({ isOpen, onClose, onSubmit, editCategory,
 
     const currentPath = getCategoryPath(parentId, categories);
 
+    const getCategorySlugPath = (catId: string | null, allCats: Category[]): string[] => {
+        if (!catId) return [];
+        const cat = allCats.find(c => c.category_id === catId);
+        if (!cat) return [];
+        return [...getCategorySlugPath(cat.parent_id, allCats), cat.slug];
+    };
+    
+    const currentSlugPath = getCategorySlugPath(parentId, categories);
+    const storeUrl = process.env.NEXT_PUBLIC_STOREFRONT_URL || 'https://vedashi.com';
+    const previewUrl = `${storeUrl}/katalog${currentSlugPath.length > 0 ? '/' + currentSlugPath.join('/') : ''}/${slug || '{slug}'}`;
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!name.trim()) return;
@@ -138,7 +140,7 @@ export default function CategoryModal({ isOpen, onClose, onSubmit, editCategory,
         try {
             const payload = {
                 name: name.trim(),
-                slug: slug.trim() || slugify(name),
+                slug: slug.trim() || transliterateToSlug(name),
                 description: description.trim(),
                 parent_id: parentId || null,
                 is_active: isActive,
@@ -248,9 +250,17 @@ export default function CategoryModal({ isOpen, onClose, onSubmit, editCategory,
 
                     {/* Slug */}
                     <div>
-                        <label className="block text-sm font-medium text-text-primary mb-1">
-                            Slug
-                        </label>
+                        <div className="flex items-center justify-between mb-1">
+                            <label className="block text-sm font-medium text-text-primary">
+                                Slug
+                            </label>
+                            {slug && (
+                                <span className={`text-[11px] flex items-center gap-1 ${slugManuallyEdited ? 'text-amber-500' : 'text-green-500 dark:text-green-400'}`}>
+                                    {slugManuallyEdited ? <Pencil className="w-3 h-3" /> : <Check className="w-3 h-3" />}
+                                    {slugManuallyEdited ? 'Manually edited' : 'Auto-generated'}
+                                </span>
+                            )}
+                        </div>
                         <input
                             type="text"
                             value={slug}
@@ -258,6 +268,12 @@ export default function CategoryModal({ isOpen, onClose, onSubmit, editCategory,
                             className="w-full rounded-lg border border-border px-4 py-2.5 text-sm text-text-secondary focus:border-primary focus:outline-none font-mono"
                             placeholder="auto-generated-from-name"
                         />
+                        <div className="mt-2 bg-page-bg border border-border/50 rounded-lg p-3">
+                            <p className="text-xs text-text-muted mb-1 font-medium">Storefront URL Preview:</p>
+                            <a href={previewUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-500 hover:underline break-all">
+                                {previewUrl}
+                            </a>
+                        </div>
                     </div>
 
                     {/* Description */}
