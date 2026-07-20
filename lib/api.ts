@@ -271,6 +271,7 @@ export interface Product {
     lead_time?: string;
     country_of_origin?: string;
     images?: string[];
+    thumbnail_url?: string;
     specifications?: any;
     status?: string;
     sale_price?: number;
@@ -2627,6 +2628,129 @@ export async function reorderCollectionProducts(collectionId: string, productIds
         return json.success;
     } catch (error) {
         console.error('[Admin API] reorderCollectionProducts failed:', error);
+        return false;
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  HOMEPAGE REELS API
+// ═══════════════════════════════════════════════════════════════
+
+export async function getAdminHomepageReels(params: { limit?: number; offset?: number; status?: string } = {}): Promise<{ rows: any[]; total: number }> {
+    try {
+        const sp = new URLSearchParams();
+        if (params.limit) sp.set('limit', String(params.limit));
+        if (params.offset) sp.set('offset', String(params.offset));
+        if (params.status) sp.set('status', params.status);
+
+        const res = await authFetch(`${API_URL}/api/admin/homepage-reels?${sp.toString()}`, { headers: authHeaders() });
+        const json = await res.json();
+        if (json.success && json.data) {
+            return { rows: json.data, total: json.meta?.total ?? json.data.length };
+        }
+        return { rows: [], total: 0 };
+    } catch (error) {
+        console.error('[Admin API] getAdminHomepageReels failed:', error);
+        return { rows: [], total: 0 };
+    }
+}
+
+export async function getAdminHomepageReel(id: string): Promise<any | null> {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/homepage-reels/${id}`, { headers: authHeaders() });
+        const json = await res.json();
+        return json.success && json.data ? json.data : null;
+    } catch (error) {
+        console.error('[Admin API] getAdminHomepageReel failed:', error);
+        return null;
+    }
+}
+
+export async function createHomepageReel(data: any): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/homepage-reels`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify(data),
+        });
+        const json = await res.json();
+        return { success: json.success, data: json.data, error: json.message };
+    } catch (error) {
+        console.error('[Admin API] createHomepageReel failed:', error);
+        return { success: false, error: 'Network error' };
+    }
+}
+
+export async function updateHomepageReel(id: string, data: any): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/homepage-reels/${id}`, {
+            method: 'PATCH',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify(data),
+        });
+        const json = await res.json();
+        return { success: json.success, data: json.data, error: json.message };
+    } catch (error) {
+        console.error('[Admin API] updateHomepageReel failed:', error);
+        return { success: false, error: 'Network error' };
+    }
+}
+
+export async function deleteHomepageReel(id: string): Promise<boolean> {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/homepage-reels/${id}`, {
+            method: 'DELETE',
+            headers: authHeaders(),
+        });
+        const json = await res.json();
+        return json.success;
+    } catch (error) {
+        console.error('[Admin API] deleteHomepageReel failed:', error);
+        return false;
+    }
+}
+
+export async function addHomepageReelProducts(reelId: string, productIds: string[]): Promise<{ success: boolean; error?: string }> {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/homepage-reels/${reelId}/products`, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ product_ids: productIds }),
+        });
+        const json = await res.json();
+        return { success: json.success, error: json.message };
+    } catch (error) {
+        console.error('[Admin API] addHomepageReelProducts failed:', error);
+        return { success: false, error: 'Network error' };
+    }
+}
+
+export async function removeHomepageReelProducts(reelId: string, productIds: string[]): Promise<boolean> {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/homepage-reels/${reelId}/products`, {
+            method: 'DELETE',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ product_ids: productIds }),
+        });
+        const json = await res.json();
+        return json.success;
+    } catch (error) {
+        console.error('[Admin API] removeHomepageReelProducts failed:', error);
+        return false;
+    }
+}
+
+export async function reorderHomepageReelProducts(reelId: string, productIds: string[]): Promise<boolean> {
+    try {
+        const res = await authFetch(`${API_URL}/api/admin/homepage-reels/${reelId}/products/reorder`, {
+            method: 'PUT',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ product_ids: productIds }),
+        });
+        const json = await res.json();
+        return json.success;
+    } catch (error) {
+        console.error('[Admin API] reorderHomepageReelProducts failed:', error);
         return false;
     }
 }

@@ -19,6 +19,7 @@ const catalogNav = [
     { href: '/dashboard/products', label: 'Inventory', icon: Package },
     { href: '/dashboard/categories', label: 'Categories', icon: Tag },
     { href: '/dashboard/collections', label: 'Collections', icon: Layers },
+    { href: '/dashboard/reels-management', label: 'Reels Management', icon: Layers },
 ];
 
 const engagementNav = [
