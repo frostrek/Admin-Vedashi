@@ -22,6 +22,7 @@ export default function CategoryModal({ isOpen, onClose, onSubmit, editCategory,
     const [slug, setSlug] = useState('');
     const [description, setDescription] = useState('');
     const [parentId, setParentId] = useState('');
+    const [sortOrder, setSortOrder] = useState<number | string>(0);
     const [isActive, setIsActive] = useState(true);
     const [saving, setSaving] = useState(false);
     const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
@@ -49,6 +50,7 @@ export default function CategoryModal({ isOpen, onClose, onSubmit, editCategory,
             setSlug(editCategory.slug);
             setDescription(editCategory.description || '');
             setParentId(editCategory.parent_id || '');
+            setSortOrder(editCategory.sort_order ?? 0);
             setIsActive(editCategory.is_active ?? true);
             // If the existing slug already matches the auto-generated slug of the current name,
             // we treat it as "not manually edited" so it can continue to follow name changes.
@@ -61,6 +63,7 @@ export default function CategoryModal({ isOpen, onClose, onSubmit, editCategory,
             setSlug('');
             setDescription('');
             setParentId(initialParentId || '');
+            setSortOrder(0);
             setIsActive(true);
             setSlugManuallyEdited(false);
             setImagePreview(null);
@@ -141,9 +144,10 @@ export default function CategoryModal({ isOpen, onClose, onSubmit, editCategory,
             const payload = {
                 name: name.trim(),
                 slug: slug.trim() || transliterateToSlug(name),
-                description: description.trim(),
+                description: description.trim() || undefined,
                 parent_id: parentId || null,
-                is_active: isActive,
+                sort_order: Number(sortOrder) || 0,
+                is_active: isActive
             };
             await onSubmit(payload, imageFile);
         } finally {
@@ -311,6 +315,23 @@ export default function CategoryModal({ isOpen, onClose, onSubmit, editCategory,
                         </select>
                         <p className="mt-1 text-xs text-text-muted">
                             Leave empty to create a top-level category, or select a parent to create a subcategory.
+                        </p>
+                    </div>
+
+                    {/* Sort Order */}
+                    <div>
+                        <label className="block text-sm font-medium text-text-primary mb-1">
+                            Sort Order
+                        </label>
+                        <input
+                            type="number"
+                            value={sortOrder}
+                            onChange={(e) => setSortOrder(e.target.value)}
+                            className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-primary focus:outline-none"
+                            placeholder="0"
+                        />
+                        <p className="mt-1 text-xs text-text-muted">
+                            Lower numbers appear first. Default is 0.
                         </p>
                     </div>
 

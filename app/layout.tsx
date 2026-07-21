@@ -5,6 +5,7 @@ import { AdminAuthProvider } from "@/context/AdminAuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { Toaster } from "react-hot-toast";
 import ReactQueryProvider from "./providers";
+import Script from "next/script";
 
 const roboto = Roboto({
   subsets: ["latin"],
@@ -54,6 +55,41 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </VibeProvider>
           </AdminAuthProvider>
         </ThemeProvider>
+        <Script
+          src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
+          strategy="afterInteractive"
+        />
+        <Script id="google-translate-init" strategy="afterInteractive">
+          {`
+            function googleTranslateElementInit() {
+              new window.google.translate.TranslateElement({
+                pageLanguage: 'ru',
+                includedLanguages: 'en,ru',
+                layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
+                autoDisplay: false
+              }, 'google_translate_element');
+            }
+
+            // Patch DOM methods to prevent React crashes when Google Translate mutates text nodes
+            if (typeof Node !== 'undefined' && Node.prototype) {
+              const originalInsertBefore = Node.prototype.insertBefore;
+              Node.prototype.insertBefore = function(newNode, referenceNode) {
+                if (referenceNode && referenceNode.parentNode !== this) {
+                  return newNode;
+                }
+                return originalInsertBefore.call(this, newNode, referenceNode);
+              };
+
+              const originalRemoveChild = Node.prototype.removeChild;
+              Node.prototype.removeChild = function(child) {
+                if (child.parentNode !== this) {
+                  return child;
+                }
+                return originalRemoveChild.call(this, child);
+              };
+            }
+          `}
+        </Script>
       </body>
     </html>
   );

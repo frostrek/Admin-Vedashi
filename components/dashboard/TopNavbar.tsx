@@ -42,6 +42,30 @@ export default function TopNavbar({ sidebarCollapsed }: TopNavbarProps) {
     const [activeIndex, setActiveIndex] = useState(-1);
     const [notifOpen, setNotifOpen] = useState(false);
     const [alertsData, setAlertsData] = useState({ orders: 0, products: 0, enquiries: 0 });
+    const [isEnglish, setIsEnglish] = useState(false);
+
+    useEffect(() => {
+        if (typeof document !== 'undefined') {
+            const cookies = document.cookie.split(';');
+            const gtransCookie = cookies.find(c => c.trim().startsWith('googtrans='));
+            if (gtransCookie && gtransCookie.includes('/en')) {
+                setIsEnglish(true);
+            }
+        }
+    }, []);
+
+    const toggleLanguage = () => {
+        const domain = window.location.hostname;
+        if (isEnglish) {
+            document.cookie = `googtrans=/ru/ru; path=/; domain=${domain}`;
+            document.cookie = 'googtrans=/ru/ru; path=/';
+            window.location.reload();
+        } else {
+            document.cookie = `googtrans=/ru/en; path=/; domain=${domain}`;
+            document.cookie = 'googtrans=/ru/en; path=/';
+            window.location.reload();
+        }
+    };
 
     const dropdownRef = useRef<HTMLDivElement>(null);
     const notifRef = useRef<HTMLDivElement>(null);
@@ -356,6 +380,26 @@ export default function TopNavbar({ sidebarCollapsed }: TopNavbarProps) {
 
                 {/* Right section */}
                 <div className="flex items-center gap-2 ml-auto">
+                    <div id="google_translate_element" className="hidden"></div>
+                    <button
+                        onClick={toggleLanguage}
+                        className="flex items-center gap-2 mr-2 group hover:opacity-80 transition-opacity"
+                        title={isEnglish ? 'Switch to Russian' : 'Translate to English'}
+                    >
+                        <span className={`font-bold text-xs tracking-wide transition-colors ${!isEnglish ? 'text-[#A89250]' : 'text-[#A89250]/40'}`}>
+                            RU
+                        </span>
+                        <div className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-300 ${
+                            isEnglish ? 'bg-[#3B5D3B]' : 'bg-[#D3D8D3] dark:bg-gray-600'
+                        }`}>
+                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-300 ${
+                                isEnglish ? 'translate-x-[18px]' : 'translate-x-0.5'
+                            }`} />
+                        </div>
+                        <span className={`font-bold text-xs tracking-wide transition-colors ${isEnglish ? 'text-[#A89250]' : 'text-[#A89250]/40'}`}>
+                            EN
+                        </span>
+                    </button>
                     <button
                         onClick={toggleTheme}
                         className="flex h-9 w-9 items-center justify-center rounded-xl text-[#A89250]/70 hover:text-gold hover:bg-gold/[0.06] transition-all duration-300"

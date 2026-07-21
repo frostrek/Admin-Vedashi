@@ -699,3 +699,10 @@ body::before {
 .animate-slideOutRight {
   animation: slideOutRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* Google Translate Hide */
+.goog-te-banner-frame.skiptranslate { display: none !important; }
+body { top: 0px !important; }
+#google_translate_element { display: none !important; }
+.skiptranslate { display: none !important; }
+body.skiptranslate { display: block !important; }

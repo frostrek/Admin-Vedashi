@@ -110,6 +110,9 @@ export default function CategoryTreeNode({
                                     <AlertTriangle className="h-3 w-3" /> Orphaned
                                 </span>
                             )}
+                            <span className="bg-gray-50 text-gray-400 text-[10px] px-1.5 py-0.5 rounded font-mono border border-gray-100" title="Sort Order">
+                                #{category.sort_order ?? 0}
+                            </span>
                         </div>
                         {category.description && (
                             <span className="text-xs text-text-muted truncate max-w-md">
