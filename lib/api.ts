@@ -2993,6 +2993,7 @@ export interface LegalDocument {
     content: string;
     version: string;
     is_active: boolean;
+    document_type?: string;
     published_at?: string;
     created_at: string;
     updated_at: string;

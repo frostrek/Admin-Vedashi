@@ -152,7 +152,7 @@ export default function LegalManagement() {
                 {!isEditing && (
                     <button
                         onClick={() => {
-                            setCurrentDoc({ slug: '', title: '', content: '', version: '1.0.0', is_active: true });
+                            setCurrentDoc({ slug: '', title: '', content: '', version: '1.0.0', is_active: true, document_type: 'other' });
                             setIsEditing(true);
                         }}
                         className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-[#E8D8B9] transition-all hover:bg-primary-light"
@@ -195,7 +195,6 @@ export default function LegalManagement() {
                                     onChange={e => setCurrentDoc({ ...currentDoc, slug: e.target.value })}
                                     placeholder="e.g. terms-of-service"
                                     className="w-full rounded-xl bg-page-bg border border-border-subtle px-4 py-2.5 text-sm text-text-primary focus:border-gold focus:outline-none"
-                                    disabled={!!currentDoc?.id}
                                 />
                             </div>
                             <div>
@@ -212,10 +211,61 @@ export default function LegalManagement() {
                                     required
                                     type="text"
                                     value={currentDoc?.title}
-                                    onChange={e => setCurrentDoc({ ...currentDoc, title: e.target.value })}
+                                    onChange={e => {
+                                        const title = e.target.value;
+                                        const cyrillicToLatin: Record<string, string> = {
+                                            'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'yo', 'ж': 'zh',
+                                            'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm', 'н': 'n', 'о': 'o',
+                                            'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u', 'ф': 'f', 'х': 'kh', 'ц': 'ts',
+                                            'ч': 'ch', 'ш': 'sh', 'щ': 'shch', 'ъ': '', 'ы': 'y', 'ь': '', 'э': 'e', 'ю': 'yu',
+                                            'я': 'ya'
+                                        };
+                                        const transliterated = title
+                                            .toLowerCase()
+                                            .split('')
+                                            .map(char => cyrillicToLatin[char] || char)
+                                            .join('');
+                                        const slug = transliterated
+                                            .trim()
+                                            .replace(/[\s_]+/g, '-')
+                                            .replace(/[^\w-]/g, '')
+                                            .replace(/-+/g, '-');
+                                        setCurrentDoc({ ...currentDoc, title, slug });
+                                    }}
                                     placeholder="e.g. Terms of Service"
                                     className="w-full rounded-xl bg-page-bg border border-border-subtle px-4 py-2.5 text-sm text-text-primary focus:border-gold focus:outline-none"
                                 />
+                            </div>
+                            <div>
+                                <label className="flex items-center gap-2 text-sm font-medium text-text-primary mb-1.5">
+                                    Document Type *
+                                    <span className="relative group cursor-pointer inline-flex items-center">
+                                        <Info className="w-4 h-4 text-text-muted hover:text-gold transition-colors duration-300" />
+                                        <span className="absolute bottom-full left-0 origin-bottom-left mb-2 w-max max-w-xs px-3 py-2 text-xs font-medium text-white bg-neutral-900 border border-neutral-700 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-[99999]">
+                                            Assigning a system role to this document allows pages like Checkout to fetch the correct document dynamically (e.g. Terms of Service).
+                                        </span>
+                                    </span>
+                                </label>
+                                <select
+                                    required
+                                    value={currentDoc?.document_type || 'other'}
+                                    onChange={e => setCurrentDoc({ ...currentDoc, document_type: e.target.value })}
+                                    className="w-full rounded-xl bg-page-bg border border-border-subtle px-4 py-2.5 text-sm text-text-primary focus:border-gold focus:outline-none"
+                                >
+                                    <option value="privacy_policy">Privacy Policy</option>
+                                    <option value="terms_of_service">Terms of Service</option>
+                                    <option value="shipping_policy">Shipping Policy</option>
+                                    <option value="return_policy">Return Policy</option>
+                                    <option value="cookie_policy">Cookie Policy</option>
+                                    <option value="disclaimer">Disclaimer</option>
+                                    <option value="acceptable_use_policy">Acceptable Use Policy</option>
+                                    <option value="refund_policy">Refund Policy</option>
+                                    <option value="eula">EULA (End User License Agreement)</option>
+                                    <option value="gdpr_policy">GDPR Policy</option>
+                                    <option value="ccpa_policy">CCPA Policy</option>
+                                    <option value="payment_policy">Payment Policy</option>
+                                    <option value="other">Other / Custom</option>
+                                </select>
                             </div>
                         </div>
 
