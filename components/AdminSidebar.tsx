@@ -18,7 +18,6 @@ const overviewNav = [
 const catalogNav = [
     { href: '/dashboard/products', label: 'Inventory', icon: Package },
     { href: '/dashboard/categories', label: 'Categories', icon: Tag },
-    { href: '/dashboard/collections', label: 'Collections', icon: Layers },
     { href: '/dashboard/reels-management', label: 'Reels Management', icon: Layers },
 ];
 
@@ -39,7 +38,6 @@ const salesNav = [
 
 const usersNav = [
     { href: '/dashboard/customers', label: 'Customers', icon: Users },
-    { href: '/dashboard/support/customer-enquiry', label: 'Customer Enquiry', icon: Send },
 ];
 
 const marketingNav = [
@@ -69,6 +67,7 @@ const supportNav = [
     { href: '/dashboard/support/faqs', label: 'FAQ', icon: HelpCircle },
     { href: '/dashboard/support/tickets', label: 'Support Tickets', icon: MessageSquare },
     { href: '/dashboard/support/knowledge-base', label: 'Knowledge Base', icon: FileText },
+    { href: '/dashboard/support/customer-enquiry', label: 'Customer Enquiry', icon: Send },
 ];
 
 const systemNav = [
