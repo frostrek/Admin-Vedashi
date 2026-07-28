@@ -417,7 +417,7 @@ export default function ReturnsPage() {
                                     </td>
                                     <td className="p-3 text-text-primary text-sm">{r.customer_name || '—'}</td>
                                     <td className="p-3 text-right">
-                                        <span className="font-semibold text-text-primary">{formatCurrency(parseFloat(r.refund_amount || 0), r.currency || 'USD')}</span>
+                                        <span className="font-semibold text-text-primary">{formatCurrency(parseFloat(r.final_total || 0), r.currency || 'USD')}</span>
                                     </td>
                                     <td className="p-3"><TypeBadge type={r.type} /></td>
                                     <td className="p-3"><StatusBadge status={r.status} /></td>

@@ -14,7 +14,7 @@ import {
     ShoppingCart, Eye, X, Package, User, CreditCard, MapPin,
     RefreshCw, Download, FileText, RotateCcw, Banknote, Shield,
     CheckSquare, Square, ChevronDown, Search, ChevronLeft, ChevronRight,
-    SlidersHorizontal, Calendar, Truck
+    SlidersHorizontal, Calendar, Truck, Check
 } from 'lucide-react';
 import SortableHeader, { SortDir, compare } from '@/components/SortableHeader';
 import toast from 'react-hot-toast';
@@ -23,7 +23,7 @@ import ExportModal from '@/components/orders/ExportModal';
 import PriceRangeSlider from '@/components/PriceRangeSlider';
 import { gsap } from 'gsap';
 
-const statusOptions = ['pending', 'confirmed', 'on_hold', 'shipped', 'delivered', 'requested', 'returned', 'cancelled'] as const;
+const statusOptions = ['pending', 'confirmed', 'on_hold', 'shipped', 'delivered', 'return_requested', 'return_approved', 'return_rejected', 'pickup_scheduled', 'picked_up', 'in_transit', 'received', 'returned', 'cancelled', 'rto_initiated', 'rto_in_transit', 'rto_delivered'] as const;
 
 function formatStatus(s: string) {
     return s.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
@@ -759,6 +759,17 @@ export default function OrdersPage() {
             case 'pending': return 'bg-warning/12 text-warning border-warning/20';
             case 'on_hold': return 'bg-orange-500/12 text-orange-500 border-orange-500/20';
             case 'cancelled': return 'bg-danger/12 text-danger border-danger/20';
+            case 'return_requested': case 'requested': return 'bg-amber-500/12 text-amber-600 border-amber-500/20';
+            case 'return_approved': case 'approved': return 'bg-blue-500/12 text-blue-500 border-blue-500/20';
+            case 'return_rejected': case 'rejected': return 'bg-red-500/12 text-red-500 border-red-500/20';
+            case 'pickup_scheduled': return 'bg-violet-500/12 text-violet-500 border-violet-500/20';
+            case 'picked_up': return 'bg-orange-500/12 text-orange-500 border-orange-500/20';
+            case 'in_transit': return 'bg-purple-500/12 text-purple-500 border-purple-500/20';
+            case 'received': return 'bg-teal-500/12 text-teal-500 border-teal-500/20';
+            case 'returned': case 'completed': return 'bg-emerald-500/12 text-emerald-500 border-emerald-500/20';
+            case 'rto_initiated': return 'bg-rose-500/12 text-rose-500 border-rose-500/20';
+            case 'rto_in_transit': return 'bg-orange-500/12 text-orange-500 border-orange-500/20';
+            case 'rto_delivered': return 'bg-emerald-500/12 text-emerald-500 border-emerald-500/20';
             default: return 'bg-text-muted/12 text-text-muted border-border';
         }
     };
@@ -1078,10 +1089,24 @@ export default function OrdersPage() {
                                                 </div>
                                             </td>
                                             <td className="px-4 py-3.5">
-                                                <select value={order.status} onChange={e => updateStatus(order.id, e.target.value as Order['status'])}
-                                                    className={`rounded-full px-2.5 py-1 text-[11px] font-semibold border cursor-pointer transition-all duration-200 hover:opacity-80 ${statusColor(order.status)}`}>
-                                                    {(statusOptions.includes(order.status as any) ? statusOptions : [...statusOptions, order.status]).map(s => <option key={s} value={s}>{formatStatus(s)}</option>)}
-                                                </select>
+                                                {(() => {
+                                                    // Map return_status to dropdown value
+                                                    const RETURN_STATUS_MAP: Record<string, string> = {
+                                                        requested: 'return_requested', approved: 'return_approved',
+                                                        pickup_scheduled: 'pickup_scheduled', picked_up: 'picked_up', in_transit: 'in_transit',
+                                                        received: 'received', completed: 'returned',
+                                                        rto: 'rto_initiated', rto_completed: 'rto_delivered',
+                                                    };
+                                                    const effectiveStatus = order.return_status ? (RETURN_STATUS_MAP[order.return_status] || order.status) : order.status;
+                                                    return (
+                                                        <select
+                                                            value={effectiveStatus}
+                                                            onChange={e => updateStatus(order.id, e.target.value as Order['status'])}
+                                                            className={`rounded-full px-2.5 py-1 text-[11px] font-semibold border cursor-pointer transition-all duration-200 hover:opacity-80 ${statusColor(effectiveStatus)}`}>
+                                                            {(statusOptions.includes(effectiveStatus as any) ? statusOptions : [...statusOptions, effectiveStatus]).map(s => <option key={s} value={s}>{formatStatus(s)}</option>)}
+                                                        </select>
+                                                    );
+                                                })()}
                                             </td>
                                             <td className="px-4 py-3.5 text-sm">
                                                 <FulfillmentBadge order={order} />
@@ -1126,6 +1151,44 @@ export default function OrdersPage() {
                                                                 <Banknote className="h-4 w-4" />
                                                             </button>
                                                         )}
+                                                    {order.return_status === 'requested' && (
+                                                        <>
+                                                            <button
+                                                                onClick={async (e) => {
+                                                                    e.stopPropagation();
+                                                                    const toastId = toast.loading('Approving return...');
+                                                                    const res = await approveReturn(order.id || order.order_id || '');
+                                                                    if (res) {
+                                                                        toast.success('Return approved!', { id: toastId });
+                                                                        setOrders(prev => prev.map(o => o.id === order.id ? { ...o, return_status: 'approved' } : o));
+                                                                    } else {
+                                                                        toast.error('Failed to approve return', { id: toastId });
+                                                                    }
+                                                                }}
+                                                                className="rounded-lg p-2 text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10 transition-all duration-200"
+                                                                title="Approve Return Request"
+                                                            >
+                                                                <Check className="h-4 w-4" />
+                                                            </button>
+                                                            <button
+                                                                onClick={async (e) => {
+                                                                    e.stopPropagation();
+                                                                    const toastId = toast.loading('Rejecting return...');
+                                                                    const res = await rejectReturn(order.id || order.order_id || '');
+                                                                    if (res) {
+                                                                        toast.success('Return rejected!', { id: toastId });
+                                                                        setOrders(prev => prev.map(o => o.id === order.id ? { ...o, return_status: 'rejected' } : o));
+                                                                    } else {
+                                                                        toast.error('Failed to reject return', { id: toastId });
+                                                                    }
+                                                                }}
+                                                                className="rounded-lg p-2 text-rose-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all duration-200"
+                                                                title="Reject Return Request"
+                                                            >
+                                                                <X className="h-4 w-4" />
+                                                            </button>
+                                                        </>
+                                                    )}
                                                     <button onClick={() => openOrderDetail(order)} className="rounded-lg p-2 text-text-muted hover:text-gold hover:bg-gold/10 transition-all duration-200" title="View details">
                                                         <Eye className="h-4 w-4" />
                                                     </button>

@@ -811,6 +811,12 @@ export async function getOrders(params?: { dateFrom?: string; dateTo?: string })
                 exchange_rate: exchangeRate,
                 created_at: row.created_at ?? new Date().toISOString(),
                 has_shipment: !!row.has_shipment,
+
+                // Returns
+                return_status: row.return_status || undefined,
+                return_reason: row.return_reason || undefined,
+                return_awb: row.return_awb || undefined,
+                return_tracking_url: row.return_tracking_url || undefined,
             };
         });
     } catch (error) {

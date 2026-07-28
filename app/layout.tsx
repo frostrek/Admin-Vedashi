@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${roboto.variable} ${playfair.variable} dark`} suppressHydrationWarning>
-      <body className="min-h-screen">
+      <body className="min-h-screen" suppressHydrationWarning>
         <ThemeProvider>
           <AdminAuthProvider>
             <VibeProvider>
