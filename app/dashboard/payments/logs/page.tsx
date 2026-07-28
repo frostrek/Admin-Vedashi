@@ -61,9 +61,13 @@ function DetailRow({ label, value }: { label: string; value: any }) {
     );
 }
 
-function formatGateway(val: string) {
+function formatGateway(val: string, log?: any) {
+    if (log) {
+        const txId = log.razorpay_payment_id || log.transaction_reference || '';
+        if (txId.startsWith('cp_')) return 'CloudPayments';
+    }
     if (!val) return 'N/A';
-    if (val.toUpperCase() === 'ORIGINAL_PAYMENT') return 'Razorpay';
+    if (val.toUpperCase() === 'ORIGINAL_PAYMENT') return 'Razorpay'; // fallback if no txId
     if (val.toLowerCase() === 'razorpay') return 'Razorpay';
     if (val.toLowerCase() === 'cloudpayments') return 'CloudPayments';
     return val.toUpperCase();
@@ -110,6 +114,8 @@ export default function PaymentLogsPage() {
     // Filters & Pagination
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+
     const [statusFilter, setStatusFilter] = useState('');
     const [gatewayFilter, setGatewayFilter] = useState('');
     const [typeFilter, setTypeFilter] = useState('');
@@ -122,7 +128,7 @@ export default function PaymentLogsPage() {
 
     const fetchLogs = async () => {
         setLoading(true);
-        const data = await getPaymentLogs({ limit, offset: (page - 1) * limit, search, status: statusFilter, gateway: gatewayFilter, type: typeFilter, startDate, endDate });
+        const data = await getPaymentLogs({ limit, offset: (page - 1) * limit, search: debouncedSearch, status: statusFilter, gateway: gatewayFilter, type: typeFilter, startDate, endDate });
         const rows = data.logs || [];
         setLogs(rows);
         setTotal(data.total || 0);
@@ -151,7 +157,16 @@ export default function PaymentLogsPage() {
         }
     };
 
-    useEffect(() => { fetchLogs(); }, [page, statusFilter, gatewayFilter, typeFilter, startDate, endDate]);
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(search);
+            // Reset to page 1 only if the search string actually changes, not on initial mount
+            if (search !== debouncedSearch) setPage(1);
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [search, debouncedSearch]);
+
+    useEffect(() => { fetchLogs(); }, [page, statusFilter, gatewayFilter, typeFilter, startDate, endDate, debouncedSearch]);
 
     // Lock body scroll when modal open
     useEffect(() => {
@@ -164,7 +179,7 @@ export default function PaymentLogsPage() {
         return () => { document.body.style.overflow = 'unset'; };
     }, [selectedLog]);
 
-    const handleSearchSubmit = (e: React.FormEvent) => { e.preventDefault(); setPage(1); fetchLogs(); };
+    const handleSearchSubmit = (e: React.FormEvent) => { e.preventDefault(); };
     const totalPages = Math.ceil(total / limit);
 
     return (
@@ -187,9 +202,9 @@ export default function PaymentLogsPage() {
             {/* ── Stats Cards ── */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <StatCard
-                    label="Total Volume"
-                    value={formatCurrency(stats.totalVolume, 'USD')}
-                    subValue={stats.refundVolume > 0 ? `-${formatCurrency(stats.refundVolume, 'USD')} Refunded` : undefined}
+                    label="Page Volume"
+                    value={formatCurrency(stats.totalVolume, logs[0]?.currency || 'USD')}
+                    subValue={stats.refundVolume > 0 ? `-${formatCurrency(stats.refundVolume, logs[0]?.currency || 'USD')} Refunded` : undefined}
                     subColor="text-rose-400"
                     icon={TrendingUp}
                     color="bg-gold/10 text-gold border border-gold/20"
@@ -360,7 +375,7 @@ export default function PaymentLogsPage() {
                                         {/* Gateway */}
                                         <td className="p-3">
                                             <span className="inline-flex items-center text-[10px] font-bold uppercase tracking-wider text-emerald-300 bg-emerald-500/10 border border-emerald-500/25 rounded-full px-2.5 py-0.5">
-                                                {formatGateway(log.payment_gateway || log.payment_method)}
+                                                {formatGateway(log.payment_gateway || log.payment_method, log)}
                                             </span>
                                         </td>
 
@@ -458,7 +473,7 @@ export default function PaymentLogsPage() {
                                     <DetailRow label="Payment ID" value={selectedLog.payment_id} />
                                     <DetailRow label="Transaction ID" value={selectedLog.razorpay_payment_id} />
                                     <DetailRow label="Transaction Ref" value={selectedLog.transaction_reference} />
-                                    <DetailRow label="Gateway" value={formatGateway(selectedLog.payment_gateway || selectedLog.payment_method)} />
+                                    <DetailRow label="Gateway" value={formatGateway(selectedLog.payment_gateway || selectedLog.payment_method, selectedLog)} />
                                     <DetailRow label="Signature" value={selectedLog.razorpay_signature ? 'Present (Verified)' : null} />
                                     <DetailRow label="Date" value={new Date(selectedLog.created_at).toLocaleString('en-IN', {
                                         day: '2-digit', month: 'short', year: 'numeric',

@@ -163,8 +163,9 @@ export async function authFetch(input: RequestInfo | URL, init?: RequestInit): P
     return res;
 }
 
-export function formatUSD(amount: number): string {
-    return '$' + amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+export function formatUSD(amount: number | null | undefined): string {
+    const num = Number(amount) || 0;
+    return '$' + num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 export function formatCurrency(amount: number | string | null | undefined, currencyCode: string = 'USD'): string {
@@ -781,6 +782,11 @@ export async function getOrders(params?: { dateFrom?: string; dateTo?: string })
                 price: 0
             }));
 
+            const rawTotal = parseFloat(row.final_total ?? row.grand_total ?? row.total_amount ?? row.total ?? 0);
+            const rawSubtotal = parseFloat(row.subtotal ?? row.total_amount ?? 0);
+            const exchangeRate = row.exchange_rate != null ? parseFloat(row.exchange_rate) : 1;
+            const currency = row.currency || 'USD';
+
             return {
                 id: row.order_id ?? row.id ?? '',
                 order_id: row.order_id,
@@ -794,15 +800,15 @@ export async function getOrders(params?: { dateFrom?: string; dateTo?: string })
                         price: parseFloat(item.unit_price ?? item.price ?? 0),
                     }))
                     : dummyItems,
-                total: parseFloat(row.final_total ?? row.grand_total ?? row.total_amount ?? row.total ?? 0),
-                subtotal: parseFloat(row.subtotal ?? row.total_amount ?? 0),
+                total: rawTotal,
+                subtotal: rawSubtotal,
                 status: (row.order_status ?? row.status ?? 'pending').toLowerCase() as Order['status'],
                 payment_status: row.payment_status,
                 payment_method: row.payment_method || 'cod',
                 calculated_refunded_amount: row.calculated_refunded_amount,
                 refunded_amount: row.refunded_amount,
-                currency: row.currency || 'USD',
-                exchange_rate: row.exchange_rate != null ? parseFloat(row.exchange_rate) : 1,
+                currency: currency,
+                exchange_rate: exchangeRate,
                 created_at: row.created_at ?? new Date().toISOString(),
                 has_shipment: !!row.has_shipment,
             };
@@ -822,25 +828,31 @@ export async function getOrderById(id: string): Promise<Order | null> {
         const json: ApiResponse<any> = await res.json();
         if (json.success && json.data) {
             const row = json.data;
+            const exchangeRate = row.exchange_rate != null ? parseFloat(row.exchange_rate) : 1;
+            const currency = row.currency || 'USD';
+            const rawTotal = parseFloat(row.final_total ?? row.grand_total ?? row.total_amount ?? row.total ?? 0);
+            const rawSubtotal = parseFloat(row.subtotal ?? row.total_amount ?? 0);
+
             return {
                 id: row.order_id ?? row.id ?? '',
                 order_id: row.order_id,
-                // customer info may not be on the single-order row — caller merges from list
                 customer_name: row.customer_name ?? '',
                 customer_email: row.customer_email ?? '',
-                // Preserve full nested item structure (product, variant objects)
-                items: Array.isArray(row.items) ? row.items.map((item: any) => ({
-                    ...item,
-                    // Flat aliases so both the old and new modal paths work
-                    product_name: item.product?.product_name ?? item.product_name ?? '',
-                    price: parseFloat(item.unit_price ?? item.price ?? 0),
-                })) : [],
-                total: parseFloat(row.final_total ?? row.grand_total ?? row.total_amount ?? row.total ?? 0),
-                subtotal: parseFloat(row.subtotal ?? row.total_amount ?? 0),
+                items: Array.isArray(row.items) ? row.items.map((item: any) => {
+                    const rawUnitPrice = parseFloat(item.unit_price ?? item.price ?? 0);
+                    return {
+                        ...item,
+                        product_name: item.product?.product_name ?? item.product_name ?? '',
+                        price: rawUnitPrice,
+                        unit_price: rawUnitPrice,
+                    };
+                }) : [],
+                total: rawTotal,
+                subtotal: rawSubtotal,
                 status: (row.order_status ?? row.status ?? 'pending').toLowerCase() as Order['status'],
                 payment_status: row.payment_status,
-                currency: row.currency || 'USD',
-                exchange_rate: row.exchange_rate != null ? parseFloat(row.exchange_rate) : 1,
+                currency: currency,
+                exchange_rate: exchangeRate,
                 created_at: row.created_at ?? new Date().toISOString(),
                 // Extra fields the detail modal needs
                 ...(row.grand_total != null ? { grand_total: parseFloat(row.grand_total) } : {}),
@@ -2949,6 +2961,14 @@ export async function createAdminGdprBreach(data: any) {
 
 // ─── Shipments ────────────────────────────────────────────────────
 
+function normalizeShipment(shipment: any) {
+    if (!shipment) return shipment;
+    
+    // Legacy pricing detection removed as requested by user.
+    // The backend now stores the values in their respective currencies.
+    return shipment;
+}
+
 export async function fetchShipments(params: Record<string, string> = {}) {
     try {
         const searchParams = new URLSearchParams();
@@ -2956,7 +2976,11 @@ export async function fetchShipments(params: Record<string, string> = {}) {
         const res = await authFetch(`${API_URL}/api/admin/shipments?${searchParams.toString()}`, {
             headers: authHeaders(),
         });
-        return await res.json();
+        const json = await res.json();
+        if (json.success && json.data && Array.isArray(json.data.shipments)) {
+            json.data.shipments = json.data.shipments.map(normalizeShipment);
+        }
+        return json;
     } catch (error) {
         console.error('[Admin API] Failed to fetch shipments:', error);
         return { success: false, data: { shipments: [], meta: { total: 0 } } };
@@ -2968,7 +2992,11 @@ export async function fetchShipmentById(id: string) {
         const res = await authFetch(`${API_URL}/api/admin/shipments/${id}`, {
             headers: authHeaders(),
         });
-        return await res.json();
+        const json = await res.json();
+        if (json.success && json.data) {
+            json.data = normalizeShipment(json.data);
+        }
+        return json;
     } catch (error) {
         console.error('[Admin API] Failed to fetch shipment:', error);
         return { success: false };

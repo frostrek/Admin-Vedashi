@@ -415,6 +415,17 @@ export default function OrdersPage() {
     const filterBtnRef = useRef<HTMLButtonElement>(null);
     const prevSomeSelected = useRef(false);
 
+    // ── URL Search Param Initializer ──────────────────────────
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            const search = params.get('search');
+            if (search) {
+                setSearchQuery(search);
+            }
+        }
+    }, []);
+
     // ── Entry animations ──────────────────────────────────────
     useEffect(() => {
         const ctx = gsap.context(() => {
@@ -1429,13 +1440,13 @@ export default function OrdersPage() {
                                         <div className="flex items-center justify-center py-8 gap-3"><RefreshCw className="h-4 w-4 text-gold animate-spin" /><p className="text-sm text-text-muted">Loading items…</p></div>
                                     ) : (selectedOrder.items ?? []).length === 0 ? (
                                         <p className="text-sm text-text-muted text-center py-4">No items found</p>
-                                    ) : (
-                                        (selectedOrder.items ?? []).map((item, i) => {
+                                    ) : (() => {
+                                        const orderItems = selectedOrder.items ?? [];
+                                        return orderItems.map((item, i) => {
                                             const name = item.product?.product_name ?? item.product_name ?? 'Unknown Product';
                                             const variant = item.variant?.variant_name ?? item.variant?.size_label ?? '';
                                             const brand = item.product?.brand;
-                                            const rawUnitPrice = item.unit_price ?? item.price ?? 0;
-                                            const unitPrice = selectedOrder.currency === 'USD' ? rawUnitPrice : Math.round(rawUnitPrice * (selectedOrder.exchange_rate || 1));
+                                            const unitPrice = item.unit_price ?? item.price ?? 0;
                                             const lineTotal = unitPrice * item.quantity;
                                             const volume = item.variant?.volume_ml ? `${item.variant.volume_ml}ml` : null;
                                             return (
@@ -1459,7 +1470,7 @@ export default function OrdersPage() {
                                                 </div>
                                             );
                                         })
-                                    )}
+                                    })()}
                                 </div>
                             </div>
                             <div className="rounded-xl border border-border bg-card-bg p-4 space-y-2">
