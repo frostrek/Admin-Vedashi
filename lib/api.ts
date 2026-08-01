@@ -3762,3 +3762,33 @@ export async function autoGenerateSeo(params: {
         return { success: false, error: 'Network error' };
     }
 }
+
+// ─── Vendor Registrations ──────────────────────────────────────────────────
+export const getVendorRegistrations = async (status?: string) => {
+    let url = `${API_URL}/api/vendors`;
+    if (status) url += `?status=${status}`;
+    try {
+        const res = await authFetch(url);
+        const json = await res.json();
+        return json.success ? (json.data || []) : [];
+    } catch (e) {
+        return [];
+    }
+};
+
+export const getVendorRegistrationDetails = async (id: string) => {
+    const res = await authFetch(`${API_URL}/api/vendors/${id}`);
+    const json = await res.json();
+    return json.success ? json.data : null;
+};
+
+export const updateVendorRegistrationStatus = async (id: string, status: string) => {
+    const res = await authFetch(`${API_URL}/api/vendors/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+    });
+    const json = await res.json();
+    if (!json.success) throw new Error(json.message || 'Failed to update');
+    return json.data;
+};
