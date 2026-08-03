@@ -249,7 +249,7 @@ export default function RefundsPage() {
             )}
 
             {/* DEV TEST PANEL — hidden in production */}
-            {process.env.NODE_ENV === 'development' && (
+            {process.env.NEXT_PUBLIC_SHOW_DEV_TOOLS === 'true' && (
                 <RefundsDevPanel onCreated={() => { loadRefunds(); loadStats(); }} />
             )}
 
@@ -472,10 +472,18 @@ export default function RefundsPage() {
 // ─── Stat Card ──────────────────────────────────────────────────
 
 function StatCard({ label, value, amount, color }: { label: string; value: number; amount?: number; color: string }) {
+    const colorMap: Record<string, string> = {
+        amber: 'text-amber-400',
+        blue: 'text-blue-400',
+        emerald: 'text-emerald-400',
+        red: 'text-red-400',
+    };
+    const textColor = colorMap[color] || 'text-zinc-400';
+
     return (
         <div className={`${cardClass} p-3`}>
             <p className="text-[10px] uppercase text-text-muted font-bold tracking-wider">{label}</p>
-            <p className={`text-xl font-bold text-${color}-400 mt-0.5`}>{value}</p>
+            <p className={`text-xl font-bold ${textColor} mt-0.5`}>{value}</p>
             {amount !== undefined && amount > 0 && (
                 <p className="text-xs text-text-muted mt-0.5">{formatCurrency(parseFloat(String(amount)))}</p>
             )}

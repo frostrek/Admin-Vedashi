@@ -374,6 +374,7 @@ export default function ReturnsPage() {
                                 <th className="p-3 text-left">Return ID</th>
                                 <th className="p-3 text-left">Order</th>
                                 <th className="p-3 text-left">Customer</th>
+                                <th className="p-3 text-right">Amount</th>
                                 <th className="p-3 text-left">Type</th>
                                 <th className="p-3 text-left">Status</th>
                                 <th className="p-3 text-left">Reason</th>
@@ -384,14 +385,14 @@ export default function ReturnsPage() {
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr><td colSpan={9} className="p-12 text-center">
+                                <tr><td colSpan={10} className="p-12 text-center">
                                     <div className="flex flex-col items-center gap-2">
                                         <Loader2 className="h-6 w-6 animate-spin text-gold" />
                                         <span className="text-text-muted text-sm">Loading returns...</span>
                                     </div>
                                 </td></tr>
                             ) : returns.length === 0 ? (
-                                <tr><td colSpan={9} className="p-12 text-center">
+                                <tr><td colSpan={10} className="p-12 text-center">
                                     <div className="flex flex-col items-center gap-2">
                                         <RotateCcw className="h-8 w-8 text-text-muted/50" />
                                         <p className="text-text-muted text-sm font-medium">No returns found</p>
@@ -415,6 +416,9 @@ export default function ReturnsPage() {
                                         </button>
                                     </td>
                                     <td className="p-3 text-text-primary text-sm">{r.customer_name || '—'}</td>
+                                    <td className="p-3 text-right">
+                                        <span className="font-semibold text-text-primary">{formatCurrency(parseFloat(r.final_total || 0), r.currency || 'USD')}</span>
+                                    </td>
                                     <td className="p-3"><TypeBadge type={r.type} /></td>
                                     <td className="p-3"><StatusBadge status={r.status} /></td>
                                     <td className="p-3 text-text-muted text-xs max-w-[150px] truncate" title={r.reason || ''}>

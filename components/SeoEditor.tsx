@@ -101,12 +101,12 @@ export default function SeoEditor({
     /** Auto-generate fallback values from entity data */
     const autoGenerate = () => {
         const title = entityType === 'product'
-            ? `${entityName}${entityBrand ? ` | ${entityBrand}` : ''} | Buy Online`
-            : `Buy ${entityName} Online | Premium Ayurvedic Wellness`;
+            ? `${entityName}${entityBrand ? ` | ${entityBrand}` : ''} | Купить онлайн`
+            : `Купить ${entityName} онлайн | Премиальная Аюрведа`;
 
         const desc = entityType === 'product'
-            ? `Buy ${entityName}${entityBrand ? ` by ${entityBrand}` : ''}.${entityCategory ? ` Premium ${entityCategory}.` : ''} Fast delivery and secure checkout.`
-            : entityDescription || `Explore our collection of premium ${entityName}. Discover authentic ayurvedic and herbal wellness products with competitive pricing.`;
+            ? `Купите ${entityName}${entityBrand ? ` от ${entityBrand}` : ''}.${entityCategory ? ` Премиальная аюрведическая ${entityCategory}.` : ''} Быстрая доставка и безопасная оплата.`
+            : entityDescription || `Откройте коллекцию ${entityName}. Клинически проверенные аюрведические средства и натуральные решения для здоровья.`;
 
         onChange({
             ...value,
@@ -125,7 +125,7 @@ export default function SeoEditor({
     // Google Search Preview values
     const previewTitle = value.meta_title || entityName || 'Page Title';
     const previewDesc = value.meta_description || entityDescription || 'Page description will appear here...';
-    const previewUrl = value.canonical_url || `vedashiherbals.com/${entityType}s/${value.slug || entitySlug || entityId}`;
+    const previewUrl = value.canonical_url || `vedashi.com/${entityType === 'product' ? 'tovar' : entityType === 'category' ? 'katalog' : entityType + 's'}/${value.slug || entitySlug || entityId}`;
 
     if (loading) {
         return (
@@ -164,7 +164,7 @@ export default function SeoEditor({
                 <div>
                     <label className="flex items-center gap-2 text-sm font-semibold text-text-primary mb-3">
                         <Eye className="w-4 h-4 text-gold" />
-                        Google Search Preview
+                        Yandex / Google Search Preview
                     </label>
                     <div className="bg-white dark:bg-[#1e1a1a] border border-border rounded-lg p-4 space-y-1">
                         <p className="text-sm text-green-700 dark:text-green-400 truncate font-sans">
@@ -246,7 +246,7 @@ export default function SeoEditor({
                         type="url"
                         value={value.canonical_url || ''}
                         onChange={e => update('canonical_url', e.target.value)}
-                        placeholder="https://vedashiherbals.com/products/..."
+                        placeholder="https://vedashi.com/tovar/..."
                         className="w-full px-3 py-2.5 rounded-lg border border-border bg-card-bg text-text-primary text-sm placeholder:text-text-muted focus:border-gold focus:ring-1 focus:ring-gold/30 outline-none transition-colors"
                     />
                 </div>

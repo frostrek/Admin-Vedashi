@@ -675,24 +675,26 @@ function DetailDrawer({ shipment, loading, onClose, onCancel, onDownloadLabel, d
                             {shipment.items?.length > 0 && (
                                 <Section title="Inventory Profile">
                                     <div className="space-y-3">
-                                        {shipment.items.map((item: any, i: number) => {
-                                            const rawUnitPrice = item.unit_price || item.price || 0;
-                                            const unitPrice = shipment.currency === 'USD' ? rawUnitPrice : Math.round(rawUnitPrice * (shipment.exchange_rate || 1));
-                                            const lineTotal = unitPrice * item.quantity;
-                                            return (
-                                                <div key={i} className="flex items-center justify-between py-2 group">
-                                                    <div className="flex-1 min-w-0 pr-4">
-                                                        <p className="text-[13px] text-text-primary font-semibold truncate group-hover:text-gold transition-colors">{item.product?.product_name || 'Managed SKU'}</p>
-                                                        <p className="text-[10px] text-text-muted font-bold uppercase mt-0.5">
-                                                            Quantity: {item.quantity} × {formatCurrency(unitPrice, shipment.currency || 'USD')}
-                                                        </p>
+                                        {(() => {
+                                            const shipItems = shipment.items || [];
+                                            return shipItems.map((item: any, i: number) => {
+                                                const unitPrice = item.unit_price || item.price || 0;
+                                                const lineTotal = unitPrice * item.quantity;
+                                                return (
+                                                    <div key={i} className="flex items-center justify-between py-2 group">
+                                                        <div className="flex-1 min-w-0 pr-4">
+                                                            <p className="text-[13px] text-text-primary font-semibold truncate group-hover:text-gold transition-colors">{item.product?.product_name || 'Managed SKU'}</p>
+                                                            <p className="text-[10px] text-text-muted font-bold uppercase mt-0.5">
+                                                                Quantity: {item.quantity} × {formatCurrency(unitPrice, shipment.currency || 'USD')}
+                                                            </p>
+                                                        </div>
+                                                        <div className="text-xs font-mono font-bold text-text-primary bg-border/20 px-2 py-1 rounded">
+                                                            {formatCurrency(lineTotal, shipment.currency || 'USD')}
+                                                        </div>
                                                     </div>
-                                                    <div className="text-xs font-mono font-bold text-text-primary bg-border/20 px-2 py-1 rounded">
-                                                        {formatCurrency(lineTotal, shipment.currency || 'USD')}
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
+                                                );
+                                            });
+                                        })()}
                                     </div>
                                 </Section>
                             )}

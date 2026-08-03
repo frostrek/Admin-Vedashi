@@ -4,13 +4,13 @@ import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { 
-    getCustomerDetail, getOrders, formatINR, Customer, Order, updateCustomerStatus,
+    getCustomerDetail, getOrders, formatINR, formatCurrency, Customer, Order, updateCustomerStatus,
     getCustomer360
 } from '@/lib/api';
 import { 
     User, Mail, Calendar, MapPin, ShoppingBag, CreditCard, 
     ChevronLeft, ArrowUpRight, Clock, Shield, CheckCircle2, 
-    XCircle, AlertTriangle, UserX, Loader2, IndianRupee, Hash,
+    XCircle, AlertTriangle, UserX, Loader2, Wallet, Hash,
     Ban, ShieldAlert, Phone, Eye
 } from 'lucide-react';
 
@@ -24,6 +24,14 @@ interface OrderDetail extends Order {
         country: string;
     };
 }
+
+const fixTimezoneOffset = (dateStr: string | undefined | null) => {
+    if (!dateStr) return null;
+    const date = new Date(dateStr);
+    // The backend reads IST timestamps as UTC, causing a -5:30 shift. Add 330 mins to correct.
+    date.setMinutes(date.getMinutes() + 330);
+    return date;
+};
 
 export default function CustomerDetailPage() {
     const { id } = useParams();
@@ -76,22 +84,30 @@ export default function CustomerDetailPage() {
     };
 
     const stats = useMemo(() => {
-        const totalSpent = orders.reduce((sum, o) => {
-            if (o.status?.toUpperCase() === 'CANCELLED') return sum;
-            const amount = Number(o.final_total || o.total || o.final_price || 0);
-            return sum + amount;
-        }, 0);
+        const spendByCurrency: Record<string, number> = {};
+        const validOrdersByCurrency: Record<string, number> = {};
+        
+        orders.forEach(o => {
+            if ((o.status || (o as any).order_status)?.toUpperCase() !== 'CANCELLED') {
+                const currency = o.currency || 'USD';
+                const amount = Number(o.final_total ?? o.total ?? o.grand_total ?? 0);
+                spendByCurrency[currency] = (spendByCurrency[currency] || 0) + amount;
+                validOrdersByCurrency[currency] = (validOrdersByCurrency[currency] || 0) + 1;
+            }
+        });
+
+        const currencies = Object.keys(spendByCurrency);
         const totalOrders = orders.length;
-        const aov = totalOrders > 0 ? totalSpent / totalOrders : 0;
         
         // Find latest shipping address
         const latestOrderWithAddress = orders.find(o => o.shipping_address);
         const latestAddress = latestOrderWithAddress?.shipping_address;
 
         return {
-            totalSpent,
+            spendByCurrency,
+            validOrdersByCurrency,
+            currencies,
             totalOrders,
-            aov,
             latestAddress: latestAddress ? 
                 [latestAddress.address_line1, latestAddress.address_line2, latestAddress.city, latestAddress.state, latestAddress.pincode].filter(Boolean).join(', ') : 
                 'No address on file'
@@ -176,11 +192,11 @@ export default function CustomerDetailPage() {
                         <h1 className="font-serif text-3xl font-bold text-text-primary mb-2">{customer.full_name || 'Anonymous Customer'}</h1>
                         <div className="flex flex-wrap justify-center md:justify-start gap-5 text-text-secondary text-sm">
                             <span className="flex items-center gap-1.5"><Mail className="h-4 w-4 text-gold-muted" /> {customer.email}</span>
-                            <span className="flex items-center gap-1.5"><Calendar className="h-4 w-4 text-gold-muted" /> Joined {new Date(customer.created_at).toLocaleDateString()}</span>
+                            <span className="flex items-center gap-1.5"><Calendar className="h-4 w-4 text-gold-muted" /> Joined {fixTimezoneOffset(customer.created_at)?.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}</span>
                             <span className="flex items-center gap-1.5">
                                 <Clock className="h-4 w-4 text-gold-muted" /> 
                                 Last Active: {customer.last_login_at || customer.updated_at 
-                                    ? new Date(customer.last_login_at || customer.updated_at!).toLocaleString() 
+                                    ? fixTimezoneOffset(customer.last_login_at || customer.updated_at!)?.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) 
                                     : 'Never'}
                             </span>
                         </div>
@@ -256,10 +272,20 @@ export default function CustomerDetailPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div className="p-6 rounded-2xl border border-border bg-card-bg shadow-sm hover-lift group">
                             <div className="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center text-success mb-4 group-hover:scale-110 transition-transform">
-                                <IndianRupee className="h-5 w-5" />
+                                <Wallet className="h-5 w-5" />
                             </div>
                             <p className="text-[10px] font-bold text-gold-muted uppercase mb-1">Lifetime Spend</p>
-                            <p className="text-2xl font-bold text-text-primary">{formatINR(stats.totalSpent)}</p>
+                            {stats.currencies.length === 0 ? (
+                                <p className="text-2xl font-bold text-text-primary">{formatCurrency(0, 'USD')}</p>
+                            ) : stats.currencies.length === 1 ? (
+                                <p className="text-2xl font-bold text-text-primary">{formatCurrency(stats.spendByCurrency[stats.currencies[0]], stats.currencies[0])}</p>
+                            ) : (
+                                <div className="flex flex-col gap-1">
+                                    {stats.currencies.map(c => (
+                                        <p key={c} className="text-lg font-bold text-text-primary leading-none">{formatCurrency(stats.spendByCurrency[c], c)}</p>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                         <div className="p-6 rounded-2xl border border-border bg-card-bg shadow-sm hover-lift group">
                             <div className="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center text-gold mb-4 group-hover:scale-110 transition-transform">
@@ -273,7 +299,21 @@ export default function CustomerDetailPage() {
                                 <ArrowUpRight className="h-5 w-5" />
                             </div>
                             <p className="text-[10px] font-bold text-gold-muted uppercase mb-1">Avg. Order Value</p>
-                            <p className="text-2xl font-bold text-text-primary">{formatINR(stats.aov)}</p>
+                            {stats.currencies.length === 0 ? (
+                                <p className="text-2xl font-bold text-text-primary">{formatCurrency(0, 'USD')}</p>
+                            ) : stats.currencies.length === 1 ? (
+                                <p className="text-2xl font-bold text-text-primary">
+                                    {formatCurrency(stats.spendByCurrency[stats.currencies[0]] / (stats.validOrdersByCurrency[stats.currencies[0]] || 1), stats.currencies[0])}
+                                </p>
+                            ) : (
+                                <div className="flex flex-col gap-1">
+                                    {stats.currencies.map(c => (
+                                        <p key={c} className="text-lg font-bold text-text-primary leading-none">
+                                            {formatCurrency(stats.spendByCurrency[c] / (stats.validOrdersByCurrency[c] || 1), c)}
+                                        </p>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -312,29 +352,29 @@ export default function CustomerDetailPage() {
                                             </td>
                                         </tr>
                                     ) : (
-                                        orders.map(order => (
-                                            <tr key={order.id} className="hover:bg-primary/[0.03] transition-colors duration-200">
+                                        orders.map((order, index) => (
+                                            <tr key={order.id || order.order_id || index} className="hover:bg-primary/[0.03] transition-colors duration-200">
                                                 <td className="px-6 py-4">
-                                                    <span className="text-xs font-mono text-text-primary font-medium">#{order.id.slice(0, 8)}</span>
+                                                    <span className="text-xs font-mono text-text-primary font-medium">#{String(order.id || order.order_id || '').slice(0, 8)}</span>
                                                 </td>
                                                 <td className="px-6 py-4 text-sm text-text-secondary">
-                                                    {new Date(order.created_at).toLocaleDateString()}
+                                                    {fixTimezoneOffset(order.created_at)?.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${
-                                                        order.status === 'delivered' ? 'bg-success/15 text-success' :
-                                                        order.status === 'cancelled' ? 'bg-danger/15 text-danger' :
+                                                        (order.status || (order as any).order_status) === 'delivered' ? 'bg-success/15 text-success' :
+                                                        (order.status || (order as any).order_status) === 'cancelled' ? 'bg-danger/15 text-danger' :
                                                         'bg-warning/15 text-warning'
                                                     }`}>
-                                                        {order.status}
+                                                        {order.status || (order as any).order_status || 'Pending'}
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4 text-right text-sm font-semibold text-text-primary">
-                                                    {formatINR(order.total)}
+                                                    {formatCurrency(order.final_total ?? order.total ?? order.grand_total ?? 0, order.currency || 'USD')}
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
                                                     <Link 
-                                                        href="/dashboard/orders" 
+                                                        href={`/dashboard/orders?search=${order.order_id || order.id}`}
                                                         className="inline-flex items-center gap-1.5 text-xs font-bold text-gold hover:text-gold-soft transition-colors duration-200"
                                                     >
                                                         Details <ArrowUpRight className="h-3 w-3" />

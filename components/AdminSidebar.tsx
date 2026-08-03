@@ -6,7 +6,7 @@ import { useAdminAuth } from '@/context/AdminAuthContext';
 import {
     LayoutDashboard, Package, ShoppingCart, Tag, LogOut, Leaf,
     ChevronLeft, Menu, Truck, Megaphone, BarChart, Settings, Users, X, Shield, Search, Ticket,
-    FileText, MessageSquare, Star, ShieldAlert, LayoutTemplate, Images, HelpCircle, Send, MonitorSmartphone, Activity, Layers, DollarSign, Gift, FileBarChart2, RotateCcw, SlidersHorizontal, Key, Map
+    FileText, MessageSquare, Star, ShieldAlert, LayoutTemplate, Images, HelpCircle, Send, MonitorSmartphone, Activity, Layers, DollarSign, Gift, FileBarChart2, RotateCcw, SlidersHorizontal, Key, Map, Building2
 } from 'lucide-react';
 const useState = require('react').useState;
 const useEffect = require('react').useEffect;
@@ -18,7 +18,7 @@ const overviewNav = [
 const catalogNav = [
     { href: '/dashboard/products', label: 'Inventory', icon: Package },
     { href: '/dashboard/categories', label: 'Categories', icon: Tag },
-    { href: '/dashboard/collections', label: 'Collections', icon: Layers },
+    { href: '/dashboard/reels-management', label: 'Reels Management', icon: Layers },
 ];
 
 const engagementNav = [
@@ -38,7 +38,7 @@ const salesNav = [
 
 const usersNav = [
     { href: '/dashboard/customers', label: 'Customers', icon: Users },
-    { href: '/dashboard/support/customer-enquiry', label: 'Customer Enquiry', icon: Send },
+    { href: '/dashboard/vendor-registrations', label: 'Vendor Registrations', icon: Building2 },
 ];
 
 const marketingNav = [
@@ -68,6 +68,7 @@ const supportNav = [
     { href: '/dashboard/support/faqs', label: 'FAQ', icon: HelpCircle },
     { href: '/dashboard/support/tickets', label: 'Support Tickets', icon: MessageSquare },
     { href: '/dashboard/support/knowledge-base', label: 'Knowledge Base', icon: FileText },
+    { href: '/dashboard/support/customer-enquiry', label: 'Customer Enquiry', icon: Send },
 ];
 
 const systemNav = [

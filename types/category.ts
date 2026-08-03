@@ -21,6 +21,7 @@ export interface CreateCategoryPayload {
     description?: string;
     parent_id?: string | null;
     image_url?: string | null;
+    sort_order?: number;
 }
 
 export interface UpdateCategoryPayload {

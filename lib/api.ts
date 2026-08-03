@@ -1,7 +1,7 @@
 /**
  * Admin API Client
  * Backend: https://ecommerce-backend-h23p.onrender.com
- * Response format: { success: boolean, message: string, data: T }
+ * Response formats: { success: boolean, message: string, data: T }
  */
 
 import { getToken, setToken, getRefreshToken, setRefreshToken } from '@/lib/auth';
@@ -163,8 +163,9 @@ export async function authFetch(input: RequestInfo | URL, init?: RequestInit): P
     return res;
 }
 
-export function formatUSD(amount: number): string {
-    return '$' + amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+export function formatUSD(amount: number | null | undefined): string {
+    const num = Number(amount) || 0;
+    return '$' + num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 export function formatCurrency(amount: number | string | null | undefined, currencyCode: string = 'USD'): string {
@@ -271,6 +272,7 @@ export interface Product {
     lead_time?: string;
     country_of_origin?: string;
     images?: string[];
+    thumbnail_url?: string;
     specifications?: any;
     status?: string;
     sale_price?: number;
@@ -484,14 +486,14 @@ export async function getProduct(id: string, skipCache: boolean = false): Promis
         if (json.success && json.data) {
             const product = json.data;
             const hasVariants = !!(product.variants && product.variants.length > 0);
-            
+
             // Calculate aggregated stock from variants, if any
-            const variantStockCount = hasVariants 
+            const variantStockCount = hasVariants
                 ? (product.variants?.reduce((sum: number, v: any) => sum + (v.stock_quantity ?? 0), 0) ?? 0)
                 : 0;
 
             const stockQty = hasVariants ? variantStockCount : (product.stock_quantity ?? 0);
-            
+
             // Price lives on variants — prefer default variant, fallback to first active
             const defaultVariant = product.variants?.find((v: any) => v.is_default)
                 ?? product.variants?.find((v: any) => v.is_active !== false)
@@ -780,6 +782,11 @@ export async function getOrders(params?: { dateFrom?: string; dateTo?: string })
                 price: 0
             }));
 
+            const rawTotal = parseFloat(row.final_total ?? row.grand_total ?? row.total_amount ?? row.total ?? 0);
+            const rawSubtotal = parseFloat(row.subtotal ?? row.total_amount ?? 0);
+            const exchangeRate = row.exchange_rate != null ? parseFloat(row.exchange_rate) : 1;
+            const currency = row.currency || 'USD';
+
             return {
                 id: row.order_id ?? row.id ?? '',
                 order_id: row.order_id,
@@ -793,17 +800,23 @@ export async function getOrders(params?: { dateFrom?: string; dateTo?: string })
                         price: parseFloat(item.unit_price ?? item.price ?? 0),
                     }))
                     : dummyItems,
-                total: parseFloat(row.final_total ?? row.grand_total ?? row.total_amount ?? row.total ?? 0),
-                subtotal: parseFloat(row.subtotal ?? row.total_amount ?? 0),
+                total: rawTotal,
+                subtotal: rawSubtotal,
                 status: (row.order_status ?? row.status ?? 'pending').toLowerCase() as Order['status'],
                 payment_status: row.payment_status,
                 payment_method: row.payment_method || 'cod',
                 calculated_refunded_amount: row.calculated_refunded_amount,
                 refunded_amount: row.refunded_amount,
-                currency: row.currency || 'USD',
-                exchange_rate: row.exchange_rate != null ? parseFloat(row.exchange_rate) : 1,
+                currency: currency,
+                exchange_rate: exchangeRate,
                 created_at: row.created_at ?? new Date().toISOString(),
                 has_shipment: !!row.has_shipment,
+
+                // Returns
+                return_status: row.return_status || undefined,
+                return_reason: row.return_reason || undefined,
+                return_awb: row.return_awb || undefined,
+                return_tracking_url: row.return_tracking_url || undefined,
             };
         });
     } catch (error) {
@@ -821,25 +834,31 @@ export async function getOrderById(id: string): Promise<Order | null> {
         const json: ApiResponse<any> = await res.json();
         if (json.success && json.data) {
             const row = json.data;
+            const exchangeRate = row.exchange_rate != null ? parseFloat(row.exchange_rate) : 1;
+            const currency = row.currency || 'USD';
+            const rawTotal = parseFloat(row.final_total ?? row.grand_total ?? row.total_amount ?? row.total ?? 0);
+            const rawSubtotal = parseFloat(row.subtotal ?? row.total_amount ?? 0);
+
             return {
                 id: row.order_id ?? row.id ?? '',
                 order_id: row.order_id,
-                // customer info may not be on the single-order row — caller merges from list
                 customer_name: row.customer_name ?? '',
                 customer_email: row.customer_email ?? '',
-                // Preserve full nested item structure (product, variant objects)
-                items: Array.isArray(row.items) ? row.items.map((item: any) => ({
-                    ...item,
-                    // Flat aliases so both the old and new modal paths work
-                    product_name: item.product?.product_name ?? item.product_name ?? '',
-                    price: parseFloat(item.unit_price ?? item.price ?? 0),
-                })) : [],
-                total: parseFloat(row.final_total ?? row.grand_total ?? row.total_amount ?? row.total ?? 0),
-                subtotal: parseFloat(row.subtotal ?? row.total_amount ?? 0),
+                items: Array.isArray(row.items) ? row.items.map((item: any) => {
+                    const rawUnitPrice = parseFloat(item.unit_price ?? item.price ?? 0);
+                    return {
+                        ...item,
+                        product_name: item.product?.product_name ?? item.product_name ?? '',
+                        price: rawUnitPrice,
+                        unit_price: rawUnitPrice,
+                    };
+                }) : [],
+                total: rawTotal,
+                subtotal: rawSubtotal,
                 status: (row.order_status ?? row.status ?? 'pending').toLowerCase() as Order['status'],
                 payment_status: row.payment_status,
-                currency: row.currency || 'USD',
-                exchange_rate: row.exchange_rate != null ? parseFloat(row.exchange_rate) : 1,
+                currency: currency,
+                exchange_rate: exchangeRate,
                 created_at: row.created_at ?? new Date().toISOString(),
                 // Extra fields the detail modal needs
                 ...(row.grand_total != null ? { grand_total: parseFloat(row.grand_total) } : {}),
@@ -2467,79 +2486,44 @@ export async function getOrderPaymentTimeline(orderId: string) {
     }
 }
 
-/* ─── Seasonal Collections ─── */
 
-export interface SeasonalCollection {
-    collection_id: string;
-    name: string;
-    slug: string;
-    description?: string;
-    image_url?: string;
-    icon?: string;
-    color_gradient?: string;
-    status: 'draft' | 'active' | 'archived';
-    is_featured: boolean;
-    sort_order: number;
-    start_date?: string;
-    end_date?: string;
-    product_count?: number;
-    products?: Product[];
-    created_at: string;
-    updated_at?: string;
-}
+// ═══════════════════════════════════════════════════════════════
+//  HOMEPAGE REELS API
+// ═══════════════════════════════════════════════════════════════
 
-export interface CollectionProduct {
-    product_id: string;
-    sku: string;
-    product_name: string;
-    brand?: string;
-    category?: string;
-    status?: string;
-    price?: number;
-    stock_quantity?: number;
-    sort_order: number;
-    added_at: string;
-    thumbnail_url?: string;
-}
-
-/** List all collections (admin). */
-export async function getAdminCollections(params: { limit?: number; offset?: number; status?: string } = {}): Promise<{ rows: SeasonalCollection[]; total: number }> {
+export async function getAdminHomepageReels(params: { limit?: number; offset?: number; status?: string } = {}): Promise<{ rows: any[]; total: number }> {
     try {
         const sp = new URLSearchParams();
         if (params.limit) sp.set('limit', String(params.limit));
         if (params.offset) sp.set('offset', String(params.offset));
         if (params.status) sp.set('status', params.status);
 
-        const res = await authFetch(`${API_URL}/api/admin/collections?${sp.toString()}`, { headers: authHeaders() });
+        const res = await authFetch(`${API_URL}/api/admin/homepage-reels?${sp.toString()}`, { headers: authHeaders() });
         const json = await res.json();
-        console.log('[Admin API] getAdminCollections response:', json);
-
         if (json.success && json.data) {
             return { rows: json.data, total: json.meta?.total ?? json.data.length };
         }
         return { rows: [], total: 0 };
     } catch (error) {
-        console.error('[Admin API] getAdminCollections failed:', error);
+        console.error('[Admin API] getAdminHomepageReels failed:', error);
         return { rows: [], total: 0 };
     }
 }
 
-/** Get a single collection by ID (admin). */
-export async function getAdminCollection(id: string): Promise<SeasonalCollection | null> {
+export async function getAdminHomepageReel(id: string): Promise<any | null> {
     try {
-        const res = await authFetch(`${API_URL}/api/admin/collections/${id}`, { headers: authHeaders() });
+        const res = await authFetch(`${API_URL}/api/admin/homepage-reels/${id}`, { headers: authHeaders() });
         const json = await res.json();
         return json.success && json.data ? json.data : null;
     } catch (error) {
-        console.error('[Admin API] getAdminCollection failed:', error);
+        console.error('[Admin API] getAdminHomepageReel failed:', error);
         return null;
     }
 }
 
-/** Create a new collection. */
-export async function createCollection(data: Partial<SeasonalCollection>): Promise<{ success: boolean; data?: SeasonalCollection; error?: string }> {
+export async function createHomepageReel(data: any): Promise<{ success: boolean; data?: any; error?: string }> {
     try {
-        const res = await authFetch(`${API_URL}/api/admin/collections`, {
+        const res = await authFetch(`${API_URL}/api/admin/homepage-reels`, {
             method: 'POST',
             headers: authHeaders({ 'Content-Type': 'application/json' }),
             body: JSON.stringify(data),
@@ -2547,15 +2531,14 @@ export async function createCollection(data: Partial<SeasonalCollection>): Promi
         const json = await res.json();
         return { success: json.success, data: json.data, error: json.message };
     } catch (error) {
-        console.error('[Admin API] createCollection failed:', error);
+        console.error('[Admin API] createHomepageReel failed:', error);
         return { success: false, error: 'Network error' };
     }
 }
 
-/** Update a collection. */
-export async function updateCollection(id: string, data: Partial<SeasonalCollection>): Promise<{ success: boolean; data?: SeasonalCollection; error?: string }> {
+export async function updateHomepageReel(id: string, data: any): Promise<{ success: boolean; data?: any; error?: string }> {
     try {
-        const res = await authFetch(`${API_URL}/api/admin/collections/${id}`, {
+        const res = await authFetch(`${API_URL}/api/admin/homepage-reels/${id}`, {
             method: 'PATCH',
             headers: authHeaders({ 'Content-Type': 'application/json' }),
             body: JSON.stringify(data),
@@ -2563,30 +2546,28 @@ export async function updateCollection(id: string, data: Partial<SeasonalCollect
         const json = await res.json();
         return { success: json.success, data: json.data, error: json.message };
     } catch (error) {
-        console.error('[Admin API] updateCollection failed:', error);
+        console.error('[Admin API] updateHomepageReel failed:', error);
         return { success: false, error: 'Network error' };
     }
 }
 
-/** Delete (archive) a collection. */
-export async function deleteCollection(id: string): Promise<boolean> {
+export async function deleteHomepageReel(id: string): Promise<boolean> {
     try {
-        const res = await authFetch(`${API_URL}/api/admin/collections/${id}`, {
+        const res = await authFetch(`${API_URL}/api/admin/homepage-reels/${id}`, {
             method: 'DELETE',
             headers: authHeaders(),
         });
         const json = await res.json();
         return json.success;
     } catch (error) {
-        console.error('[Admin API] deleteCollection failed:', error);
+        console.error('[Admin API] deleteHomepageReel failed:', error);
         return false;
     }
 }
 
-/** Add products to a collection. */
-export async function addCollectionProducts(collectionId: string, productIds: string[]): Promise<{ success: boolean; error?: string }> {
+export async function addHomepageReelProducts(reelId: string, productIds: string[]): Promise<{ success: boolean; error?: string }> {
     try {
-        const res = await authFetch(`${API_URL}/api/admin/collections/${collectionId}/products`, {
+        const res = await authFetch(`${API_URL}/api/admin/homepage-reels/${reelId}/products`, {
             method: 'POST',
             headers: authHeaders({ 'Content-Type': 'application/json' }),
             body: JSON.stringify({ product_ids: productIds }),
@@ -2594,15 +2575,14 @@ export async function addCollectionProducts(collectionId: string, productIds: st
         const json = await res.json();
         return { success: json.success, error: json.message };
     } catch (error) {
-        console.error('[Admin API] addCollectionProducts failed:', error);
+        console.error('[Admin API] addHomepageReelProducts failed:', error);
         return { success: false, error: 'Network error' };
     }
 }
 
-/** Remove products from a collection. */
-export async function removeCollectionProducts(collectionId: string, productIds: string[]): Promise<boolean> {
+export async function removeHomepageReelProducts(reelId: string, productIds: string[]): Promise<boolean> {
     try {
-        const res = await authFetch(`${API_URL}/api/admin/collections/${collectionId}/products`, {
+        const res = await authFetch(`${API_URL}/api/admin/homepage-reels/${reelId}/products`, {
             method: 'DELETE',
             headers: authHeaders({ 'Content-Type': 'application/json' }),
             body: JSON.stringify({ product_ids: productIds }),
@@ -2610,15 +2590,14 @@ export async function removeCollectionProducts(collectionId: string, productIds:
         const json = await res.json();
         return json.success;
     } catch (error) {
-        console.error('[Admin API] removeCollectionProducts failed:', error);
+        console.error('[Admin API] removeHomepageReelProducts failed:', error);
         return false;
     }
 }
 
-/** Reorder products within a collection. */
-export async function reorderCollectionProducts(collectionId: string, productIds: string[]): Promise<boolean> {
+export async function reorderHomepageReelProducts(reelId: string, productIds: string[]): Promise<boolean> {
     try {
-        const res = await authFetch(`${API_URL}/api/admin/collections/${collectionId}/products/reorder`, {
+        const res = await authFetch(`${API_URL}/api/admin/homepage-reels/${reelId}/products/reorder`, {
             method: 'PUT',
             headers: authHeaders({ 'Content-Type': 'application/json' }),
             body: JSON.stringify({ product_ids: productIds }),
@@ -2626,7 +2605,7 @@ export async function reorderCollectionProducts(collectionId: string, productIds
         const json = await res.json();
         return json.success;
     } catch (error) {
-        console.error('[Admin API] reorderCollectionProducts failed:', error);
+        console.error('[Admin API] reorderHomepageReelProducts failed:', error);
         return false;
     }
 }
@@ -2869,6 +2848,7 @@ export interface LegalDocument {
     content: string;
     version: string;
     is_active: boolean;
+    document_type?: string;
     published_at?: string;
     created_at: string;
     updated_at: string;
@@ -2987,6 +2967,14 @@ export async function createAdminGdprBreach(data: any) {
 
 // ─── Shipments ────────────────────────────────────────────────────
 
+function normalizeShipment(shipment: any) {
+    if (!shipment) return shipment;
+    
+    // Legacy pricing detection removed as requested by user.
+    // The backend now stores the values in their respective currencies.
+    return shipment;
+}
+
 export async function fetchShipments(params: Record<string, string> = {}) {
     try {
         const searchParams = new URLSearchParams();
@@ -2994,7 +2982,11 @@ export async function fetchShipments(params: Record<string, string> = {}) {
         const res = await authFetch(`${API_URL}/api/admin/shipments?${searchParams.toString()}`, {
             headers: authHeaders(),
         });
-        return await res.json();
+        const json = await res.json();
+        if (json.success && json.data && Array.isArray(json.data.shipments)) {
+            json.data.shipments = json.data.shipments.map(normalizeShipment);
+        }
+        return json;
     } catch (error) {
         console.error('[Admin API] Failed to fetch shipments:', error);
         return { success: false, data: { shipments: [], meta: { total: 0 } } };
@@ -3006,7 +2998,11 @@ export async function fetchShipmentById(id: string) {
         const res = await authFetch(`${API_URL}/api/admin/shipments/${id}`, {
             headers: authHeaders(),
         });
-        return await res.json();
+        const json = await res.json();
+        if (json.success && json.data) {
+            json.data = normalizeShipment(json.data);
+        }
+        return json;
     } catch (error) {
         console.error('[Admin API] Failed to fetch shipment:', error);
         return { success: false };
@@ -3747,11 +3743,11 @@ export async function deleteProductCountryPrice(productId: string, countryCode: 
 
 /* ─── SEO Automation ─── */
 
-export async function autoGenerateSeo(params: { 
-    entity_type: 'product', 
-    entity_ids?: string[], 
-    overwrite?: boolean, 
-    include_alt_text?: boolean 
+export async function autoGenerateSeo(params: {
+    entity_type: 'product',
+    entity_ids?: string[],
+    overwrite?: boolean,
+    include_alt_text?: boolean
 }): Promise<{ success: boolean; data?: any; error?: string }> {
     try {
         const res = await authFetch(`${API_URL}/api/seo/auto-generate`, {
@@ -3766,3 +3762,33 @@ export async function autoGenerateSeo(params: {
         return { success: false, error: 'Network error' };
     }
 }
+
+// ─── Vendor Registrations ──────────────────────────────────────────────────
+export const getVendorRegistrations = async (status?: string) => {
+    let url = `${API_URL}/api/vendors`;
+    if (status) url += `?status=${status}`;
+    try {
+        const res = await authFetch(url);
+        const json = await res.json();
+        return json.success ? (json.data || []) : [];
+    } catch (e) {
+        return [];
+    }
+};
+
+export const getVendorRegistrationDetails = async (id: string) => {
+    const res = await authFetch(`${API_URL}/api/vendors/${id}`);
+    const json = await res.json();
+    return json.success ? json.data : null;
+};
+
+export const updateVendorRegistrationStatus = async (id: string, status: string) => {
+    const res = await authFetch(`${API_URL}/api/vendors/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+    });
+    const json = await res.json();
+    if (!json.success) throw new Error(json.message || 'Failed to update');
+    return json.data;
+};
