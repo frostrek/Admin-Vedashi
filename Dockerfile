@@ -21,6 +21,7 @@ FROM node:20-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
+ENV PORT=4000
 
 # Copy only what's needed to run
 COPY --from=builder /app/public ./public
