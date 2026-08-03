@@ -132,7 +132,7 @@ export default function CategoryModal({ isOpen, onClose, onSubmit, editCategory,
     };
     
     const currentSlugPath = getCategorySlugPath(parentId, categories);
-    const storeUrl = process.env.NEXT_PUBLIC_STOREFRONT_URL || 'https://vedashi.com';
+    const storeUrl = process.env.NEXT_PUBLIC_STOREFRONT_URL || 'https://vedashiherbals.com';
     const previewUrl = `${storeUrl}/katalog${currentSlugPath.length > 0 ? '/' + currentSlugPath.join('/') : ''}/${slug || '{slug}'}`;
 
     const handleSubmit = async (e: React.FormEvent) => {

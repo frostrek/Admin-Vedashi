@@ -275,8 +275,8 @@ function WritePostContent() {
                             />
                             <div className="mt-2 bg-page-bg border border-border/50 rounded-lg p-3">
                                 <p className="text-xs text-text-muted mb-1 font-medium">Storefront URL Preview:</p>
-                                <a href={`${process.env.NEXT_PUBLIC_STOREFRONT_URL || 'https://vedashi.com'}/blog/${slug || '{slug}'}`} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-500 hover:underline break-all">
-                                    {`${process.env.NEXT_PUBLIC_STOREFRONT_URL || 'https://vedashi.com'}/blog/${slug || '{slug}'}`}
+                                <a href={`${process.env.NEXT_PUBLIC_STOREFRONT_URL || 'https://vedashiherbals.com'}/blog/${slug || '{slug}'}`} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-500 hover:underline break-all">
+                                    {`${process.env.NEXT_PUBLIC_STOREFRONT_URL || 'https://vedashiherbals.com'}/blog/${slug || '{slug}'}`}
                                 </a>
                             </div>
                         </div>

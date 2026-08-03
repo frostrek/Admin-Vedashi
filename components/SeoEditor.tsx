@@ -125,7 +125,7 @@ export default function SeoEditor({
     // Google Search Preview values
     const previewTitle = value.meta_title || entityName || 'Page Title';
     const previewDesc = value.meta_description || entityDescription || 'Page description will appear here...';
-    const previewUrl = value.canonical_url || `vedashi.com/${entityType === 'product' ? 'tovar' : entityType === 'category' ? 'katalog' : entityType + 's'}/${value.slug || entitySlug || entityId}`;
+    const previewUrl = value.canonical_url || `vedashiherbals.com/${entityType === 'product' ? 'tovar' : entityType === 'category' ? 'katalog' : entityType + 's'}/${value.slug || entitySlug || entityId}`;
 
     if (loading) {
         return (
@@ -246,7 +246,7 @@ export default function SeoEditor({
                         type="url"
                         value={value.canonical_url || ''}
                         onChange={e => update('canonical_url', e.target.value)}
-                        placeholder="https://vedashi.com/tovar/..."
+                        placeholder="https://vedashiherbals.com/tovar/..."
                         className="w-full px-3 py-2.5 rounded-lg border border-border bg-card-bg text-text-primary text-sm placeholder:text-text-muted focus:border-gold focus:ring-1 focus:ring-gold/30 outline-none transition-colors"
                     />
                 </div>
