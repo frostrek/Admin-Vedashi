@@ -481,7 +481,7 @@ export default function FooterManagementPage() {
                                     className={`${inputCls} pl-16`}
                                     value={footer?.contact?.email || ''}
                                     onChange={e => update('contact', { ...footer!.contact, email: e.target.value })}
-                                    placeholder="aura@vedashi.com"
+                                    placeholder="aura@vedashiherbals.com"
                                 />
                             </div>
                         </Field>
