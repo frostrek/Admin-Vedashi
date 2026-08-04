@@ -3,9 +3,7 @@ name: Deploy Admin
 on:
   push:
     branches:
-      - main
-      - feature/temporary
-      - vedashi-herbals-stage
+      - vedashi-herbals-prod
 
 jobs:
   deploy:
