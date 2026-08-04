@@ -23,4 +23,5 @@ jobs:
             git reset --hard origin/${{ github.ref_name }}
             
             cd ~/vedashi
-            docker compose up -d --build admin
+            # Use flock to prevent simultaneous Docker builds across repositories
+            flock -w 600 /tmp/vedashi-deploy.lock -c "docker compose up -d --build admin"
