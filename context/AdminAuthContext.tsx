@@ -15,7 +15,7 @@ interface AdminUser {
 interface LoginResponse {
     success: boolean;
     error?: string;
-    /** True when the account exists            but is deactivated */
+    /** True when the account exist            but is deactivated */
     deactivated?: boolean;
     requireCaptcha?: boolean;
 }
@@ -138,7 +138,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
             getAdminMe().then(res => {
                 if (res.success && res.data) {
                     const role = res.data.role || 'customer';
-                    
+
                     // Reject non-admin sessions immediately
                     if (!['admin', 'Super Admin', 'owner'].includes(role)) {
                         setUser(null);
