@@ -1,6 +1,6 @@
 /**
  * Admin Panel - Authentication Utilities
- * Manages JWT token storage and retrieval
+ * Manages JWT token storage and retrievals
  */
 
 const TOKEN_KEY = 'admin_auth_token';
