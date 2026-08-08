@@ -18,7 +18,7 @@ import { useTheme } from '@/context/ThemeContext';
 
 // ÔöÇÔöÇÔöÇ Constants ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 export type AttributeType = 'Volume' | 'Pack' | 'Flavor' | 'Vintage';
-export const PREDEFINED_PACKS = ['Single', 'Pack of 2', 'Pack of 4', 'Pack of 6', 'Pack of 12', 'Case'];
+export const PREDEFINED_PACKS = ['1', '2', '3', '4', '6', '12'];
 export const PREDEFINED_UNITS = ['ml', 'L'];
 
 /** Convert a File to a base64 data-URI string */
@@ -255,7 +255,7 @@ export default function AddProductPage() {
         else if (dim === 'volume') finalVal = `${val} ${volUnit}`;
         else if (dim === 'count') finalVal = `${val} ${countUnit}`;
         else if (dim === 'strength') finalVal = `${val} ${strengthUnit}`;
-        else if (dim === 'pack') finalVal = val;
+        else if (dim === 'pack') finalVal = val.toLowerCase() === 'single' ? '1' : val;
         else if (dim === 'combo') finalVal = val.toLowerCase() === 'yes' || val === 'true' ? 'Yes' : 'No';
 
         if (dimConfigs[dim]?.values.includes(finalVal)) {
@@ -608,7 +608,7 @@ export default function AddProductPage() {
                     if (v.volume) options['Volume'] = v.volume;
                     if (v.strength) options['Strength'] = v.strength;
                     if (v.flavor) options['Flavor'] = v.flavor;
-                    if (v.pack) options['Pack'] = v.pack;
+                    if (v.pack) options['Pack'] = String(v.pack).toLowerCase() === 'single' ? '1' : String(v.pack);
                     if (v.count) options['Count'] = v.count;
                     if (v.combo && v.combo !== 'No') options['Combo'] = v.combo;
                     // Serialize custom dimension types into options JSONB
@@ -711,7 +711,7 @@ export default function AddProductPage() {
                 if (v.volume) options['Volume'] = v.volume;
                 if (v.strength) options['Strength'] = v.strength;
                 if (v.flavor) options['Flavor'] = v.flavor;
-                if (v.pack) options['Pack'] = v.pack;
+                if (v.pack) options['Pack'] = String(v.pack).toLowerCase() === 'single' ? '1' : String(v.pack);
                 if (v.count) options['Count'] = v.count;
                 if (v.combo && v.combo !== 'No') options['Combo'] = v.combo;
                 // Serialize custom dimension types into options JSONB

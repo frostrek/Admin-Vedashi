@@ -18,7 +18,7 @@ import { transliterateToSlug } from '@/lib/transliterate';
 
 // ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 type AttributeType = 'Volume' | 'Pack' | 'Flavor' | 'Vintage';
-const PREDEFINED_PACKS = ['Single', 'Pack of 2', 'Pack of 4', 'Pack of 6', 'Pack of 12', 'Case'];
+const PREDEFINED_PACKS = ['1', '2', '3', '4', '6', '12'];
 const PREDEFINED_UNITS = ['ml', 'L'];
 
 /** Convert a File to a base64 data-URI string */
@@ -280,9 +280,15 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                     let volStr = v.volume || opts['Volume'] || opts['volume'] || '';
                     if (!volStr && v.size_label && v.size_label.toLowerCase() !== 'standard') volStr = v.size_label;
 
-                    let pkStr = v.pack || '';
-                    if (!pkStr && v.pack_quantity && v.pack_quantity > 1) pkStr = `Pack of ${v.pack_quantity}`;
-                    else if (!pkStr && v.pack_quantity === 1) pkStr = 'Single';
+                    let pkStr = v.pack || opts['Pack'] || opts['pack'] || '';
+                    if (!pkStr && v.pack_quantity) pkStr = String(v.pack_quantity);
+                    else if (pkStr) {
+                        if (String(pkStr).toLowerCase() === 'single') pkStr = '1';
+                        else {
+                            const match = String(pkStr).match(/\d+/);
+                            pkStr = match ? match[0] : String(pkStr);
+                        }
+                    }
 
                     // Parse sale date/time
                     let sale_start_date = '';
@@ -544,7 +550,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
         else if (dim === 'volume') finalVal = `${val} ${volUnit}`;
         else if (dim === 'count') finalVal = `${val} ${countUnit}`;
         else if (dim === 'strength') finalVal = `${val} ${strengthUnit}`;
-        else if (dim === 'pack') finalVal = val;
+        else if (dim === 'pack') finalVal = val.toLowerCase() === 'single' ? '1' : val;
         else if (dim === 'combo') finalVal = val.toLowerCase() === 'yes' || val === 'true' ? 'Yes' : 'No';
 
         if (!dimConfigs[dim]?.values.includes(finalVal)) {
@@ -861,7 +867,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                     if (v.volume) options['Volume'] = v.volume;
                     if (v.strength) options['Strength'] = v.strength;
                     if (v.flavor) options['Flavor'] = v.flavor;
-                    if (v.pack) options['Pack'] = v.pack;
+                    if (v.pack) options['Pack'] = String(v.pack).toLowerCase() === 'single' ? '1' : String(v.pack);
                     if (v.count) options['Count'] = v.count;
                     if (v.combo && v.combo !== 'No') options['Combo'] = v.combo;
                     if (v.combo && v.combo !== 'No') options['Combo'] = v.combo;
@@ -1047,7 +1053,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                 if (v.volume) options['Volume'] = v.volume;
                 if (v.strength) options['Strength'] = v.strength;
                 if (v.flavor) options['Flavor'] = v.flavor;
-                if (v.pack) options['Pack'] = v.pack;
+                if (v.pack) options['Pack'] = String(v.pack).toLowerCase() === 'single' ? '1' : String(v.pack);
                 if (v.count) options['Count'] = v.count;
                 if (v.combo && v.combo !== 'No') options['Combo'] = v.combo;
 
