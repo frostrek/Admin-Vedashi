@@ -11,7 +11,9 @@ import {
     getBatchSiteConfigs, 
     updateSiteConfig,
     MerchantShippingConfig,
-    MerchantReturnConfig
+    MerchantReturnConfig,
+    getPackDiscountTiersAdmin,
+    updatePackDiscountTiersAdmin
 } from '@/lib/api';
 import ConfirmModal from '@/components/ConfirmModal';
 import toast from 'react-hot-toast';
@@ -70,12 +72,18 @@ export default function SettingsPage() {
         description: '30-day hassle-free returns.'
     });
 
+    // Pack Discount state
+    const [packTiers, setPackTiers] = useState<any[]>([]);
+    const [packLoading, setPackLoading] = useState(true);
+    const [packSaving, setPackSaving] = useState(false);
+
     // Initial load
     useEffect(() => {
         const fetchSettings = async () => {
-            const [autoData, merchantData] = await Promise.all([
+            const [autoData, merchantData, tiersData] = await Promise.all([
                 getAutomationSettings(),
-                getBatchSiteConfigs(['merchant_shipping', 'merchant_returns'])
+                getBatchSiteConfigs(['merchant_shipping', 'merchant_returns']),
+                getPackDiscountTiersAdmin()
             ]);
 
             if (autoData) {
@@ -88,6 +96,16 @@ export default function SettingsPage() {
                 if (merchantData.data.merchant_returns) setReturnConfig(merchantData.data.merchant_returns);
             }
             setMerchantLoading(false);
+
+            if (tiersData) {
+                // Ensure 5 tiers always exist in UI state for editing (1 to 5)
+                const defaultTiers = [1, 2, 3, 4, 5].map(size => {
+                    const existing = tiersData.find((t: any) => t.pack_size === size);
+                    return existing || { pack_size: size, discount_percent: 0, is_active: false };
+                });
+                setPackTiers(defaultTiers);
+            }
+            setPackLoading(false);
         };
         fetchSettings();
     }, []);
@@ -139,6 +157,17 @@ export default function SettingsPage() {
         } finally {
             setMerchantSaving(false);
         }
+    };
+
+    const handleSavePackTiers = async () => {
+        setPackSaving(true);
+        const res = await updatePackDiscountTiersAdmin(packTiers);
+        if (res.success) {
+            toast.success('Pack discount tiers saved successfully');
+        } else {
+            toast.error(res.error || 'Failed to save pack tiers');
+        }
+        setPackSaving(false);
     };
 
     const handleDeactivate = async () => {
@@ -747,6 +776,94 @@ export default function SettingsPage() {
                             >
                                 {merchantSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                                 Save Merchant Settings
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* Pack Discount Settings Card */}
+            <div className="rounded-2xl border border-border bg-gradient-to-br from-card-bg to-card-bg-elevated p-6 shadow-lg shadow-black/10">
+                <div className="flex items-center gap-4 mb-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-light shadow-lg shadow-primary/20 border border-gold/10">
+                        <Globe className="h-6 w-6 text-[#E8D8B9]" />
+                    </div>
+                    <div>
+                        <h4 className="font-serif font-semibold text-text-primary">Pack Discount Tiers</h4>
+                        <p className="text-sm text-text-secondary">Configure discounts for bundle packs (1 to 5 units).</p>
+                    </div>
+                </div>
+                <div className="h-[1px] bg-gradient-to-r from-transparent via-gold/15 to-transparent mb-6" />
+
+                {packLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                        <Loader2 className="h-6 w-6 animate-spin text-gold" />
+                    </div>
+                ) : (
+                    <div className="space-y-6">
+                        <div className="overflow-x-auto rounded-lg border border-border">
+                            <table className="w-full text-left text-sm text-text-secondary">
+                                <thead className="bg-page-bg/50 text-xs uppercase text-text-primary">
+                                    <tr>
+                                        <th className="px-4 py-3 font-semibold">Pack Size</th>
+                                        <th className="px-4 py-3 font-semibold">Discount %</th>
+                                        <th className="px-4 py-3 font-semibold text-center">Active</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {packTiers.map((tier, idx) => (
+                                        <tr key={tier.pack_size} className="border-b border-border last:border-0 hover:bg-page-bg/30">
+                                            <td className="px-4 py-3 font-medium text-text-primary">
+                                                Pack of {tier.pack_size}
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <div className="relative w-24">
+                                                    <input
+                                                        type="number"
+                                                        value={tier.discount_percent}
+                                                        onChange={(e) => {
+                                                            const newTiers = [...packTiers];
+                                                            newTiers[idx].discount_percent = parseFloat(e.target.value) || 0;
+                                                            setPackTiers(newTiers);
+                                                        }}
+                                                        disabled={tier.pack_size === 1}
+                                                        className="w-full rounded-lg border border-border bg-card-bg px-3 py-1.5 text-sm text-text-primary focus:border-gold/50 focus:outline-none disabled:opacity-50"
+                                                    />
+                                                    <span className="absolute right-3 top-1.5 text-text-muted">%</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-4 py-3 text-center">
+                                                <label className="relative inline-flex cursor-pointer items-center">
+                                                    <input
+                                                        type="checkbox"
+                                                        className="peer sr-only"
+                                                        checked={tier.is_active}
+                                                        onChange={(e) => {
+                                                            const newTiers = [...packTiers];
+                                                            newTiers[idx].is_active = e.target.checked;
+                                                            setPackTiers(newTiers);
+                                                        }}
+                                                        disabled={tier.pack_size === 1}
+                                                    />
+                                                    <div className={`peer h-5 w-9 rounded-full bg-border/50 transition-colors ${tier.pack_size === 1 ? 'opacity-50' : 'peer-checked:bg-gold'} peer-focus:outline-none after:absolute after:left-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:border after:border-border after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white`}></div>
+                                                </label>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                        <p className="text-xs text-text-muted mt-2">
+                            * Pack of 1 is the base unit. Discount for pack size 1 must always be 0% and it is always active.
+                        </p>
+                        <div className="pt-2 flex justify-end">
+                            <button
+                                onClick={handleSavePackTiers}
+                                disabled={packSaving}
+                                className="flex items-center justify-center rounded-lg bg-gradient-to-r from-primary to-primary-light px-6 py-2.5 text-sm font-semibold text-[#E8D8B9] border border-gold/20 hover:border-gold/40 hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {packSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                                Save Pack Discounts
                             </button>
                         </div>
                     </div>

@@ -135,6 +135,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
         available_from_time: '',
         available_until_date: '',
         available_until_time: '',
+        pack_sizes_enabled: false,
     });
     const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
 
@@ -227,6 +228,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                 available_from_time: (product as any).available_from ? new Date((product as any).available_from).toISOString().split('T')[1].substring(0, 5) : '',
                 available_until_date: (product as any).available_until ? new Date((product as any).available_until).toISOString().split('T')[0] : '',
                 available_until_time: (product as any).available_until ? new Date((product as any).available_until).toISOString().split('T')[1].substring(0, 5) : '',
+                pack_sizes_enabled: (product as any).pack_sizes_enabled || false,
             });
 
             if (product.slug) {
@@ -853,6 +855,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
             lead_time: form.lead_time.trim() || undefined,
             form: form.form_type || undefined,
             specialities: form.specialities,
+            pack_sizes_enabled: form.pack_sizes_enabled,
 
             sku: draftSku,
             status: 'draft',
@@ -1037,6 +1040,7 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
             lead_time: form.lead_time.trim() || undefined,
             form: form.form_type || undefined,
             specialities: form.specialities.length > 0 ? form.specialities : undefined,
+            pack_sizes_enabled: form.pack_sizes_enabled,
             status: productStatus === 'draft' ? 'active' : undefined,
             // SKU from the default variant (required by products table unique constraint)
             sku: (variants.find(v => v.isDefault) ?? variants[0]).sku.trim(),
@@ -1472,6 +1476,22 @@ function EditProductContent({ params }: { params: Promise<{ id: string }> }) {
                                             className="w-full rounded-lg border border-border px-4 py-2.5 text-sm focus:border-gold/40 focus:outline-none focus:ring-1 focus:ring-gold/20 transition-all"
                                             placeholder="e.g. 3-5 business days"
                                         />
+                                    </div>
+
+                                    {/* Pack Sizes Enabled */}
+                                    <div className="sm:col-span-2">
+                                        <label className="flex items-center gap-2 cursor-pointer w-fit">
+                                            <input
+                                                type="checkbox"
+                                                checked={form.pack_sizes_enabled}
+                                                onChange={e => update('pack_sizes_enabled', e.target.checked)}
+                                                className="w-4 h-4 rounded border-gray-300 text-gold focus:ring-gold"
+                                            />
+                                            <span className="text-sm font-medium text-text-primary">Enable Bundle Pack Sizes (1 to 5)</span>
+                                        </label>
+                                        <p className="text-xs text-text-muted mt-1 ml-6">
+                                            If enabled, users can buy variants in bundle sizes (1-5) on the storefront with automated tiered discounts.
+                                        </p>
                                     </div>
 
                                     {/* Category */}

@@ -1523,6 +1523,7 @@ export default function OrdersPage() {
                                                         <div className="flex gap-1.5 mt-1 flex-wrap">
                                                             {variant && <span className="text-[10px] text-text-muted bg-border/30 px-1.5 py-0.5 rounded-full">{variant}</span>}
                                                             {volume && <span className="text-[10px] text-text-muted bg-border/30 px-1.5 py-0.5 rounded-full">{volume}</span>}
+                                                            {(item as any).pack_size > 1 && <span className="text-[10px] text-emerald-600 font-bold bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded-full">Pack of {(item as any).pack_size}</span>}
                                                             <span className="text-[10px] text-text-muted bg-border/30 px-1.5 py-0.5 rounded-full">×{item.quantity}</span>
                                                         </div>
                                                     </div>

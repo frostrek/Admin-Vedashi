@@ -3792,3 +3792,32 @@ export const updateVendorRegistrationStatus = async (id: string, status: string)
     if (!json.success) throw new Error(json.message || 'Failed to update');
     return json.data;
 };
+
+// ─── Pack Discounts ────────────────────────────────────────────────────────
+export const getPackDiscountTiersAdmin = async () => {
+    try {
+        const res = await authFetch(`${API_URL}/api/pack-discounts/admin`, {
+            headers: authHeaders(),
+        });
+        const json = await res.json();
+        return json.success ? (json.data || []) : [];
+    } catch (e) {
+        console.error('[Admin API] Failed to fetch pack discount tiers:', e);
+        return [];
+    }
+};
+
+export const updatePackDiscountTiersAdmin = async (tiers: { pack_size: number; discount_percent: number; is_active: boolean }[]) => {
+    try {
+        const res = await authFetch(`${API_URL}/api/pack-discounts/admin`, {
+            method: 'PUT',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ tiers }),
+        });
+        const json = await res.json();
+        return { success: json.success, data: json.data, error: json.message };
+    } catch (error: any) {
+        console.error('[Admin API] Failed to update pack discount tiers:', error);
+        return { success: false, error: error.message || 'Network error' };
+    }
+};
