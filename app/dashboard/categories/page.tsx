@@ -7,7 +7,7 @@ import CategoryCard from '@/components/admin/CategoryCard';
 import CategoryModal from '@/components/admin/CategoryModal';
 import BulkAssignModal from '@/components/admin/BulkAssignModal';
 import CategoryTreeNode from '@/components/admin/CategoryTreeNode';
-import { Plus, AlertTriangle, FolderTree, Tag, Search, ChevronDown, Trash2, CheckSquare, Square, X, ArrowRight } from 'lucide-react';
+import { Plus, AlertTriangle, FolderTree, Tag, Search, ChevronDown, Trash2, CheckSquare, Square, X, ArrowRight, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
 import ConfirmModal from '@/components/ConfirmModal';
 
@@ -266,6 +266,35 @@ export default function CategoriesPage() {
 
     const needsActionCount = needsActionCategories.length;
 
+    const handleDownloadTree = () => {
+        const buildTreeText = (nodes: Category[], indent = 0): string => {
+            let text = '';
+            nodes.forEach(node => {
+                const prefix = ' '.repeat(indent * 4);
+                text += `${prefix}- ${node.name} (ID: ${node.category_id})\n`;
+                if (node.description) {
+                    text += `${prefix}  Description: ${node.description}\n`;
+                }
+                if (node.children && node.children.length > 0) {
+                    text += buildTreeText(node.children, indent + 1);
+                }
+            });
+            return text;
+        };
+
+        const content = "VEDASHI Category Tree Structure\n===============================\n\n" + buildTreeText(categories);
+        
+        const blob = new Blob([content], { type: 'text/plain;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'vedashi_category_tree.txt');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
+
     return (
         <div className="pb-24">
             {/* Header */}
@@ -324,6 +353,13 @@ export default function CategoriesPage() {
                             </div>
                         )}
                     </div>
+
+                    <button
+                        onClick={handleDownloadTree}
+                        className={secondaryBtnClass}
+                    >
+                        <Download className="h-5 w-5" /> Download Tree (.txt)
+                    </button>
 
                     <button
                         onClick={() => handleCreate()}

@@ -155,7 +155,7 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
         'Country_of_Origin', 'Form', 'Speciality', 'Speciality_2', 'Speciality_3', 
         'Description', 'Short_Description', 'Lead_Time', 'Search_Keywords', 
         'Barcode', 'Adult_Only', 'Taxable', 'Parallel_Import', 'Overseas_Purchase', 
-        'Shelf_Life', 'Product_Name', 'Option_Type', 'Option_Value', 'SKU', 
+        'Bundle_Discount', 'Shelf_Life', 'Product_Name', 'Option_Type', 'Option_Value', 'SKU', 
         'Model_Number', 'Selling_Price', 'MRP', 'Stock', 'Weight', 
         'Volume', 'Length', 'Width', 'Height', 'Russia_Markup', 'Korea_Markup', 
         'Image_1', 'Image_2', 'Image_3', 'Image_4', 'Image_5', 'Variant_Video'
@@ -168,14 +168,14 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
             'P001', 'Himalaya', 'Himalaya Drug Company', 'Wellness', 'Ayurveda', 'India', 'Capsule',
             'Ayurvedic', 'Drug Free', '', 'Ashwagandha helps reduce stress and improve vitality.',
             'Stress relief supplement', '3-5 business days', 'ashwagandha, stress relief, ayurvedic',
-            '', 'FALSE', 'TRUE', 'FALSE', 'FALSE', '24',
+            '', 'FALSE', 'TRUE', 'FALSE', 'FALSE', 'TRUE', '24',
             'Ashwagandha 60 Capsules', 'Size', '60 Capsules', 'HIM-ASHW-60', '',
             '499', '599', '100', '', '', '', '', '', '20', '15',
             'https://example.com/ashwagandha-60.jpg', '', '', '', '', '',
         ],
         // ROW 2 — Product P001, Variant 2 of same product
         [
-            'P001', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
+            'P001', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
             'Ashwagandha 120 Capsules', 'Size', '120 Capsules', 'HIM-ASHW-120', '',
             '849', '999', '80', '', '', '', '', '', '20', '15',
             'https://example.com/ashwagandha-120.jpg', '', '', '', '', '',
@@ -225,8 +225,8 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
             const variantColStyle = { fill: { fgColor: { rgb: "E3F2FD" } } }; // Light Blue
 
             // Range of columns
-            const productColCount = 20; // 1-20
-            const variantColCount = 21; // 21-41
+            const productColCount = 21; // 1-21 (added Bundle_Discount)
+            const variantColCount = 21; // 22-42
             const totalCols = productColCount + variantColCount;
             const totalRowsIncludingHeader = TEMPLATE_ROWS.length + 1;
 
@@ -340,6 +340,7 @@ export default function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImpo
                                     <li>The first variant's <strong>Image_1</strong> is used as the product thumbnail. No separate main image column needed.</li>
                                     <li>If the SKU exists the product will be <strong>updated</strong>. If not a new product will be <strong>created</strong>.</li>
                                     <li><strong>Russia_Markup</strong> and <strong>Korea_Markup</strong> are optional — set a % markup for country-specific pricing per variant.</li>
+                                    <li><strong>Bundle_Discount</strong> — set to <strong>TRUE</strong> to enable pack-size discounts (Pack of 1–5) on the storefront for this product. Default: FALSE.</li>
                                     <li>Large files (&gt;100 rows) are processed in the background.</li>
                                 </ul>
                                 <div className="mt-5 flex items-center gap-3">
