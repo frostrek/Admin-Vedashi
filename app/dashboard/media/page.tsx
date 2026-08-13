@@ -39,6 +39,7 @@ interface HeroSlide {
     sort_order: number;
     created_at: string;
     link_url?: string;
+    alt_text?: string;
 }
 
 const emptySlide: Omit<HeroSlide, 'id' | 'created_at' | 'sort_order'> = {
@@ -49,6 +50,7 @@ const emptySlide: Omit<HeroSlide, 'id' | 'created_at' | 'sort_order'> = {
     overlay_opacity: 0.5,
     is_active: true,
     link_url: '',
+    alt_text: '',
 };
 
 interface HeroSettings {
@@ -151,6 +153,7 @@ export default function MediaLibraryPage() {
             overlay_opacity: s.overlay_opacity,
             is_active: s.is_active,
             link_url: s.link_url || '',
+            alt_text: s.alt_text || '',
         });
         setModalOpen(true);
     };
@@ -589,6 +592,32 @@ export default function MediaLibraryPage() {
                                         <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 text-gold/40 mt-0.5" />
                                         <p className="text-[10px] text-neutral-500 font-medium leading-relaxed">
                                             Use relative paths only (no domain). The storefront auto-prefixes the country. Leave empty to disable click redirect.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Banner Alt Text Section */}
+                                <div className="p-5 bg-neutral-50 rounded-[24px] border border-neutral-100 space-y-3 shadow-sm">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 rounded-xl bg-white border border-neutral-200 shadow-sm">
+                                            <Eye className="w-4 h-4 text-gold" />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-bold text-neutral-800">Alt Text (SEO)</p>
+                                            <p className="text-[10px] text-neutral-400 uppercase font-bold tracking-tight">Image description for screen readers and search engines</p>
+                                        </div>
+                                    </div>
+                                    <input
+                                        type="text"
+                                        value={form.alt_text || ''}
+                                        onChange={e => setForm({ ...form, alt_text: e.target.value })}
+                                        placeholder="e.g. A beautiful view of the Himalayas..."
+                                        className="w-full bg-white rounded-xl border border-neutral-200 px-4 py-2.5 text-sm font-medium text-neutral-800 focus:border-gold/50 focus:outline-none transition-all placeholder:font-sans placeholder:font-medium placeholder:text-neutral-300"
+                                    />
+                                    <div className="flex items-start gap-2.5 bg-white/50 p-2.5 rounded-xl border border-neutral-200/50">
+                                        <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 text-gold/40 mt-0.5" />
+                                        <p className="text-[10px] text-neutral-500 font-medium leading-relaxed">
+                                            Write a brief, accurate description of the image content. This is crucial for accessibility and improves your Google Lighthouse SEO score.
                                         </p>
                                     </div>
                                 </div>
