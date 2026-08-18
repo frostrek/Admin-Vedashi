@@ -275,6 +275,7 @@ export interface Product {
     thumbnail_url?: string;
     specifications?: any;
     status?: string;
+    is_active?: boolean;
     sale_price?: number;
     sale_start?: string;
     sale_end?: string;
@@ -392,10 +393,14 @@ export async function updateCustomerStatus(id: string, updates: Partial<Pick<Cus
 
 /* ─── Products ─── */
 
-export async function getProducts(status = 'active'): Promise<Product[]> {
+export async function getProducts(status?: string): Promise<Product[]> {
     try {
         const t = Date.now();
-        const res = await fetch(`${API_URL}/api/products?status=${encodeURIComponent(status)}&limit=10000000000&t=${t}`, {
+        const url = status 
+            ? `${API_URL}/api/products?status=${encodeURIComponent(status)}&limit=10000000000&t=${t}`
+            : `${API_URL}/api/products?limit=10000000000&t=${t}`;
+        
+        const res = await fetch(url, {
             headers: authHeaders(),
             credentials: 'include',
         });
@@ -554,6 +559,21 @@ export async function updateProduct(id: string, product: Partial<Product>): Prom
         return { success: json.success, error: json.message };
     } catch (error) {
         console.error('[Admin API] Failed to update product:', error);
+        return { success: false, error: 'Network error' };
+    }
+}
+
+export async function toggleProductActive(id: string, is_active: boolean): Promise<{ success: boolean; error?: string }> {
+    try {
+        const res = await authFetch(`${API_URL}/api/products/${id}/active`, {
+            method: 'PATCH',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ is_active }),
+        });
+        const json: ApiResponse = await res.json();
+        return { success: json.success, error: json.message };
+    } catch (error) {
+        console.error('[Admin API] Failed to toggle product active status:', error);
         return { success: false, error: 'Network error' };
     }
 }

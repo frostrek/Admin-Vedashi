@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, Fragment, useMemo } from 'react';
 import Link from 'next/link';
-import { getProducts, deleteProduct, bulkDeleteProducts, Product, getRankingOverrides, setRankingOverride, removeRankingOverride, RankingOverride, searchProductsAdmin, getProduct, updateVariantStatus, updateDefaultVariant, getDraftProducts, updateProduct, autoGenerateSeo, formatINR } from '@/lib/api';
+import { getProducts, deleteProduct, bulkDeleteProducts, Product, getRankingOverrides, setRankingOverride, removeRankingOverride, RankingOverride, searchProductsAdmin, getProduct, updateVariantStatus, updateDefaultVariant, getDraftProducts, updateProduct, autoGenerateSeo, formatINR, toggleProductActive } from '@/lib/api';
 import { getCategories } from '@/lib/api/category';
 import { Category } from '@/types/category';
 import { Download, SlidersHorizontal, Filter, Package, Star, Loader2, Tag, ChevronDown, FileEdit, X, ChevronLeft, ChevronRight, Plus, Pencil, Trash2, Search, UploadCloud, Globe } from 'lucide-react';
@@ -373,8 +373,12 @@ export default function ProductsListPage() {
         }
 
         setFiltered(base);
-        setCurrentPage(1); // Reset to first page when filters change
     }, [products, searchResults, filterCategory, filterSubCategory, filterStock, priceRange, absoluteMaxPrice, filterBestSeller, filterBrands, overrideMap, allCategories]);
+
+    // Reset to first page only when actual filter criteria change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [debouncedSearch, filterCategory, filterSubCategory, filterStock, priceRange.min, priceRange.max, filterBestSeller, filterBrands]);
 
     // --- Sort + Pagination helpers ---
     const handleSort = (key: string, dir: SortDir) => {
@@ -465,6 +469,41 @@ export default function ProductsListPage() {
                 });
                 toast.error(result.error || 'Failed to add override');
             }
+        }
+
+        setTogglingIds(prev => {
+            const next = new Set(prev);
+            next.delete(productId);
+            return next;
+        });
+    };
+
+    // ─── Active toggle ───
+    const handleToggleProductActive = async (productId: string, currentActiveStatus: boolean) => {
+        // Optimistic update
+        setTogglingIds(prev => new Set(prev).add(productId));
+
+        const nextStatus = !currentActiveStatus;
+        
+        // Optimistically update lists
+        const updateList = (list: Product[]) => list.map(p => 
+            p.product_id === productId ? { ...p, is_active: nextStatus } : p
+        );
+        setProducts(prev => updateList(prev));
+        setFiltered(prev => updateList(prev));
+
+        const result = await toggleProductActive(productId, nextStatus);
+        
+        if (result.success) {
+            toast.success(`Product marked as ${nextStatus ? 'Active' : 'Inactive'}`);
+        } else {
+            // Revert
+            const revertList = (list: Product[]) => list.map(p => 
+                p.product_id === productId ? { ...p, is_active: currentActiveStatus } : p
+            );
+            setProducts(prev => revertList(prev));
+            setFiltered(prev => revertList(prev));
+            toast.error(result.error || 'Failed to toggle product status');
         }
 
         setTogglingIds(prev => {
@@ -775,7 +814,9 @@ export default function ProductsListPage() {
             <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
                 <div>
                     <h1 className="font-serif text-2xl font-bold text-gold-soft">Products</h1>
-                    <p className="text-[15px] font-semibold text-brown">{products.length} total products</p>
+                    <p className="text-[15px] font-semibold text-brown">
+                        <span>{products.filter(p => p.is_active !== false).length}</span> active / <span>{products.length}</span> total products
+                    </p>
                 </div>
                 <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                     {selectedIds.size > 0 && (
@@ -1338,6 +1379,7 @@ export default function ProductsListPage() {
                                 <th className="px-4 py-3 text-sm font-semibold text-gold-muted uppercase">SKU</th>
                                 <SortableHeader label="Category" sortKey="category" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
                                 <SortableHeader label="Price" sortKey="price" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
+                                <th className="px-4 py-3 text-sm font-semibold text-gold-muted uppercase text-center">Active</th>
                                 <th className="px-4 py-3 text-sm font-semibold text-gold-muted uppercase text-center">Best Seller</th>
                                 <SortableHeader label="Stock" sortKey="stock_quantity" currentSortKey={sortKey} currentSortDir={sortDir} onSort={handleSort} />
                                 <th className="px-4 py-3 text-sm font-semibold text-gold-muted uppercase text-right">
@@ -1375,11 +1417,12 @@ export default function ProductsListPage() {
                                     const badge = getStockBadge(qty);
                                     const override = overrideMap.get(product.product_id);
                                     const isBestSeller = !!override;
+                                    const isProductActive = product.is_active !== false; // defaults to true
                                     const isToggling = togglingIds.has(product.product_id);
 
                                     return (
                                         <Fragment key={product.product_id}>
-                                            <tr className="hover:bg-gold/[0.03] transition-all duration-300 group">
+                                            <tr className={`hover:bg-gold/[0.03] transition-all duration-300 group ${!isProductActive ? 'opacity-50 grayscale-[50%]' : ''}`}>
                                                 <td className="px-4 py-3 pl-8">
                                                     <div className="flex items-center gap-3 relative">
                                                         <div className={`absolute -left-6 transition-opacity duration-200 cursor-pointer ${expandedIds.has(product.product_id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
@@ -1420,6 +1463,32 @@ export default function ProductsListPage() {
                                                 </td>
                                                 <td className="px-4 py-3 text-sm font-medium text-gold">
                                                     {formatINR(product.price ?? 0)}
+                                                </td>
+
+                                                {/* ─── Active Column ─── */}
+                                                <td className="px-4 py-3">
+                                                    <div className="flex flex-col items-center gap-1.5">
+                                                        <button
+                                                            onClick={() => handleToggleProductActive(product.product_id, isProductActive)}
+                                                            disabled={isToggling}
+                                                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-1 focus:ring-offset-card-bg ${isProductActive
+                                                                ? 'bg-primary'
+                                                                : 'bg-border'
+                                                                } ${isToggling ? 'opacity-60 cursor-wait' : 'cursor-pointer'}`}
+                                                            title={isProductActive ? 'Deactivate Product' : 'Activate Product'}
+                                                        >
+                                                            {isToggling ? (
+                                                                <span className="absolute inset-0 flex items-center justify-center">
+                                                                    <Loader2 className="h-3.5 w-3.5 animate-spin text-white" />
+                                                                </span>
+                                                            ) : (
+                                                                <span
+                                                                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${isProductActive ? 'translate-x-6' : 'translate-x-1'
+                                                                        }`}
+                                                                />
+                                                            )}
+                                                        </button>
+                                                    </div>
                                                 </td>
 
                                                 {/* ─── Best Seller Column ─── */}
